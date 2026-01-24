@@ -1,17 +1,22 @@
-import { motion } from "framer-motion"
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion"
 
 const destinations = [
   {
     title: "BAA",
     desc: "Dubayning zamonaviy arxitekturasi",
-    image:
-      "https://plus.unsplash.com/premium_photo-1697729914552-368899dc4757?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZHViYWl8ZW58MHx8MHx8fDA%3D",
+    image: "https://plus.unsplash.com/premium_photo-1697729914552-368899dc4757?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZHViYWl8ZW58MHx8MHx8fDA%3D",
   },
   {
     title: "Turkiya",
     desc: "Kappadokiya va Istanbul",
+    image: "https://images.unsplash.com/photo-1527838832700-5059252407fa?q=80&w=1600",
+  },
+  {
+    title: "Malayziya",
+    desc: "Kuala-Lumpur",
     image:
-      "https://images.unsplash.com/photo-1527838832700-5059252407fa?q=80&w=1600",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4aJu6cFeYR_EKcW-b-9D7bC_s0T39Akcpmg&s",
   },
   {
     title: "Tailand",
@@ -50,12 +55,6 @@ const destinations = [
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtrVJmJCqDu5mtK3z1XFo7_mArbHExQZqa9Q&s",
   },
   {
-    title: "Malayziya",
-    desc: "Kuala-Lumpur",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4aJu6cFeYR_EKcW-b-9D7bC_s0T39Akcpmg&s",
-  },
-  {
     title: "Indoneziya",
     desc: "Bali oroli",
     image:
@@ -68,7 +67,7 @@ const destinations = [
       "https://t4.ftcdn.net/jpg/05/99/25/29/360_F_599252956_5APwZ2feMZS4TTRtRcAii5nngoQ714L1.jpg",
   },
   {
-    title: "shirinni yaxshi  ko'raman",
+    title: "Portugal",
     desc: "Portugal Sity",
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2HQEy4prAUkXDa876oUfiYoSF9CBgUbqjXg&s",
@@ -76,8 +75,27 @@ const destinations = [
 ]
 
 const Napravleniya = () => {
+  const [showAll, setShowAll] = useState(false)
+  const gridRef = useRef<HTMLDivElement | null>(null)  // ✅ grid boshlanishini ushlab turamiz (shu joyga scroll qilamiz)
+  const visibleItems = useMemo(() => {
+    return showAll ? destinations : destinations.slice(0, 3)
+  }, [showAll])
+
+  // ✅ showAll true bo‘lganda scroll qilib tushirib yuboramiz
+  useEffect(() => {
+    if (!showAll) return
+    // 1 frame kutamiz (DOM yangi cardlar bilan update bo‘lsin)
+    const t = requestAnimationFrame(() => {
+      gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    })
+    return () => cancelAnimationFrame(t)
+  }, [showAll])
+
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 bg-[#0A1220]">
+    <section className=" bg-gradient-to-b
+    from-[#132A44]
+    via-[#1E3F66]
+    to-[#2B5A8A] pt-20 pb-20 p-5">
       <div className="text-center mb-14">
         <h2 className="text-4xl md:text-5xl font-bold text-white">
           Ommabop yo‘nalishlar
@@ -87,39 +105,36 @@ const Napravleniya = () => {
           Eng mashhur va sevimli sayohat yo‘nalishlari
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {destinations.map((item, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.05 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -10 }}
-            className="relative group rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
-          >
-            <img
-              src={item.image}
-              alt={item.title}
-              className="w-full h-[280px] object-cover scale-100 group-hover:scale-110 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6">
-              <h3 className="text-2xl font-bold text-white">
-                {item.title}
-              </h3>
-              <p className="text-sm text-[#D1D5DB] mt-1">
-                {item.desc}
-              </p>
-            </div>
-          </motion.div>
-        ))}
+      {/* ✅ Scroll target */}
+      <div ref={gridRef}>
+        <motion.div layout className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence>
+            {visibleItems.map((item, index) => (
+              <motion.div layout key={item.title} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }} transition={{ duration: 0.35, delay: showAll ? index * 0.03 : 0, }}
+                whileHover={{ y: -10 }} className="relative group rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
+              >
+                <img className="w-full h-[280px] object-cover scale-100 group-hover: scale-110 transition-transform duration-700" src={item.image} alt={item.title} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <h3 className="text-2xl font-bold text-white">{item.title}</h3>
+                  <p className="text-sm text-[#D1D5DB] nt-1">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
-      <div className="flex justify-center mt-10">
-        <button className="w-[200px] h-[60px] rounded-2xl bg-[#FF7A00] font-semibold">Ko'proq Ko'rish</button>
-      </div>
+      {destinations.length > 3 && (
+        <div className="flex justify-center mt-10">
+          <button onClick={() => setShowAll((p) => !p)} className="w-[220px] h-[60px] rounded-full text-h1 cursor-pointer bg-white/20 text-white border border-white/25 hover:bg-white/30 px-6">
+            {showAll ? "Yopish" : "Ko'proq Ko'rish"}
+          </button>
+        </div>
+      )}
     </section>
   )
+
 }
 
 export default Napravleniya

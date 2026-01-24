@@ -46,7 +46,7 @@ export default function Navbar() {
   }, [open]);
 
   return (
-    <header className="w-full flex justify-center pt-5 px-4">
+    <header className="w-full flex justify-center pt-5 px-4 ">
       <motion.nav
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -90,7 +90,7 @@ export default function Navbar() {
           {/* Desktop Register */}
           <div className="hidden md:block">
             <Link to="/register">
-              <Button className="rounded-full text-h1 cursor-pointer bg-white/20 text-white border border-white/25 hover:bg-white/30 px-6">
+              <Button className="rounded-full h-10 w-40 text-h1 cursor-pointer bg-white/20 text-white border border-white/25 hover:bg-white/30 px-6">
                 Register
               </Button>
             </Link>
