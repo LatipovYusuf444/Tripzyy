@@ -1,5 +1,5 @@
-import Hero from "@/components/Hero"
-import Napravleniya from "@/components/Napravleniya"
+import Hero from "@/components/site/Hero"
+import Napravleniya from "@/components/site/Napravleniya"
 
 
 const Home = () => {
