@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react"
-// TODO: backend ulaganda shuni ishlatasan:
-// import http from "@/shared/api/http"
+import { useEffect, useMemo, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 
 type Flight = {
   id: string
@@ -28,14 +27,32 @@ const fmtDuration = (mins: number) => {
 }
 
 export default function Flights() {
+  const [sp] = useSearchParams()
+
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
+  const [date, setDate] = useState("") // hozircha faqat ko‘rsatamiz
+  const [pax, setPax] = useState(1)
+
   const [airline, setAirline] = useState("")
   const [maxPrice, setMaxPrice] = useState<number | "">("")
   const [sort, setSort] = useState<"best" | "cheap" | "fast">("best")
 
   const [items, setItems] = useState<Flight[]>(MOCK)
   const [loading, setLoading] = useState(false)
+
+  // ✅ HERO’dan kelgan query paramsni o‘qib to‘ldiramiz
+  useEffect(() => {
+    const qFrom = sp.get("from") ?? ""
+    const qTo = sp.get("to") ?? ""
+    const qDate = sp.get("date") ?? ""
+    const qPax = Number(sp.get("pax") ?? "1")
+
+    if (qFrom) setFrom(qFrom)
+    if (qTo) setTo(qTo)
+    if (qDate) setDate(qDate)
+    if (!Number.isNaN(qPax) && qPax >= 1) setPax(qPax)
+  }, [sp])
 
   const filtered = useMemo(() => {
     let list = items.filter((f) => {
@@ -48,10 +65,10 @@ export default function Flights() {
 
     if (sort === "cheap") list = [...list].sort((a, b) => a.price - b.price)
     if (sort === "fast") list = [...list].sort((a, b) => a.durationMin - b.durationMin)
-
-    // best (simple): cheap + fast balans
     if (sort === "best") {
-      list = [...list].sort((a, b) => (a.price * 0.7 + a.durationMin * 0.3) - (b.price * 0.7 + b.durationMin * 0.3))
+      list = [...list].sort(
+        (a, b) => (a.price * 0.7 + a.durationMin * 0.3) - (b.price * 0.7 + b.durationMin * 0.3)
+      )
     }
 
     return list
@@ -60,9 +77,10 @@ export default function Flights() {
   const onSearch = async () => {
     setLoading(true)
     try {
-      // TODO: Backend ulash:
-      // const res = await http.post("/api/flights/search", { from, to, airline, maxPrice })
+      // TODO: backend ulash:
+      // const res = await http.post("/api/flights/search", { from, to, date, pax, airline, maxPrice })
       // setItems(res.data.items)
+
       setItems(MOCK)
     } finally {
       setLoading(false)
@@ -70,17 +88,20 @@ export default function Flights() {
   }
 
   return (
-    <section className="relative bg-[#0A1220] pt-20 pb-20">
+    <section className="relative bg-[#0A1220] text-white pt-20">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/25" />
 
       <div className="relative mx-auto max-w-[1200px] px-5 py-14">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-4xl text-white md:text-5xl font-bold">Reyslar</h1>
-            <p className="mt-3 text-white/70">Filter + sort bilan eng mos reysni toping.</p>
+            <h1 className="text-4xl md:text-5xl font-bold">Reyslar</h1>
+            <p className="mt-3 text-white/70">
+              Sana: <span className="text-white/85">{date || "—"}</span> · Yo‘lovchi:{" "}
+              <span className="text-white/85">{pax}</span>
+            </p>
           </div>
 
-          <div className="flex gap-2 text-white">
+          <div className="flex gap-2">
             {(["best", "cheap", "fast"] as const).map((k) => (
               <button
                 key={k}
@@ -97,53 +118,32 @@ export default function Flights() {
         </div>
 
         <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            <input
-              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none text-white focus:border-white/25"
-              placeholder="From (TAS)"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            />
-            <input
-              className="h-12 rounded-2xl bg-white/5 border text-white border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="To (IST)"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-            />
-            <input
-              className="h-12 rounded-2xl bg-white/5 text-white border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="Airline"
-              value={airline}
-              onChange={(e) => setAirline(e.target.value)}
-            />
-            <input
-              className="h-12 rounded-2xl bg-white/5 text-white border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="Max price"
-              inputMode="numeric"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
-            />
-            <button
-              onClick={onSearch}
-              disabled={loading}
-              className="h-12 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition disabled:opacity-60"
-            >
-              {loading ? "Qidirilyapti..." : "Qidirish"}
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="From (TAS)" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="To (IST)" value={to} onChange={(e) => setTo(e.target.value)} />
+            <input type="date" className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              value={date} onChange={(e) => setDate(e.target.value)} />
+            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="Airline" value={airline} onChange={(e) => setAirline(e.target.value)} />
+            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="Max $" inputMode="numeric" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")} />
+            <button onClick={onSearch} disabled={loading}
+              className="h-12 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition disabled:opacity-60">
+              {loading ? "..." : "Qidirish"}
             </button>
           </div>
 
           <div className="mt-3 text-xs text-white/55">
-            {/* TODO: Backend ulaganda airport autocomplete + sana + pax */}
-            * Keyin aeroport autocomplete (TAS/IST/DXB), sana va yo‘lovchi soni qo‘shiladi.
+            {/* TODO: Backend ulansa real natija + pagination */}
+            * Keyin real natija, pagination va “booking” oqimi qo‘shiladi.
           </div>
         </div>
 
         <div className="mt-8 space-y-4">
           {filtered.map((f) => (
-            <div
-              key={f.id}
-              className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
-            >
+            <div key={f.id} className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
               <div className="flex items-center justify-between flex-wrap gap-5">
                 <div className="min-w-[260px]">
                   <div className="text-white/70 text-sm">{f.airline}</div>
@@ -161,13 +161,7 @@ export default function Flights() {
 
                   <button
                     className="h-12 px-6 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition"
-                    onClick={() => {
-                      // TODO: booking flow:
-                      // 1) /api/bookings/create
-                      // 2) passenger info
-                      // 3) payment
-                      alert("Booking keyin backendga ulanadi ✅")
-                    }}
+                    onClick={() => alert("Booking keyin backendga ulanadi ✅")}
                   >
                     Tanlash
                   </button>
@@ -176,9 +170,7 @@ export default function Flights() {
             </div>
           ))}
 
-          {filtered.length === 0 && (
-            <div className="text-center text-white/70 py-10">Hech narsa topilmadi.</div>
-          )}
+          {filtered.length === 0 && <div className="text-center text-white/70 py-10">Hech narsa topilmadi.</div>}
         </div>
       </div>
     </section>

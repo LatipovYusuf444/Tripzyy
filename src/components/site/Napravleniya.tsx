@@ -1,90 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 
 const destinations = [
-  {
-    title: "BAA",
-    desc: "Dubayning zamonaviy arxitekturasi",
-    image: "https://plus.unsplash.com/premium_photo-1697729914552-368899dc4757?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZHViYWl8ZW58MHx8MHx8fDA%3D",
-  },
-  {
-    title: "Turkiya",
-    desc: "Kappadokiya va Istanbul",
-    image: "https://images.unsplash.com/photo-1527838832700-5059252407fa?q=80&w=1600",
-  },
-  {
-    title: "Malayziya",
-    desc: "Kuala-Lumpur",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4aJu6cFeYR_EKcW-b-9D7bC_s0T39Akcpmg&s",
-  },
-  {
-    title: "Tailand",
-    desc: "Tropik plyajlar va Bangkok",
-    image:
-      "https://img.freepik.com/free-photo/landmark-pagoda-doi-inthanon-national-park-chiang-mai-thailand_335224-779.jpg?semt=ais_hybrid&w=740&q=80",
-  },
-  {
-    title: "Vyetnam",
-    desc: "Halong ko‘rfazi va tabiat",
-    image:
-      "https://career-advice.jobs.ac.uk/wp-content/uploads/An-image-of-Vietnam.jpg.optimal.jpg",
-  },
-  {
-    title: "Misr",
-    desc: "Sharm-el-Sheyx va dengiz",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr_GgOJuypCJTJnxkB3gStO973yOX1zwoIOQ&s",
-  },
-  {
-    title: "Gruziya",
-    desc: "Tbilisi va tog‘lar",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGBucSxmFEERzDGJTezqCEqf9tFE0KZHqRAw&s",
-  },
-  {
-    title: "Italiya",
-    desc: "Rim va Venetsiya",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbNNq6CxRHmXciz6TNcGBDgv7k0yqpxLcO6w&s",
-  },
-  {
-    title: "Fransiya",
-    desc: "Parij va romantika",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtrVJmJCqDu5mtK3z1XFo7_mArbHExQZqa9Q&s",
-  },
-  {
-    title: "Indoneziya",
-    desc: "Bali oroli",
-    image:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600",
-  },
-  {
-    title: "Uzbekistan",
-    desc: "Toshkent Sity",
-    image:
-      "https://t4.ftcdn.net/jpg/05/99/25/29/360_F_599252956_5APwZ2feMZS4TTRtRcAii5nngoQ714L1.jpg",
-  },
-  {
-    title: "Portugal",
-    desc: "Portugal Sity",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2HQEy4prAUkXDa876oUfiYoSF9CBgUbqjXg&s",
-  },
+  { title: "BAA", desc: "Dubayning zamonaviy arxitekturasi", image: "https://plus.unsplash.com/premium_photo-1697729914552-368899dc4757?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZHViYWl8ZW58MHx8MHx8fDA%3D" },
+  { title: "Turkiya", desc: "Kappadokiya va Istanbul", image: "https://images.unsplash.com/photo-1527838832700-5059252407fa?q=80&w=1600" },
+  { title: "Malayziya", desc: "Kuala-Lumpur", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4aJu6cFeYR_EKcW-b-9D7bC_s0T39Akcpmg&s" },
+  { title: "Tailand", desc: "Tropik plyajlar va Bangkok", image: "https://img.freepik.com/free-photo/landmark-pagoda-doi-inthanon-national-park-chiang-mai-thailand_335224-779.jpg?semt=ais_hybrid&w=740&q=80" },
+  { title: "Vyetnam", desc: "Halong ko‘rfazi va tabiat", image: "https://career-advice.jobs.ac.uk/wp-content/uploads/An-image-of-Vietnam.jpg.optimal.jpg" },
+  { title: "Misr", desc: "Sharm-el-Sheyx va dengiz", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr_GgOJuypCJTJnxkB3gStO973yOX1zwoIOQ&s" },
+  { title: "Gruziya", desc: "Tbilisi va tog‘lar", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGBucSxmFEERzDGJTezqCEqf9tFE0KZHqRAw&s" },
+  { title: "Italiya", desc: "Rim va Venetsiya", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbNNq6CxRHmXciz6TNcGBDgv7k0yqpxLcO6w&s" },
+  { title: "Fransiya", desc: "Parij va romantika", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtrVJmJCqDu5mtK3z1XFo7_mArbHExQZqa9Q&s" },
+  { title: "Indoneziya", desc: "Bali oroli", image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600" },
+  { title: "Uzbekistan", desc: "Toshkent Sity", image: "https://t4.ftcdn.net/jpg/05/99/25/29/360_F_599252956_5APwZ2feMZS4TTRtRcAii5nngoQ714L1.jpg" },
+  { title: "Portugal", desc: "Portugal Sity", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2HQEy4prAUkXDa876oUfiYoSF9CBgUbqjXg&s" },
 ]
 
-const Napravleniya = () => {
+export default function Napravleniya() {
   const [showAll, setShowAll] = useState(false)
-  const gridRef = useRef<HTMLDivElement | null>(null)  // ✅ grid boshlanishini ushlab turamiz (shu joyga scroll qilamiz)
-  const visibleItems = useMemo(() => {
-    return showAll ? destinations : destinations.slice(0, 3)
-  }, [showAll])
+  const gridRef = useRef<HTMLDivElement | null>(null)
 
-  // ✅ showAll true bo‘lganda scroll qilib tushirib yuboramiz
+  const visibleItems = useMemo(() => (showAll ? destinations : destinations.slice(0, 3)), [showAll])
+
   useEffect(() => {
     if (!showAll) return
-    // 1 frame kutamiz (DOM yangi cardlar bilan update bo‘lsin)
     const t = requestAnimationFrame(() => {
       gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
     })
@@ -92,49 +31,61 @@ const Napravleniya = () => {
   }, [showAll])
 
   return (
-    <section className=" bg-gradient-to-b
-    from-[#132A44]
-    via-[#1E3F66]
-    to-[#2B5A8A] pt-20 pb-20 p-5">
-      <div className="text-center mb-14">
-        <h2 className="text-4xl md:text-5xl font-bold text-white">
-          Ommabop yo‘nalishlar
-        </h2>
-        <div className="w-24 h-1 bg-[#FF7A00] mx-auto my-4 rounded-full" />
-        <p className="text-lg md:text-xl text-[#C7CCD6]">
-          Eng mashhur va sevimli sayohat yo‘nalishlari
-        </p>
-      </div>
-      {/* ✅ Scroll target */}
-      <div ref={gridRef}>
-        <motion.div layout className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence>
-            {visibleItems.map((item, index) => (
-              <motion.div layout key={item.title} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }} transition={{ duration: 0.35, delay: showAll ? index * 0.03 : 0, }}
-                whileHover={{ y: -10 }} className="relative group rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
-              >
-                <img className="w-full h-[280px] object-cover scale-100 group-hover: scale-110 transition-transform duration-700" src={item.image} alt={item.title} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-2xl font-bold text-white">{item.title}</h3>
-                  <p className="text-sm text-[#D1D5DB] nt-1">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-      {destinations.length > 3 && (
-        <div className="flex justify-center mt-10">
-          <button onClick={() => setShowAll((p) => !p)} className="w-[220px] h-[60px] rounded-full text-h1 cursor-pointer bg-white/20 text-white border border-white/25 hover:bg-white/30 px-6">
-            {showAll ? "Yopish" : "Ko'proq Ko'rish"}
-          </button>
+    <section className="relative bg-[#0A1220] pt-20 pb-20 px-5">
+      {/* luxury overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/25" />
+
+      <div className="relative mx-auto max-w-[1200px]">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-bold text-white">Ommabop yo‘nalishlar</h2>
+          <div className="w-24 h-1 bg-[#FF7A00] mx-auto my-4 rounded-full" />
+          <p className="text-lg md:text-xl text-[#C7CCD6]">Eng mashhur va sevimli sayohat yo‘nalishlari</p>
         </div>
-      )}
+
+        <div ref={gridRef}>
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence>
+              {visibleItems.map((item, index) => (
+                <motion.div
+                  layout
+                  key={item.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.35, delay: showAll ? index * 0.03 : 0 }}
+                  whileHover={{ y: -10 }}
+                  className="relative group rounded-3xl overflow-hidden cursor-pointer border border-white/10 bg-white/5 shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
+                >
+                  <img
+                    className="w-full h-[280px] object-cover scale-100 group-hover:scale-110 transition-transform duration-700"
+                    src={item.image}
+                    alt={item.title}
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <h3 className="text-2xl font-bold text-white">{item.title}</h3>
+                    <p className="text-sm text-[#D1D5DB] mt-1">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+
+        {destinations.length > 3 && (
+          <div className="flex justify-center mt-10">
+            <button
+              onClick={() => setShowAll((p) => !p)}
+              className="h-14 px-8 rounded-full bg-white/10 text-white border border-white/20 hover:bg-white/15 transition"
+            >
+              {showAll ? "Yopish" : "Ko'proq Ko'rish"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-16 h-px w-full bg-white/10" />
     </section>
   )
-
 }
-
-export default Napravleniya

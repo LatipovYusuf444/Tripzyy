@@ -17,16 +17,20 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
+      // 🏠 Home
       { index: true, element: <Home /> },
+
+      // 📄 Public pages
       { path: "about", element: <About /> },
       { path: "services", element: <Services /> },
       { path: "flights", element: <Flights /> },
       { path: "contact", element: <Contact /> },
       { path: "faq", element: <FAQ /> },
 
-      // ixtiyoriy auth
+      // 🔐 Auth (hozircha public)
       { path: "register", element: <RegisterPage /> },
 
+      // ❌ 404
       { path: "404", element: <NotFound /> },
       { path: "*", element: <Navigate to="/404" replace /> },
     ],
