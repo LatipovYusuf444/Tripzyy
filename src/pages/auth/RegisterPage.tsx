@@ -1,301 +1,362 @@
-import * as React from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff, Loader2, Lock, Mail, Phone, User } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { registerUser, type RegisterPayload } from "@/features/auth/api/auth.service";
-import { Link, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
+import { Eye, EyeOff, Mail, Lock, User2 } from "lucide-react"
+// import { http } from "@/shared/api/http" // ✅ backend ulaganda ochasan
 
-const schema = z
-  .object({
-    full_name: z.string().min(3, "Ism-familiya kamida 3 ta belgidan iborat bo‘lsin"),
-    email: z.string().email("Email noto‘g‘ri"),
-    phone: z.string().optional(),
-    password: z
-      .string()
-      .min(8, "Parol kamida 8 ta belgi")
-      .regex(/[A-Z]/, "Kamida 1 ta katta harf bo‘lsin")
-      .regex(/[0-9]/, "Kamida 1 ta raqam bo‘lsin"),
-    confirm_password: z.string().min(1, "Parolni qayta kiriting"),
-    agree: z.boolean().refine((v) => v === true, "Shartlarga rozilik kerak"),
-  })
-  .refine((v) => v.password === v.confirm_password, {
-    message: "Parollar bir xil emas",
-    path: ["confirm_password"],
-  });
+type Mode = "register" | "login"
 
-type FormValues = z.infer<typeof schema>;
+type DemoUser = { name: string; email: string; password: string }
+
+const USERS_KEY = "tripzy_users"
+
+function getUsers(): DemoUser[] {
+  try {
+    return JSON.parse(localStorage.getItem(USERS_KEY) || "[]")
+  } catch {
+    return []
+  }
+}
+function setUsers(users: DemoUser[]) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users))
+}
+
+// ✅ Demo token (backendda res.data.access bo‘ladi)
+function makeToken(email: string) {
+  return `demo_${btoa(email)}_${Date.now()}`
+}
 
 export default function RegisterPage() {
-  const nav = useNavigate();
-  const [showPass, setShowPass] = React.useState(false);
-  const [showPass2, setShowPass2] = React.useState(false);
-  const [serverError, setServerError] = React.useState<string | null>(null);
+  const navigate = useNavigate()
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      full_name: "",
-      email: "",
-      phone: "",
-      password: "",
-      confirm_password: "",
-      agree: false,
-    },
-    mode: "onTouched",
-  });
+  const [mode, setMode] = useState<Mode>("register")
+  const [loading, setLoading] = useState(false)
 
-  const mutation = useMutation({
-    mutationFn: (payload: RegisterPayload) => registerUser(payload),
-    onSuccess: () => {
-      nav("/login");
-    },
-    onError: (err: any) => {
-      const msg =
-        err?.response?.data?.detail ||
-        err?.response?.data?.message ||
-        (typeof err?.response?.data === "string" ? err.response.data : null) ||
-        "Xatolik yuz berdi. Qayta urinib ko‘ring.";
-      setServerError(msg);
-    },
-  });
+  // form state
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPass, setShowPass] = useState(false)
+  const [remember, setRemember] = useState(true)
 
-  const onSubmit = (values: FormValues) => {
-    setServerError(null);
+  const title = useMemo(() => (mode === "register" ? "Account yaratish" : "Kirish"), [mode])
+  const subtitle = useMemo(
+    () =>
+      mode === "register"
+        ? "Premium bron qilish uchun account yarating."
+        : "Hisobingizga kiring va reyslarni bron qiling.",
+    [mode]
+  )
 
-    mutation.mutate({
-      full_name: values.full_name,
-      email: values.email,
-      ...(values.phone?.trim() ? { phone: values.phone.trim() } : {}),
-      password: values.password,
-    });
-  };
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      if (mode === "register") {
+        // ----------------------------
+        // ✅ DEMO REGISTER (localStorage)
+        // ----------------------------
+        const users = getUsers()
+        const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase())
+        if (exists) {
+          alert("Bu email bilan account bor. Login qiling ✅")
+          setMode("login")
+          return
+        }
+
+        users.push({ name, email, password })
+        setUsers(users)
+
+        // ✅ Registerdan keyin auto-login
+        const token = makeToken(email)
+        if (remember) localStorage.setItem("access_token", token)
+
+        alert("Register + Login demo ✅")
+        navigate("/") // ✅ kirgandan keyin home
+
+        // ----------------------------
+        // ✅ BACKENDGA ULANDA:
+        // const res = await http.post("/auth/register", { name, email, password })
+        // (backend loginni alohida qilsin desa, registerdan keyin login request yuborasan)
+        // const res2 = await http.post("/auth/login", { email, password })
+        // localStorage.setItem("access_token", res2.data.access)
+        // navigate("/")
+        // ----------------------------
+        return
+      }
+
+      // ----------------------------
+      // ✅ DEMO LOGIN
+      // ----------------------------
+      const users = getUsers()
+      const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+      if (!user || user.password !== password) {
+        alert("Email yoki parol xato ❌")
+        return
+      }
+
+      const token = makeToken(email)
+      if (remember) localStorage.setItem("access_token", token)
+
+      alert("Login demo ✅")
+      navigate("/")
+
+      // ----------------------------
+      // ✅ BACKENDGA ULANDA:
+      // const res = await http.post("/auth/login", { email, password })
+      // localStorage.setItem("access_token", res.data.access)
+      // navigate("/")
+      // ----------------------------
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-white">
-      {/* ✅ BG IMAGE */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            "url(https://hdpic.club/uploads/posts/2022-01/1642794958_1-hdpic-club-p-samolet-rasmlari-foto-3.jpg)",
-        }}
-      />
+    <section className="relative overflow-hidden pt-20">
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1A5B86] via-[#0b1b2b] to-[#0A1220]" />
 
-      {/* ✅ Luxury overlays */}
-      <div className="absolute inset-0 bg-black/40" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050B18]/30 via-[#050B18]/70 to-[#050B18]/95" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(255,255,255,0.12),transparent_45%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_55%),radial-gradient(circle_at_50%_90%,rgba(0,0,0,0.6),transparent_55%)]" />
+      <div className="pointer-events-none absolute -top-44 left-1/2 h-[560px] w-[980px] -translate-x-1/2 rounded-full bg-white/12 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-56 right-[-160px] h-[560px] w-[560px] rounded-full bg-[#FF7A00]/12 blur-[160px]" />
+      <div className="pointer-events-none absolute -bottom-40 left-[-160px] h-[460px] w-[460px] rounded-full bg-white/8 blur-[140px]" />
 
-      {/* ✅ Premium grid */}
-      <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.22)_1px,transparent_1px)] [background-size:52px_52px]" />
+      <div className="relative mx-auto max-w-[1100px] px-5 py-14 md:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          {/* LEFT */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-7 md:p-9 shadow-[0_45px_140px_rgba(0,0,0,0.55)]"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-white/85">
+              <span className="h-2 w-2 rounded-full bg-[#FF7A00]" />
+              TRIPZY • Premium Flights
+            </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-xl px-4 py-10 mt-32 mb-32">
-        <div className="relative">
-          {/* glow */}
-          <div className="absolute -inset-3 rounded-3xl bg-gradient-to-b from-white/20 via-white/0 to-white/10 blur-2xl" />
+            <h2 className="mt-6 text-3xl md:text-4xl font-extrabold text-white leading-tight">
+              Luxury bron qilish tajribasi — sodda, tez, ishonchli
+            </h2>
 
-          {/* ✅ Glass Card */}
-          <div className="relative rounded-3xl border border-white/15 bg-white/10 p-6 shadow-[0_30px_120px_-45px_rgba(0,0,0,0.9)] backdrop-blur-2xl sm:p-8">
-            <div className="flex items-start justify-between gap-4">
+            <p className="mt-4 text-white/70 leading-relaxed">
+              Reyslarni qidiring, tariflarni solishtiring, bagaj va refund shartlarini ko‘ring —
+              hammasi bir joyda. Backend ulanganida real reyslar va to‘lov oqimi qo‘shiladi.
+            </p>
+
+            <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <MiniCard title="24/7 Support" desc="Telegram/Call yordam" />
+              <MiniCard title="Shaffof narx" desc="Yashirin fee yo‘q" />
+              <MiniCard title="Premium servis" desc="Priority & VIP" />
+              <MiniCard title="Secure" desc="Protected flow" />
+            </div>
+
+            <div className="mt-7 rounded-2xl border border-white/12 bg-white/5 p-4 text-white/70 text-sm">
+              TODO: keyin email tasdiqlash (OTP) / token (JWT) / refresh flow qo‘shamiz.
+            </div>
+          </motion.div>
+
+          {/* RIGHT */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.05 }}
+            className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 md:p-8 shadow-[0_45px_140px_rgba(0,0,0,0.55)]"
+          >
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-semibold">Ro‘yxatdan o‘tish</h1>
-                <p className="mt-1 text-sm text-white/70">
-                  Ma’lumotlarni to‘ldiring va akkaunt yarating.
-                </p>
+                <h1 className="text-3xl font-extrabold text-white">{title}</h1>
+                <p className="mt-2 text-white/70">{subtitle}</p>
               </div>
-              <div className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-xs text-white/70">
-                Premium
+
+              <div className="rounded-2xl border border-white/15 bg-white/8 p-1 flex">
+                <TabBtn active={mode === "register"} onClick={() => setMode("register")} text="Register" />
+                <TabBtn active={mode === "login"} onClick={() => setMode("login")} text="Login" />
               </div>
             </div>
 
-            {serverError && (
-              <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                {serverError}
-              </div>
-            )}
+            <form onSubmit={onSubmit} className="mt-7 space-y-3">
+              <AnimatePresence initial={false}>
+                {mode === "register" && (
+                  <motion.div
+                    key="name"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Field
+                      icon={<User2 size={18} className="text-white/75" />}
+                      placeholder="Ism"
+                      value={name}
+                      onChange={setName}
+                      required
+                      autoComplete="name"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
               <Field
-                icon={<User className="h-4 w-4" />}
-                label="Ism-familiya"
-                placeholder="Masalan: Yusuf Latipov"
-                error={form.formState.errors.full_name?.message}
-                {...form.register("full_name")}
+                icon={<Mail size={18} className="text-white/75" />}
+                placeholder="Email"
+                type="email"
+                value={email}
+                onChange={setEmail}
+                required
+                autoComplete="email"
               />
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="relative">
                 <Field
-                  icon={<Mail className="h-4 w-4" />}
-                  label="Email"
-                  placeholder="you@email.com"
-                  error={form.formState.errors.email?.message}
-                  {...form.register("email")}
+                  icon={<Lock size={18} className="text-white/75" />}
+                  placeholder="Parol"
+                  type={showPass ? "text" : "password"}
+                  value={password}
+                  onChange={setPassword}
+                  required
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
                 />
-                <Field
-                  icon={<Phone className="h-4 w-4" />}
-                  label="Telefon (ixtiyoriy)"
-                  placeholder="+998 90 123 45 67"
-                  error={form.formState.errors.phone?.message}
-                  {...form.register("phone")}
-                />
+
+                <button
+                  type="button"
+                  aria-label="Show password"
+                  onClick={() => setShowPass((p) => !p)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 grid place-items-center
+                             rounded-xl border border-white/12 bg-white/5 text-white/80 hover:bg-white/10 transition"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
 
-              <PasswordField
-                label="Parol"
-                placeholder="********"
-                show={showPass}
-                onToggle={() => setShowPass((p) => !p)}
-                error={form.formState.errors.password?.message}
-                icon={<Lock className="h-4 w-4" />}
-                rightIcon={showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                {...form.register("password")}
-              />
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <label className="flex items-center gap-2 text-white/70 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="accent-[#FF7A00]"
+                  />
+                  Remember me
+                </label>
 
-              <PasswordField
-                label="Parolni qayta kiriting"
-                placeholder="********"
-                show={showPass2}
-                onToggle={() => setShowPass2((p) => !p)}
-                error={form.formState.errors.confirm_password?.message}
-                icon={<Lock className="h-4 w-4" />}
-                rightIcon={showPass2 ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                {...form.register("confirm_password")}
-              />
-
-              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 h-4 w-4 accent-white"
-                  {...form.register("agree")}
-                />
-                <div className="text-sm text-white/75">
-                  Men shartlar va maxfiylik siyosatiga roziman.
-                  {form.formState.errors.agree?.message && (
-                    <div className="mt-1 text-xs text-red-200">
-                      {form.formState.errors.agree?.message}
-                    </div>
-                  )}
-                </div>
-              </label>
+                <button
+                  type="button"
+                  className="text-white/70 hover:text-white transition"
+                  onClick={() => alert("Demo: keyin Forgot Password qo‘shamiz ✅")}
+                >
+                  Parolni unutdingizmi?
+                </button>
+              </div>
 
               <button
-                type="submit"
-                disabled={mutation.isPending}
-                className={cn(
-                  "w-full rounded-2xl border border-white/20 bg-white px-5 py-3 font-semibold text-[#050B18]",
-                  "transition hover:translate-y-[-1px] hover:shadow-[0_12px_45px_-18px_rgba(255,255,255,0.6)]",
-                  "disabled:opacity-60 disabled:hover:translate-y-0"
-                )}
+                disabled={loading}
+                className="h-12 w-full rounded-2xl bg-[#FF7A00] font-semibold text-white
+                           hover:opacity-90 transition disabled:opacity-60
+                           shadow-[0_18px_60px_rgba(255,122,0,0.25)]"
               >
-                {mutation.isPending ? (
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Yuborilmoqda...
-                  </span>
-                ) : (
-                  "Ro‘yxatdan o‘tish"
-                )}
+                {loading ? "..." : mode === "register" ? "Account yaratish" : "Kirish"}
               </button>
 
-              <div className="text-center text-sm text-white/70">
-                Akkountingiz bormi?{" "}
-                <Link to="/login" className="text-white underline underline-offset-4">
-                  Kirish
-                </Link>
+              <div className="text-xs text-white/50 leading-relaxed">
+                {mode === "register" ? (
+                  <>
+                    Ulanadigan endpoint: <span className="text-white/65">POST /auth/register</span>
+                  </>
+                ) : (
+                  <>
+                    Ulanadigan endpoint: <span className="text-white/65">POST /auth/login</span>
+                  </>
+                )}
               </div>
             </form>
-          </div>
 
-          <div className="mt-4 text-center text-xs text-white/55">
-            © Tripzy • Premium Aviation
-          </div>
+            <div className="mt-6 rounded-2xl border border-white/12 bg-white/5 p-4 text-white/70 text-sm">
+              {mode === "register" ? (
+                <>
+                  Account bormi?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setMode("login")}
+                    className="text-white font-semibold hover:opacity-90 transition"
+                  >
+                    Login
+                  </button>
+                </>
+              ) : (
+                <>
+                  Yangi account kerakmi?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setMode("register")}
+                    className="text-white font-semibold hover:opacity-90 transition"
+                  >
+                    Register
+                  </button>
+                </>
+              )}
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
-  );
+    </section>
+  )
 }
 
-/* -------- UI components -------- */
-
-type FieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
-  icon?: React.ReactNode;
-  error?: string;
-};
-
-const Field = React.forwardRef<HTMLInputElement, FieldProps>(function Field(
-  { label, icon, error, className, ...props },
-  ref
-) {
+function TabBtn({ active, onClick, text }: { active: boolean; onClick: () => void; text: string }) {
   return (
-    <div>
-      <div className="mb-2 text-xs font-medium text-white/75">{label}</div>
-      <div
-        className={cn(
-          "flex items-center gap-3 rounded-2xl border px-4 py-3 backdrop-blur-xl",
-          "bg-white/10 border-white/15",
-          "focus-within:border-white/35 focus-within:bg-white/15 transition",
-          error && "border-red-500/35",
-          className
-        )}
-      >
-        <span className="text-white/70">{icon}</span>
-        <input
-          ref={ref}
-          className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
-          {...props}
-        />
-      </div>
-      {error && <div className="mt-1 text-xs text-red-200">{error}</div>}
-    </div>
-  );
-});
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "h-10 px-4 rounded-xl text-sm font-semibold transition",
+        active ? "bg-white/15 text-white border border-white/15" : "text-white/70 hover:text-white hover:bg-white/10",
+      ].join(" ")}
+    >
+      {text}
+    </button>
+  )
+}
 
-type PasswordFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
-  icon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  show: boolean;
-  onToggle: () => void;
-  error?: string;
-};
-
-const PasswordField = React.forwardRef<HTMLInputElement, PasswordFieldProps>(function PasswordField(
-  { label, icon, rightIcon, show, onToggle, error, className, ...props },
-  ref
-) {
+function Field({
+  icon,
+  placeholder,
+  value,
+  onChange,
+  type = "text",
+  required,
+  autoComplete,
+}: {
+  icon: React.ReactNode
+  placeholder: string
+  value: string
+  onChange: (v: string) => void
+  type?: string
+  required?: boolean
+  autoComplete?: string
+}) {
   return (
-    <div>
-      <div className="mb-2 text-xs font-medium text-white/75">{label}</div>
-      <div
-        className={cn(
-          "flex items-center gap-3 rounded-2xl border px-4 py-3 backdrop-blur-xl",
-          "bg-white/10 border-white/15",
-          "focus-within:border-white/35 focus-within:bg-white/15 transition",
-          error && "border-red-500/35",
-          className
-        )}
-      >
-        <span className="text-white/70">{icon}</span>
-        <input
-          ref={ref}
-          type={show ? "text" : "password"}
-          className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
-          {...props}
-        />
-        <button
-          type="button"
-          onClick={onToggle}
-          className="rounded-xl border border-white/15 bg-white/10 p-2 text-white/80 hover:bg-white/15"
-          aria-label="Parolni ko‘rsatish/yashirish"
-        >
-          {rightIcon}
-        </button>
-      </div>
-      {error && <div className="mt-1 text-xs text-red-200">{error}</div>}
+    <div className="h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 flex items-center gap-3
+                    focus-within:border-white/25 transition">
+      <span className="shrink-0">{icon}</span>
+      <input
+        className="h-full w-full bg-transparent text-white outline-none placeholder:text-white/45"
+        placeholder={placeholder}
+        value={value}
+        type={type}
+        autoComplete={autoComplete}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+      />
     </div>
-  );
-});
+  )
+}
+
+function MiniCard({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-2xl border border-white/12 bg-white/8 backdrop-blur-xl p-4">
+      <div className="text-white font-semibold">{title}</div>
+      <div className="mt-1 text-white/65 text-sm">{desc}</div>
+    </div>
+  )
+}

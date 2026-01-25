@@ -1,52 +1,110 @@
-import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
-import logo from "@/assets/images/Tripzy.webp";
-import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react"
+import { Link, NavLink, useNavigate } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
+import { Menu, X, LogOut, UserCircle2 } from "lucide-react"
+import logo from "@/assets/images/Tripzy.webp"
+import { Button } from "@/components/ui/button"
+
+// import { http } from "@/shared/api/http" // ✅ backendga ulaganda kerak bo‘ladi
 
 const navLinks = [
   { to: "/about", label: "Biz haqimizda" },
   { to: "/services", label: "Xizmatlarimiz" },
   { to: "/flights", label: "Reyslar" },
   { to: "/contact", label: "Contact" },
-];
+]
 
 const menuVariants = {
   closed: { opacity: 0, y: -12, scale: 0.98 },
   open: { opacity: 1, y: 0, scale: 1 },
-};
+}
 
 const listVariants = {
   closed: { transition: { staggerChildren: 0.04, staggerDirection: -1 } },
   open: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
-};
+}
 
 const itemVariants = {
   closed: { opacity: 0, y: -8, filter: "blur(6px)" },
   open: { opacity: 1, y: 0, filter: "blur(0px)" },
-};
+}
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
 
+  // ✅ Token kuzatish (demo)
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"))
+
+  const authed = useMemo(() => !!token, [token])
+
+  // ✅ boshqa joyda login/logout bo‘lsa ham navbar yangilansin
+  useEffect(() => {
+    const onStorage = () => setToken(localStorage.getItem("access_token"))
+    window.addEventListener("storage", onStorage)
+
+    // ixtiyoriy: shu tab ichida ham yangilanishi uchun custom event
+    const onAuth = () => setToken(localStorage.getItem("access_token"))
+    window.addEventListener("tripzy-auth", onAuth as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", onStorage)
+      window.removeEventListener("tripzy-auth", onAuth as EventListener)
+    }
+  }, [])
+
+  // ESC
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setOpen(false)
     }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
+  // mobile open bo‘lsa scroll lock
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    document.body.style.overflow = open ? "hidden" : ""
     return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+      document.body.style.overflow = ""
+    }
+  }, [open])
+
+  const logout = async () => {
+    // ✅ DEMO logout
+    localStorage.removeItem("access_token")
+    setToken(null)
+    setOpen(false)
+
+    // ✅ BACKENDGA ULANDA:
+    // 1) Agar cookie/session bo‘lsa:
+    // await http.post("/auth/logout")
+    //
+    // 2) Agar JWT bo‘lsa:
+    // refresh token revoke endpoint bo‘lishi mumkin:
+    // await http.post("/auth/logout", { refresh: localStorage.getItem("refresh_token") })
+    // localStorage.removeItem("refresh_token")
+    //
+    // Har holda access_token o‘chiriladi:
+    // localStorage.removeItem("access_token")
+
+    navigate("/register")
+  }
+
+  const goAuth = () => {
+    setOpen(false)
+    navigate("/register")
+  }
+
+  const goProfile = () => {
+    setOpen(false)
+    // ✅ hozircha profile page yo‘q — keyin /profile qilamiz
+    navigate("/profile")
+
+  }
 
   return (
-    <header className="w-full flex justify-center pt-5 px-4 ">
+    <header className="w-full flex justify-center pt-5 px-4">
       <motion.nav
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,13 +145,33 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop Register */}
-          <div className="hidden md:block">
-            <Link to="/register">
-              <Button className="rounded-full h-10 w-40 text-h1 cursor-pointer bg-white/20 text-white border border-white/25 hover:bg-white/30 px-6">
-                Register
+          {/* ✅ Desktop Auth Area */}
+          <div className="hidden md:flex items-center gap-2">
+            {!authed ? (
+              <Button
+                onClick={goAuth}
+                className="rounded-full h-10 w-40 text-h1 cursor-pointer bg-white/20 text-white border border-white/25 hover:bg-white/30 px-6"
+              >
+                Register / Login
               </Button>
-            </Link>
+            ) : (
+              <>
+                <Button
+                  onClick={goProfile}
+                  className="rounded-full h-10 px-5 bg-white/10 text-white border border-white/20 hover:bg-white/15"
+                >
+                  <UserCircle2 className="mr-2" size={18} />
+                  Profile
+                </Button>
+                <Button
+                  onClick={logout}
+                  className="rounded-full h-10 px-5 bg-white/10 text-white border border-white/20 hover:bg-white/15"
+                >
+                  <LogOut className="mr-2" size={18} />
+                  Logout
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Toggle */}
@@ -171,13 +249,33 @@ export default function Navbar() {
                     </motion.div>
                   ))}
 
-                  {/* ✅ Mobile Register (Link bilan) */}
-                  <motion.div variants={itemVariants} className="pt-2">
-                    <Link to="/register" onClick={() => setOpen(false)}>
-                      <Button className="w-full rounded-xl bg-blue-400 text-white hover:opacity-90 py-6">
-                        Register
+                  {/* ✅ Mobile Auth buttons */}
+                  <motion.div variants={itemVariants} className="pt-2 space-y-2">
+                    {!authed ? (
+                      <Button
+                        onClick={goAuth}
+                        className="w-full rounded-xl bg-blue-400 text-white hover:opacity-90 py-6"
+                      >
+                        Register / Login
                       </Button>
-                    </Link>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={goProfile}
+                          className="w-full rounded-xl bg-white/10 text-white border border-white/20 hover:bg-white/15 py-6"
+                        >
+                          <UserCircle2 className="mr-2" size={18} />
+                          Profile
+                        </Button>
+                        <Button
+                          onClick={logout}
+                          className="w-full rounded-xl bg-white/10 text-white border border-white/20 hover:bg-white/15 py-6"
+                        >
+                          <LogOut className="mr-2" size={18} />
+                          Logout
+                        </Button>
+                      </>
+                    )}
                   </motion.div>
                 </motion.div>
               </motion.div>
@@ -186,5 +284,5 @@ export default function Navbar() {
         </AnimatePresence>
       </motion.nav>
     </header>
-  );
+  )
 }

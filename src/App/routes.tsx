@@ -1,4 +1,3 @@
-// src/App/routes.tsx
 import { createBrowserRouter, Navigate } from "react-router-dom"
 import Layout from "@/pages/Layout"
 
@@ -10,6 +9,8 @@ import Services from "@/pages/Services"
 import Contact from "@/pages/Contact"
 import FAQ from "@/pages/FAQ"
 import RegisterPage from "@/pages/auth/RegisterPage"
+import Profile from "@/pages/Profile"
+import ProtectedRoute from "@/pages/auth/ProtectedRoute"
 import NotFound from "@/pages/NotFound"
 
 export const router = createBrowserRouter([
@@ -27,8 +28,16 @@ export const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "faq", element: <FAQ /> },
 
-      // 🔐 Auth (hozircha public)
+      // 🔐 Auth (public)
       { path: "register", element: <RegisterPage /> },
+
+      // ✅ Protected group
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: "profile", element: <Profile /> },
+        ],
+      },
 
       // ❌ 404
       { path: "404", element: <NotFound /> },

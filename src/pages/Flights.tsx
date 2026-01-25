@@ -1,23 +1,69 @@
 import { useEffect, useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-
-type Flight = {
-  id: string
-  from: string
-  to: string
-  airline: string
-  depart: string
-  arrive: string
-  durationMin: number
-  price: number
-  baggage?: string
-}
+import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
+// import { http } from "@/shared/api/http"
 
 const MOCK: Flight[] = [
-  { id: "1", from: "TAS", to: "IST", airline: "Turkish Airlines", depart: "09:40", arrive: "12:20", durationMin: 280, price: 220, baggage: "20kg" },
-  { id: "2", from: "TAS", to: "DXB", airline: "FlyDubai", depart: "14:10", arrive: "17:40", durationMin: 210, price: 260, baggage: "25kg" },
-  { id: "3", from: "TAS", to: "BKK", airline: "Emirates", depart: "22:00", arrive: "08:10", durationMin: 610, price: 640, baggage: "30kg" },
-  { id: "4", from: "TAS", to: "SAW", airline: "Pegasus", depart: "05:30", arrive: "08:55", durationMin: 205, price: 170, baggage: "10kg" },
+  {
+    id: "1",
+    from: "TAS",
+    to: "IST",
+    airline: "Turkish Airlines",
+    depart: "09:40",
+    arrive: "12:20",
+    durationMin: 280,
+    price: 220,
+    baggage: "20kg",
+    cabin: "Economy",
+    refundable: true,
+    services: ["meal", "support"],
+    flightNo: "TK-369",
+  },
+  {
+    id: "2",
+    from: "TAS",
+    to: "DXB",
+    airline: "FlyDubai",
+    depart: "14:10",
+    arrive: "17:40",
+    durationMin: 210,
+    price: 260,
+    baggage: "25kg",
+    cabin: "Business",
+    refundable: true,
+    services: ["wifi", "meal", "priority", "support"],
+    flightNo: "FZ-194",
+  },
+  {
+    id: "3",
+    from: "TAS",
+    to: "BKK",
+    airline: "Emirates",
+    depart: "22:00",
+    arrive: "08:10",
+    durationMin: 610,
+    price: 640,
+    baggage: "30kg",
+    cabin: "Economy",
+    refundable: false,
+    services: ["wifi", "meal", "support"],
+    flightNo: "EK-231",
+  },
+  {
+    id: "4",
+    from: "TAS",
+    to: "SAW",
+    airline: "Pegasus",
+    depart: "05:30",
+    arrive: "08:55",
+    durationMin: 205,
+    price: 170,
+    baggage: "10kg",
+    cabin: "Economy",
+    refundable: false,
+    services: ["support"],
+    flightNo: "PC-741",
+  },
 ]
 
 const fmtDuration = (mins: number) => {
@@ -31,7 +77,7 @@ export default function Flights() {
 
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
-  const [date, setDate] = useState("") // hozircha faqat ko‘rsatamiz
+  const [date, setDate] = useState("")
   const [pax, setPax] = useState(1)
 
   const [airline, setAirline] = useState("")
@@ -41,7 +87,9 @@ export default function Flights() {
   const [items, setItems] = useState<Flight[]>(MOCK)
   const [loading, setLoading] = useState(false)
 
-  // ✅ HERO’dan kelgan query paramsni o‘qib to‘ldiramiz
+  const [open, setOpen] = useState(false)
+  const [selected, setSelected] = useState<Flight | null>(null)
+
   useEffect(() => {
     const qFrom = sp.get("from") ?? ""
     const qTo = sp.get("to") ?? ""
@@ -53,6 +101,14 @@ export default function Flights() {
     if (qDate) setDate(qDate)
     if (!Number.isNaN(qPax) && qPax >= 1) setPax(qPax)
   }, [sp])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   const filtered = useMemo(() => {
     let list = items.filter((f) => {
@@ -67,7 +123,7 @@ export default function Flights() {
     if (sort === "fast") list = [...list].sort((a, b) => a.durationMin - b.durationMin)
     if (sort === "best") {
       list = [...list].sort(
-        (a, b) => (a.price * 0.7 + a.durationMin * 0.3) - (b.price * 0.7 + b.durationMin * 0.3)
+        (a, b) => a.price * 0.7 + a.durationMin * 0.3 - (b.price * 0.7 + b.durationMin * 0.3)
       )
     }
 
@@ -77,14 +133,36 @@ export default function Flights() {
   const onSearch = async () => {
     setLoading(true)
     try {
-      // TODO: backend ulash:
-      // const res = await http.post("/api/flights/search", { from, to, date, pax, airline, maxPrice })
+      /**
+       * ✅ BACKEND ULASH JOYI
+       * Endpoint: POST /api/flights/search
+       * Body: { from, to, date, pax, airline, maxPrice }
+       * Response: { items: Flight[] }
+       */
+      // const res = await http.post<{ items: Flight[] }>("/flights/search", {
+      //   from, to, date, pax, airline, maxPrice,
+      // })
       // setItems(res.data.items)
 
-      setItems(MOCK)
+      setItems(MOCK) // hozircha demo
     } finally {
       setLoading(false)
     }
+  }
+
+  const onPick = (f: Flight) => {
+    setSelected(f)
+    setOpen(true)
+  }
+
+  const onBook = (f: Flight) => {
+    setOpen(false)
+    /**
+     * ✅ KEYIN BOOKING ULASH:
+     * POST /api/bookings
+     * Body: { flightId: f.id, pax, date, customerInfo... }
+     */
+    alert(`Booking keyin backendga ulanadi ✅ (${f.from} → ${f.to})`)
   }
 
   return (
@@ -119,24 +197,47 @@ export default function Flights() {
 
         <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="From (TAS)" value={from} onChange={(e) => setFrom(e.target.value)} />
-            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="To (IST)" value={to} onChange={(e) => setTo(e.target.value)} />
-            <input type="date" className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              value={date} onChange={(e) => setDate(e.target.value)} />
-            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="Airline" value={airline} onChange={(e) => setAirline(e.target.value)} />
-            <input className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="Max $" inputMode="numeric" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")} />
-            <button onClick={onSearch} disabled={loading}
-              className="h-12 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition disabled:opacity-60">
+            <input
+              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="From (TAS)"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+            />
+            <input
+              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="To (IST)"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+            />
+            <input
+              type="date"
+              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <input
+              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="Airline"
+              value={airline}
+              onChange={(e) => setAirline(e.target.value)}
+            />
+            <input
+              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="Max $"
+              inputMode="numeric"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
+            />
+            <button
+              onClick={onSearch}
+              disabled={loading}
+              className="h-12 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition disabled:opacity-60"
+            >
               {loading ? "..." : "Qidirish"}
             </button>
           </div>
 
           <div className="mt-3 text-xs text-white/55">
-            {/* TODO: Backend ulansa real natija + pagination */}
             * Keyin real natija, pagination va “booking” oqimi qo‘shiladi.
           </div>
         </div>
@@ -161,7 +262,7 @@ export default function Flights() {
 
                   <button
                     className="h-12 px-6 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition"
-                    onClick={() => alert("Booking keyin backendga ulanadi ✅")}
+                    onClick={() => onPick(f)}
                   >
                     Tanlash
                   </button>
@@ -173,6 +274,15 @@ export default function Flights() {
           {filtered.length === 0 && <div className="text-center text-white/70 py-10">Hech narsa topilmadi.</div>}
         </div>
       </div>
+
+      <FlightDetailsModal
+        open={open}
+        onClose={() => setOpen(false)}
+        flight={selected}
+        pax={pax}
+        date={date}
+        onBook={onBook}
+      />
     </section>
   )
 }
