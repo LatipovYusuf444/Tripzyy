@@ -18,7 +18,7 @@ export default function Napravleniya() {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<DestinationItem | null>(null)
 
-  const [destinations, setDestinations] =
+  const [destinations] =
     useState<DestinationItem[]>(DEMO_DESTINATIONS)
 
   const visibleItems = useMemo(
