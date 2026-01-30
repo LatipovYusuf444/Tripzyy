@@ -2,7 +2,7 @@ import axios from "axios"
 
 export const http = axios.create({
   // ✅ VITE_ bo‘lishi shart
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://b2b.skyup.uz/api",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 })
