@@ -26,7 +26,6 @@ export default function FlightSearch() {
     e.preventDefault()
     if (!isValid) return
 
-    // ✅ Query params bilan Flights pagega o‘tamiz
     const q = new URLSearchParams({
       from: form.from,
       to: form.to,
@@ -73,7 +72,6 @@ export default function FlightSearch() {
 
       <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
         <div className="text-xs text-white/60">
-          {/* TODO: Backend ulash: airport autocomplete + cabin type + return date */}
           * Keyin aeroport autocomplete (TAS/IST/DXB) va qaytish sanasi qo‘shiladi.
         </div>
 
@@ -87,13 +85,13 @@ export default function FlightSearch() {
             >
               −
             </button>
-            <div className="h-10 px-4 flex items-center justify-center min-w-[48px]">
-              {form.pax}
+            <div className="h-10 px-4 flex items-center justify-center min-w-[70px] font-semibold">
+              {form.pax} ta
             </div>
             <button
               type="button"
               className="h-10 w-10 hover:bg-white/10 transition"
-              onClick={() => setForm((p) => ({ ...p, pax: p.pax + 1 }))}
+              onClick={() => setForm((p) => ({ ...p, pax: Math.min(9, p.pax + 1) }))}
             >
               +
             </button>

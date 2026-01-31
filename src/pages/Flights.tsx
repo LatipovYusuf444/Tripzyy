@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, useNavigate } from "react-router-dom"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
+import { bookingCart } from "@/shared/store/bookingCart"
+
 // import { http } from "@/shared/api/http"
 
 const MOCK: Flight[] = [
@@ -74,6 +76,7 @@ const fmtDuration = (mins: number) => {
 
 export default function Flights() {
   const [sp] = useSearchParams()
+  const navigate = useNavigate() // ✅ SHART
 
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
@@ -133,18 +136,8 @@ export default function Flights() {
   const onSearch = async () => {
     setLoading(true)
     try {
-      /**
-       * ✅ BACKEND ULASH JOYI
-       * Endpoint: POST /api/flights/search
-       * Body: { from, to, date, pax, airline, maxPrice }
-       * Response: { items: Flight[] }
-       */
-      // const res = await http.post<{ items: Flight[] }>("/flights/search", {
-      //   from, to, date, pax, airline, maxPrice,
-      // })
-      // setItems(res.data.items)
-
-      setItems(MOCK) // hozircha demo
+      // backend ulash keyin
+      setItems(MOCK)
     } finally {
       setLoading(false)
     }
@@ -155,14 +148,22 @@ export default function Flights() {
     setOpen(true)
   }
 
+  // ✅ MUHIM: booking cartga yozamiz va passengers pagega o‘tamiz
   const onBook = (f: Flight) => {
     setOpen(false)
-    /**
-     * ✅ KEYIN BOOKING ULASH:
-     * POST /api/bookings
-     * Body: { flightId: f.id, pax, date, customerInfo... }
-     */
-    alert(`Booking keyin backendga ulanadi ✅ (${f.from} → ${f.to})`)
+
+    const cart = bookingCart.get()
+    bookingCart.set({
+      ...cart,
+      flightId: f.id,
+      route: `${f.from} → ${f.to}`,
+      date,
+      pax,
+      // passengers oldin kiritilgan bo‘lsa saqlanib qoladi
+      passengers: cart.passengers ?? [],
+    })
+
+    navigate("/passengers")
   }
 
   return (
@@ -186,7 +187,9 @@ export default function Flights() {
                 onClick={() => setSort(k)}
                 className={[
                   "h-10 px-4 rounded-2xl border text-sm font-semibold transition",
-                  sort === k ? "bg-white/10 border-white/20" : "bg-white/5 border-white/10 hover:bg-white/10",
+                  sort === k
+                    ? "bg-white/10 border-white/20"
+                    : "bg-white/5 border-white/10 hover:bg-white/10",
                 ].join(" ")}
               >
                 {k === "best" ? "Best" : k === "cheap" ? "Cheap" : "Fast"}
@@ -244,11 +247,16 @@ export default function Flights() {
 
         <div className="mt-8 space-y-4">
           {filtered.map((f) => (
-            <div key={f.id} className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
+            <div
+              key={f.id}
+              className="rounded-3xl border border-white/10 bg-white/5 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
+            >
               <div className="flex items-center justify-between flex-wrap gap-5">
                 <div className="min-w-[260px]">
                   <div className="text-white/70 text-sm">{f.airline}</div>
-                  <div className="mt-1 text-2xl font-bold">{f.from} → {f.to}</div>
+                  <div className="mt-1 text-2xl font-bold">
+                    {f.from} → {f.to}
+                  </div>
                   <div className="mt-2 text-white/70 text-sm">
                     {f.depart} — {f.arrive} · {fmtDuration(f.durationMin)} · {f.baggage ?? "—"}
                   </div>
@@ -271,7 +279,9 @@ export default function Flights() {
             </div>
           ))}
 
-          {filtered.length === 0 && <div className="text-center text-white/70 py-10">Hech narsa topilmadi.</div>}
+          {filtered.length === 0 && (
+            <div className="text-center text-white/70 py-10">Hech narsa topilmadi.</div>
+          )}
         </div>
       </div>
 

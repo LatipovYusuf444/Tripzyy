@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useState } from "react"
-import { Link, NavLink, useNavigate } from "react-router-dom"
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, LogOut, UserCircle2 } from "lucide-react"
+import { Menu, X, LogOut, UserCircle2, Users } from "lucide-react"
 import logo from "@/assets/images/Tripzy.webp"
 import { Button } from "@/components/ui/button"
+import { bookingCart } from "@/shared/store/bookingCart"
 
-// import { http } from "@/shared/api/http" // ✅ backendga ulaganda kerak bo‘ladi
+// import { http } from "@/shared/api/http"
 
 const navLinks = [
   { to: "/about", label: "Biz haqimizda" },
   { to: "/services", label: "Xizmatlarimiz" },
   { to: "/flights", label: "Reyslar" },
+
+  // ✅ NEW: Passengers (karzinka)
+  { to: "/passengers", label: "Yo‘lovchilar", icon: Users },
+
   { to: "/contact", label: "Contact" },
 ]
 
@@ -31,25 +36,41 @@ const itemVariants = {
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
 
   // ✅ Token kuzatish (demo)
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("access_token"))
-
   const authed = useMemo(() => !!token, [token])
+
+  // ✅ Passengers count (karzinka badge)
+  const [paxCount, setPaxCount] = useState<number>(() => bookingCart.get().passengers.length)
 
   // ✅ boshqa joyda login/logout bo‘lsa ham navbar yangilansin
   useEffect(() => {
     const onStorage = () => setToken(localStorage.getItem("access_token"))
     window.addEventListener("storage", onStorage)
 
-    // ixtiyoriy: shu tab ichida ham yangilanishi uchun custom event
     const onAuth = () => setToken(localStorage.getItem("access_token"))
     window.addEventListener("tripzy-auth", onAuth as EventListener)
 
     return () => {
       window.removeEventListener("storage", onStorage)
       window.removeEventListener("tripzy-auth", onAuth as EventListener)
+    }
+  }, [])
+
+  // ✅ Cart o‘zgarishini kuzatish (badge yangilansin)
+  useEffect(() => {
+    const read = () => setPaxCount(bookingCart.get().passengers.length)
+
+    read()
+    window.addEventListener("storage", read)
+    window.addEventListener("booking_cart_changed", read as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", read)
+      window.removeEventListener("booking_cart_changed", read as EventListener)
     }
   }, [])
 
@@ -71,23 +92,9 @@ export default function Navbar() {
   }, [open])
 
   const logout = async () => {
-    // ✅ DEMO logout
     localStorage.removeItem("access_token")
     setToken(null)
     setOpen(false)
-
-    // ✅ BACKENDGA ULANDA:
-    // 1) Agar cookie/session bo‘lsa:
-    // await http.post("/auth/logout")
-    //
-    // 2) Agar JWT bo‘lsa:
-    // refresh token revoke endpoint bo‘lishi mumkin:
-    // await http.post("/auth/logout", { refresh: localStorage.getItem("refresh_token") })
-    // localStorage.removeItem("refresh_token")
-    //
-    // Har holda access_token o‘chiriladi:
-    // localStorage.removeItem("access_token")
-
     navigate("/register")
   }
 
@@ -98,10 +105,10 @@ export default function Navbar() {
 
   const goProfile = () => {
     setOpen(false)
-    // ✅ hozircha profile page yo‘q — keyin /profile qilamiz
     navigate("/profile")
-
   }
+
+  const isPassengers = location.pathname.startsWith("/passengers")
 
   return (
     <header className="w-full flex justify-center pt-5 px-4">
@@ -131,16 +138,28 @@ export default function Navbar() {
             <img src={logo} alt="Tripzy" className="h-15 sm:h-20 w-28" />
           </Link>
 
+          {/* ✅ Desktop menu */}
           <div className="hidden md:flex items-center gap-8 fonts font-semibold text-white text-xl text-h1">
             {navLinks.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `transition hover:text-blue-200 ${isActive ? "text-blue-200" : "text-white/90"}`
+                  `relative transition hover:text-blue-200 ${
+                    isActive ? "text-blue-200" : "text-white/90"
+                  }`
                 }
               >
-                {l.label}
+                {/* ✅ Passengers badge desktop */}
+                <span className="inline-flex items-center gap-2">
+                  {"icon" in l && l.icon ? <l.icon size={18} /> : null}
+                  {l.label}
+                  {l.to === "/passengers" && paxCount > 0 && (
+                    <span className="ml-1 min-w-[22px] h-[22px] px-2 rounded-full bg-[#FF7A00] text-white text-xs grid place-items-center">
+                      {paxCount}
+                    </span>
+                  )}
+                </span>
               </NavLink>
             ))}
           </div>
@@ -239,12 +258,26 @@ export default function Navbar() {
                         to={l.to}
                         onClick={() => setOpen(false)}
                         className={({ isActive }) =>
-                          `block px-4 py-3 rounded-xl fonts font-semibold
-                           ${isActive ? "bg-white/10 text-blue-200" : "text-white/90 hover:bg-white/10"}
+                          `flex items-center justify-between px-4 py-3 rounded-xl fonts font-semibold
+                           ${
+                             isActive
+                               ? "bg-white/10 text-blue-200"
+                               : "text-white/90 hover:bg-white/10"
+                           }
                            transition`
                         }
                       >
-                        {l.label}
+                        <span className="inline-flex items-center gap-2">
+                          {"icon" in l && l.icon ? <l.icon size={18} /> : null}
+                          {l.label}
+                        </span>
+
+                        {/* ✅ Passengers badge mobile */}
+                        {l.to === "/passengers" && paxCount > 0 && (
+                          <span className="min-w-[22px] h-[22px] px-2 rounded-full bg-[#FF7A00] text-white text-xs grid place-items-center">
+                            {paxCount}
+                          </span>
+                        )}
                       </NavLink>
                     </motion.div>
                   ))}
@@ -282,6 +315,11 @@ export default function Navbar() {
             </>
           )}
         </AnimatePresence>
+
+        {/* ✅ optional: kichik active indicator (passengers uchun) */}
+        {isPassengers && (
+          <div className="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-[140px] bg-[#FF7A00]/80" />
+        )}
       </motion.nav>
     </header>
   )

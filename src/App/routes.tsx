@@ -12,34 +12,32 @@ import RegisterPage from "@/pages/auth/RegisterPage"
 import Profile from "@/pages/Profile"
 import ProtectedRoute from "@/pages/auth/ProtectedRoute"
 import NotFound from "@/pages/NotFound"
+import PassengersPage from "@/pages/Passengers"
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      // 🏠 Home
       { index: true, element: <Home /> },
 
-      // 📄 Public pages
       { path: "about", element: <About /> },
       { path: "services", element: <Services /> },
       { path: "flights", element: <Flights /> },
+
+      // ✅ NEW: Passengers (karzinka)
+      { path: "passengers", element: <PassengersPage /> },
+
       { path: "contact", element: <Contact /> },
       { path: "faq", element: <FAQ /> },
 
-      // 🔐 Auth (public)
       { path: "register", element: <RegisterPage /> },
 
-      // ✅ Protected group
       {
         element: <ProtectedRoute />,
-        children: [
-          { path: "profile", element: <Profile /> },
-        ],
+        children: [{ path: "profile", element: <Profile /> }],
       },
 
-      // ❌ 404
       { path: "404", element: <NotFound /> },
       { path: "*", element: <Navigate to="/404" replace /> },
     ],
