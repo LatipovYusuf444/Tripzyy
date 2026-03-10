@@ -89,6 +89,12 @@ export default function PassengersPage() {
     refresh()
   }
 
+  const onClearCart = () => {
+    bookingCart.clear()
+    refresh()
+    setStep(1)
+  }
+
   const canSave =
     draft.firstName?.trim() &&
     draft.lastName?.trim() &&
@@ -148,6 +154,19 @@ export default function PassengersPage() {
               <Pill icon={Users2} label="Bilet soni" value={`${pax} ta`} />
             </div>
           </div>
+
+          <button
+            onClick={onClearCart}
+            className="
+              h-11 px-4 rounded-2xl
+              border border-white/15 bg-white/10
+              text-white/85 font-semibold
+              hover:bg-white/15 transition
+            "
+            title="Karzinkani tozalash"
+          >
+            Karzinkani tozalash
+          </button>
         </motion.div>
 
         <motion.div
