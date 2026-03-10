@@ -1,10 +1,19 @@
-import { motion } from "framer-motion"
+﻿import { motion } from "framer-motion"
 import { Mail, Phone, MapPin, Clock } from "lucide-react"
+
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0 },
+}
 
 export default function Contact() {
   return (
     <section className="relative overflow-hidden pt-20">
-
       <div className="relative mx-auto max-w-[1200px] px-5 py-14 md:py-16">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -12,20 +21,22 @@ export default function Contact() {
           transition={{ duration: 0.45 }}
           className="text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white">
-            Aloqa
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white">Aloqa</h1>
           <p className="mt-4 text-white/70 max-w-3xl mx-auto text-lg">
             Savollaringiz bormi? Biz 24/7 yordam beramiz. Forma orqali yozing yoki telefon qiling.
           </p>
         </motion.div>
 
-        <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
           {/* form */}
           <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            variants={item}
             transition={{ duration: 0.45 }}
             className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 md:p-8"
           >
@@ -37,7 +48,7 @@ export default function Contact() {
                 e.preventDefault()
                 // TODO: backend ulash:
                 // await http.post("/contact", { name, phone, message })
-                alert("Demo ✅ Keyin backendga ulanadi")
+                alert("Demo — Keyin backendga ulanadi")
               }}
             >
               <input
@@ -74,12 +85,16 @@ export default function Contact() {
             <InfoCard icon={MapPin} title="Manzil" value="Toshkent, Uzbekistan (demo)" />
             <InfoCard icon={Clock} title="Ish vaqti" value="09:00 — 23:00" />
 
-            <div className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 text-white/70 text-sm">
+            <motion.div
+              variants={item}
+              transition={{ duration: 0.35 }}
+              className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 text-white/70 text-sm"
+            >
               {/* TODO */}
-              TODO: keyin Google Map embed va real office location qo‘shamiz.
-            </div>
+              TODO: keyin Google Map embed va real office location qo'shamiz.
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+﻿import { useEffect, useMemo, useState } from "react"
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, LogOut, UserCircle2, Users } from "lucide-react"
@@ -12,10 +12,7 @@ const navLinks = [
   { to: "/about", label: "Biz haqimizda" },
   { to: "/services", label: "Xizmatlarimiz" },
   { to: "/flights", label: "Reyslar" },
-
-  // ✅ NEW: Passengers (karzinka)
-  { to: "/passengers", label: "Yo‘lovchilar", icon: Users },
-
+  { to: "/passengers", label: "Yo'lovchilar", icon: Users },
   { to: "/contact", label: "Aloqa" },
 ]
 
@@ -46,7 +43,7 @@ export default function Navbar() {
   // ✅ Passengers count (karzinka badge)
   const [paxCount, setPaxCount] = useState<number>(() => bookingCart.get().passengers.length)
 
-  // ✅ boshqa joyda login/logout bo‘lsa ham navbar yangilansin
+  // ✅ boshqa joyda login/logout bo'lsa ham navbar yangilansin
   useEffect(() => {
     const onStorage = () => setToken(localStorage.getItem("access_token"))
     window.addEventListener("storage", onStorage)
@@ -60,7 +57,7 @@ export default function Navbar() {
     }
   }, [])
 
-  // ✅ Cart o‘zgarishini kuzatish (badge yangilansin)
+  // ✅ Cart o'zgarishini kuzatish (badge yangilansin)
   useEffect(() => {
     const read = () => setPaxCount(bookingCart.get().passengers.length)
 
@@ -83,7 +80,7 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
-  // mobile open bo‘lsa scroll lock
+  // mobile open bo'lsa scroll lock
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : ""
     return () => {
@@ -110,9 +107,6 @@ export default function Navbar() {
 
   const isPassengers = location.pathname.startsWith("/passengers")
 
-  const isHome = location.pathname === "/";
-  const isAbout = location.pathname.startsWith("/about");
-
   return (
     <header className="w-full flex justify-center pt-6 px-4">
       <motion.nav
@@ -120,26 +114,15 @@ export default function Navbar() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
         className={[
-          "relative overflow-hidden w-full max-w-[1200px] rounded-3xl sm:rounded-full px-5 sm:px-8 py-3 border shadow-[0_14px_40px_rgba(0,0,0,0.28)] md:shadow-[0_18px_50px_rgba(0,0,0,0.35)]",
-          isHome
-            ? "bg-[#1b1f2a]/92 md:bg-[#0b0d12]/85 border-white/20 backdrop-blur-xl"
-            : isAbout
-              ? "bg-[#1b1f2a]/85 border-white/15 backdrop-blur-xl"
-              : "bg-white/30 border-white/30 backdrop-blur-xl",
+          "relative overflow-hidden w-full max-w-[1200px] rounded-[28px] sm:rounded-full px-5 sm:px-8 py-3",
+          "border border-white/10 bg-[#0b0d12]/75 backdrop-blur-2xl",
+          "shadow-[0_18px_60px_rgba(0,0,0,0.45)]",
         ].join(" ")}
       >
-        <div
-          className={[
-            "pointer-events-none absolute inset-0",
-            isHome
-              ? "bg-gradient-to-r from-white/10 via-transparent to-white/10"
-              : isAbout
-                ? "bg-gradient-to-r from-white/10 via-transparent to-white/10"
-                : "bg-gradient-to-r from-white/10 via-transparent to-white/10",
-          ].join(" ")}
-        />
+        <div className="pointer-events-none absolute -inset-1 bg-gradient-to-r from-[#7A2E4E]/40 via-transparent to-[#E7B26D]/30 blur-2xl opacity-70" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/10" />
         <motion.div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
           initial={{ x: "-140%" }}
           animate={{ x: "140%" }}
           transition={{ repeat: Infinity, duration: 7, ease: "linear" }}
@@ -151,18 +134,23 @@ export default function Navbar() {
           </Link>
 
           {/* ✅ Desktop menu */}
-          <div className={`hidden md:flex items-center gap-7 font-semibold text-lg text-white`}>
+          <div className="hidden md:flex items-center gap-6 text-white/80">
             {navLinks.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
                 className={({ isActive }) =>
-                  `relative transition ${isHome ? "hover:text-white" : "hover:text-white"} ${
-                    isActive ? "text-white" : "text-white/90"
-                  }`
+                  [
+                    "relative px-2 py-1 text-sm lg:text-base font-semibold transition",
+                    "after:content-[''] after:absolute after:left-0 after:-bottom-2 after:h-[2px] after:w-full",
+                    "after:rounded-full after:bg-gradient-to-r after:from-[#E7B26D] after:via-[#D99AAE] after:to-[#7A2E4E]",
+                    "after:transition after:duration-300 after:origin-left",
+                    isActive
+                      ? "text-white after:scale-x-100"
+                      : "text-white/70 hover:text-white after:scale-x-0 hover:after:scale-x-100",
+                  ].join(" ")
                 }
               >
-                {/* ✅ Passengers badge desktop */}
                 <span className="inline-flex items-center gap-2">
                   {"icon" in l && l.icon ? <l.icon size={18} /> : null}
                   {l.label}
@@ -181,12 +169,7 @@ export default function Navbar() {
             {!authed ? (
               <Button
                 onClick={goAuth}
-                className={[
-                  "rounded-full h-11 w-40 text-sm font-semibold cursor-pointer px-6 transition",
-                  isHome
-                    ? "bg-white text-[#0b0d12] shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:bg-white/90"
-                    : "bg-white/90 text-[#0b0d12] shadow-[0_16px_40px_rgba(0,0,0,0.25)] hover:bg-white",
-                ].join(" ")}
+                className="rounded-full h-11 px-6 text-sm font-semibold bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#C08A5C] text-white shadow-[0_18px_40px_rgba(138,58,90,0.45)] hover:brightness-110"
               >
                 Register / Login
               </Button>
@@ -194,24 +177,14 @@ export default function Navbar() {
               <>
                 <Button
                   onClick={goProfile}
-                  className={[
-                    "rounded-full h-11 px-5 text-sm border",
-                    isHome
-                      ? "bg-white/90 text-[#0b0d12] border-white/40 hover:bg-white"
-                      : "bg-white/90 text-[#0b0d12] border-white/30 hover:bg-white",
-                  ].join(" ")}
+                  className="rounded-full h-11 px-5 text-sm border border-white/15 bg-white/10 text-white hover:bg-white/15"
                 >
                   <UserCircle2 className="mr-2" size={18} />
                   Profile
                 </Button>
                 <Button
                   onClick={logout}
-                  className={[
-                    "rounded-full h-11 px-5 text-sm border",
-                    isHome
-                      ? "bg-white/90 text-[#0b0d12] border-white/40 hover:bg-white"
-                      : "bg-white/90 text-[#0b0d12] border-white/30 hover:bg-white",
-                  ].join(" ")}
+                  className="rounded-full h-11 px-5 text-sm border border-white/15 bg-white/10 text-white hover:bg-white/15"
                 >
                   <LogOut className="mr-2" size={18} />
                   Logout
@@ -225,12 +198,7 @@ export default function Navbar() {
             type="button"
             aria-label="Open menu"
             onClick={() => setOpen((p) => !p)}
-            className={[
-              "md:hidden inline-flex items-center justify-center rounded-xl w-9 h-9 transition",
-              isHome
-                ? "border border-[#c9a76b]/40 bg-white/60 text-[#2b2a26] hover:bg-white/70"
-                : "border border-white/20 bg-white/20 text-white hover:bg-white/20",
-            ].join(" ")}
+            className="md:hidden inline-flex items-center justify-center rounded-xl w-9 h-9 border border-white/15 bg-white/10 text-white hover:bg-white/15 transition"
           >
             {open ? <X /> : <Menu />}
           </button>
@@ -252,12 +220,7 @@ export default function Navbar() {
 
               {/* Mobile Menu */}
               <motion.div
-                className={[
-                  "md:hidden relative z-50 mt-3 rounded-3xl p-3 border shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl",
-                  isHome
-                    ? "bg-[#1b1f2a]/95 border-white/15"
-                    : "bg-white/90 border-black/10",
-                ].join(" ")}
+                className="md:hidden relative z-50 mt-3 rounded-3xl p-3 border border-white/10 bg-[#0b0d12]/95 shadow-[0_20px_60px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
                 variants={menuVariants}
                 initial="closed"
                 animate="open"
@@ -279,13 +242,9 @@ export default function Navbar() {
                         className={({ isActive }) =>
                           [
                             "flex items-center justify-between px-4 py-3 rounded-2xl font-semibold transition",
-                            isHome
-                              ? isActive
-                                ? "bg-white/15 text-white"
-                                : "text-white/90 hover:bg-white/10"
-                              : isActive
-                                ? "bg-[#f1eef0] text-[#8A3A5A]"
-                                : "text-[#2b2a26] hover:bg-[#f1eef0]",
+                            isActive
+                              ? "bg-white/15 text-white"
+                              : "text-white/85 hover:bg-white/10",
                           ].join(" ")
                         }
                       >
@@ -306,46 +265,31 @@ export default function Navbar() {
 
                   {/* ✅ Mobile Auth buttons */}
                   <motion.div variants={itemVariants} className="pt-2 space-y-2">
-                      {!authed ? (
+                    {!authed ? (
+                      <Button
+                        onClick={goAuth}
+                        className="w-full rounded-2xl py-5 text-sm transition shadow-[0_14px_40px_rgba(0,0,0,0.35)] bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#C08A5C] text-white hover:brightness-110"
+                      >
+                        Register / Login
+                      </Button>
+                    ) : (
+                      <>
                         <Button
-                          onClick={goAuth}
-                          className={[
-                            "w-full rounded-2xl py-5 text-sm transition shadow-[0_14px_40px_rgba(0,0,0,0.35)]",
-                            isHome
-                              ? "bg-white text-[#1b1f2a] hover:bg-white/90"
-                              : "bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] text-white hover:brightness-110",
-                          ].join(" ")}
+                          onClick={goProfile}
+                          className="w-full rounded-2xl py-5 text-sm border border-white/15 bg-white/10 text-white hover:bg-white/15"
                         >
-                          Register / Login
+                          <UserCircle2 className="mr-2" size={16} />
+                          Profile
                         </Button>
-                      ) : (
-                        <>
-                          <Button
-                            onClick={goProfile}
-                            className={[
-                              "w-full rounded-2xl py-5 text-sm border transition",
-                              isHome
-                                ? "bg-white/10 text-white border-white/20 hover:bg-white/15"
-                                : "bg-white text-[#2b2a26] border-black/10 hover:shadow-md",
-                            ].join(" ")}
-                          >
-                            <UserCircle2 className="mr-2" size={16} />
-                            Profile
-                          </Button>
-                          <Button
-                            onClick={logout}
-                            className={[
-                              "w-full rounded-2xl py-5 text-sm border transition",
-                              isHome
-                                ? "bg-white/10 text-white border-white/20 hover:bg-white/15"
-                                : "bg-white text-[#2b2a26] border-black/10 hover:shadow-md",
-                            ].join(" ")}
-                          >
-                            <LogOut className="mr-2" size={16} />
-                            Logout
-                          </Button>
-                        </>
-                      )}
+                        <Button
+                          onClick={logout}
+                          className="w-full rounded-2xl py-5 text-sm border border-white/15 bg-white/10 text-white hover:bg-white/15"
+                        >
+                          <LogOut className="mr-2" size={16} />
+                          Logout
+                        </Button>
+                      </>
+                    )}
                   </motion.div>
                 </motion.div>
               </motion.div>
@@ -353,10 +297,7 @@ export default function Navbar() {
           )}
         </AnimatePresence>
 
-        {/* ✅ optional: kichik active indicator (passengers uchun) */}
-        {isPassengers && (
-          <div className="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-[120px] bg-[#8A3A5A]/80" />
-        )}
+        {/* active indicator olib tashlandi */}
       </motion.nav>
     </header>
   )

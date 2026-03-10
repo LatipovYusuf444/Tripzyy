@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+﻿import { useEffect, useMemo, useState } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
 import { bookingCart } from "@/shared/store/bookingCart"
@@ -76,7 +76,7 @@ const fmtDuration = (mins: number) => {
 
 export default function Flights() {
   const [sp] = useSearchParams()
-  const navigate = useNavigate() // ✅ SHART
+  const navigate = useNavigate()
 
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
@@ -148,7 +148,7 @@ export default function Flights() {
     setOpen(true)
   }
 
-  // ✅ MUHIM: booking cartga yozamiz va passengers pagega o‘tamiz
+  // ✅ MUHIM: booking cartga yozamiz va passengers pagega o'tamiz
   const onBook = (f: Flight) => {
     setOpen(false)
 
@@ -159,7 +159,7 @@ export default function Flights() {
       route: `${f.from} → ${f.to}`,
       date,
       pax,
-      // passengers oldin kiritilgan bo‘lsa saqlanib qoladi
+      // passengers oldin kiritilgan bo'lsa saqlanib qoladi
       passengers: cart.passengers ?? [],
     })
 
@@ -168,13 +168,12 @@ export default function Flights() {
 
   return (
     <section className="relative text-white pt-20">
-
       <div className="relative mx-auto max-w-[1200px] px-5 py-14">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold">Reyslar</h1>
             <p className="mt-3 text-white/70">
-              Sana: <span className="text-white/85">{date || "—"}</span> · Yo‘lovchi:{" "}
+              Sana: <span className="text-white/85">{date || "—"}</span> · Yo'lovchi:{" "}
               <span className="text-white/85">{pax}</span>
             </p>
           </div>
@@ -242,7 +241,7 @@ export default function Flights() {
           </div>
 
           <div className="mt-3 text-xs text-white/55">
-            * Keyin real natija, pagination va “booking” oqimi qo‘shiladi.
+            * Keyin real natija, pagination va "booking" oqimi qo'shiladi.
           </div>
         </div>
 

@@ -13,7 +13,7 @@ import {
   ArrowRight,
   CheckCircle2,
 } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 
 export type FlightOffer = {
   id: string
@@ -78,9 +78,28 @@ export default function DestinationDetailsModal({
       if (onlyRefundable && !o.refundable) return false
       if (onlyBaggage && !/\d+\s*kg/i.test(o.baggage)) return false
       if (cabinFilter !== "all" && o.cabin !== cabinFilter) return false
+
+      const departHour = toHour(o.departTime)
+      const arriveHour = toHour(o.arriveTime)
+      const durationHours = toDurationHours(o.duration)
+
+      if (departHour < departRange[0] || departHour > departRange[1]) return false
+      if (arriveHour < arriveRange[0] || arriveHour > arriveRange[1]) return false
+      if (durationHours < durationRange[0] || durationHours > durationRange[1]) return false
+      if (o.priceUZS < priceRange[0] || o.priceUZS > priceRange[1]) return false
+
       return true
     })
-  }, [destination.offers, onlyRefundable, onlyBaggage, cabinFilter])
+  }, [
+    destination.offers,
+    onlyRefundable,
+    onlyBaggage,
+    cabinFilter,
+    departRange,
+    arriveRange,
+    durationRange,
+    priceRange,
+  ])
 
   const todayLabel = formatDate(new Date())
   const fromCity = destination.offers[0]?.fromCity ?? "Toshkent"
@@ -122,7 +141,7 @@ export default function DestinationDetailsModal({
                     {toCity} {toCode ? <span className="text-[#6b7280]">({toCode})</span> : null}
                   </div>
                   <div className="mt-2 text-sm text-[#6b7280]">
-                    {todayLabel} ? 1 yo?lovchi ? {destination.offers[0]?.cabin ?? "Economy"}
+                    {todayLabel} · 1 yo‘lovchi · {destination.offers[0]?.cabin ?? "Economy"}
                   </div>
                 </div>
                 <button
@@ -243,9 +262,9 @@ export default function DestinationDetailsModal({
                     <div className="text-sm text-[#6b7280]">{offers.length} ta natija</div>
                   </div>
 
-                  {offers.length == 0 ? (
+                  {offers.length === 0 ? (
                     <div className="rounded-2xl border border-black/10 bg-white p-5 text-[#6b7280]">
-                      Hozircha demo reyslar yo?q. Keyin backend ulanganida shu yerga real reyslar chiqadi.
+                      Hozircha demo reyslar yo‘q. Keyin backend ulanganida shu yerga real reyslar chiqadi.
                     </div>
                   ) : (
                     offers.map((o) => (
@@ -257,14 +276,14 @@ export default function DestinationDetailsModal({
                           <div>
                             <div className="flex items-center gap-3 flex-wrap text-[#111827]">
                               <span className="text-2xl font-extrabold">{o.departTime}</span>
-                              <span className="text-[#6b7280]">{o.fromCode} ? {o.fromCity}</span>
-                              <span className="text-[#cbd5e1]">?</span>
+                              <span className="text-[#6b7280]">{o.fromCode} · {o.fromCity}</span>
+                              <span className="text-[#cbd5e1]">—</span>
                               <span className="text-2xl font-extrabold">{o.arriveTime}</span>
-                              <span className="text-[#6b7280]">{o.toCode} ? {o.toCity}</span>
+                              <span className="text-[#6b7280]">{o.toCode} · {o.toCity}</span>
                             </div>
 
                             <div className="mt-2 text-xs text-[#6b7280]">
-                              {todayLabel} ? {o.duration}
+                              {todayLabel} · {o.duration}
                             </div>
 
                             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
@@ -286,7 +305,7 @@ export default function DestinationDetailsModal({
                             </div>
 
                             <div className="mt-3 flex flex-wrap gap-2">
-                              {o.services.includes("wifi") && <Mini icon={Wifi} text="Wi?Fi" />}
+                              {o.services.includes("wifi") && <Mini icon={Wifi} text="Wi‑Fi" />}
                               {o.services.includes("meal") && <Mini icon={Coffee} text="Meal" />}
                               {o.services.includes("priority") && <Mini icon={BadgeCheck} text="Priority" />}
                               {o.services.includes("support") && <Mini icon={ShieldCheck} text="24/7 Support" />}
@@ -345,7 +364,7 @@ function FilterBlock({
 }: {
   title: string
   subtitle?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
@@ -415,4 +434,22 @@ function RangeRow({
       </div>
     </div>
   )
+}
+
+function toHour(value: string) {
+  const m = value.match(/(\d{1,2}):(\d{2})/)
+  if (!m) return 0
+  return Number(m[1]) + Number(m[2]) / 60
+}
+
+function toDurationHours(value: string) {
+  const h = value.match(/(\d+)\s*h/)
+  const m = value.match(/(\d+)\s*m/)
+  const hours = h ? Number(h[1]) : 0
+  const minutes = m ? Number(m[1]) : 0
+  return hours + minutes / 60
+}
+
+function pad(n: number) {
+  return String(n).padStart(2, "0")
 }

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion"
+﻿import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
@@ -12,10 +12,12 @@ import {
   ShieldCheck,
   Wifi,
   Coffee,
-  ArrowLeft,
   User,
   Users,
   CreditCard,
+  ClipboardCheck,
+  Mail,
+  Phone,
 } from "lucide-react"
 
 export type Flight = {
@@ -34,7 +36,7 @@ export type Flight = {
   flightNo?: string
 }
 
-type Step = "details" | "checkout"
+type Step = "select" | "pay" | "ticket"
 
 type PayerInfo = {
   email: string
@@ -78,11 +80,11 @@ function makePassengers(pax: number): PassengerForm[] {
     birthDate: "",
     passportNo: "",
     passportExpiry: "",
-    citizenship: "O‘zbekiston",
+    citizenship: "O'zbekiston",
   }))
 }
 
-// pax o‘zgarsa array’ni moslab beradi, eski kiritilganlarni saqlaydi
+// pax o'zgarsa arrayni moslab beradi, eski kiritilganlarni saqlaydi
 function resizePassengers(prev: PassengerForm[], pax: number): PassengerForm[] {
   const n = Math.max(1, pax)
   if (prev.length === n) return prev
@@ -126,21 +128,37 @@ export default function FlightDetailsModal({
       flightNo: "—",
     } as Flight)
 
-  const [step, setStep] = useState<Step>("details")
+  const [step, setStep] = useState<Step>("select")
   const [payer, setPayer] = useState<PayerInfo>({ email: "", phone: "" })
+  const [confirmEmail, setConfirmEmail] = useState("")
   const [passengers, setPassengers] = useState<PassengerForm[]>(() => makePassengers(pax))
+  const [agreeData, setAgreeData] = useState(false)
+  const [agreeRules, setAgreeRules] = useState(false)
   const [touched, setTouched] = useState(false)
+  const [toastOpen, setToastOpen] = useState(false)
+  const [toastMsg, setToastMsg] = useState("")
 
   // modal ochilganda reset
   useEffect(() => {
     if (!open) return
-    setStep("details")
+    setStep("select")
     setPayer({ email: "", phone: "" })
+    setConfirmEmail("")
     setPassengers(makePassengers(pax))
+    setAgreeData(false)
+    setAgreeRules(false)
     setTouched(false)
+    setToastOpen(false)
+    setToastMsg("")
   }, [open, safeFlight.id])
 
-  // pax o‘zgarsa passengers array moslashadi (kiritilganlar yo‘qolmaydi)
+  useEffect(() => {
+    if (!toastOpen) return
+    const t = setTimeout(() => setToastOpen(false), 3500)
+    return () => clearTimeout(t)
+  }, [toastOpen])
+
+  // pax o'zgarsa passengers array moslashadi (kiritilganlar yo'qolmaydi)
   useEffect(() => {
     if (!open) return
     setPassengers((prev) => resizePassengers(prev, pax))
@@ -160,26 +178,42 @@ export default function FlightDetailsModal({
   const errors = useMemo(() => {
     const e: string[] = []
 
-    if (!payer.email.trim() || !isEmail(payer.email)) e.push("Email noto‘g‘ri kiritilgan.")
-    if (!payer.phone.trim() || !isPhone(payer.phone)) e.push("Telefon raqam noto‘g‘ri kiritilgan.")
+    if (!payer.email.trim() || !isEmail(payer.email)) e.push("Email noto'g'ri kiritilgan.")
+    if (!confirmEmail.trim() || payer.email.trim().toLowerCase() !== confirmEmail.trim().toLowerCase()) {
+      e.push("Email tasdiqlash mos emas.")
+    }
+    if (!payer.phone.trim() || !isPhone(payer.phone)) e.push("Telefon raqam noto'g'ri kiritilgan.")
 
     passengers.forEach((p, idx) => {
-      if (!p.firstName.trim()) e.push(`${idx + 1}-yo‘lovchi: Ism kiritilmagan.`)
-      if (!p.lastName.trim()) e.push(`${idx + 1}-yo‘lovchi: Familiya kiritilmagan.`)
-      if (!p.birthDate) e.push(`${idx + 1}-yo‘lovchi: Tug‘ilgan sana kiritilmagan.`)
-      if (!p.passportNo.trim()) e.push(`${idx + 1}-yo‘lovchi: Pasport seriya/raqam kiritilmagan.`)
-      if (!p.passportExpiry) e.push(`${idx + 1}-yo‘lovchi: Pasport amal qilish muddati kiritilmagan.`)
-      if (!p.citizenship.trim()) e.push(`${idx + 1}-yo‘lovchi: Fuqarolik kiritilmagan.`)
+      if (!p.firstName.trim()) e.push(`${idx + 1}-yo'lovchi: Ism kiritilmagan.`)
+      if (!p.lastName.trim()) e.push(`${idx + 1}-yo'lovchi: Familiya kiritilmagan.`)
+      if (!p.birthDate) e.push(`${idx + 1}-yo'lovchi: Tug'ilgan sana kiritilmagan.`)
+      if (!p.passportNo.trim()) e.push(`${idx + 1}-yo'lovchi: Pasport seriya/raqam kiritilmagan.`)
+      if (!p.passportExpiry) e.push(`${idx + 1}-yo'lovchi: Pasport amal qilish muddati kiritilmagan.`)
+      if (!p.citizenship.trim()) e.push(`${idx + 1}-yo'lovchi: Fuqarolik kiritilmagan.`)
     })
 
     return e
-  }, [payer, passengers])
+  }, [payer, confirmEmail, passengers])
 
-  const canSubmit = errors.length === 0
+  const canContinuePay =
+    payer.email.trim().length > 5 &&
+    isEmail(payer.email) &&
+    confirmEmail.trim().length > 5 &&
+    payer.email.trim().toLowerCase() === confirmEmail.trim().toLowerCase() &&
+    isPhone(payer.phone)
+
+  const canSubmit = errors.length === 0 && agreeData && agreeRules
 
   const submit = () => {
     setTouched(true)
-    if (!canSubmit) return
+    if (!canSubmit) {
+      const head = errors[0] ?? "Ma'lumotlar to'liq emas."
+      const more = errors.length > 1 ? ` + yana ${errors.length - 1} ta` : ""
+      setToastMsg(`${head}${more}`)
+      setToastOpen(true)
+      return
+    }
 
     // ✅ bookingCart ga hammasini yozamiz
     bookingCart.set({
@@ -199,7 +233,7 @@ export default function FlightDetailsModal({
       })),
     })
 
-    // eski oqim kerak bo‘lsa qoldiramiz (parent close qiladi)
+    // eski oqim kerak bo'lsa qoldiramiz (parent close qiladi)
     onBook(safeFlight)
 
     // ✅ passengers pagega tushadi (karzinka)
@@ -235,8 +269,8 @@ export default function FlightDetailsModal({
             className="
               fixed z-[70]
               left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-              w-[min(980px,92vw)]
-              max-h-[86vh]
+              w-[min(1240px,96vw)]
+              max-h-[90vh]
               overflow-hidden
               rounded-[28px]
               border border-white/18
@@ -269,7 +303,7 @@ export default function FlightDetailsModal({
                     {flight.from} → {flight.to}
                   </div>
                   <div className="mt-2 text-white/70 text-sm">
-                    Sana: <span className="text-white/85">{date || "—"}</span> · Yo‘lovchi:{" "}
+                    Sana: <span className="text-white/85">{date || "—"}</span> · Yo'lovchi:{" "}
                     <span className="text-white/85">{Math.max(1, pax)}</span>
                   </div>
                 </div>
@@ -285,38 +319,49 @@ export default function FlightDetailsModal({
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    step === "details"
+                    step === "select"
                       ? "bg-white/12 border-white/25 text-white"
                       : "bg-white/6 border-white/10 text-white/65",
                   ].join(" ")}
                 >
-                  1) Reys
+                  1) Bron qilish
                 </span>
                 <span className="text-white/35">→</span>
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    step === "checkout"
+                    step === "pay"
                       ? "bg-white/12 border-white/25 text-white"
                       : "bg-white/6 border-white/10 text-white/65",
                   ].join(" ")}
                 >
-                  2) Buyurtma
+                  2) To'lov
+                </span>
+                <span className="text-white/35">→</span>
+                <span
+                  className={[
+                    "px-3 py-1 rounded-full border",
+                    step === "ticket"
+                      ? "bg-white/12 border-white/25 text-white"
+                      : "bg-white/6 border-white/10 text-white/65",
+                  ].join(" ")}
+                >
+                  3) Chipta olish
                 </span>
               </div>
 
-              {step === "details" && (
+              {step === "select" && (
                 <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
                   <Pill icon={PlaneTakeoff} label="Uchish" value={flight.depart} />
-                  <Pill icon={PlaneLanding} label="Qo‘nish" value={flight.arrive} />
+                  <Pill icon={PlaneLanding} label="Qo'nish" value={flight.arrive} />
                   <Pill icon={Clock} label="Davomiylik" value={fmtDuration(flight.durationMin)} />
                 </div>
               )}
             </div>
 
             {/* body */}
-            <div className="p-5 md:p-7 overflow-auto max-h-[calc(86vh-150px)]">
-              {step === "details" ? (
+            <div className="p-5 md:p-7 overflow-auto max-h-[calc(90vh-170px)]">
+              {step === "select" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
                     <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
@@ -328,10 +373,11 @@ export default function FlightDetailsModal({
                         </span>
 
                         <span
-                          className={`rounded-full border px-3 py-1 text-sm ${refundable
+                          className={`rounded-full border px-3 py-1 text-sm ${
+                            refundable
                               ? "border-green-500/25 bg-green-500/15 text-green-100"
                               : "border-white/15 bg-white/10 text-white/75"
-                            }`}
+                          }`}
                         >
                           {refundable ? "Qaytarish mumkin" : "Qaytarilmaydi"}
                         </span>
@@ -355,25 +401,25 @@ export default function FlightDetailsModal({
                         {services.includes("meal") && <Mini icon={Coffee} text="Ovqat" />}
                         {services.includes("priority") && <Mini icon={BadgeCheck} text="Priority" />}
                         {services.includes("support") && (
-                          <Mini icon={ShieldCheck} text="24/7 Qo‘llab-quvvatlash" />
+                          <Mini icon={ShieldCheck} text="24/7 Qo'llab-quvvatlash" />
                         )}
                       </div>
 
                       <div className="mt-4 text-white/65 text-sm">
-                        TODO: Backend ulanganida “seat”, “transit”, “terminal/gate” ham qo‘shiladi.
+                        TODO: Backend ulanganida "seat", "transit", "terminal/gate" ham qo'shiladi.
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                      <div className="text-white font-semibold">Buyurtma</div>
+                      <div className="text-white font-semibold">Tanlov</div>
                       <div className="mt-3 text-white/70 text-sm">
-                        Keyingi bosqichda: to‘lovchi ma’lumoti → yo‘lovchilar → sotib olish.
+                        Keyingi bosqichda: to'lovchi ma'lumoti → yo'lovchilar → sotib olish.
                       </div>
 
                       <button
-                        onClick={() => setStep("checkout")}
+                        onClick={() => setStep("pay")}
                         className="
                           mt-5 w-full h-12 rounded-2xl
                           bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
@@ -382,69 +428,112 @@ export default function FlightDetailsModal({
                           hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                         "
                       >
-                        Bron qilish
+                        Tanlash
                       </button>
 
                       <div className="mt-3 text-xs text-white/55">
-                        * Pax: {Math.max(1, pax)} ta yo‘lovchi uchun forma chiqadi.
+                        * Pax: {Math.max(1, pax)} ta yo'lovchi uchun forma chiqadi.
                       </div>
                     </div>
 
                     <div className="rounded-2xl border border-white/15 bg-white/8 p-5 text-white/70 text-sm">
                       <span className="text-white font-semibold">Eslatma:</span> Hozir demo.
-                      Backend ulanganida real “checkout” ishlaydi.
+                      Backend ulanganida real "checkout" ishlaydi.
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setStep("details")}
-                      className="h-11 px-4 rounded-2xl border border-white/15 bg-white/8 text-white/85 hover:bg-white/12 transition inline-flex items-center gap-2"
-                    >
-                      <ArrowLeft size={16} />
-                      Orqaga
-                    </button>
+              )}
 
-                    <div className="text-white/70 text-sm">
-                      <span className="text-white/90 font-semibold">Buyurtma</span> · {flight.from} → {flight.to}
-                    </div>
-                  </div>
-
-                  {/* payer */}
-                  <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                    <div className="flex items-center justify-between">
-                      <div className="text-white font-semibold inline-flex items-center gap-2">
-                        <User size={18} />
-                        To‘lovchi ma’lumotlari
+              {step === "pay" && (
+                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-5">
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="text-white font-semibold inline-flex items-center gap-2">
+                          <User size={18} />
+                          To'lovchi ma'lumotlari
+                        </div>
+                        <div className="text-xs text-white/55">Email va telefon</div>
                       </div>
-                      <div className="text-xs text-white/55">Email va telefon</div>
-                    </div>
 
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <Input
-                        label="Email"
-                        placeholder="example@gmail.com"
-                        value={payer.email}
-                        onChange={(v) => setPayer((p) => ({ ...p, email: v }))}
-                      />
-                      <Input
-                        label="Telefon raqam"
-                        placeholder="+998 90 123 45 67"
-                        value={payer.phone}
-                        onChange={(v) => setPayer((p) => ({ ...p, phone: v }))}
-                      />
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <Input
+                          label="Email"
+                          placeholder="example@gmail.com"
+                          icon={Mail}
+                          value={payer.email}
+                          onChange={(v) => setPayer((p) => ({ ...p, email: v }))}
+                        />
+                        <Input
+                          label="Email (re-)"
+                          placeholder="example@gmail.com"
+                          icon={Mail}
+                          value={confirmEmail}
+                          onChange={(v) => setConfirmEmail(v)}
+                        />
+                        <Input
+                          label="Telefon raqam"
+                          placeholder="+998 90 123 45 67"
+                          icon={Phone}
+                          value={payer.phone}
+                          onChange={(v) => setPayer((p) => ({ ...p, phone: v }))}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* passengers */}
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
+                      <div className="text-white font-semibold inline-flex items-center gap-2">
+                        <CreditCard size={18} />
+                        Narxlar
+                      </div>
+
+                      <div className="mt-4 space-y-2 text-sm">
+                        <PriceRow label="Tarif (1 yo'lovchi)" value={`$${safeFlight.price}`} />
+                        <PriceRow label="Soliq/Yig'im (1 yo'lovchi)" value={`$${taxPerPax}`} />
+                        <PriceRow label="Yo'lovchi soni" value={`${Math.max(1, pax)} ta`} />
+                        <div className="rounded-2xl border border-white/12 bg-white/6 p-4">
+                          <div className="text-white/60 text-xs">Jami</div>
+                          <div className="text-white font-extrabold text-2xl">${total}</div>
+                          <div className="text-white/50 text-xs mt-1">demo hisob-kitob</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setStep("ticket")}
+                        disabled={!canContinuePay}
+                        className="
+                          h-12 rounded-2xl
+                          bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+                          text-white font-semibold transition
+                          shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+                          hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
+                          disabled:opacity-50 disabled:cursor-not-allowed
+                        "
+                      >
+                        Davom etish
+                      </button>
+                      <button
+                        onClick={() => setStep("select")}
+                        className="h-12 rounded-2xl border border-white/15 bg-white/8 text-white/85 hover:bg-white/12 transition"
+                      >
+                        Orqaga
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === "ticket" && (
+                <div className="space-y-4">
                   <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
                     <div className="flex items-center justify-between">
                       <div className="text-white font-semibold inline-flex items-center gap-2">
                         <Users size={18} />
-                        Yo‘lovchilar ma’lumotlari
+                        Yo'lovchilar ma'lumotlari
                       </div>
                       <div className="text-xs text-white/55">Jami: {Math.max(1, pax)} ta</div>
                     </div>
@@ -452,9 +541,7 @@ export default function FlightDetailsModal({
                     <div className="mt-4 space-y-4">
                       {passengers.map((p, idx) => (
                         <div key={idx} className="rounded-2xl border border-white/12 bg-white/6 p-4">
-                          <div className="text-white/85 font-semibold text-sm">
-                            Yo‘lovchi #{idx + 1}
-                          </div>
+                          <div className="text-white/85 font-semibold text-sm">Yo'lovchi #{idx + 1}</div>
 
                           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                             <Input
@@ -482,7 +569,7 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
-                              label="Tug‘ilgan sana"
+                              label="Tug'ilgan sana"
                               type="date"
                               value={p.birthDate}
                               onChange={(v) =>
@@ -495,7 +582,7 @@ export default function FlightDetailsModal({
                             />
                             <Input
                               label="Fuqarolik"
-                              placeholder="O‘zbekiston"
+                              placeholder="O'zbekiston"
                               value={p.citizenship}
                               onChange={(v) =>
                                 setPassengers((arr) => {
@@ -537,7 +624,6 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  {/* pricing */}
                   <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
                     <div className="text-white font-semibold inline-flex items-center gap-2">
                       <CreditCard size={18} />
@@ -545,50 +631,92 @@ export default function FlightDetailsModal({
                     </div>
 
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <PriceRow label="Tarif (1 yo‘lovchi)" value={`$${safeFlight.price}`} />
-                      <PriceRow label="Soliq/Yig‘im (1 yo‘lovchi)" value={`$${taxPerPax}`} />
-                      <PriceRow label="Yo‘lovchi soni" value={`${Math.max(1, pax)} ta`} />
+                      <PriceRow label="Tarif (1 yo'lovchi)" value={`$${safeFlight.price}`} />
+                      <PriceRow label="Soliq/Yig'im (1 yo'lovchi)" value={`$${taxPerPax}`} />
+                      <PriceRow label="Yo'lovchi soni" value={`${Math.max(1, pax)} ta`} />
                       <div className="rounded-2xl border border-white/12 bg-white/6 p-4">
                         <div className="text-white/60 text-xs">Jami</div>
                         <div className="text-white font-extrabold text-2xl">${total}</div>
                         <div className="text-white/50 text-xs mt-1">demo hisob-kitob</div>
                       </div>
                     </div>
+
+                    <label className="mt-4 flex items-start gap-2 text-xs text-white/70">
+                      <input
+                        type="checkbox"
+                        checked={agreeData}
+                        onChange={(e) => setAgreeData(e.target.checked)}
+                        className="mt-0.5"
+                      />
+                      Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
+                    </label>
+                    <label className="mt-2 flex items-start gap-2 text-xs text-white/70">
+                      <input
+                        type="checkbox"
+                        checked={agreeRules}
+                        onChange={(e) => setAgreeRules(e.target.checked)}
+                        className="mt-0.5"
+                      />
+                      Men tanishdim va tarifning qoidalari va shartlariga roziman
+                    </label>
                   </div>
 
-                  {touched && !canSubmit && (
-                    <div className="rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-red-100 text-sm">
-                      <div className="font-semibold mb-2">Xatolar:</div>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {errors.slice(0, 6).map((e, i) => (
-                          <li key={i}>{e}</li>
-                        ))}
-                      </ul>
-                      {errors.length > 6 && (
-                        <div className="mt-2 text-xs opacity-80">+ yana {errors.length - 6} ta</div>
-                      )}
-                    </div>
-                  )}
+                  {/* xatolar toast orqali ko'rsatiladi */}
 
-                  <button
-                    onClick={submit}
-                    className="
-                      w-full h-12 rounded-2xl
-                      bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                      text-white font-semibold transition
-                      shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                      hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                    "
-                  >
-                    Sotib olish
-                  </button>
-
-                  <div className="text-xs text-white/55">
-                    Sotib olish bosilganda: yo‘lovchilar cartga yoziladi va /passengers ga o‘tasiz.
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={submit}
+                      disabled={!canSubmit}
+                      className="
+                        h-12 rounded-2xl
+                        bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+                        text-white font-semibold transition
+                        shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+                        hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                      "
+                    >
+                      Rasmiylashtirish
+                    </button>
+                    <button
+                      onClick={() => setStep("pay")}
+                      className="h-12 rounded-2xl border border-white/15 bg-white/8 text-white/85 hover:bg-white/12 transition"
+                    >
+                      Orqaga
+                    </button>
                   </div>
                 </div>
               )}
             </div>
+
+            {/* Toast */}
+            <AnimatePresence>
+              {toastOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-5 bottom-5 z-[90] w-[min(360px,90vw)]"
+                >
+                  <div className="rounded-2xl border border-white/15 bg-[#1a1c24]/90 backdrop-blur-xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-white font-semibold text-sm">Xatolik</div>
+                        <div className="text-white/75 text-xs mt-1">{toastMsg}</div>
+                      </div>
+                      <button
+                        onClick={() => setToastOpen(false)}
+                        className="h-7 w-7 rounded-lg border border-white/15 bg-white/10 text-white hover:bg-white/20 transition"
+                        aria-label="Close"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </>
       )}
@@ -627,23 +755,36 @@ function Input({
   onChange,
   placeholder,
   type = "text",
+  icon: Icon,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
   type?: string
+  icon?: any
 }) {
   return (
     <label className="block">
       <div className="text-white/60 text-xs mb-2">{label}</div>
-      <input
-        type={type}
-        className="h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25 focus:bg-white/10 transition text-white"
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <div className="relative">
+        {Icon && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
+            <Icon size={16} />
+          </div>
+        )}
+        <input
+          type={type}
+          className={`
+            h-12 w-full rounded-2xl bg-white/5 border border-white/10
+            ${Icon ? "pl-10 pr-4" : "px-4"}
+            outline-none focus:border-white/25 focus:bg-white/10 transition text-white
+          `}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
     </label>
   )
 }

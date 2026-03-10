@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+﻿import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -6,6 +6,7 @@ import DestinationDetailsModal, {
   type DestinationItem,
   type FlightOffer,
 } from "@/components/site/DestinationDetailsModal"
+import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
 
 import { destinations as DEMO_DESTINATIONS } from "@/data/destinations"
 // import { http } from "@/shared/api/http"
@@ -18,8 +19,12 @@ export default function Napravleniya() {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<DestinationItem | null>(null)
 
-  const [destinations] =
-    useState<DestinationItem[]>(DEMO_DESTINATIONS)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [checkoutFlight, setCheckoutFlight] = useState<Flight | null>(null)
+  const [checkoutDate, setCheckoutDate] = useState("")
+  const [checkoutPax, setCheckoutPax] = useState(1)
+
+  const [destinations] = useState<DestinationItem[]>(DEMO_DESTINATIONS)
 
   const seasonalSets = useMemo(() => {
     const pick = (title: string) => destinations.find((d) => d.title === title)
@@ -96,25 +101,51 @@ export default function Napravleniya() {
     setOpen(true)
   }
 
+  const durationToMin = (value: string) => {
+    const h = value.match(/(\d+)\s*h/i)
+    const m = value.match(/(\d+)\s*m/i)
+    const hours = h ? Number(h[1]) : 0
+    const minutes = m ? Number(m[1]) : 0
+    return hours * 60 + minutes
+  }
+
+  const mapOfferToFlight = (offer: FlightOffer): Flight => {
+    return {
+      id: offer.id,
+      from: offer.fromCode,
+      to: offer.toCode,
+      airline: offer.airline,
+      depart: offer.departTime,
+      arrive: offer.arriveTime,
+      durationMin: durationToMin(offer.duration),
+      price: Math.round(offer.priceUZS / 12_500),
+      baggage: offer.baggage,
+      cabin: offer.cabin,
+      refundable: offer.refundable,
+      services: offer.services,
+      flightNo: `${offer.fromCode}-${offer.toCode}`,
+    }
+  }
+
   const onBook = (offer: FlightOffer) => {
     setOpen(false)
-    navigate(
-      `/flights?from=${encodeURIComponent(offer.fromCode)}&to=${encodeURIComponent(
-        offer.toCode
-      )}&date=&pax=1`
-    )
+
+    const flight = mapOfferToFlight(offer)
+    setCheckoutFlight(flight)
+    setCheckoutDate(new Date().toISOString().slice(0, 10))
+    setCheckoutPax(1)
+    setCheckoutOpen(true)
   }
 
   return (
-    <section className="relative pt-16 pb-16 px-5 bg-transparent text-[#111827]">
-
+    <section className="relative pt-16 pb-16 px-5 bg-transparent text-white">
       <div className="relative mx-auto max-w-[1200px]">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#111827]">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white">
             Ommabop yo‘nalishlar
           </h2>
           <div className="w-20 h-[2px] bg-[#c7d2fe] mx-auto my-3 rounded-full" />
-          <p className="text-base md:text-lg text-[#4b5563]">
+          <p className="text-base md:text-lg text-white/70">
             Eng mashhur va sevimli sayohat yo‘nalishlari
           </p>
         </div>
@@ -143,7 +174,7 @@ export default function Napravleniya() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6">
                     <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-2xl font-bold text-white">{item.title}</h3>
+                    <h3 className="text-2xl font-bold text-white">{item.title}</h3>
                       <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white/80">
                         Batafsil
                       </span>
@@ -160,7 +191,7 @@ export default function Napravleniya() {
           <div className="flex justify-center mt-10">
             <button
               onClick={() => setShowAll((p) => !p)}
-              className="h-12 px-6 rounded-full bg-white text-[#111827] border border-black/10 hover:shadow-md transition"
+              className="h-12 px-6 rounded-full bg-white/10 text-white border border-white/15 hover:bg-white/15 transition"
             >
               {showAll ? "Yopish" : "Ko'proq Ko'rish"}
             </button>
@@ -174,11 +205,11 @@ export default function Napravleniya() {
       {seasonalSets.length > 0 && (
         <div className="relative mx-auto mt-16 max-w-[1200px]">
           <div className="text-center mb-10">
-            <h3 className="text-2xl md:text-3xl font-extrabold text-[#111827]">
+            <h3 className="text-2xl md:text-3xl font-extrabold text-white">
               Sezonli yo‘nalishlar
             </h3>
             <div className="w-16 h-[2px] bg-[#c7d2fe] mx-auto my-3 rounded-full" />
-            <p className="text-sm md:text-base text-[#4b5563]">
+            <p className="text-sm md:text-base text-white/70">
               Fasl bo‘yicha mos mamlakatlar
             </p>
           </div>
@@ -219,13 +250,13 @@ export default function Napravleniya() {
                     </div>
                   </button>
 
-                  <div className="mt-7 grid gap-2.5 text-base text-[#374151]">
+                  <div className="mt-7 grid gap-2.5 text-base text-white/80">
                     {season.items.map((item) => (
                       <button
                         key={item.title}
                         type="button"
                         onClick={() => onCardClick(item)}
-                        className="px-3 py-1 rounded-full hover:bg-black/5 transition"
+                        className="px-3 py-1 rounded-full hover:bg-white/10 transition"
                       >
                         {item.city}
                       </button>
@@ -237,18 +268,18 @@ export default function Napravleniya() {
           </div>
 
           {seasonOpen && activeSeason && (
-            <div className="mt-10 rounded-3xl border border-black/10 bg-white p-6 shadow-[0_22px_60px_rgba(0,0,0,0.15)]">
+            <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-[0_22px_60px_rgba(0,0,0,0.25)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-xl md:text-2xl font-bold text-[#111827]">
+                  <div className="text-xl md:text-2xl font-bold text-white">
                     {activeSeason.title} yo‘nalishlar
                   </div>
-                  <div className="text-sm text-[#6b7280]">{activeSeason.subtitle}</div>
+                  <div className="text-sm text-white/70">{activeSeason.subtitle}</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSeasonOpen(false)}
-                  className="h-10 px-4 rounded-full border border-black/10 bg-white text-[#111827] text-sm hover:shadow-md transition"
+                  className="h-10 px-4 rounded-full border border-white/15 bg-white/10 text-white text-sm hover:bg-white/15 transition"
                 >
                   Yopish
                 </button>
@@ -295,6 +326,15 @@ export default function Napravleniya() {
         onClose={() => setOpen(false)}
         destination={selected}
         onBook={onBook}
+      />
+
+      <FlightDetailsModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        flight={checkoutFlight}
+        pax={checkoutPax}
+        date={checkoutDate}
+        onBook={() => setCheckoutOpen(false)}
       />
     </section>
   )
