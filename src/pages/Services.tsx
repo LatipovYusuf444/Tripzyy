@@ -8,18 +8,29 @@ import {
   Sparkles,
   Building2,
   Timer,
+  Plane,
+  Palmtree,
+  Stamp,
+  HeartHandshake,
 } from "lucide-react"
 
 const services = [
+  { title: "Mehmonxona bronlari", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: Building2 },
+  { title: "Transport va transfer", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: Plane },
+  { title: "Ekskursiyalar", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: Palmtree },
+  { title: "Visa support", desc: "Zarur hujjatlarni tayyorlash va viza masalalarini hal qilishda ko?mak.", icon: Stamp },
+  { title: "Sug?urta", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: BadgeCheck },
+  { title: "24/7 qo?llab-quvvatlash", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: HeartHandshake },
   { title: "24/7 Support", desc: "Telegram/Call orqali tezkor yordam.", icon: Headphones },
-  { title: "Shaffof narxlar", desc: "Yashirin fee yo‘q. Yakuniy narx aniq.", icon: BadgeCheck },
-  { title: "Xavfsiz to‘lov", desc: "PCI-ready oqim (backend ulanganida).", icon: CreditCard },
-  { title: "Bagaj & qoidalar", desc: "Bagaj, qaytarish va o‘zgartirish shartlari.", icon: Luggage },
+  { title: "Shaffof narxlar", desc: "Yashirin fee yo?q. Yakuniy narx aniq.", icon: BadgeCheck },
+  { title: "Xavfsiz to?lov", desc: "PCI-ready oqim (backend ulanganida).", icon: CreditCard },
+  { title: "Bagaj & qoidalar", desc: "Bagaj, qaytarish va o?zgartirish shartlari.", icon: Luggage },
   { title: "Premium paket", desc: "Priority, VIP support, tez qayta rasmiylashtirish.", icon: Sparkles },
   { title: "Korporativ xizmat", desc: "Kompaniyalar uchun hisobot va limit.", icon: Building2 },
-  { title: "Ishonch & himoya", desc: "To‘lov va ma’lumotlar himoyasi.", icon: ShieldCheck },
+  { title: "Ishonch & himoya", desc: "To?lov va ma?lumotlar himoyasi.", icon: ShieldCheck },
   { title: "Tez bron", desc: "Minimal vaqt, maksimal qulaylik.", icon: Timer },
 ]
+
 
 export default function Services() {
   return (

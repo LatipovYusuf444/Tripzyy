@@ -11,7 +11,7 @@ export default function Layout() {
       </header>
 
       {/* Navbar balandligi qancha bo'lsa shuncha padding-top */}
-      <main className="flex-1 bg-[#0b0d12] text-white">
+      <main className="flex-1 bg-[#e8edf2] text-[#111827]">
         <Outlet />
       </main>
 
