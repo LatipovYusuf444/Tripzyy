@@ -16,8 +16,6 @@ export default function FAQ() {
 
   return (
     <section className="relative overflow-hidden pt-20">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#143a5f] via-[#0b1b2b] to-[#0A1220]" />
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[980px] -translate-x-1/2 rounded-full bg-white/10 blur-[120px]" />
 
       <div className="relative mx-auto max-w-[900px] px-5 py-14 md:py-16">
         <motion.div

@@ -74,16 +74,15 @@ export default function Napravleniya() {
   }
 
   return (
-    <section className="relative bg-[#0A1220] pt-20 pb-20 px-5">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/25" />
+    <section className="relative pt-16 pb-16 px-5 bg-transparent text-white">
 
       <div className="relative mx-auto max-w-[1200px]">
         <div className="text-center mb-14">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white">
             Ommabop yo‘nalishlar
           </h2>
-          <div className="w-24 h-1 bg-[#FF7A00] mx-auto my-4 rounded-full" />
-          <p className="text-lg md:text-xl text-[#C7CCD6]">
+          <div className="w-20 h-[2px] bg-white/40 mx-auto my-3 rounded-full" />
+          <p className="text-base md:text-lg text-white/70">
             Eng mashhur va sevimli sayohat yo‘nalishlari
           </p>
         </div>
@@ -101,7 +100,7 @@ export default function Napravleniya() {
                   transition={{ duration: 0.35, delay: showAll ? index * 0.03 : 0 }}
                   whileHover={{ y: -10 }}
                   onClick={() => onCardClick(item)}
-                  className="relative group rounded-3xl overflow-hidden cursor-pointer border border-white/10 bg-white/5 shadow-[0_30px_80px_rgba(0,0,0,0.45)]"
+                  className="relative group rounded-2xl overflow-hidden cursor-pointer border border-white/10 bg-white/5 shadow-[0_18px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl"
                 >
                   <img
                     className="w-full h-[280px] object-cover scale-100 group-hover:scale-110 transition-transform duration-700"
@@ -117,7 +116,7 @@ export default function Napravleniya() {
                         Batafsil
                       </span>
                     </div>
-                    <p className="text-sm text-[#D1D5DB] mt-1">{item.desc}</p>
+                    <p className="text-sm text-white/90 mt-1">{item.desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -129,7 +128,7 @@ export default function Napravleniya() {
           <div className="flex justify-center mt-10">
             <button
               onClick={() => setShowAll((p) => !p)}
-              className="h-14 px-8 rounded-full bg-white/10 text-white border border-white/20 hover:bg-white/15 transition"
+              className="h-12 px-6 rounded-full bg-white/10 text-white border border-white/15 hover:bg-white/15 transition"
             >
               {showAll ? "Yopish" : "Ko'proq Ko'rish"}
             </button>

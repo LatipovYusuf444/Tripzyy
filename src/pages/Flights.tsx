@@ -167,8 +167,7 @@ export default function Flights() {
   }
 
   return (
-    <section className="relative bg-[#0A1220] text-white pt-20">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/25" />
+    <section className="relative text-white pt-20">
 
       <div className="relative mx-auto max-w-[1200px] px-5 py-14">
         <div className="flex items-end justify-between flex-wrap gap-4">
@@ -234,7 +233,9 @@ export default function Flights() {
             <button
               onClick={onSearch}
               disabled={loading}
-              className="h-12 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition disabled:opacity-60"
+              className="h-12 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white transition
+                         shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
+                         disabled:opacity-60"
             >
               {loading ? "..." : "Qidirish"}
             </button>
@@ -269,7 +270,8 @@ export default function Flights() {
                   </div>
 
                   <button
-                    className="h-12 px-6 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition"
+                    className="h-12 px-6 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white transition
+                               shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110"
                     onClick={() => onPick(f)}
                   >
                     Tanlash

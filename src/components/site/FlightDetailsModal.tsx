@@ -376,9 +376,10 @@ export default function FlightDetailsModal({
                         onClick={() => setStep("checkout")}
                         className="
                           mt-5 w-full h-12 rounded-2xl
-                          bg-[#FF7A00] text-white font-semibold
-                          hover:opacity-90 transition
-                          shadow-[0_18px_50px_rgba(255,122,0,0.25)]
+                          bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+                          text-white font-semibold transition
+                          shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+                          hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                         "
                       >
                         Bron qilish
@@ -573,9 +574,10 @@ export default function FlightDetailsModal({
                     onClick={submit}
                     className="
                       w-full h-12 rounded-2xl
-                      bg-[#FF7A00] text-white font-semibold
-                      hover:opacity-90 transition
-                      shadow-[0_18px_50px_rgba(255,122,0,0.25)]
+                      bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+                      text-white font-semibold transition
+                      shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+                      hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                     "
                   >
                     Sotib olish

@@ -5,12 +5,11 @@ import type { LucideIcon } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-[#0A1220]">
-      {/* Luxury overlays */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/30" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[980px] -translate-x-1/2 rounded-full bg-white/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 right-[-120px] h-[420px] w-[420px] rounded-full bg-[#FF7A00]/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-52 left-[-140px] h-[520px] w-[520px] rounded-full bg-white/5 blur-[140px]" />
+    <footer className="relative overflow-hidden bg-[#0b0d12] text-white">
+      {/* Match global gradient */}
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,#0b0d12_0%,#151b26_35%,#2a2130_65%,#3a2b25_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_85%_25%,rgba(214,180,140,0.15),transparent_50%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-black/45" />
 
       <div className="relative mx-auto max-w-[1200px] px-5 py-12 md:py-14">
         <div className="grid gap-10 md:grid-cols-3 lg:grid-cols-4">
@@ -62,7 +61,7 @@ export default function Footer() {
               <FooterNavLink to="/about" text="Biz haqimizda" />
               <FooterNavLink to="/services" text="Xizmatlarimiz" />
               <FooterNavLink to="/flights" text="Reyslar" />
-              <FooterNavLink to="/contact" text="Contact" />
+              <FooterNavLink to="/contact" text="Aloqa" />
               <FooterNavLink to="/faq" text="FAQ" />
             </ul>
           </motion.div>
@@ -153,7 +152,7 @@ function FooterNavLink({ to, text }: { to: string; text: string }) {
         className="inline-flex items-center gap-2 rounded-xl px-2 py-1 transition
                    hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/25"
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-[#FF7A00]/70" />
+        <span className="h-1.5 w-1.5 rounded-full bg-[#8A3A5A]/70" />
         {text}
       </Link>
     </li>

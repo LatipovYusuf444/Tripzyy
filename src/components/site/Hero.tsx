@@ -22,7 +22,7 @@ const Hero = () => {
             transition={{ duration: 0.8 }}
             className="text-4xl sm:text-5xl md:text-6xl font-bold mt-10 text-white leading-tight"
           >
-            Dunyo bo‘ylab <span className="text-[#FF7A00]">premium</span> sayohat
+            Dunyo bo‘ylab <span className="text-[#8A3A5A]">premium</span> sayohat
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}

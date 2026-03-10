@@ -85,8 +85,7 @@ export default function PassengersPage() {
 
   const pax = Math.max(1, (cart.pax ?? cart.passengers.length) || 1)
   return (
-    <section className="relative min-h-screen bg-[#0A1220] text-white pt-24">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-black/25" />
+    <section className="relative min-h-screen text-white pt-24">
 
       <div className="relative mx-auto max-w-[1150px] px-5 py-10">
         {/* header */}
@@ -109,10 +108,12 @@ export default function PassengersPage() {
             onClick={onAdd}
             className="
               h-11 px-4 rounded-2xl
-              bg-[#FF7A00] text-white font-semibold
+              bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+              text-white font-semibold
               inline-flex items-center gap-2
-              hover:opacity-90 transition
-              shadow-[0_18px_50px_rgba(255,122,0,0.25)]
+              transition
+              shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+              hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
             "
           >
             Yo‘lovchi qo‘shish <Plus size={16} />
@@ -181,7 +182,7 @@ export default function PassengersPage() {
                             "
                             title="O‘chirish"
                           >
-                            <Trash2 size={16} className="text-[#FF7A00]" />
+                            <Trash2 size={16} className="text-[#8A3A5A]" />
                           </button>
                         </div>
                       </td>
@@ -267,10 +268,11 @@ export default function PassengersPage() {
                 disabled={!canSave}
                 className="
                   mt-4 h-12 w-full rounded-2xl
-                  bg-[#FF7A00] text-white font-semibold
-                  hover:opacity-90 transition
+                  bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+                  text-white font-semibold transition
+                  shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+                  hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                   disabled:opacity-50 disabled:cursor-not-allowed
-                  shadow-[0_18px_50px_rgba(255,122,0,0.25)]
                 "
               >
                 Saqlash

@@ -64,7 +64,9 @@ export default function FlightSearch() {
         <button
           type="submit"
           disabled={!isValid}
-          className="h-12 rounded-2xl bg-[#FF7A00] font-semibold hover:opacity-90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          className="h-12 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white transition
+                     shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
+                     disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Qidirish
         </button>

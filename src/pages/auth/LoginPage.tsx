@@ -1,9 +1,5 @@
-const LoginPage = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+import RegisterPage from "./RegisterPage"
 
-export default LoginPage
+export default function LoginPage() {
+  return <RegisterPage initialMode="login" />
+}

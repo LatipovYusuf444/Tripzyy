@@ -4,8 +4,6 @@ import { Link } from "react-router-dom"
 export default function NotFound() {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#143a5f] via-[#0b1b2b] to-[#0A1220]" />
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[980px] -translate-x-1/2 rounded-full bg-white/10 blur-[120px]" />
 
       <div className="relative mx-auto max-w-[900px] px-5 py-20 text-center">
         <motion.div
@@ -25,7 +23,8 @@ export default function NotFound() {
           <div className="mt-6 flex justify-center">
             <Link
               to="/"
-              className="h-12 px-6 rounded-2xl bg-[#FF7A00] text-white font-semibold hover:opacity-90 transition"
+              className="h-12 px-6 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] text-white font-semibold transition
+                         shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110"
             >
               Bosh sahifaga qaytish
             </Link>

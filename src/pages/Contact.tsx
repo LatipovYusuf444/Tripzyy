@@ -4,8 +4,6 @@ import { Mail, Phone, MapPin, Clock } from "lucide-react"
 export default function Contact() {
   return (
     <section className="relative overflow-hidden pt-20">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#143a5f] via-[#0b1b2b] to-[#0A1220]" />
-      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[980px] -translate-x-1/2 rounded-full bg-white/10 blur-[120px]" />
 
       <div className="relative mx-auto max-w-[1200px] px-5 py-14 md:py-16">
         <motion.div
@@ -15,7 +13,7 @@ export default function Contact() {
           className="text-center"
         >
           <h1 className="text-4xl md:text-5xl font-extrabold text-white">
-            Contact
+            Aloqa
           </h1>
           <p className="mt-4 text-white/70 max-w-3xl mx-auto text-lg">
             Savollaringiz bormi? Biz 24/7 yordam beramiz. Forma orqali yozing yoki telefon qiling.
@@ -58,7 +56,8 @@ export default function Contact() {
                 className="min-h-[120px] w-full rounded-2xl bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-white/25"
                 placeholder="Xabaringiz..."
               />
-              <button className="h-12 w-full rounded-2xl bg-[#FF7A00] font-semibold text-white hover:opacity-90 transition shadow-[0_18px_60px_rgba(255,122,0,0.25)]">
+              <button className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white transition
+                                 shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110">
                 Yuborish
               </button>
 

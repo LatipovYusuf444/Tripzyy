@@ -19,7 +19,7 @@ export default function Profile() {
   const logout = async () => {
     localStorage.removeItem("access_token")
     window.dispatchEvent(new Event("tripzy-auth"))
-    navigate("/register")
+    navigate("/login")
   }
 
   const onSave = async () => {
@@ -40,10 +40,6 @@ export default function Profile() {
 
   return (
     <section className="relative overflow-hidden pt-24">
-      {/* light luxury bg */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1A5B86] via-[#0b1b2b] to-[#0A1220]" />
-      <div className="pointer-events-none absolute -top-44 left-1/2 h-[560px] w-[980px] -translate-x-1/2 rounded-full bg-white/12 blur-[140px]" />
-      <div className="pointer-events-none absolute -bottom-56 right-[-160px] h-[560px] w-[560px] rounded-full bg-[#FF7A00]/12 blur-[160px]" />
 
       <div className="relative mx-auto max-w-[1200px] px-5 py-14">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -56,7 +52,7 @@ export default function Profile() {
           >
             <div className="flex items-center justify-between gap-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-white/85">
-                <span className="h-2 w-2 rounded-full bg-[#FF7A00]" />
+                <span className="h-2 w-2 rounded-full bg-[#8A3A5A]" />
                 TRIPZY • Profile
               </div>
 
@@ -149,9 +145,9 @@ export default function Profile() {
               <button
                 disabled={!editing || loading}
                 onClick={onSave}
-                className="h-12 px-6 rounded-2xl bg-[#FF7A00] font-semibold text-white
-                           hover:opacity-90 transition disabled:opacity-60
-                           shadow-[0_18px_60px_rgba(255,122,0,0.25)]"
+                className="h-12 px-6 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white
+                           transition disabled:opacity-60
+                           shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110"
               >
                 <span className="inline-flex items-center gap-2">
                   <Save size={18} />
