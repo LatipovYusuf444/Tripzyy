@@ -18,7 +18,6 @@ import {
   Building2,
   Palmtree,
   Heart,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 

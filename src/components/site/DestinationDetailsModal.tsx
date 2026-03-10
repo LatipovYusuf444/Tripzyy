@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from "framer-motion"
 import {
   X,
   PlaneTakeoff,
-  PlaneLanding,
   Clock,
   Luggage,
   BadgeCheck,

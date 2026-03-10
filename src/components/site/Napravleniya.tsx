@@ -1,5 +1,4 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 
 import DestinationDetailsModal, {
@@ -14,7 +13,6 @@ import { destinations as DEMO_DESTINATIONS } from "@/data/destinations"
 export default function Napravleniya() {
   const [showAll, setShowAll] = useState(false)
   const gridRef = useRef<HTMLDivElement | null>(null)
-  const navigate = useNavigate()
 
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<DestinationItem | null>(null)

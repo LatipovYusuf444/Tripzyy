@@ -15,7 +15,6 @@ import {
   User,
   Users,
   CreditCard,
-  ClipboardCheck,
   Mail,
   Phone,
 } from "lucide-react"
@@ -139,7 +138,6 @@ export default function FlightDetailsModal({
   const [passengers, setPassengers] = useState<PassengerForm[]>(() => makePassengers(pax))
   const [agreeData, setAgreeData] = useState(false)
   const [agreeRules, setAgreeRules] = useState(false)
-  const [touched, setTouched] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMsg, setToastMsg] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<
@@ -161,7 +159,6 @@ export default function FlightDetailsModal({
     setPassengers(makePassengers(pax))
     setAgreeData(false)
     setAgreeRules(false)
-    setTouched(false)
     setToastOpen(false)
     setToastMsg("")
     setPaymentMethod("")
@@ -236,7 +233,6 @@ export default function FlightDetailsModal({
   const canSubmit = errors.length === 0 && agreeData && agreeRules && paymentPaid
 
   const submit = () => {
-    setTouched(true)
     if (!paymentPaid) {
       setToastMsg("Avval to'lovni yakunlang.")
       setToastOpen(true)
@@ -611,7 +607,6 @@ export default function FlightDetailsModal({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button
                         onClick={() => {
-                          setTouched(true)
                           if (!canPayNow) {
                             setToastMsg("To'lov ma'lumotlari to'liq emas.")
                             setToastOpen(true)

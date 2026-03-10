@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react"
-import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"
+import { Link, NavLink, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, LogOut, UserCircle2, Users } from "lucide-react"
 import logo from "@/assets/images/Tripzy.webp"
@@ -33,7 +33,6 @@ const itemVariants = {
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [open, setOpen] = useState(false)
 
   // ✅ Token kuzatish (demo)
@@ -104,8 +103,6 @@ export default function Navbar() {
     setOpen(false)
     navigate("/profile")
   }
-
-  const isPassengers = location.pathname.startsWith("/passengers")
 
   return (
     <header className="w-full flex justify-center pt-6 px-4">
