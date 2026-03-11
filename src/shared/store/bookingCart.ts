@@ -3,6 +3,7 @@
 export type PayerInfo = {
   email: string
   phone: string
+  countryCode?: string
 }
 
 export type Passenger = {
@@ -15,6 +16,9 @@ export type Passenger = {
   // ✅ qo‘shildi
   passportNo: string
   passportExpiry: string // YYYY-MM-DD
+  passportIssued?: string // YYYY-MM-DD
+  gender?: "M" | "F"
+  countryCode?: string
 }
 
 export type BookingCart = {
@@ -22,6 +26,13 @@ export type BookingCart = {
   route?: string // "TAS → IST"
   date?: string
   pax?: number
+  lastOrderId?: number
+  history?: Array<{
+    orderId: number
+    route?: string
+    date?: string
+    createdAt: string
+  }>
 
   // ✅ qo‘shildi
   payer?: PayerInfo
@@ -48,6 +59,8 @@ export const bookingCart = {
         route: parsed.route,
         date: parsed.date,
         pax: parsed.pax,
+        lastOrderId: parsed.lastOrderId,
+        history: Array.isArray(parsed.history) ? parsed.history : [],
         payer: parsed.payer,
         passengers: Array.isArray(parsed.passengers) ? parsed.passengers : [],
       }

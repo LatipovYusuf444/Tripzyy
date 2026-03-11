@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, Mail, Lock, User2 } from "lucide-react"
-// import { http } from "@/shared/api/http" // ✅ backend ulaganda ochasan
+import { login } from "@/shared/api/auth/auth.api"
 
 type Mode = "register" | "login"
 
@@ -87,27 +87,19 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
       }
 
       // ----------------------------
-      // ✅ DEMO LOGIN
+      // ✅ BACKEND LOGIN
       // ----------------------------
-      const users = getUsers()
-      const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
-      if (!user || user.password !== password) {
-        alert("Email yoki parol xato ❌")
+      const res = await login({ email, password })
+      const token = res.data?.data?.token
+      if (!token) {
+        alert(res.data?.message || "Login xato")
         return
       }
 
-      const token = makeToken(email)
-      if (remember) localStorage.setItem("access_token", token)
-
-      alert("Login demo ✅")
+      localStorage.setItem("access_token", token)
+      window.dispatchEvent(new Event("tripzy-auth"))
+      alert("Login muvaffaqiyatli ✅")
       navigate("/")
-
-      // ----------------------------
-      // ✅ BACKENDGA ULANDA:
-      // const res = await http.post("/auth/login", { email, password })
-      // localStorage.setItem("access_token", res.data.access)
-      // navigate("/")
-      // ----------------------------
     } finally {
       setLoading(false)
     }

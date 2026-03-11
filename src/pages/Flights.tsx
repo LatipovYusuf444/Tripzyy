@@ -2,71 +2,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
 import { bookingCart } from "@/shared/store/bookingCart"
-
-// import { http } from "@/shared/api/http"
-
-const MOCK: Flight[] = [
-  {
-    id: "1",
-    from: "TAS",
-    to: "IST",
-    airline: "Turkish Airlines",
-    depart: "09:40",
-    arrive: "12:20",
-    durationMin: 280,
-    price: 220,
-    baggage: "20kg",
-    cabin: "Economy",
-    refundable: true,
-    services: ["meal", "support"],
-    flightNo: "TK-369",
-  },
-  {
-    id: "2",
-    from: "TAS",
-    to: "DXB",
-    airline: "FlyDubai",
-    depart: "14:10",
-    arrive: "17:40",
-    durationMin: 210,
-    price: 260,
-    baggage: "25kg",
-    cabin: "Business",
-    refundable: true,
-    services: ["wifi", "meal", "priority", "support"],
-    flightNo: "FZ-194",
-  },
-  {
-    id: "3",
-    from: "TAS",
-    to: "BKK",
-    airline: "Emirates",
-    depart: "22:00",
-    arrive: "08:10",
-    durationMin: 610,
-    price: 640,
-    baggage: "30kg",
-    cabin: "Economy",
-    refundable: false,
-    services: ["wifi", "meal", "support"],
-    flightNo: "EK-231",
-  },
-  {
-    id: "4",
-    from: "TAS",
-    to: "SAW",
-    airline: "Pegasus",
-    depart: "05:30",
-    arrive: "08:55",
-    durationMin: 205,
-    price: 170,
-    baggage: "10kg",
-    cabin: "Economy",
-    refundable: false,
-    services: ["support"],
-    flightNo: "PC-741",
-  },
-]
+import { searchAir } from "@/shared/api/air/air.api"
 
 const fmtDuration = (mins: number) => {
   const h = Math.floor(mins / 60)
@@ -87,8 +23,9 @@ export default function Flights() {
   const [maxPrice, setMaxPrice] = useState<number | "">("")
   const [sort, setSort] = useState<"best" | "cheap" | "fast">("best")
 
-  const [items, setItems] = useState<Flight[]>(MOCK)
+  const [items, setItems] = useState<Flight[]>([])
   const [loading, setLoading] = useState(false)
+  const [lastInfo, setLastInfo] = useState<string | null>(null)
 
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Flight | null>(null)
@@ -133,14 +70,96 @@ export default function Flights() {
     return list
   }, [items, from, to, airline, maxPrice, sort])
 
+  const toTime = (value?: string) => {
+    if (!value) return "—"
+    const t = value.split(" ")[1]
+    return t ? t.slice(0, 5) : value
+  }
+
   const onSearch = async () => {
+    const token = localStorage.getItem("access_token")
+    if (!token) {
+      alert("Avval login qiling (token yo'q).")
+      return
+    }
+    if (!from || !to || !date) {
+      alert("From, To va Sana to'ldiring.")
+      return
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      alert("Sana formati: YYYY-MM-DD")
+      return
+    }
+
     setLoading(true)
     try {
-      // backend ulash keyin
-      setItems(MOCK)
+      const res = await searchAir({
+        adults: pax,
+        children: 0,
+        infants: 0,
+        class: "Y",
+        trips: [
+          {
+            origin: from,
+            destination: to,
+            departure: date,
+          },
+        ],
+      })
+
+      if (res.data.status !== "success" || !res.data.data?.options) {
+        setItems([])
+        const msg = res.data.message || "Qidiruv xato"
+        setLastInfo(`Backend: ${msg}`)
+        alert(msg)
+        return
+      }
+
+      const mapped: Flight[] = res.data.data.options.map((opt) => {
+        const trip = opt.trips[0]
+        const seg = trip?.segments?.[0]
+        const baggage =
+          seg?.baggage || opt.packages?.families?.[0]?.baggageInfos?.[0] || "—"
+        const services =
+          opt.packages?.families?.[0]?.services?.map((s) => s.description) || []
+
+        return {
+          id: opt.id,
+          from: trip?.origin || from,
+          to: trip?.destination || to,
+          airline: opt.carrier || seg?.carrier || "—",
+          depart: toTime(seg?.departure),
+          arrive: toTime(seg?.arrival),
+          durationMin: trip?.duration || seg?.duration || 0,
+          price: Number(opt.price || 0),
+          baggage,
+          cabin: seg?.serviceClass || "Economy",
+          refundable: false,
+          services,
+          flightNo: seg?.flightNumber ? `${seg?.carrier || ""}-${seg.flightNumber}` : "—",
+        }
+      })
+
+      setItems(mapped)
+      setLastInfo(
+        `Backend: ${res.data.message} · options=${res.data.data.options.length} · currency=${res.data.data.currency}`
+      )
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Qidiruv xato"
+      setItems([])
+      setLastInfo(`Backend: ${msg}`)
+      alert(msg)
     } finally {
       setLoading(false)
     }
+  }
+
+  const formatDate = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 8)
+    const y = digits.slice(0, 4)
+    const m = digits.slice(4, 6)
+    const d = digits.slice(6, 8)
+    return [y, m, d].filter(Boolean).join("-")
   }
 
   const onPick = (f: Flight) => {
@@ -211,23 +230,11 @@ export default function Flights() {
               onChange={(e) => setTo(e.target.value)}
             />
             <input
-              type="date"
+              type="text"
               className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
+              placeholder="YYYY-MM-DD"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-            <input
-              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="Airline"
-              value={airline}
-              onChange={(e) => setAirline(e.target.value)}
-            />
-            <input
-              className="h-12 rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25"
-              placeholder="Max $"
-              inputMode="numeric"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
+              onChange={(e) => setDate(formatDate(e.target.value))}
             />
             <button
               onClick={onSearch}
@@ -236,13 +243,21 @@ export default function Flights() {
                          shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                          disabled:opacity-60"
             >
-              {loading ? "..." : "Qidirish"}
+              {loading ? "Qidirilmoqda..." : "Qidirish"}
             </button>
           </div>
 
           <div className="mt-3 text-xs text-white/55">
             * Keyin real natija, pagination va "booking" oqimi qo'shiladi.
           </div>
+          <div className="mt-2 text-xs text-white/55">
+            * Sana backendga `YYYY-MM-DD` formatda yuboriladi.
+          </div>
+          {lastInfo && (
+            <div className="mt-2 text-xs text-white/70">
+              {lastInfo}
+            </div>
+          )}
         </div>
 
         <div className="mt-8 space-y-4">

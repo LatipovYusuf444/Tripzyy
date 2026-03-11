@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
+import { bookAir, getBrandedFares } from "@/shared/api/air/air.api"
+import type { BrandedFaresResponse } from "@/types/air"
 import {
   X,
   PlaneTakeoff,
@@ -14,7 +16,6 @@ import {
   Coffee,
   User,
   Users,
-  CreditCard,
   Mail,
   Phone,
 } from "lucide-react"
@@ -35,12 +36,13 @@ export type Flight = {
   flightNo?: string
 }
 
-type Step = "select" | "pay" | "ticket"
+type Step = "select" | "details" | "pay"
 
 type PayerInfo = {
   email: string
   phone: string
   name?: string
+  countryCode?: string
 }
 
 type PassengerForm = {
@@ -49,7 +51,10 @@ type PassengerForm = {
   birthDate: string
   passportNo: string
   passportExpiry: string
+  passportIssued: string
   citizenship: string
+  gender: "M" | "F"
+  countryCode: string
 }
 
 const overlay = {
@@ -72,9 +77,6 @@ const fmtDuration = (mins: number) => {
 
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim())
 const isPhone = (s: string) => s.replace(/\D/g, "").length >= 9
-const isCardNumber = (s: string) => s.replace(/\s/g, "").length >= 12
-const isExpiry = (s: string) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(s.trim())
-const isCvv = (s: string) => /^\d{3,4}$/.test(s.trim())
 
 function makePassengers(pax: number): PassengerForm[] {
   return Array.from({ length: Math.max(1, pax) }).map(() => ({
@@ -83,7 +85,10 @@ function makePassengers(pax: number): PassengerForm[] {
     birthDate: "",
     passportNo: "",
     passportExpiry: "",
+    passportIssued: "",
     citizenship: "O'zbekiston",
+    gender: "M",
+    countryCode: "UZ",
   }))
 }
 
@@ -132,41 +137,35 @@ export default function FlightDetailsModal({
     } as Flight)
 
   const [step, setStep] = useState<Step>("select")
-  const [payer, setPayer] = useState<PayerInfo>({ email: "", phone: "" })
-  const [confirmEmail, setConfirmEmail] = useState("")
-  const [payerName, setPayerName] = useState("")
+  const [payer, setPayer] = useState<PayerInfo>({ email: "", phone: "", countryCode: "998" })
   const [passengers, setPassengers] = useState<PassengerForm[]>(() => makePassengers(pax))
   const [agreeData, setAgreeData] = useState(false)
-  const [agreeRules, setAgreeRules] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
   const [toastMsg, setToastMsg] = useState("")
+  const [bookLoading, setBookLoading] = useState(false)
+  const [lastOrderId, setLastOrderId] = useState<number | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<
     "click" | "payme" | "uzum" | "paynet" | "visa" | ""
   >("")
-  const [cardNumber, setCardNumber] = useState("")
-  const [cardName, setCardName] = useState("")
-  const [cardExpiry, setCardExpiry] = useState("")
-  const [cardCvv, setCardCvv] = useState("")
-  const [paymentPaid, setPaymentPaid] = useState(false)
+  const [fareLoading, setFareLoading] = useState(false)
+  const [fareError, setFareError] = useState<string | null>(null)
+  const [fareData, setFareData] = useState<BrandedFaresResponse["data"] | null>(null)
 
   // modal ochilganda reset
   useEffect(() => {
     if (!open) return
     setStep("select")
-    setPayer({ email: "", phone: "" })
-    setConfirmEmail("")
-    setPayerName("")
+    setPayer({ email: "", phone: "", countryCode: "998" })
     setPassengers(makePassengers(pax))
     setAgreeData(false)
-    setAgreeRules(false)
     setToastOpen(false)
     setToastMsg("")
+    setBookLoading(false)
+    setLastOrderId(null)
     setPaymentMethod("")
-    setCardNumber("")
-    setCardName("")
-    setCardExpiry("")
-    setCardCvv("")
-    setPaymentPaid(false)
+    setFareLoading(false)
+    setFareError(null)
+    setFareData(null)
   }, [open, safeFlight.id])
 
   useEffect(() => {
@@ -180,6 +179,41 @@ export default function FlightDetailsModal({
     if (!open) return
     setPassengers((prev) => resizePassengers(prev, pax))
   }, [pax, open])
+
+  useEffect(() => {
+    if (!open) return
+    if (!safeFlight.id) return
+    const token = localStorage.getItem("access_token")
+    if (!token) return
+
+    let alive = true
+    setFareLoading(true)
+    setFareError(null)
+
+    getBrandedFares({ optionID: safeFlight.id })
+      .then((res) => {
+        if (!alive) return
+        if (res.data.status !== "success") {
+          setFareError(res.data.message || "Fare topilmadi")
+          setFareData(null)
+          return
+        }
+        setFareData(res.data.data ?? null)
+      })
+      .catch((err: any) => {
+        if (!alive) return
+        const msg = err?.response?.data?.message || "Fare topilmadi"
+        setFareError(msg)
+        setFareData(null)
+      })
+      .finally(() => {
+        if (alive) setFareLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [open, safeFlight.id])
 
   const cabin = safeFlight.cabin ?? "Economy"
   const refundable = safeFlight.refundable ?? false
@@ -196,45 +230,28 @@ export default function FlightDetailsModal({
     const e: string[] = []
 
     if (!payer.email.trim() || !isEmail(payer.email)) e.push("Email noto'g'ri kiritilgan.")
-    if (!confirmEmail.trim() || payer.email.trim().toLowerCase() !== confirmEmail.trim().toLowerCase()) {
-      e.push("Email tasdiqlash mos emas.")
-    }
     if (!payer.phone.trim() || !isPhone(payer.phone)) e.push("Telefon raqam noto'g'ri kiritilgan.")
-    if (!payerName.trim()) e.push("To'lovchi ismi kiritilmagan.")
+    if (!payer.countryCode?.trim()) e.push("Telefon country code kiritilmagan.")
 
     passengers.forEach((p, idx) => {
       if (!p.firstName.trim()) e.push(`${idx + 1}-yo'lovchi: Ism kiritilmagan.`)
       if (!p.lastName.trim()) e.push(`${idx + 1}-yo'lovchi: Familiya kiritilmagan.`)
       if (!p.birthDate) e.push(`${idx + 1}-yo'lovchi: Tug'ilgan sana kiritilmagan.`)
+      if (!p.passportIssued) e.push(`${idx + 1}-yo'lovchi: Pasport berilgan sana kiritilmagan.`)
       if (!p.passportNo.trim()) e.push(`${idx + 1}-yo'lovchi: Pasport seriya/raqam kiritilmagan.`)
       if (!p.passportExpiry) e.push(`${idx + 1}-yo'lovchi: Pasport amal qilish muddati kiritilmagan.`)
       if (!p.citizenship.trim()) e.push(`${idx + 1}-yo'lovchi: Fuqarolik kiritilmagan.`)
+      if (!p.countryCode.trim()) e.push(`${idx + 1}-yo'lovchi: Country code kiritilmagan.`)
     })
 
     return e
-  }, [payer, confirmEmail, passengers, payerName])
+  }, [payer, passengers])
 
-  const canContinuePay =
-    payer.email.trim().length > 5 &&
-    isEmail(payer.email) &&
-    confirmEmail.trim().length > 5 &&
-    payer.email.trim().toLowerCase() === confirmEmail.trim().toLowerCase() &&
-    isPhone(payer.phone) &&
-    paymentMethod !== "" &&
-    payerName.trim().length > 1
+  const canSubmit = errors.length === 0 && agreeData
 
-  const canPayNow =
-    canContinuePay &&
-    isCardNumber(cardNumber) &&
-    cardName.trim().length > 2 &&
-    isExpiry(cardExpiry) &&
-    isCvv(cardCvv)
-
-  const canSubmit = errors.length === 0 && agreeData && agreeRules && paymentPaid
-
-  const submit = () => {
-    if (!paymentPaid) {
-      setToastMsg("Avval to'lovni yakunlang.")
+  const submit = async () => {
+    if (!safeFlight.id) {
+      setToastMsg("Option ID topilmadi. Qidiruvni qayta bajaring.")
       setToastOpen(true)
       return
     }
@@ -244,6 +261,68 @@ export default function FlightDetailsModal({
       setToastMsg(`${head}${more}`)
       setToastOpen(true)
       return
+    }
+
+    setBookLoading(true)
+    setLastOrderId(null)
+    try {
+      const token = localStorage.getItem("access_token")
+      if (!token) {
+        setToastMsg("Avval login qiling (token yo'q).")
+        setToastOpen(true)
+        return
+      }
+
+      const res = await bookAir({
+        optionID: safeFlight.id,
+        email: payer.email.trim(),
+        countryCode: payer.countryCode?.trim() || "998",
+        phoneNumber: payer.phone.replace(/\D/g, ""),
+        passengers: passengers.map((p) => ({
+          type: "ADT",
+          firstName: p.firstName.trim(),
+          lastName: p.lastName.trim(),
+          gender: p.gender,
+          dob: p.birthDate,
+          countryCode: p.countryCode.trim() || "UZ",
+          documentType: 1,
+          documentNumber: p.passportNo.trim().toUpperCase(),
+          documentIssued: p.passportIssued,
+          documentExpires: p.passportExpiry,
+        })),
+      })
+
+      if (res.data.status !== "success") {
+        setToastMsg(res.data.message || "Booking xato")
+        setToastOpen(true)
+        return
+      }
+      setLastOrderId(res.data.data?.orderID ?? null)
+      setToastMsg(`Booking muvaffaqiyatli. Order ID: ${res.data.data?.orderID ?? "—"}`)
+      setToastOpen(true)
+      if (res.data.data?.orderID) {
+        const curr = bookingCart.get()
+        bookingCart.set({
+          ...curr,
+          lastOrderId: res.data.data.orderID,
+          history: [
+            ...(curr.history ?? []),
+            {
+              orderId: res.data.data.orderID,
+              route: curr.route,
+              date: curr.date,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        })
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Booking xato"
+      setToastMsg(msg)
+      setToastOpen(true)
+      return
+    } finally {
+      setBookLoading(false)
     }
 
     // ✅ bookingCart ga hammasini yozamiz
@@ -260,7 +339,10 @@ export default function FlightDetailsModal({
         birthDate: p.birthDate,
         citizenship: p.citizenship.trim(),
         passportNo: p.passportNo.trim().toUpperCase(),
+        passportIssued: p.passportIssued,
         passportExpiry: p.passportExpiry,
+        gender: p.gender,
+        countryCode: p.countryCode,
       })),
     })
 
@@ -325,7 +407,7 @@ export default function FlightDetailsModal({
                 <X size={18} />
               </button>
 
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
                   <div className="text-white/70 text-sm">
                     {flight.airline} · {flightNo}
@@ -339,14 +421,14 @@ export default function FlightDetailsModal({
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-left md:text-right w-full md:w-auto">
                   <div className="text-white/60 text-xs">Yakuniy narx</div>
                   <div className="text-3xl font-extrabold text-white">${total}</div>
                   <div className="text-white/55 text-xs">tax + fee included (demo)</div>
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center gap-2 text-xs">
+              <div className="mt-5 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
@@ -361,23 +443,23 @@ export default function FlightDetailsModal({
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    step === "pay"
+                    step === "details"
                       ? "bg-white/12 border-white/25 text-white"
                       : "bg-white/6 border-white/10 text-white/65",
                   ].join(" ")}
                 >
-                  2) To'lov
+                  2) Ma'lumotlar
                 </span>
                 <span className="text-white/35">→</span>
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    step === "ticket"
+                    step === "pay"
                       ? "bg-white/12 border-white/25 text-white"
                       : "bg-white/6 border-white/10 text-white/65",
                   ].join(" ")}
                 >
-                  3) Chipta olish
+                  3) To'lov
                 </span>
               </div>
 
@@ -391,7 +473,7 @@ export default function FlightDetailsModal({
             </div>
 
             {/* body */}
-            <div className="p-5 md:p-7 overflow-auto max-h-[calc(90vh-170px)]">
+            <div className="p-5 md:p-7 overflow-auto max-h-[calc(90vh-210px)] sm:max-h-[calc(90vh-190px)] md:max-h-[calc(90vh-170px)]">
               {step === "select" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
@@ -420,7 +502,41 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4 text-white/65 text-sm leading-relaxed">
-                        Tarif qoidalari, qaytarish shartlari va baggage tafsilotlari keyin backenddan keladi.
+                        Tarif qoidalari, qaytarish shartlari va baggage tafsilotlari backenddan olinadi.
+                      </div>
+
+                      <div className="mt-4 text-white/70 text-sm">
+                        {fareLoading && "Tariflar yuklanmoqda..."}
+                        {!fareLoading && fareError && `Tariflar: ${fareError}`}
+                        {!fareLoading && !fareError && fareData?.families?.length ? (
+                          <div className="mt-2 space-y-2">
+                            {fareData.families.map((f) => (
+                              <div
+                                key={f.id}
+                                className="rounded-xl border border-white/12 bg-white/6 p-3"
+                              >
+                                <div className="text-white/90 font-semibold text-sm">
+                                  {f.name}
+                                </div>
+                                <div className="mt-1 text-white/70 text-xs">
+                                  Baggage: {f.baggageInfos?.join(", ") || "—"}
+                                </div>
+                                {f.services && f.services.length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-2">
+                                    {f.services.map((s, i) => (
+                                      <span
+                                        key={`${f.id}-${i}`}
+                                        className="rounded-full border border-white/12 bg-white/8 px-2.5 py-1 text-[11px] text-white/75"
+                                      >
+                                        {s.description}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
@@ -446,11 +562,11 @@ export default function FlightDetailsModal({
                     <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
                       <div className="text-white font-semibold">Tanlov</div>
                       <div className="mt-3 text-white/70 text-sm">
-                        Keyingi bosqichda: to'lovchi ma'lumoti → yo'lovchilar → sotib olish.
+                        Keyingi bosqichda: to'lovchi va yo'lovchilar ma'lumotlarini to'ldirasiz.
                       </div>
 
                       <button
-                        onClick={() => setStep("pay")}
+                        onClick={() => setStep("details")}
                         className="
                           mt-5 w-full h-12 rounded-2xl
                           bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
@@ -475,174 +591,41 @@ export default function FlightDetailsModal({
                 </div>
               )}
 
-              {step === "pay" && (
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-5">
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                      <div className="flex items-center justify-between">
-                        <div className="text-white font-semibold inline-flex items-center gap-2">
-                          <User size={18} />
-                          To'lovchi ma'lumotlari
-                        </div>
-                        <div className="text-xs text-white/55">Email va telefon</div>
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <Input
-                          label="Ism (to'lovchi)"
-                          placeholder="Ism Familiya"
-                          icon={User}
-                          value={payerName}
-                          onChange={(v) => setPayerName(v)}
-                        />
-                        <Input
-                          label="Email"
-                          placeholder="example@gmail.com"
-                          icon={Mail}
-                          value={payer.email}
-                          onChange={(v) => setPayer((p) => ({ ...p, email: v }))}
-                        />
-                        <Input
-                          label="Email (re-)"
-                          placeholder="example@gmail.com"
-                          icon={Mail}
-                          value={confirmEmail}
-                          onChange={(v) => setConfirmEmail(v)}
-                        />
-                        <Input
-                          label="Telefon raqam"
-                          placeholder="+998 90 123 45 67"
-                          icon={Phone}
-                          value={payer.phone}
-                          onChange={(v) => setPayer((p) => ({ ...p, phone: v }))}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                      <div className="text-white font-semibold">To'lov usuli</div>
-                      <div className="mt-2 text-white/70 text-sm">
-                        Demo rejim: istalgan usulni tanlang.
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {[
-                          { id: "click", label: "Click" },
-                          { id: "payme", label: "Payme" },
-                          { id: "uzum", label: "Uzum" },
-                          { id: "paynet", label: "Paynet" },
-                          { id: "visa", label: "Visa / Master" },
-                        ].map((m) => (
-                          <button
-                            key={m.id}
-                            type="button"
-                            onClick={() => setPaymentMethod(m.id as any)}
-                            className={[
-                              "h-12 rounded-2xl border text-sm font-semibold transition",
-                              paymentMethod === m.id
-                                ? "border-white/35 bg-white/20 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
-                                : "border-white/12 bg-white/6 text-white/80 hover:bg-white/12",
-                            ].join(" ")}
-                          >
-                            {m.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                      <div className="text-white font-semibold">Karta ma'lumotlari</div>
-                      <div className="mt-2 text-white/70 text-sm">
-                        Demo to'lov: karta raqami, amal qilish muddati va CVV kiriting.
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <Input
-                          label="Karta raqami"
-                          placeholder="8600 0000 0000 0000"
-                          value={cardNumber}
-                          onChange={(v) => setCardNumber(v)}
-                        />
-                        <Input
-                          label="Karta egasi"
-                          placeholder="Yusuf Latipov"
-                          value={cardName}
-                          onChange={(v) => setCardName(v)}
-                        />
-                        <Input
-                          label="Amal qilish (MM/YY)"
-                          placeholder="12/28"
-                          value={cardExpiry}
-                          onChange={(v) => setCardExpiry(v)}
-                        />
-                        <Input
-                          label="CVV"
-                          placeholder="123"
-                          value={cardCvv}
-                          onChange={(v) => setCardCvv(v.replace(/\D/g, ""))}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                      <div className="text-white font-semibold inline-flex items-center gap-2">
-                        <CreditCard size={18} />
-                        Narxlar
-                      </div>
-
-                      <div className="mt-4 space-y-2 text-sm">
-                        <PriceRow label="Tarif (1 yo'lovchi)" value={`$${safeFlight.price}`} />
-                        <PriceRow label="Soliq/Yig'im (1 yo'lovchi)" value={`$${taxPerPax}`} />
-                        <PriceRow label="Yo'lovchi soni" value={`${Math.max(1, pax)} ta`} />
-                        <div className="rounded-2xl border border-white/12 bg-white/6 p-4">
-                          <div className="text-white/60 text-xs">Jami</div>
-                          <div className="text-white font-extrabold text-2xl">${total}</div>
-                          <div className="text-white/50 text-xs mt-1">demo hisob-kitob</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <button
-                        onClick={() => {
-                          if (!canPayNow) {
-                            setToastMsg("To'lov ma'lumotlari to'liq emas.")
-                            setToastOpen(true)
-                            return
-                          }
-                          setPaymentPaid(true)
-                          setStep("ticket")
-                        }}
-                        disabled={!canPayNow}
-                        className="
-                          h-12 rounded-2xl
-                          bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                          text-white font-semibold transition
-                          shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                          hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                        "
-                      >
-                        To'lov qilish
-                      </button>
-                      <button
-                        onClick={() => setStep("select")}
-                        className="h-12 rounded-2xl border border-white/15 bg-white/8 text-white/85 hover:bg-white/12 transition"
-                      >
-                        Orqaga
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {step === "ticket" && (
+              {step === "details" && (
                 <div className="space-y-4">
-                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-emerald-50 text-sm">
-                    To'lov tasdiqlandi. Endi rasmiylashtirishni yakunlang.
+                  <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="text-white font-semibold inline-flex items-center gap-2">
+                        <User size={18} />
+                        To'lovchi ma'lumotlari
+                      </div>
+                      <div className="text-xs text-white/55">Email va telefon</div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <Input
+                        label="Country code"
+                        placeholder="998"
+                        value={payer.countryCode ?? ""}
+                        onChange={(v) => setPayer((p) => ({ ...p, countryCode: v.replace(/\D/g, "") }))}
+                      />
+                      <Input
+                        label="Email"
+                        placeholder="example@gmail.com"
+                        icon={Mail}
+                        value={payer.email}
+                        onChange={(v) => setPayer((p) => ({ ...p, email: v }))}
+                      />
+                      <Input
+                        label="Telefon raqam"
+                        placeholder="901234567"
+                        icon={Phone}
+                        value={payer.phone}
+                        onChange={(v) => setPayer((p) => ({ ...p, phone: v }))}
+                      />
+                    </div>
                   </div>
+
                   <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
                     <div className="flex items-center justify-between">
                       <div className="text-white font-semibold inline-flex items-center gap-2">
@@ -695,6 +678,18 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
+                              label="Pasport berilgan sana"
+                              type="date"
+                              value={p.passportIssued}
+                              onChange={(v) =>
+                                setPassengers((arr) => {
+                                  const next = [...arr]
+                                  next[idx] = { ...next[idx], passportIssued: v }
+                                  return next
+                                })
+                              }
+                            />
+                            <Input
                               label="Fuqarolik"
                               placeholder="O'zbekiston"
                               value={p.citizenship}
@@ -706,6 +701,37 @@ export default function FlightDetailsModal({
                                 })
                               }
                             />
+                            <Input
+                              label="Country code"
+                              placeholder="UZ"
+                              value={p.countryCode}
+                              onChange={(v) =>
+                                setPassengers((arr) => {
+                                  const next = [...arr]
+                                  next[idx] = { ...next[idx], countryCode: v.toUpperCase() }
+                                  return next
+                                })
+                              }
+                            />
+                            <div className="md:col-span-2">
+                              <label className="block">
+                                <div className="text-white/60 text-xs mb-2">Gender</div>
+                                <select
+                                  className="h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 outline-none focus:border-white/25 focus:bg-white/10 transition text-white"
+                                  value={p.gender}
+                                  onChange={(e) =>
+                                    setPassengers((arr) => {
+                                      const next = [...arr]
+                                      next[idx] = { ...next[idx], gender: e.target.value as "M" | "F" }
+                                      return next
+                                    })
+                                  }
+                                >
+                                  <option value="M">M</option>
+                                  <option value="F">F</option>
+                                </select>
+                              </label>
+                            </div>
                             <Input
                               label="Pasport amal qilish muddati"
                               type="date"
@@ -738,59 +764,108 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setStep("pay")}
+                      className="
+                        h-12 rounded-2xl
+                        bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
+                        text-white font-semibold transition
+                        shadow-[0_18px_50px_rgba(138,58,90,0.35)]
+                        hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
+                      "
+                    >
+                      Davom etish
+                    </button>
+                    <button
+                      onClick={() => setStep("select")}
+                      className="h-12 rounded-2xl border border-white/15 bg-white/8 text-white/85 hover:bg-white/12 transition"
+                    >
+                      Orqaga
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {step === "pay" && (
+                <div className="space-y-4">
                   <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
-                    <div className="text-white font-semibold inline-flex items-center gap-2">
-                      <CreditCard size={18} />
-                      Narxlar
+                    <div className="text-white font-semibold">To'lov usuli</div>
+                    <div className="mt-2 text-white/70 text-sm">
+                      Demo: hozircha faqat vizual tanlov. Backendga yuborilmaydi.
                     </div>
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
+                      {[
+                        { id: "click", label: "Click" },
+                        { id: "payme", label: "Payme" },
+                        { id: "uzum", label: "Uzum" },
+                        { id: "paynet", label: "Paynet" },
+                        { id: "visa", label: "Visa / Master" },
+                      ].map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setPaymentMethod(m.id as any)}
+                          className={[
+                            "h-11 rounded-2xl border text-sm font-semibold transition",
+                            paymentMethod === m.id
+                              ? "border-white/35 bg-white/20 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+                              : "border-white/12 bg-white/6 text-white/80 hover:bg-white/12",
+                          ].join(" ")}
+                        >
+                          {m.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <PriceRow label="Tarif (1 yo'lovchi)" value={`$${safeFlight.price}`} />
-                      <PriceRow label="Soliq/Yig'im (1 yo'lovchi)" value={`$${taxPerPax}`} />
+                  <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
+                    <div className="text-white font-semibold">Buyurtma yakunlash</div>
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <PriceRow label="Yo'nalish" value={`${safeFlight.from} → ${safeFlight.to}`} />
+                      <PriceRow label="Sana" value={date || "—"} />
                       <PriceRow label="Yo'lovchi soni" value={`${Math.max(1, pax)} ta`} />
-                      <div className="rounded-2xl border border-white/12 bg-white/6 p-4">
-                        <div className="text-white/60 text-xs">Jami</div>
-                        <div className="text-white font-extrabold text-2xl">${total}</div>
-                        <div className="text-white/50 text-xs mt-1">demo hisob-kitob</div>
-                      </div>
+                      <PriceRow label="Narx (jami)" value={`$${total}`} />
                     </div>
-
-                    <label className="mt-4 flex items-start gap-2 text-xs text-white/70">
-                      <input
-                        type="checkbox"
-                        checked={agreeData}
-                        onChange={(e) => setAgreeData(e.target.checked)}
-                        className="mt-0.5"
-                      />
-                      Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
-                    </label>
-                    <label className="mt-2 flex items-start gap-2 text-xs text-white/70">
-                      <input
-                        type="checkbox"
-                        checked={agreeRules}
-                        onChange={(e) => setAgreeRules(e.target.checked)}
-                        className="mt-0.5"
-                      />
-                      Men tanishdim va tarifning qoidalari va shartlariga roziman
-                    </label>
-                    <div className="mt-3 text-xs text-white/55">
-                      To'lov usuli:{" "}
-                      <span className="text-white/80 font-semibold">
-                        {paymentMethod
-                          ? paymentMethod === "visa"
-                            ? "Visa / Master"
-                            : paymentMethod.toUpperCase()
-                          : "tanlanmagan"}
+                    <div className="mt-3 text-xs text-white/60">
+                      Tanlangan to'lov:{" "}
+                      <span className="text-white/85 font-semibold">
+                        {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
                       </span>
                     </div>
                   </div>
 
-                  {/* xatolar toast orqali ko'rsatiladi */}
+                  {errors.length > 0 && (
+                    <div className="rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-red-100 text-sm">
+                      {errors[0]}
+                    </div>
+                  )}
+
+                  <label className="mt-2 flex items-start gap-2 text-xs text-white/70">
+                    <input
+                      type="checkbox"
+                      checked={agreeData}
+                      onChange={(e) => setAgreeData(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
+                  </label>
+                  {!agreeData && (
+                    <div className="text-xs text-white/55">
+                      * Rasmiylashtirish uchun tasdiqlashni belgilang.
+                    </div>
+                  )}
+
+                  {lastOrderId && (
+                    <div className="text-xs text-emerald-200">
+                      Order ID: {lastOrderId}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={submit}
-                      disabled={!canSubmit}
+                      disabled={!canSubmit || bookLoading}
                       className="
                         h-12 rounded-2xl
                         bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
@@ -800,10 +875,10 @@ export default function FlightDetailsModal({
                         disabled:opacity-50 disabled:cursor-not-allowed
                       "
                     >
-                      Rasmiylashtirish
+                      {bookLoading ? "..." : "Rasmiylashtirish"}
                     </button>
                     <button
-                      onClick={() => setStep("pay")}
+                      onClick={() => setStep("details")}
                       className="h-12 rounded-2xl border border-white/15 bg-white/8 text-white/85 hover:bg-white/12 transition"
                     >
                       Orqaga

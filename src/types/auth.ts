@@ -3,13 +3,11 @@ export interface LoginPayload {
   password: string;
 }
 
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
 export interface AuthResponse {
-  token: string;
-  user: User;
+  status: "success" | "error";
+  message: string;
+  data: {
+    token: string;
+    currency: string;
+  };
 }

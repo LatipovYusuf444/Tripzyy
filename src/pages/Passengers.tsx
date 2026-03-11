@@ -15,6 +15,8 @@ import {
   Phone,
 } from "lucide-react"
 import { bookingCart, type Passenger, type PayerInfo, uid } from "@/shared/store/bookingCart"
+import { cancelOrderService, issueOrder, voidOrderService } from "@/shared/api/order/order.api"
+import { bookAir } from "@/shared/api/air/air.api"
 
 type Draft = Omit<Passenger, "id"> & { id?: string }
 
@@ -40,11 +42,28 @@ export default function PassengersPage() {
     citizenship: "O'zbekiston",
     passportNo: "",
     passportExpiry: "",
+    passportIssued: "",
+    gender: "M",
+    countryCode: "UZ",
   })
-  const [payer, setPayer] = useState<PayerInfo>(() => cart.payer ?? { email: "", phone: "" })
+  const [payer, setPayer] = useState<PayerInfo>(
+    () => cart.payer ?? { email: "", phone: "", countryCode: "998" }
+  )
   const [confirmEmail, setConfirmEmail] = useState("")
   const [agreeData, setAgreeData] = useState(false)
   const [agreeRules, setAgreeRules] = useState(false)
+  const [bookLoading, setBookLoading] = useState(false)
+  const [lastOrderId, setLastOrderId] = useState<number | null>(null)
+  const [bookError, setBookError] = useState<string | null>(null)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [cancelMsg, setCancelMsg] = useState<string | null>(null)
+  const [issueLoading, setIssueLoading] = useState(false)
+  const [issueMsg, setIssueMsg] = useState<string | null>(null)
+  const [voidLoading, setVoidLoading] = useState(false)
+  const [voidMsg, setVoidMsg] = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<
+    "click" | "payme" | "uzum" | "paynet" | "visa" | ""
+  >("")
 
   const refresh = () => setCart(bookingCart.get())
 
@@ -58,8 +77,8 @@ export default function PassengersPage() {
   }, [])
 
   useEffect(() => {
-    setPayer(cart.payer ?? { email: "", phone: "" })
-  }, [cart.payer?.email, cart.payer?.phone])
+    setPayer(cart.payer ?? { email: "", phone: "", countryCode: "998" })
+  }, [cart.payer?.email, cart.payer?.phone, cart.payer?.countryCode])
 
   const title = useMemo(() => {
     const r = cart.route ? ` · ${cart.route}` : ""
@@ -75,6 +94,9 @@ export default function PassengersPage() {
       citizenship: "O'zbekiston",
       passportNo: "",
       passportExpiry: "",
+      passportIssued: "",
+      gender: "M",
+      countryCode: "UZ",
     })
     setOpen(true)
   }
@@ -101,14 +123,18 @@ export default function PassengersPage() {
     draft.birthDate?.trim() &&
     draft.citizenship?.trim() &&
     draft.passportNo?.trim() &&
-    draft.passportExpiry?.trim()
+    draft.passportExpiry?.trim() &&
+    draft.passportIssued?.trim() &&
+    draft.countryCode?.trim()
 
   const canContinueStep2 =
     payer.email.trim().length > 5 &&
     payer.email.includes("@") &&
     confirmEmail.trim().length > 5 &&
     payer.email.trim().toLowerCase() === confirmEmail.trim().toLowerCase() &&
-    payer.phone.trim().length >= 7
+    payer.phone.trim().length >= 7 &&
+    (payer.countryCode ?? "").trim().length >= 1 &&
+    paymentMethod !== ""
 
   const canCheckout =
     cart.passengers.length >= Math.max(1, (cart.pax ?? cart.passengers.length) || 1) &&
@@ -126,6 +152,9 @@ export default function PassengersPage() {
       citizenship: draft.citizenship.trim(),
       passportNo: draft.passportNo.trim().toUpperCase(),
       passportExpiry: draft.passportExpiry,
+      passportIssued: draft.passportIssued,
+      gender: draft.gender,
+      countryCode: draft.countryCode?.toUpperCase(),
     }
 
     bookingCart.upsertPassenger(p)
@@ -134,6 +163,121 @@ export default function PassengersPage() {
   }
 
   const pax = Math.max(1, (cart.pax ?? cart.passengers.length) || 1)
+
+  const onBook = async () => {
+    setBookError(null)
+    setLastOrderId(null)
+    setCancelMsg(null)
+    setIssueMsg(null)
+    setVoidMsg(null)
+    if (!cart.flightId) {
+      setBookError("Option ID topilmadi. Qidiruvni qayta bajaring.")
+      return
+    }
+    if (!canCheckout) {
+      setBookError("Ma'lumotlar to'liq emas.")
+      return
+    }
+
+    setBookLoading(true)
+    try {
+      const res = await bookAir({
+        optionID: cart.flightId,
+        email: payer.email.trim(),
+        countryCode: (payer.countryCode ?? "998").trim(),
+        phoneNumber: payer.phone.replace(/\D/g, ""),
+        passengers: cart.passengers.map((p) => ({
+          type: "ADT",
+          firstName: p.firstName,
+          lastName: p.lastName,
+          gender: p.gender ?? "M",
+          dob: p.birthDate,
+          countryCode: p.countryCode ?? "UZ",
+          documentType: 1,
+          documentNumber: p.passportNo,
+          documentIssued: p.passportIssued ?? p.birthDate,
+          documentExpires: p.passportExpiry,
+        })),
+      })
+
+      if (res.data.status !== "success") {
+        setBookError(res.data.message || "Booking xato")
+        return
+      }
+      setLastOrderId(res.data.data?.orderID ?? null)
+      if (res.data.data?.orderID) {
+        const curr = bookingCart.get()
+        bookingCart.set({
+          ...curr,
+          lastOrderId: res.data.data.orderID,
+          history: [
+            ...(curr.history ?? []),
+            {
+              orderId: res.data.data.orderID,
+              route: curr.route,
+              date: curr.date,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        })
+      }
+    } catch (err: any) {
+      setBookError(err?.response?.data?.message || "Booking xato")
+    } finally {
+      setBookLoading(false)
+    }
+  }
+
+  const onCancelService = async () => {
+    if (!lastOrderId) {
+      setCancelMsg("Order ID topilmadi.")
+      return
+    }
+    setCancelLoading(true)
+    setCancelMsg(null)
+    try {
+      const res = await cancelOrderService(lastOrderId)
+      setCancelMsg(res.data.message || "Cancel bajarildi")
+    } catch (err: any) {
+      setCancelMsg(err?.response?.data?.message || "Cancel xato")
+    } finally {
+      setCancelLoading(false)
+    }
+  }
+
+  const onIssueOrder = async () => {
+    if (!lastOrderId) {
+      setIssueMsg("Order ID topilmadi.")
+      return
+    }
+    setIssueLoading(true)
+    setIssueMsg(null)
+    try {
+      const res = await issueOrder(lastOrderId)
+      setIssueMsg(res.data.message || "Issue bajarildi")
+    } catch (err: any) {
+      setIssueMsg(err?.response?.data?.message || "Issue xato")
+    } finally {
+      setIssueLoading(false)
+    }
+  }
+
+  const onVoidService = async () => {
+    if (!lastOrderId) {
+      setVoidMsg("Order ID topilmadi.")
+      return
+    }
+    setVoidLoading(true)
+    setVoidMsg(null)
+    try {
+      const res = await voidOrderService(lastOrderId)
+      setVoidMsg(res.data.message || "VOID bajarildi")
+    } catch (err: any) {
+      setVoidMsg(err?.response?.data?.message || "VOID xato")
+    } finally {
+      setVoidLoading(false)
+    }
+  }
   return (
     <section className="relative min-h-screen text-white pt-24">
       <motion.div
@@ -180,6 +324,7 @@ export default function PassengersPage() {
               icon={ClipboardCheck}
               title="Bron qilish"
               desc="Reys ma'lumotlari va tanlovni tekshirish"
+              onClick={() => setStep(1)}
             />
             <StepCard
               active={step === 2}
@@ -187,6 +332,7 @@ export default function PassengersPage() {
               icon={CreditCard}
               title="To'lov"
               desc="Bog'lanish va to'lov ma'lumotlari"
+              onClick={() => setStep(2)}
             />
             <StepCard
               active={step === 3}
@@ -194,12 +340,40 @@ export default function PassengersPage() {
               icon={BadgeCheck}
               title="Chipta olish"
               desc="Yo'lovchi ma'lumotlari va tasdiqlash"
+              onClick={() => setStep(3)}
             />
           </div>
         </motion.div>
 
+        <motion.div variants={fadeUp} className="mt-4 text-xs text-white/60">
+          * Bosqich kartasiga bosib o‘tish mumkin. To‘lov bo‘limi 2-bosqichda chiqadi.
+        </motion.div>
+        <motion.div variants={fadeUp} className="mt-3 flex items-center gap-2 text-xs text-white/70">
+          <span>Joriy bosqich:</span>
+          <span className="rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-white/85">
+            {step}
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            {[1, 2, 3].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStep(s as 1 | 2 | 3)}
+                className={[
+                  "h-8 px-3 rounded-full border text-xs font-semibold transition",
+                  step === s
+                    ? "bg-white/15 border-white/30 text-white"
+                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10",
+                ].join(" ")}
+              >
+                {s}-bosqich
+              </button>
+            ))}
+          </div>
+        </motion.div>
+
         {step === 1 && (
-          <motion.div variants={fadeUp} className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="lg:col-span-2 rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
               <div className="text-lg font-extrabold">Yo'nalish tafsilotlari</div>
               <div className="mt-2 text-white/70 text-sm">
@@ -235,11 +409,11 @@ export default function PassengersPage() {
                 Davom etish
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {step === 2 && (
-          <motion.div variants={fadeUp} className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="lg:col-span-2 rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
               <div className="text-lg font-extrabold">Bog'lanish uchun ma'lumot</div>
               <div className="mt-2 text-white/70 text-sm">
@@ -247,6 +421,18 @@ export default function PassengersPage() {
               </div>
 
               <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field
+                  label="Country code"
+                  value={payer.countryCode ?? ""}
+                  onChange={(v) =>
+                    setPayer((p) => {
+                      const next = { ...p, countryCode: v.replace(/\D/g, "") }
+                      bookingCart.patch({ payer: next })
+                      return next
+                    })
+                  }
+                  placeholder="998"
+                />
                 <Field
                   label="Elektron pochta"
                   icon={Mail}
@@ -288,6 +474,41 @@ export default function PassengersPage() {
               <div className="mt-2 text-white/70 text-sm">
                 Ma'lumotlar to'liq bo'lsa, 3-bosqichga o'ting.
               </div>
+              <div className="mt-4 rounded-2xl border border-white/12 bg-white/6 p-4">
+                <div className="text-white font-semibold">To'lov usuli</div>
+                <div className="mt-2 text-white/70 text-sm">
+                  Demo: hozircha faqat tanlash. Backendga yuborilmaydi.
+                </div>
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {[
+                    { id: "click", label: "Click" },
+                    { id: "payme", label: "Payme" },
+                    { id: "uzum", label: "Uzum" },
+                    { id: "paynet", label: "Paynet" },
+                    { id: "visa", label: "Visa / Master" },
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id as any)}
+                      className={[
+                        "h-11 rounded-2xl border text-sm font-semibold transition",
+                        paymentMethod === m.id
+                          ? "border-white/35 bg-white/20 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+                          : "border-white/12 bg-white/6 text-white/80 hover:bg-white/12",
+                      ].join(" ")}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-white/60">
+                  Tanlangan to'lov:{" "}
+                  <span className="text-white/85 font-semibold">
+                    {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
+                  </span>
+                </div>
+              </div>
               <button
                 onClick={() => setStep(3)}
                 disabled={!canContinueStep2}
@@ -309,11 +530,11 @@ export default function PassengersPage() {
                 Orqaga
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {step === 3 && (
-          <motion.div variants={fadeUp} className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="lg:col-span-2">
               <div className="rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
                 <div className="flex items-center justify-between gap-3">
@@ -423,11 +644,47 @@ export default function PassengersPage() {
               <div className="mt-2 text-white/70 text-sm">
                 Ma'lumotlarni tekshiring va rasmiylashtirishni yakunlang.
               </div>
+              {lastOrderId && (
+                <div className="mt-3 text-emerald-200 text-sm">
+                  Order ID: {lastOrderId}
+                </div>
+              )}
+              {cancelMsg && (
+                <div className="mt-3 text-sm text-white/80">
+                  {cancelMsg}
+                </div>
+              )}
+              {issueMsg && (
+                <div className="mt-3 text-sm text-white/80">
+                  {issueMsg}
+                </div>
+              )}
+              {voidMsg && (
+                <div className="mt-3 text-sm text-white/80">
+                  {voidMsg}
+                </div>
+              )}
 
               <div className="mt-4 rounded-2xl bg-white/10 p-4">
                 <div className="text-white/70 text-xs">Narx</div>
                 <div className="text-2xl font-extrabold text-[#F4D7E3]">3 887 401 UZS</div>
+                <div className="mt-2 text-xs text-white/60">
+                  To'lov:{" "}
+                  <span className="text-white/85 font-semibold">
+                    {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
+                  </span>
+                </div>
               </div>
+              {bookError && (
+                <div className="mt-3 rounded-2xl border border-red-500/25 bg-red-500/10 p-3 text-red-100 text-sm">
+                  {bookError}
+                </div>
+              )}
+              {lastOrderId && (
+                <div className="mt-3 text-emerald-200 text-sm">
+                  Order ID: {lastOrderId}
+                </div>
+              )}
 
               <label className="mt-4 flex items-start gap-2 text-xs text-white/70">
                 <input
@@ -449,7 +706,8 @@ export default function PassengersPage() {
               </label>
 
               <button
-                disabled={!canCheckout}
+                onClick={onBook}
+                disabled={!canCheckout || bookLoading}
                 className="
                   mt-4 h-12 w-full rounded-2xl
                   bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
@@ -459,7 +717,37 @@ export default function PassengersPage() {
                   disabled:opacity-50 disabled:cursor-not-allowed
                 "
               >
-                Rasmiylashtirish
+                {bookLoading ? "..." : "Rasmiylashtirish"}
+              </button>
+              <button
+                onClick={onCancelService}
+                disabled={!lastOrderId || cancelLoading}
+                className="
+                  mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                "
+              >
+                {cancelLoading ? "Cancel..." : "Cancel PNR"}
+              </button>
+              <button
+                onClick={onIssueOrder}
+                disabled={!lastOrderId || issueLoading}
+                className="
+                  mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                "
+              >
+                {issueLoading ? "Issue..." : "Issue PNR"}
+              </button>
+              <button
+                onClick={onVoidService}
+                disabled={!lastOrderId || voidLoading}
+                className="
+                  mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                "
+              >
+                {voidLoading ? "VOID..." : "VOID PNR"}
               </button>
               <button
                 onClick={() => setStep(2)}
@@ -468,7 +756,7 @@ export default function PassengersPage() {
                 Orqaga
               </button>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {open && (
@@ -516,16 +804,36 @@ export default function PassengersPage() {
                   onChange={(v) => setDraft((p) => ({ ...p, birthDate: v }))}
                 />
                 <Field
+                  label="Gender"
+                  value={draft.gender ?? "M"}
+                  onChange={(v) =>
+                    setDraft((p) => ({ ...p, gender: (v.toUpperCase() === "F" ? "F" : "M") }))
+                  }
+                  placeholder="M / F"
+                />
+                <Field
                   label="Fuqarolik"
                   value={draft.citizenship}
                   onChange={(v) => setDraft((p) => ({ ...p, citizenship: v }))}
                   placeholder="O'zbekiston"
                 />
                 <Field
+                  label="Country code"
+                  value={draft.countryCode ?? "UZ"}
+                  onChange={(v) => setDraft((p) => ({ ...p, countryCode: v.toUpperCase() }))}
+                  placeholder="UZ"
+                />
+                <Field
                   label="Pasport seriya / raqam"
                   value={draft.passportNo}
                   onChange={(v) => setDraft((p) => ({ ...p, passportNo: v.toUpperCase() }))}
                   placeholder="AA1234567"
+                />
+                <Field
+                  label="Pasport berilgan sana"
+                  type="date"
+                  value={draft.passportIssued ?? ""}
+                  onChange={(v) => setDraft((p) => ({ ...p, passportIssued: v }))}
                 />
                 <Field
                   label="Pasport amal qilish muddati"
@@ -573,20 +881,26 @@ function StepCard({
   desc,
   active,
   done,
+  onClick,
 }: {
   icon: any
   title: string
   desc: string
   active?: boolean
   done?: boolean
+  onClick?: () => void
 }) {
   return (
-    <div
+    <button
+      type="button"
       className={`
+        w-full text-left
         rounded-2xl border
         ${active ? "border-white/30 bg-white/15" : "border-white/10 bg-white/6"}
         p-4 shadow-[0_18px_40px_rgba(0,0,0,0.25)]
+        ${onClick ? "cursor-pointer hover:bg-white/10 transition" : ""}
       `}
+      onClick={onClick}
     >
       <div className="flex items-center gap-3">
         <div
@@ -602,7 +916,7 @@ function StepCard({
           <div className="text-white/65 text-xs">{desc}</div>
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 
