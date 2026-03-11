@@ -1,4 +1,4 @@
-import type { Order, OrderActionResponse } from "@/types/order";
+import type { Order, OrderActionResponse, OrderDetailsResponse } from "@/types/order";
 import client from "../client";
 
 
@@ -16,3 +16,6 @@ export const issueOrder = (id: number) =>
 
 export const voidOrderService = (id: number) =>
   client.post<OrderActionResponse>("/orders/void-service", { id });
+
+export const getOrderById = (id: number) =>
+  client.get<OrderDetailsResponse>(`/orders/${id}`)

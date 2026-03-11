@@ -19,8 +19,8 @@ export default function Flights() {
   const [date, setDate] = useState("")
   const [pax, setPax] = useState(1)
 
-  const [airline, setAirline] = useState("")
-  const [maxPrice, setMaxPrice] = useState<number | "">("")
+  const airline: string = ""
+  const maxPrice: number | "" = ""
   const [sort, setSort] = useState<"best" | "cheap" | "fast">("best")
 
   const [items, setItems] = useState<Flight[]>([])
@@ -120,8 +120,16 @@ export default function Flights() {
         const seg = trip?.segments?.[0]
         const baggage =
           seg?.baggage || opt.packages?.families?.[0]?.baggageInfos?.[0] || "—"
-        const services =
-          opt.packages?.families?.[0]?.services?.map((s) => s.description) || []
+        const services = ((opt.packages?.families?.[0]?.services ?? [])
+          .map((s) => {
+            const t = (s.description || "").toLowerCase()
+            if (t.includes("wifi")) return "wifi" as const
+            if (t.includes("meal") || t.includes("food")) return "meal" as const
+            if (t.includes("priority")) return "priority" as const
+            if (t.includes("support")) return "support" as const
+            return null
+          })
+          .filter(Boolean) as Array<"wifi" | "meal" | "priority" | "support">)
 
         return {
           id: opt.id,
@@ -133,7 +141,7 @@ export default function Flights() {
           durationMin: trip?.duration || seg?.duration || 0,
           price: Number(opt.price || 0),
           baggage,
-          cabin: seg?.serviceClass || "Economy",
+          cabin: seg?.serviceClass === "C" ? "Business" : "Economy",
           refundable: false,
           services,
           flightNo: seg?.flightNumber ? `${seg?.carrier || ""}-${seg.flightNumber}` : "—",

@@ -15,8 +15,13 @@ import {
   Phone,
 } from "lucide-react"
 import { bookingCart, type Passenger, type PayerInfo, uid } from "@/shared/store/bookingCart"
-import { cancelOrderService, issueOrder, voidOrderService } from "@/shared/api/order/order.api"
-import { bookAir } from "@/shared/api/air/air.api"
+import {
+  cancelOrderService,
+  getOrderById,
+  issueOrder,
+  voidOrderService,
+} from "@/shared/api/order/order.api"
+import { bookAir, getAirPnrDetails } from "@/shared/api/air/air.api"
 
 type Draft = Omit<Passenger, "id"> & { id?: string }
 
@@ -61,9 +66,41 @@ export default function PassengersPage() {
   const [issueMsg, setIssueMsg] = useState<string | null>(null)
   const [voidLoading, setVoidLoading] = useState(false)
   const [voidMsg, setVoidMsg] = useState<string | null>(null)
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderMsg, setOrderMsg] = useState<string | null>(null)
+  const [orderData, setOrderData] = useState<{
+    id?: number
+    status?: string
+    currency?: string
+    price?: number
+    client?: string
+    serviceType?: string
+    reservationId?: string
+  } | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<
     "click" | "payme" | "uzum" | "paynet" | "visa" | ""
   >("")
+  const [pnrLocator, setPnrLocator] = useState("")
+  const [pnrLoading, setPnrLoading] = useState(false)
+  const [pnrMsg, setPnrMsg] = useState<string | null>(null)
+  const [pnrData, setPnrData] = useState<{
+    price?: number
+    segments?: Array<{
+      origin?: string
+      destination?: string
+      carrier?: string
+      flightNumber?: string
+      departure?: string
+      arrival?: string
+      baggage?: string
+    }>
+    passengers?: Array<{
+      firstName?: string
+      lastName?: string
+      type?: string
+      title?: string
+    }>
+  } | null>(null)
 
   const refresh = () => setCart(bookingCart.get())
 
@@ -276,6 +313,63 @@ export default function PassengersPage() {
       setVoidMsg(err?.response?.data?.message || "VOID xato")
     } finally {
       setVoidLoading(false)
+    }
+  }
+
+  const onGetPnr = async () => {
+    const locator = pnrLocator.trim().toUpperCase()
+    if (!locator) {
+      setPnrMsg("Locator kiriting. Masalan: ABC123")
+      return
+    }
+    setPnrLoading(true)
+    setPnrMsg(null)
+    setPnrData(null)
+    try {
+      const res = await getAirPnrDetails(locator)
+      if (res.data.status !== "success") {
+        setPnrMsg(res.data.message || "PNR topilmadi")
+        return
+      }
+      setPnrData(res.data.data ?? null)
+      setPnrMsg(res.data.message || "Success")
+    } catch (err: any) {
+      setPnrMsg(err?.response?.data?.message || "PNR so'rovi xato")
+    } finally {
+      setPnrLoading(false)
+    }
+  }
+
+  const onGetOrder = async () => {
+    const id = lastOrderId ?? cart.lastOrderId
+    if (!id) {
+      setOrderMsg("Order ID topilmadi.")
+      return
+    }
+    setOrderLoading(true)
+    setOrderMsg(null)
+    setOrderData(null)
+    try {
+      const res = await getOrderById(id)
+      if (res.data.status !== "success") {
+        setOrderMsg(res.data.message || "Order topilmadi")
+        return
+      }
+      const item = res.data.data?.[0]
+      setOrderData({
+        id: item?.id,
+        status: item?.status,
+        currency: item?.currency,
+        price: item?.price,
+        client: item?.client,
+        serviceType: item?.services?.[0]?.type,
+        reservationId: item?.services?.[0]?.reservation?.id,
+      })
+      setOrderMsg(res.data.message || "Success")
+    } catch (err: any) {
+      setOrderMsg(err?.response?.data?.message || "Order so'rovi xato")
+    } finally {
+      setOrderLoading(false)
     }
   }
   return (
@@ -755,6 +849,70 @@ export default function PassengersPage() {
               >
                 Orqaga
               </button>
+
+              <div className="mt-4 rounded-2xl border border-white/12 bg-white/6 p-4">
+                <div className="text-white font-semibold">Order details</div>
+                <div className="mt-2 text-xs text-white/65">GET /orders/{`{id}`}</div>
+                <button
+                  onClick={onGetOrder}
+                  disabled={orderLoading || !(lastOrderId || cart.lastOrderId)}
+                  className="mt-3 h-10 w-full rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 transition disabled:opacity-60"
+                >
+                  {orderLoading ? "..." : "Get Order by ID"}
+                </button>
+                {orderMsg && <div className="mt-2 text-xs text-white/80">{orderMsg}</div>}
+                {orderData && (
+                  <div className="mt-2 text-xs text-white/80 space-y-1">
+                    <div>ID: {orderData.id ?? "—"}</div>
+                    <div>Status: {orderData.status ?? "—"}</div>
+                    <div>
+                      Narx: {orderData.price ?? "—"} {orderData.currency ?? ""}
+                    </div>
+                    <div>Client: {orderData.client ?? "—"}</div>
+                    <div>Service: {orderData.serviceType ?? "—"}</div>
+                    <div>Reservation (PNR): {orderData.reservationId ?? "—"}</div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-white/12 bg-white/6 p-4">
+                <div className="text-white font-semibold">PNR tekshirish</div>
+                <div className="mt-2 text-xs text-white/65">
+                  `GET /air/get-pnr?locator=ABC123`
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    value={pnrLocator}
+                    onChange={(e) => setPnrLocator(e.target.value.toUpperCase())}
+                    placeholder="PNR locator (ABC123)"
+                    className="h-10 flex-1 rounded-xl bg-white/5 border border-white/10 px-3 outline-none focus:border-white/25"
+                  />
+                  <button
+                    onClick={onGetPnr}
+                    disabled={pnrLoading}
+                    className="h-10 px-3 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 transition disabled:opacity-60"
+                  >
+                    {pnrLoading ? "..." : "Get PNR"}
+                  </button>
+                </div>
+                {pnrMsg && <div className="mt-2 text-xs text-white/80">{pnrMsg}</div>}
+                {pnrData && (
+                  <div className="mt-3 text-xs text-white/80 space-y-2">
+                    <div>Narx: {pnrData.price ?? "—"}</div>
+                    <div>Segments: {pnrData.segments?.length ?? 0}</div>
+                    {pnrData.segments?.slice(0, 2).map((s, i) => (
+                      <div key={i} className="rounded-lg border border-white/12 bg-white/6 p-2">
+                        {(s.origin || "—") + " → " + (s.destination || "—")} · {(s.carrier || "—")}
+                        {(s.flightNumber && `-${s.flightNumber}`) || ""}
+                        <div className="text-white/65 mt-1">
+                          {s.departure || "—"} → {s.arrival || "—"} · Bagaj: {s.baggage || "—"}
+                        </div>
+                      </div>
+                    ))}
+                    <div>Passengers: {pnrData.passengers?.length ?? 0}</div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

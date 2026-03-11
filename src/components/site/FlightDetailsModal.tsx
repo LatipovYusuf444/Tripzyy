@@ -2,8 +2,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
-import { bookAir, getBrandedFares } from "@/shared/api/air/air.api"
-import type { BrandedFaresResponse } from "@/types/air"
+import {
+  bookAir,
+  getAirOptionDetails,
+  getAirOptionFareFamilies,
+  getAirOptionRules,
+  getBrandedFares,
+} from "@/shared/api/air/air.api"
+import type { AirOptionRule, BrandedFaresResponse } from "@/types/air"
 import {
   X,
   PlaneTakeoff,
@@ -150,6 +156,32 @@ export default function FlightDetailsModal({
   const [fareLoading, setFareLoading] = useState(false)
   const [fareError, setFareError] = useState<string | null>(null)
   const [fareData, setFareData] = useState<BrandedFaresResponse["data"] | null>(null)
+  const [rulesLoading, setRulesLoading] = useState(false)
+  const [rulesError, setRulesError] = useState<string | null>(null)
+  const [rulesData, setRulesData] = useState<AirOptionRule[]>([])
+  const [fareFamiliesLoading, setFareFamiliesLoading] = useState(false)
+  const [fareFamiliesError, setFareFamiliesError] = useState<string | null>(null)
+  const [fareFamiliesData, setFareFamiliesData] = useState<
+    Array<{
+      id: string
+      name: string
+      price?: number
+      baggageInfos?: string[]
+      serviceDescriptions?: string[]
+    }>
+  >([])
+  const [optionDetailsLoading, setOptionDetailsLoading] = useState(false)
+  const [optionDetailsError, setOptionDetailsError] = useState<string | null>(null)
+  const [optionDetails, setOptionDetails] = useState<{
+    bookingClass?: string
+    serviceClass?: string
+    operatingCarrier?: string
+    terminalFrom?: string | null
+    terminalTo?: string | null
+    seatsAvailable?: number
+    equipment?: string
+    fareBasis?: string
+  } | null>(null)
 
   // modal ochilganda reset
   useEffect(() => {
@@ -166,6 +198,15 @@ export default function FlightDetailsModal({
     setFareLoading(false)
     setFareError(null)
     setFareData(null)
+    setRulesLoading(false)
+    setRulesError(null)
+    setRulesData([])
+    setFareFamiliesLoading(false)
+    setFareFamiliesError(null)
+    setFareFamiliesData([])
+    setOptionDetailsLoading(false)
+    setOptionDetailsError(null)
+    setOptionDetails(null)
   }, [open, safeFlight.id])
 
   useEffect(() => {
@@ -215,10 +256,164 @@ export default function FlightDetailsModal({
     }
   }, [open, safeFlight.id])
 
+  useEffect(() => {
+    if (!open) return
+    if (!safeFlight.id) return
+    const token = localStorage.getItem("access_token")
+    if (!token) return
+
+    let alive = true
+    setOptionDetailsLoading(true)
+    setOptionDetailsError(null)
+
+    getAirOptionDetails(safeFlight.id)
+      .then((res) => {
+        if (!alive) return
+        if (res.data.status !== "success") {
+          setOptionDetailsError(res.data.message || "Option details topilmadi")
+          setOptionDetails(null)
+          return
+        }
+
+        const seg = res.data.data?.trips?.[0]?.segments?.[0]
+        setOptionDetails({
+          bookingClass: seg?.bookingClass,
+          serviceClass: seg?.serviceClass,
+          operatingCarrier: seg?.operatingCarrier,
+          terminalFrom: seg?.departureTerminal,
+          terminalTo: seg?.arrivalTerminal,
+          seatsAvailable: seg?.seatsAvailable,
+          equipment: seg?.equipment,
+          fareBasis: seg?.fareBasis,
+        })
+      })
+      .catch((err: any) => {
+        if (!alive) return
+        const msg = err?.response?.data?.message || "Option details topilmadi"
+        setOptionDetailsError(msg)
+        setOptionDetails(null)
+      })
+      .finally(() => {
+        if (alive) setOptionDetailsLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [open, safeFlight.id])
+
+  useEffect(() => {
+    if (!open) return
+    if (!safeFlight.id) return
+    const token = localStorage.getItem("access_token")
+    if (!token) return
+
+    let alive = true
+    setFareFamiliesLoading(true)
+    setFareFamiliesError(null)
+
+    getAirOptionFareFamilies(safeFlight.id)
+      .then((res) => {
+        if (!alive) return
+        if (res.data.status !== "success") {
+          setFareFamiliesError(res.data.message || "Fare families topilmadi")
+          setFareFamiliesData([])
+          return
+        }
+
+        const option = res.data.data?.find((x) => x.id === safeFlight.id) ?? res.data.data?.[0]
+        const families = option?.packages?.families ?? []
+        const combinations = option?.packages?.combinations ?? []
+
+        const mapped = families.map((f) => {
+          const combo = combinations.find((c) => c.familyIDs?.includes(f.id))
+          return {
+            id: f.id,
+            name: f.name,
+            price: combo?.price,
+            baggageInfos: f.baggageInfos ?? [],
+            serviceDescriptions: (f.services ?? []).map((s) => s.description).filter(Boolean),
+          }
+        })
+
+        setFareFamiliesData(mapped)
+      })
+      .catch((err: any) => {
+        if (!alive) return
+        const msg = err?.response?.data?.message || "Fare families topilmadi"
+        setFareFamiliesError(msg)
+        setFareFamiliesData([])
+      })
+      .finally(() => {
+        if (alive) setFareFamiliesLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [open, safeFlight.id])
+
+  useEffect(() => {
+    if (!open) return
+    if (!safeFlight.id) return
+    const token = localStorage.getItem("access_token")
+    if (!token) return
+
+    let alive = true
+    setRulesLoading(true)
+    setRulesError(null)
+
+    getAirOptionRules(safeFlight.id)
+      .then((res) => {
+        if (!alive) return
+        if (res.data.status !== "success") {
+          setRulesError(res.data.message || "Tarif qoidalari topilmadi")
+          setRulesData([])
+          return
+        }
+        setRulesData(res.data.data ?? [])
+      })
+      .catch((err: any) => {
+        if (!alive) return
+        const msg = err?.response?.data?.message || "Tarif qoidalari topilmadi"
+        setRulesError(msg)
+        setRulesData([])
+      })
+      .finally(() => {
+        if (alive) setRulesLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [open, safeFlight.id])
+
   const cabin = safeFlight.cabin ?? "Economy"
   const refundable = safeFlight.refundable ?? false
   const services = safeFlight.services ?? ["support"]
   const flightNo = safeFlight.flightNo ?? "TZ-102"
+  const backendServiceDescriptions = useMemo(() => {
+    const seen = new Set<string>()
+    const list: string[] = []
+    fareData?.families?.forEach((f) => {
+      f.services?.forEach((s) => {
+        const text = (s.description || "").trim()
+        if (!text) return
+        if (seen.has(text)) return
+        seen.add(text)
+        list.push(text)
+      })
+    })
+    fareFamiliesData.forEach((f) => {
+      f.serviceDescriptions?.forEach((text) => {
+        const clean = (text || "").trim()
+        if (!clean || seen.has(clean)) return
+        seen.add(clean)
+        list.push(clean)
+      })
+    })
+    return list
+  }, [fareData, fareFamiliesData])
 
   const taxPerPax = 30
   const total = useMemo(
@@ -538,6 +733,120 @@ export default function FlightDetailsModal({
                           </div>
                         ) : null}
                       </div>
+
+                      <div className="mt-4">
+                        <div className="text-white/85 text-sm font-semibold">Option details</div>
+                        <div className="mt-2 text-white/70 text-sm">
+                          {optionDetailsLoading && "Option details yuklanmoqda..."}
+                          {!optionDetailsLoading &&
+                            optionDetailsError &&
+                            `Option details: ${optionDetailsError}`}
+                        </div>
+                        {!optionDetailsLoading && !optionDetailsError && optionDetails && (
+                          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Booking class: {optionDetails.bookingClass || "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Service class: {optionDetails.serviceClass || "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Operating carrier: {optionDetails.operatingCarrier || "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Seats: {optionDetails.seatsAvailable ?? "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Terminal (from): {optionDetails.terminalFrom || "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Terminal (to): {optionDetails.terminalTo || "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Equipment: {optionDetails.equipment || "—"}
+                            </div>
+                            <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
+                              Fare basis: {optionDetails.fareBasis || "—"}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="text-white/85 text-sm font-semibold">Fare families</div>
+                        <div className="mt-2 text-white/70 text-sm">
+                          {fareFamiliesLoading && "Fare families yuklanmoqda..."}
+                          {!fareFamiliesLoading &&
+                            fareFamiliesError &&
+                            `Fare families: ${fareFamiliesError}`}
+                          {!fareFamiliesLoading &&
+                            !fareFamiliesError &&
+                            fareFamiliesData.length === 0 &&
+                            "Fare families topilmadi."}
+                        </div>
+
+                        {!fareFamiliesLoading && !fareFamiliesError && fareFamiliesData.length > 0 && (
+                          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {fareFamiliesData.map((f) => (
+                              <div
+                                key={f.id}
+                                className="rounded-xl border border-white/12 bg-white/6 p-3"
+                              >
+                                <div className="text-white/90 text-sm font-semibold">{f.name}</div>
+                                <div className="mt-1 text-xs text-white/70">
+                                  ID: {f.id}
+                                </div>
+                                <div className="mt-1 text-xs text-white/80">
+                                  Qo'shimcha narx: {f.price ?? 0}
+                                </div>
+                                <div className="mt-1 text-xs text-white/70">
+                                  Baggage: {f.baggageInfos?.join(", ") || "—"}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-4">
+                        <div className="text-white/85 text-sm font-semibold">Fare rules</div>
+                        <div className="mt-2 text-white/70 text-sm">
+                          {rulesLoading && "Qoidalar yuklanmoqda..."}
+                          {!rulesLoading && rulesError && `Qoidalar: ${rulesError}`}
+                          {!rulesLoading && !rulesError && rulesData.length === 0 && (
+                            <span>Qoidalar hozircha yo'q (backend `data: []` qaytardi).</span>
+                          )}
+                        </div>
+                        {!rulesLoading && !rulesError && rulesData.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            {rulesData.slice(0, 2).map((rule, idx) => (
+                              <div
+                                key={`${rule.flight}-${idx}`}
+                                className="rounded-xl border border-white/12 bg-white/6 p-3"
+                              >
+                                <div className="text-white/90 text-sm font-semibold">
+                                  {rule.flight} · {rule.fareBasis}
+                                </div>
+                                <div className="mt-2 space-y-2">
+                                  {rule.categories.slice(0, 2).map((c) => (
+                                    <div
+                                      key={`${rule.flight}-${c.id}`}
+                                      className="rounded-lg border border-white/10 bg-white/5 p-2"
+                                    >
+                                      <div className="text-white/85 text-xs font-semibold">
+                                        {c.category}
+                                      </div>
+                                      <div className="mt-1 text-white/65 text-xs whitespace-pre-wrap">
+                                        {c.text}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="rounded-2xl border border-white/15 bg-white/8 p-5">
@@ -552,8 +861,23 @@ export default function FlightDetailsModal({
                         )}
                       </div>
 
+                      {backendServiceDescriptions.length > 0 && (
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {backendServiceDescriptions.slice(0, 12).map((text, i) => (
+                            <div
+                              key={`${text}-${i}`}
+                              className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80"
+                            >
+                              {text}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="mt-4 text-white/65 text-sm">
-                        TODO: Backend ulanganida "seat", "transit", "terminal/gate" ham qo'shiladi.
+                        {backendServiceDescriptions.length > 0
+                          ? "Yuqoridagi xizmatlar backenddan olindi."
+                          : "Hozircha xizmatlar ro'yxati backenddan kelmadi."}
                       </div>
                     </div>
                   </div>

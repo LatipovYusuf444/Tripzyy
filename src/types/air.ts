@@ -110,6 +110,143 @@ export type BrandedFaresResponse = {
   }
 }
 
+export type AirOptionRuleCategory = {
+  id: number
+  category: string
+  text: string
+}
+
+export type AirOptionRule = {
+  flight: string
+  fareBasis: string
+  categories: AirOptionRuleCategory[]
+}
+
+export type AirOptionRulesResponse = {
+  status: "success" | "error"
+  message: string
+  data?: AirOptionRule[]
+}
+
+export type AirOptionFareFamiliesResponse = {
+  status: "success" | "error"
+  message: string
+  data?: Array<{
+    id: string
+    currency?: string
+    price?: number
+    packages?: {
+      currency?: string
+      baseFare?: number
+      combinations?: Array<{
+        id?: string
+        isDefault?: boolean
+        price?: number
+        familyIDs: string[]
+      }>
+      families?: Array<{
+        id: string
+        name: string
+        services?: Array<{
+          type: string
+          description: string
+          paymentType: string
+        }>
+        baggageInfos?: string[]
+      }>
+    }
+  }>
+}
+
+export type AirOptionDetailsResponse = {
+  status: "success" | "error"
+  message: string
+  data?: {
+    id: string
+    currency?: string
+    price?: number
+    carrier?: string
+    trips?: Array<{
+      id: string
+      origin: string
+      destination: string
+      duration?: number
+      segments?: Array<{
+        arrival?: string
+        arrivalTerminal?: string | null
+        baggage?: string
+        carryOn?: string
+        bookingClass?: string
+        serviceClass?: string
+        carrier?: string
+        departure?: string
+        departureTerminal?: string | null
+        destination?: string
+        layover?: number
+        duration?: number
+        equipment?: string
+        fareBasis?: string
+        flightNumber?: string
+        notValidBefore?: string | null
+        notValidAfter?: string | null
+        origin?: string
+        operatingCarrier?: string
+        seatsAvailable?: number
+        status?: string
+        legNumber?: number | null
+      }>
+    }>
+    packages?: {
+      currency?: string
+      baseFare?: number
+      combinations?: Array<{
+        id?: string
+        isDefault?: boolean
+        price?: number
+        familyIDs: string[]
+      }>
+      families?: Array<{
+        id: string
+        name: string
+        services?: Array<{
+          type: string
+          description: string
+          paymentType: string
+        }>
+        baggageInfos?: string[]
+      }>
+    }
+  }
+}
+
+export type AirPnrDetailsResponse = {
+  status: "success" | "error"
+  message: string
+  data?: {
+    price?: number
+    segments?: Array<{
+      origin?: string
+      destination?: string
+      carrier?: string
+      operatingCarrier?: string
+      flightNumber?: string
+      bookingClass?: string
+      departure?: string
+      arrival?: string
+      fareBasis?: string
+      baggage?: string
+      departureTerminal?: string
+      arrivalTerminal?: string
+    }>
+    passengers?: Array<{
+      lastName?: string
+      firstName?: string
+      title?: string
+      type?: string
+    }>
+  }
+}
+
 export type AirBookPayload = {
   optionID: string
   email: string

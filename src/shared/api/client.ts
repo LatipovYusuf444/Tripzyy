@@ -20,9 +20,6 @@ client.interceptors.request.use((config) => {
 export default client
 
 
-
-
-
 // POST - https://b2b.skyup.uz/api/air/search/air/search 
 // Search flights
 
