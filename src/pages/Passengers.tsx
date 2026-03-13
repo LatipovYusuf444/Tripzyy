@@ -1,6 +1,8 @@
 ﻿// src/pages/Passengers.tsx
 import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
+import { formatMoney } from "@/lib/money"
+import { formatUzPhoneInput } from "@/lib/phone"
 import {
   Pencil,
   Trash2,
@@ -52,7 +54,10 @@ export default function PassengersPage() {
     countryCode: "UZ",
   })
   const [payer, setPayer] = useState<PayerInfo>(
-    () => cart.payer ?? { email: "", phone: "", countryCode: "998" }
+    () =>
+      cart.payer
+        ? { ...cart.payer, phone: formatUzPhoneInput(cart.payer.phone || "+998") }
+        : { email: "", phone: "+998", countryCode: "998" }
   )
   const [confirmEmail, setConfirmEmail] = useState("")
   const [agreeData, setAgreeData] = useState(false)
@@ -114,7 +119,11 @@ export default function PassengersPage() {
   }, [])
 
   useEffect(() => {
-    setPayer(cart.payer ?? { email: "", phone: "", countryCode: "998" })
+    setPayer(
+      cart.payer
+        ? { ...cart.payer, phone: formatUzPhoneInput(cart.payer.phone || "+998") }
+        : { email: "", phone: "+998", countryCode: "998" }
+    )
   }, [cart.payer?.email, cart.payer?.phone, cart.payer?.countryCode])
 
   const title = useMemo(() => {
@@ -487,7 +496,9 @@ export default function PassengersPage() {
               <div className="mt-2 text-white/70 text-sm">Yakuniy narx va xizmatlar.</div>
               <div className="mt-5 rounded-2xl bg-white/10 p-4">
                 <div className="text-white/70 text-xs">Yakuniy narx</div>
-                <div className="text-2xl font-extrabold text-[#F4D7E3]">3 887 401 UZS</div>
+                <div className="text-2xl font-extrabold text-[#F4D7E3]">
+                  {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
+                </div>
                 <div className="mt-1 text-white/60 text-xs">Pax: {pax} ta</div>
               </div>
               <button
@@ -553,12 +564,12 @@ export default function PassengersPage() {
                   value={payer.phone}
                   onChange={(v) =>
                     setPayer((p) => {
-                      const next = { ...p, phone: v }
+                      const next = { ...p, phone: formatUzPhoneInput(v) }
                       bookingCart.patch({ payer: next })
                       return next
                     })
                   }
-                  placeholder="+998 XX XXX XX XX"
+                  placeholder="+998 95 559 54 44"
                 />
               </div>
             </div>
@@ -761,7 +772,9 @@ export default function PassengersPage() {
 
               <div className="mt-4 rounded-2xl bg-white/10 p-4">
                 <div className="text-white/70 text-xs">Narx</div>
-                <div className="text-2xl font-extrabold text-[#F4D7E3]">3 887 401 UZS</div>
+                <div className="text-2xl font-extrabold text-[#F4D7E3]">
+                  {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
+                </div>
                 <div className="mt-2 text-xs text-white/60">
                   To'lov:{" "}
                   <span className="text-white/85 font-semibold">
@@ -865,9 +878,7 @@ export default function PassengersPage() {
                   <div className="mt-2 text-xs text-white/80 space-y-1">
                     <div>ID: {orderData.id ?? "—"}</div>
                     <div>Status: {orderData.status ?? "—"}</div>
-                    <div>
-                      Narx: {orderData.price ?? "—"} {orderData.currency ?? ""}
-                    </div>
+                    <div>Narx: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
                     <div>Client: {orderData.client ?? "—"}</div>
                     <div>Service: {orderData.serviceType ?? "—"}</div>
                     <div>Reservation (PNR): {orderData.reservationId ?? "—"}</div>
@@ -898,7 +909,7 @@ export default function PassengersPage() {
                 {pnrMsg && <div className="mt-2 text-xs text-white/80">{pnrMsg}</div>}
                 {pnrData && (
                   <div className="mt-3 text-xs text-white/80 space-y-2">
-                    <div>Narx: {pnrData.price ?? "—"}</div>
+                    <div>Narx: {formatMoney(pnrData.price ?? 0, cart.currency || "UZS")}</div>
                     <div>Segments: {pnrData.segments?.length ?? 0}</div>
                     {pnrData.segments?.slice(0, 2).map((s, i) => (
                       <div key={i} className="rounded-lg border border-white/12 bg-white/6 p-2">

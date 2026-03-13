@@ -1,8 +1,9 @@
-﻿import { useEffect, useMemo, useState } from "react"
+﻿import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { searchAir } from "@/shared/api/air/air.api"
+import { formatMoney } from "@/lib/money"
 
 const fmtDuration = (mins: number) => {
   const h = Math.floor(mins / 60)
@@ -26,6 +27,7 @@ export default function Flights() {
   const [items, setItems] = useState<Flight[]>([])
   const [loading, setLoading] = useState(false)
   const [lastInfo, setLastInfo] = useState<string | null>(null)
+  const [autoLoaded, setAutoLoaded] = useState(false)
 
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Flight | null>(null)
@@ -36,10 +38,11 @@ export default function Flights() {
     const qDate = sp.get("date") ?? ""
     const qPax = Number(sp.get("pax") ?? "1")
 
-    if (qFrom) setFrom(qFrom)
-    if (qTo) setTo(qTo)
-    if (qDate) setDate(qDate)
+    setFrom(qFrom || "TAS")
+    setTo(qTo || "SAW")
+    setDate(qDate || "2026-03-20")
     if (!Number.isNaN(qPax) && qPax >= 1) setPax(qPax)
+    setAutoLoaded(false)
   }, [sp])
 
   useEffect(() => {
@@ -76,18 +79,18 @@ export default function Flights() {
     return t ? t.slice(0, 5) : value
   }
 
-  const onSearch = async () => {
+  const runSearch = useCallback(async (showAlert: boolean) => {
     const token = localStorage.getItem("access_token")
     if (!token) {
-      alert("Avval login qiling (token yo'q).")
+      if (showAlert) alert("Avval login qiling (token yo'q).")
       return
     }
     if (!from || !to || !date) {
-      alert("From, To va Sana to'ldiring.")
+      if (showAlert) alert("From, To va Sana to'ldiring.")
       return
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      alert("Sana formati: YYYY-MM-DD")
+      if (showAlert) alert("Sana formati: YYYY-MM-DD")
       return
     }
 
@@ -111,7 +114,7 @@ export default function Flights() {
         setItems([])
         const msg = res.data.message || "Qidiruv xato"
         setLastInfo(`Backend: ${msg}`)
-        alert(msg)
+        if (showAlert) alert(msg)
         return
       }
 
@@ -140,6 +143,7 @@ export default function Flights() {
           arrive: toTime(seg?.arrival),
           durationMin: trip?.duration || seg?.duration || 0,
           price: Number(opt.price || 0),
+          currency: opt.currency || res.data.data?.currency,
           baggage,
           cabin: seg?.serviceClass === "C" ? "Business" : "Economy",
           refundable: false,
@@ -156,11 +160,22 @@ export default function Flights() {
       const msg = err?.response?.data?.message || "Qidiruv xato"
       setItems([])
       setLastInfo(`Backend: ${msg}`)
-      alert(msg)
+      if (showAlert) alert(msg)
     } finally {
       setLoading(false)
     }
+  }, [date, from, pax, to])
+
+  const onSearch = () => {
+    void runSearch(true)
   }
+
+  useEffect(() => {
+    if (autoLoaded) return
+    if (!from || !to || !date) return
+    setAutoLoaded(true)
+    void runSearch(false)
+  }, [autoLoaded, date, from, runSearch, to])
 
   const formatDate = (raw: string) => {
     const digits = raw.replace(/\D/g, "").slice(0, 8)
@@ -180,12 +195,14 @@ export default function Flights() {
     setOpen(false)
 
     const cart = bookingCart.get()
-    bookingCart.set({
+      bookingCart.set({
       ...cart,
       flightId: f.id,
       route: `${f.from} → ${f.to}`,
       date,
       pax,
+      amount: f.price,
+      currency: f.currency,
       // passengers oldin kiritilgan bo'lsa saqlanib qoladi
       passengers: cart.passengers ?? [],
     })
@@ -288,7 +305,7 @@ export default function Flights() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <div className="text-white/70 text-sm">Narx</div>
-                    <div className="text-3xl font-extrabold">${f.price}</div>
+                    <div className="text-3xl font-extrabold">{formatMoney(f.price, f.currency)}</div>
                   </div>
 
                   <button

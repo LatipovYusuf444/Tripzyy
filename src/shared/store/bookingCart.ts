@@ -26,6 +26,8 @@ export type BookingCart = {
   route?: string // "TAS → IST"
   date?: string
   pax?: number
+  amount?: number
+  currency?: string
   lastOrderId?: number
   history?: Array<{
     orderId: number
@@ -59,6 +61,8 @@ export const bookingCart = {
         route: parsed.route,
         date: parsed.date,
         pax: parsed.pax,
+        amount: parsed.amount,
+        currency: parsed.currency,
         lastOrderId: parsed.lastOrderId,
         history: Array.isArray(parsed.history) ? parsed.history : [],
         payer: parsed.payer,

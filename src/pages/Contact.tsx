@@ -1,5 +1,7 @@
-﻿import { motion } from "framer-motion"
+﻿import { useState } from "react"
+import { motion } from "framer-motion"
 import { Mail, Phone, MapPin, Clock } from "lucide-react"
+import { formatUzPhoneInput } from "@/lib/phone"
 
 const container = {
   hidden: { opacity: 0 },
@@ -12,6 +14,11 @@ const item = {
 }
 
 export default function Contact() {
+  const [name, setName] = useState("")
+  const [phone, setPhone] = useState("+998")
+  const [email, setEmail] = useState("")
+  const [message, setMessage] = useState("")
+
   return (
     <section className="relative overflow-hidden pt-20">
       <div className="relative mx-auto max-w-[1200px] px-5 py-14 md:py-16">
@@ -47,25 +54,33 @@ export default function Contact() {
               onSubmit={(e) => {
                 e.preventDefault()
                 // TODO: backend ulash:
-                // await http.post("/contact", { name, phone, message })
+                // await http.post("/contact", { name, phone, email, message })
                 alert("Demo — Keyin backendga ulanadi")
               }}
             >
               <input
                 className="h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 text-white outline-none focus:border-white/25"
                 placeholder="Ism"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
               <input
                 className="h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 text-white outline-none focus:border-white/25"
-                placeholder="Telefon"
+                placeholder="+998 95 559 54 44"
+                value={phone}
+                onChange={(e) => setPhone(formatUzPhoneInput(e.target.value))}
               />
               <input
                 className="h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 text-white outline-none focus:border-white/25"
                 placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <textarea
                 className="min-h-[120px] w-full rounded-2xl bg-white/5 border border-white/10 p-4 text-white outline-none focus:border-white/25"
                 placeholder="Xabaringiz..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
               />
               <button className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white transition
                                  shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110">

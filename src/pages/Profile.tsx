@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import { Mail, User2, ShieldCheck, LogOut, PencilLine, Save } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { formatUzPhoneInput } from "@/lib/phone"
 // import { http } from "@/shared/api/http" // ✅ backend ulaganda ochasan
 
 export default function Profile() {
@@ -10,7 +11,7 @@ export default function Profile() {
   // ✅ demo user (keyin backenddan keladi)
   const [name, setName] = useState("Tripzy User")
   const [email] = useState("user@tripzy.uz")
-  const [phone, setPhone] = useState("+998 90 000 00 00")
+  const [phone, setPhone] = useState("+998")
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -125,7 +126,7 @@ export default function Profile() {
                 icon={<User2 size={18} className="text-white/75" />}
                 value={phone}
                 disabled={!editing}
-                onChange={setPhone}
+                onChange={(v) => setPhone(formatUzPhoneInput(v))}
               />
               <div className="md:col-span-2">
                 <Field

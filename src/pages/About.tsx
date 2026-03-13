@@ -20,6 +20,7 @@ import {
   Heart,
   ArrowRight,
 } from "lucide-react";
+import { formatUzPhoneInput } from "@/lib/phone";
 
 const stats = [
   {
@@ -827,11 +828,19 @@ export default function About() {
 }
 
 function LuxuryInput({ placeholder }: { placeholder: string }) {
+  const isPhone = placeholder.toLowerCase().includes("telefon");
+  const [value, setValue] = useState(isPhone ? "+998" : "");
+
   return (
     <motion.input
       whileFocus={{ scale: 1.01 }}
       className="h-12 w-full rounded-2xl border border-black/10 bg-white/80 px-4 outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_4px_rgba(255,106,0,0.12)]"
       placeholder={placeholder}
+      value={value}
+      onChange={(e) => {
+        const next = e.target.value;
+        setValue(isPhone ? formatUzPhoneInput(next) : next);
+      }}
     />
   );
 }

@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
+import { formatMoney } from "@/lib/money"
+import { formatUzPhoneInput } from "@/lib/phone"
 import {
   bookAir,
   getAirOptionDetails,
@@ -35,6 +37,7 @@ export type Flight = {
   arrive: string
   durationMin: number
   price: number
+  currency?: string
   baggage?: string
   cabin?: "Economy" | "Business"
   refundable?: boolean
@@ -61,12 +64,6 @@ type PassengerForm = {
   citizenship: string
   gender: "M" | "F"
   countryCode: string
-}
-
-const overlay = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1 },
-  exit: { opacity: 0 },
 }
 
 const panel = {
@@ -143,7 +140,7 @@ export default function FlightDetailsModal({
     } as Flight)
 
   const [step, setStep] = useState<Step>("select")
-  const [payer, setPayer] = useState<PayerInfo>({ email: "", phone: "", countryCode: "998" })
+  const [payer, setPayer] = useState<PayerInfo>({ email: "", phone: "+998", countryCode: "998" })
   const [passengers, setPassengers] = useState<PassengerForm[]>(() => makePassengers(pax))
   const [agreeData, setAgreeData] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
@@ -187,7 +184,7 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     setStep("select")
-    setPayer({ email: "", phone: "", countryCode: "998" })
+    setPayer({ email: "", phone: "+998", countryCode: "998" })
     setPassengers(makePassengers(pax))
     setAgreeData(false)
     setToastOpen(false)
@@ -500,6 +497,8 @@ export default function FlightDetailsModal({
         bookingCart.set({
           ...curr,
           lastOrderId: res.data.data.orderID,
+          amount: total,
+          currency: safeFlight.currency,
           history: [
             ...(curr.history ?? []),
             {
@@ -526,6 +525,8 @@ export default function FlightDetailsModal({
       route: `${safeFlight.from} → ${safeFlight.to}`,
       date,
       pax: Math.max(1, pax),
+      amount: total,
+      currency: safeFlight.currency,
       payer,
       passengers: passengers.map((p) => ({
         id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
@@ -555,17 +556,6 @@ export default function FlightDetailsModal({
     <AnimatePresence>
       {open && (
         <>
-          <motion.button
-            type="button"
-            aria-label="Close modal"
-            onClick={onClose}
-            variants={overlay}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            className="fixed inset-0 z-[60] bg-black/55"
-          />
-
           <motion.div
             role="dialog"
             aria-modal="true"
@@ -575,14 +565,13 @@ export default function FlightDetailsModal({
             exit="exit"
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="
-              fixed z-[70]
-              left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-              w-[min(1240px,96vw)]
-              max-h-[90vh]
+              fixed inset-0 z-[70]
+              w-screen h-[100dvh]
+              flex flex-col
               overflow-hidden
-              rounded-[28px]
-              border border-white/18
-              bg-white/10
+              rounded-none
+              border-0
+              bg-[#070b16]
               backdrop-blur-2xl
               shadow-[0_45px_140px_rgba(0,0,0,0.65)]
             "
@@ -592,7 +581,7 @@ export default function FlightDetailsModal({
               <button
                 onClick={onClose}
                 className="
-                  absolute right-4 top-4
+                  absolute right-5 top-5 z-10
                   h-10 w-10 rounded-xl
                   border border-white/20 bg-white/10
                   text-white hover:bg-white/20 transition
@@ -602,7 +591,7 @@ export default function FlightDetailsModal({
                 <X size={18} />
               </button>
 
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pr-14 md:pr-16">
                 <div>
                   <div className="text-white/70 text-sm">
                     {flight.airline} · {flightNo}
@@ -618,8 +607,10 @@ export default function FlightDetailsModal({
 
                 <div className="text-left md:text-right w-full md:w-auto">
                   <div className="text-white/60 text-xs">Yakuniy narx</div>
-                  <div className="text-3xl font-extrabold text-white">${total}</div>
-                  <div className="text-white/55 text-xs">tax + fee included (demo)</div>
+                  <div className="text-3xl font-extrabold text-white">
+                    {formatMoney(total, safeFlight.currency)}
+                  </div>
+                  <div className="text-white/55 text-xs">Soliq va yig'imlar bilan</div>
                 </div>
               </div>
 
@@ -668,7 +659,7 @@ export default function FlightDetailsModal({
             </div>
 
             {/* body */}
-            <div className="p-5 md:p-7 overflow-auto max-h-[calc(90vh-210px)] sm:max-h-[calc(90vh-190px)] md:max-h-[calc(90vh-170px)]">
+            <div className="flex-1 min-h-0 p-5 md:p-7 overflow-y-auto pb-24">
               {step === "select" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
@@ -735,54 +726,54 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-white/85 text-sm font-semibold">Option details</div>
+                        <div className="text-white/85 text-sm font-semibold">Reys tafsilotlari</div>
                         <div className="mt-2 text-white/70 text-sm">
-                          {optionDetailsLoading && "Option details yuklanmoqda..."}
+                          {optionDetailsLoading && "Reys tafsilotlari yuklanmoqda..."}
                           {!optionDetailsLoading &&
                             optionDetailsError &&
-                            `Option details: ${optionDetailsError}`}
+                            `Reys tafsilotlari: ${optionDetailsError}`}
                         </div>
                         {!optionDetailsLoading && !optionDetailsError && optionDetails && (
                           <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Booking class: {optionDetails.bookingClass || "—"}
+                              Bron klassi: {optionDetails.bookingClass || "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Service class: {optionDetails.serviceClass || "—"}
+                              Xizmat klassi: {optionDetails.serviceClass || "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Operating carrier: {optionDetails.operatingCarrier || "—"}
+                              Operatsion aviakompaniya: {optionDetails.operatingCarrier || "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Seats: {optionDetails.seatsAvailable ?? "—"}
+                              Bo'sh o'rinlar: {optionDetails.seatsAvailable ?? "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Terminal (from): {optionDetails.terminalFrom || "—"}
+                              Jo'nash terminali: {optionDetails.terminalFrom || "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Terminal (to): {optionDetails.terminalTo || "—"}
+                              Kelish terminali: {optionDetails.terminalTo || "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Equipment: {optionDetails.equipment || "—"}
+                              Samolyot turi: {optionDetails.equipment || "—"}
                             </div>
                             <div className="rounded-xl border border-white/12 bg-white/6 px-3 py-2 text-xs text-white/80">
-                              Fare basis: {optionDetails.fareBasis || "—"}
+                              Tarif kodi: {optionDetails.fareBasis || "—"}
                             </div>
                           </div>
                         )}
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-white/85 text-sm font-semibold">Fare families</div>
+                        <div className="text-white/85 text-sm font-semibold">Tarif paketlari</div>
                         <div className="mt-2 text-white/70 text-sm">
-                          {fareFamiliesLoading && "Fare families yuklanmoqda..."}
+                          {fareFamiliesLoading && "Tarif paketlari yuklanmoqda..."}
                           {!fareFamiliesLoading &&
                             fareFamiliesError &&
-                            `Fare families: ${fareFamiliesError}`}
+                            `Tarif paketlari: ${fareFamiliesError}`}
                           {!fareFamiliesLoading &&
                             !fareFamiliesError &&
                             fareFamiliesData.length === 0 &&
-                            "Fare families topilmadi."}
+                            "Tarif paketlari topilmadi."}
                         </div>
 
                         {!fareFamiliesLoading && !fareFamiliesError && fareFamiliesData.length > 0 && (
@@ -797,10 +788,10 @@ export default function FlightDetailsModal({
                                   ID: {f.id}
                                 </div>
                                 <div className="mt-1 text-xs text-white/80">
-                                  Qo'shimcha narx: {f.price ?? 0}
+                                  Qo'shimcha narx: {formatMoney(f.price ?? 0, safeFlight.currency)}
                                 </div>
                                 <div className="mt-1 text-xs text-white/70">
-                                  Baggage: {f.baggageInfos?.join(", ") || "—"}
+                                  Bagaj: {f.baggageInfos?.join(", ") || "—"}
                                 </div>
                               </div>
                             ))}
@@ -809,7 +800,7 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-white/85 text-sm font-semibold">Fare rules</div>
+                        <div className="text-white/85 text-sm font-semibold">Tarif qoidalari</div>
                         <div className="mt-2 text-white/70 text-sm">
                           {rulesLoading && "Qoidalar yuklanmoqda..."}
                           {!rulesLoading && rulesError && `Qoidalar: ${rulesError}`}
@@ -903,13 +894,8 @@ export default function FlightDetailsModal({
                       </button>
 
                       <div className="mt-3 text-xs text-white/55">
-                        * Pax: {Math.max(1, pax)} ta yo'lovchi uchun forma chiqadi.
+                        {Math.max(1, pax)} ta yo'lovchi uchun forma ochiladi.
                       </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/15 bg-white/8 p-5 text-white/70 text-sm">
-                      <span className="text-white font-semibold">Eslatma:</span> Hozir demo.
-                      Backend ulanganida real "checkout" ishlaydi.
                     </div>
                   </div>
                 </div>
@@ -942,10 +928,12 @@ export default function FlightDetailsModal({
                       />
                       <Input
                         label="Telefon raqam"
-                        placeholder="901234567"
+                        placeholder="+998 95 559 54 44"
                         icon={Phone}
                         value={payer.phone}
-                        onChange={(v) => setPayer((p) => ({ ...p, phone: v }))}
+                        onChange={(v) =>
+                          setPayer((p) => ({ ...p, phone: formatUzPhoneInput(v) }))
+                        }
                       />
                     </div>
                   </div>
@@ -1149,7 +1137,7 @@ export default function FlightDetailsModal({
                       <PriceRow label="Yo'nalish" value={`${safeFlight.from} → ${safeFlight.to}`} />
                       <PriceRow label="Sana" value={date || "—"} />
                       <PriceRow label="Yo'lovchi soni" value={`${Math.max(1, pax)} ta`} />
-                      <PriceRow label="Narx (jami)" value={`$${total}`} />
+                      <PriceRow label="Narx (jami)" value={formatMoney(total, safeFlight.currency)} />
                     </div>
                     <div className="mt-3 text-xs text-white/60">
                       Tanlangan to'lov:{" "}
