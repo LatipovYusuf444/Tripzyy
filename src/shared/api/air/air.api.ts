@@ -11,14 +11,17 @@ import type {
   AirOptionDetailsResponse,
   AirPnrDetailsResponse,
 } from "@/types/air"
+import type { AxiosRequestConfig } from "axios"
 import client from "../client"
 
 export const getAirs = () => client.get<Air[]>("/air")
 
 export const getAirById = (id: number) => client.get<Air>(`/air/${id}`)
 
-export const searchAir = (data: AirSearchPayload) =>
-  client.post<AirSearchResponse>("/air/search", data)
+export const searchAir = (
+  data: AirSearchPayload,
+  config?: AxiosRequestConfig
+) => client.post<AirSearchResponse>("/air/search", data, config)
 
 export const getBrandedFares = (data: BrandedFaresPayload) =>
   client.post<BrandedFaresResponse>("/air/branded-fares", data)

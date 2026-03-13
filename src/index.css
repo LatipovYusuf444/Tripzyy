@@ -37,3 +37,11 @@ textarea,
 select {
   background-color: transparent;
 }
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

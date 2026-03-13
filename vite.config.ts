@@ -17,6 +17,8 @@ export default defineConfig({
         target: "https://b2b.skyup.uz",
         changeOrigin: true,
         secure: true,
+        timeout: 15000,
+        proxyTimeout: 15000,
       },
     },
   },
