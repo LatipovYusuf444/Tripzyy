@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/money"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { FEATURED_ROUTE_CARDS_KEY, type FeaturedRouteCard } from "@/shared/air/featuredRoutes"
+import { useI18n } from "@/shared/i18n/i18n"
 import { bookingCart } from "@/shared/store/bookingCart"
 
 const luxuryBtn =
@@ -32,10 +33,47 @@ type SearchDataLike = {
   airports?: Array<{ code: string; name: string }>
 }
 
-const fmtDuration = (mins: number) => {
+const COMMON_COPY = {
+  uz: {
+    hour: "soat",
+    minute: "daqiqa",
+    unknown: "Noma'lum",
+    badgeCheap: "Eng arzon",
+    badgeDirect: "To'g'ridan-to'g'ri",
+    badgeMorning: "Ertalab jo'naydi",
+    badgeEvening: "Kechqurun yetadi",
+    badgeLastSeats: "Oxirgi",
+    seat: "o'rin",
+  },
+  ru: {
+    hour: "ч",
+    minute: "мин",
+    unknown: "Неизвестно",
+    badgeCheap: "Самый дешевый",
+    badgeDirect: "Прямой",
+    badgeMorning: "Утренний вылет",
+    badgeEvening: "Вечернее прибытие",
+    badgeLastSeats: "Осталось",
+    seat: "мест",
+  },
+  en: {
+    hour: "h",
+    minute: "min",
+    unknown: "Unknown",
+    badgeCheap: "Cheapest",
+    badgeDirect: "Direct",
+    badgeMorning: "Morning departure",
+    badgeEvening: "Evening arrival",
+    badgeLastSeats: "Last",
+    seat: "seats",
+  },
+} as const
+
+const fmtDuration = (mins: number, language: "uz" | "ru" | "en") => {
   const h = Math.floor(mins / 60)
   const m = mins % 60
-  return `${h} soat ${m} daqiqa`
+  const common = COMMON_COPY[language]
+  return `${h} ${common.hour} ${m} ${common.minute}`
 }
 
 const toTime = (value?: string) => {
@@ -58,21 +96,22 @@ const formatCompactPrice = (amount: number, currency?: string) => {
   return formatMoney(amount, currency)
 }
 
-const getFlightBadge = (flight: Flight, index: number) => {
-  if (index === 0) return { label: "Eng arzon", tone: "green" as const }
+const getFlightBadge = (flight: Flight, index: number, language: "uz" | "ru" | "en") => {
+  const common = COMMON_COPY[language]
+  if (index === 0) return { label: common.badgeCheap, tone: "green" as const }
   if ((flight.stopsCount ?? 0) === 0 && flight.durationMin <= 300) {
-    return { label: "To'g'ridan-to'g'ri", tone: "sky" as const }
+    return { label: common.badgeDirect, tone: "sky" as const }
   }
   const departureHour = Number(flight.depart.split(":")[0] ?? NaN)
   const arrivalHour = Number(flight.arrive.split(":")[0] ?? NaN)
   if (!Number.isNaN(departureHour) && departureHour < 12) {
-    return { label: "Ertalab jo'naydi", tone: "blue" as const }
+    return { label: common.badgeMorning, tone: "blue" as const }
   }
   if (!Number.isNaN(arrivalHour) && arrivalHour >= 18) {
-    return { label: "Kechqurun yetadi", tone: "violet" as const }
+    return { label: common.badgeEvening, tone: "violet" as const }
   }
   if ((flight.seatsAvailable ?? 99) <= 5) {
-    return { label: `Oxirgi ${flight.seatsAvailable} o'rin`, tone: "rose" as const }
+    return { label: `${common.badgeLastSeats} ${flight.seatsAvailable} ${common.seat}`, tone: "rose" as const }
   }
   return null
 }
@@ -154,6 +193,7 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
 }
 
 export default function Flights() {
+  const { language } = useI18n()
   const [sp] = useSearchParams()
   const navigate = useNavigate()
 
@@ -180,6 +220,240 @@ export default function Flights() {
   const [dynamicAirportLabels, setDynamicAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
   const [calendarOpen, setCalendarOpen] = useState(false)
 
+  const copy = {
+    uz: {
+      loginFirst: "Avval login qiling.",
+      fillSearch: "Qayerdan, qayerga va sanani to'ldiring.",
+      dateFormat: "Sana formati: YYYY-MM-DD",
+      searchError: "Qidiruv xato",
+      backendBusy: "Backend vaqtincha javob bermayapti (502 Bad Gateway).",
+      timeout: "Server juda sekin javob berdi. So'rov timeout bo'ldi.",
+      invalidRoute: "Jo'nash va manzil uchun to'g'ri variantni tanlang.",
+      highlightCheap: "Eng arzon",
+      highlightBest: "Optimal",
+      highlightFast: "Eng tez",
+      heroBadge: "Premium route selection",
+      heroTitleA: "Reyslar ichidan",
+      heroTitleB: "eng qulay",
+      heroTitleC: "tanlovni qiling",
+      heroDesc: "Backenddan kelgan real reyslarni qidiring, solishtiring va bron qiling.",
+      date: "Sana",
+      passenger: "Yo'lovchi",
+      route: "Yo'nalish",
+      unselected: "Tanlanmagan",
+      routeEnter: "Yo'nalish kiriting",
+      routeSelection: "Premium yo'nalish tanlovi",
+      curated: "Curated journeys",
+      curatedTitle: "Aviakompaniyalar va qulay tariflar",
+      curatedDesc: "Search, compare, filter va booking oqimi backend bilan birga ishlashda davom etadi.",
+      from: "Qayerdan",
+      to: "Qayerga",
+      fromPlaceholder: "Masalan: TAS yoki London",
+      toPlaceholder: "Masalan: IST yoki Frankfurt",
+      openCalendar: "Narxli kalendarni ochish",
+      search: "Qidirish",
+      searching: "Qidirilmoqda...",
+      searchHint: "* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida backenddan olinadigan minimal narxli kalendar ochiladi.",
+      swap: "Swap",
+      clear: "Clear",
+      best: "Best",
+      cheap: "Cheap",
+      fast: "Fast",
+      filters: "Filtrlar",
+      priceRange: "Narx oralig'i",
+      duration: "Parvoz davomiyligi",
+      departureTime: "Jo'nash vaqti",
+      conveniences: "Qo'shimcha qulayliklar",
+      baggageOnly: "Bagaj bor",
+      baggageOnlySub: "Faqat bagajli tariflar",
+      refundable: "Refundable",
+      refundableSub: "Qaytarish mumkin bo'lgan tariflar",
+      refundableNone: "Backend hozir refundable tarif qaytarmadi",
+      cabin: "Kabina turi",
+      all: "Barchasi",
+      airline: "Aviakompaniya",
+      allCompanies: "Barcha kompaniyalar",
+      visibleFlights: "Hozir ro'yxatda",
+      visibleFlightsSuffix: "ta ko'rinayotgan reys bor. Bu natijalar sizning qidiruvingiz bo'yicha yangilandi.",
+      noFlights: "Hozircha reys topilmadi. Yo'nalish, sana va yo'lovchi sonini kiriting.",
+      backendInfo: "Backend",
+      allDay: "Barchasi",
+      beforeNoon: "06:00 gacha",
+      day: "12:00-18:00",
+      evening: "18:00 dan keyin",
+      chooseFare: "Tarifni ko'rish",
+      view: "Ko'rish",
+      noBaggage: "Bagaj yo'q",
+      noCarry: "Qo'l yuki yo'q",
+      moreSeats: "Yana",
+      seats: "ta joy",
+      terminal: "Terminal",
+      direct: "to'g'ridan-to'g'ri",
+      transfers: "ta transfer",
+      refundableYes: "Qaytarish mumkin",
+      refundableNo: "Qaytarilmaydi",
+      availableFlight: "Reys mavjud",
+      select: "Tanlash",
+      economy: "Economy",
+      business: "Business",
+      selectOption: "tanlash",
+    },
+    ru: {
+      loginFirst: "Сначала выполните вход.",
+      fillSearch: "Заполните пункты отправления, прибытия и дату.",
+      dateFormat: "Формат даты: YYYY-MM-DD",
+      searchError: "Ошибка поиска",
+      backendBusy: "Backend временно не отвечает (502 Bad Gateway).",
+      timeout: "Сервер отвечает слишком медленно. Запрос превысил timeout.",
+      invalidRoute: "Выберите корректные пункты отправления и назначения.",
+      highlightCheap: "Самый дешевый",
+      highlightBest: "Оптимальный",
+      highlightFast: "Самый быстрый",
+      heroBadge: "Премиальный выбор маршрута",
+      heroTitleA: "Выберите",
+      heroTitleB: "лучший",
+      heroTitleC: "рейс",
+      heroDesc: "Ищите, сравнивайте и бронируйте реальные рейсы из backend.",
+      date: "Дата",
+      passenger: "Пассажир",
+      route: "Маршрут",
+      unselected: "Не выбрано",
+      routeEnter: "Укажите маршрут",
+      routeSelection: "Премиальный выбор маршрута",
+      curated: "Подобранные поездки",
+      curatedTitle: "Авиакомпании и удобные тарифы",
+      curatedDesc: "Поиск, сравнение, фильтрация и бронирование продолжают работать вместе с backend.",
+      from: "Откуда",
+      to: "Куда",
+      fromPlaceholder: "Например: TAS или London",
+      toPlaceholder: "Например: IST или Frankfurt",
+      openCalendar: "Открыть календарь цен",
+      search: "Поиск",
+      searching: "Поиск...",
+      searchHint: "* Можно вводить название города или IATA код, autocomplete сработает. В блоке даты открывается календарь минимальных цен из backend.",
+      swap: "Поменять",
+      clear: "Очистить",
+      best: "Лучший",
+      cheap: "Дешевый",
+      fast: "Быстрый",
+      filters: "Фильтры",
+      priceRange: "Диапазон цен",
+      duration: "Длительность перелета",
+      departureTime: "Время вылета",
+      conveniences: "Дополнительные опции",
+      baggageOnly: "Есть багаж",
+      baggageOnlySub: "Только тарифы с багажом",
+      refundable: "Возвратный",
+      refundableSub: "Тарифы с возможностью возврата",
+      refundableNone: "Backend сейчас не вернул refundable тарифы",
+      cabin: "Класс салона",
+      all: "Все",
+      airline: "Авиакомпания",
+      allCompanies: "Все авиакомпании",
+      visibleFlights: "Сейчас в списке",
+      visibleFlightsSuffix: "видимых рейсов. Эти результаты обновлены по вашему поиску.",
+      noFlights: "Пока рейсы не найдены. Укажите маршрут, дату и число пассажиров.",
+      backendInfo: "Backend",
+      allDay: "Все",
+      beforeNoon: "До 06:00",
+      day: "12:00-18:00",
+      evening: "После 18:00",
+      chooseFare: "Посмотреть тариф",
+      view: "Открыть",
+      noBaggage: "Без багажа",
+      noCarry: "Без ручной клади",
+      moreSeats: "Еще",
+      seats: "мест",
+      terminal: "Терминал",
+      direct: "прямой",
+      transfers: "пересадки",
+      refundableYes: "Можно вернуть",
+      refundableNo: "Невозвратный",
+      availableFlight: "Рейс доступен",
+      select: "Выбрать",
+      economy: "Эконом",
+      business: "Бизнес",
+      selectOption: "выбрать",
+    },
+    en: {
+      loginFirst: "Please log in first.",
+      fillSearch: "Fill in origin, destination, and date.",
+      dateFormat: "Date format: YYYY-MM-DD",
+      searchError: "Search error",
+      backendBusy: "The backend is temporarily unavailable (502 Bad Gateway).",
+      timeout: "The server responded too slowly. The request timed out.",
+      invalidRoute: "Choose valid origin and destination values.",
+      highlightCheap: "Cheapest",
+      highlightBest: "Best",
+      highlightFast: "Fastest",
+      heroBadge: "Premium route selection",
+      heroTitleA: "Choose the",
+      heroTitleB: "best",
+      heroTitleC: "flight option",
+      heroDesc: "Search, compare, and book real flights coming from the backend.",
+      date: "Date",
+      passenger: "Passenger",
+      route: "Route",
+      unselected: "Not selected",
+      routeEnter: "Enter a route",
+      routeSelection: "Premium route selection",
+      curated: "Curated journeys",
+      curatedTitle: "Airlines and convenient fares",
+      curatedDesc: "Search, compare, filter, and booking continue working together with the backend.",
+      from: "From",
+      to: "To",
+      fromPlaceholder: "For example: TAS or London",
+      toPlaceholder: "For example: IST or Frankfurt",
+      openCalendar: "Open price calendar",
+      search: "Search",
+      searching: "Searching...",
+      searchHint: "* Enter a city name or IATA code to use autocomplete. The date block opens the minimum-price calendar from the backend.",
+      swap: "Swap",
+      clear: "Clear",
+      best: "Best",
+      cheap: "Cheap",
+      fast: "Fast",
+      filters: "Filters",
+      priceRange: "Price range",
+      duration: "Flight duration",
+      departureTime: "Departure time",
+      conveniences: "Extra options",
+      baggageOnly: "Has baggage",
+      baggageOnlySub: "Only fares with baggage",
+      refundable: "Refundable",
+      refundableSub: "Fares that can be refunded",
+      refundableNone: "The backend did not return refundable fares right now",
+      cabin: "Cabin class",
+      all: "All",
+      airline: "Airline",
+      allCompanies: "All airlines",
+      visibleFlights: "Currently showing",
+      visibleFlightsSuffix: "flights in the list. These results were updated for your search.",
+      noFlights: "No flights found yet. Enter route, date, and passenger count.",
+      backendInfo: "Backend",
+      allDay: "All",
+      beforeNoon: "Before 06:00",
+      day: "12:00-18:00",
+      evening: "After 18:00",
+      chooseFare: "View fare",
+      view: "View",
+      noBaggage: "No baggage",
+      noCarry: "No carry-on",
+      moreSeats: "Only",
+      seats: "seats left",
+      terminal: "Terminal",
+      direct: "direct",
+      transfers: "transfers",
+      refundableYes: "Refundable",
+      refundableNo: "Non-refundable",
+      availableFlight: "Flight available",
+      select: "Select",
+      economy: "Economy",
+      business: "Business",
+      selectOption: "select",
+    },
+  }[language]
+
   const lastAutoQueryRef = useRef("")
   const requestIdRef = useRef(0)
   const abortRef = useRef<AbortController | null>(null)
@@ -205,12 +479,12 @@ export default function Flights() {
 
   const formatAirport = useCallback(
     (code?: string) => {
-      if (!code) return "Noma'lum"
+      if (!code) return COMMON_COPY[language].unknown
       const upper = code.toUpperCase()
       const city = airportLabels[upper]
       return city ? `${city} (${upper})` : upper
     },
-    [airportLabels]
+    [airportLabels, language]
   )
 
   const formatRoute = useCallback(
@@ -495,15 +769,15 @@ export default function Flights() {
     const { from, to, date, pax } = criteria
 
     if (!token) {
-      if (showAlert) toast.error("Avval login qiling.")
+      if (showAlert) toast.error(copy.loginFirst)
       return
     }
     if (!from || !to || !date) {
-      if (showAlert) toast.error("Qayerdan, qayerga va sanani to'ldiring.")
+      if (showAlert) toast.error(copy.fillSearch)
       return
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      if (showAlert) toast.error("Sana formati: YYYY-MM-DD")
+      if (showAlert) toast.error(copy.dateFormat)
       return
     }
 
@@ -537,8 +811,8 @@ export default function Flights() {
 
       if (res.data.status !== "success" || !res.data.data?.options?.length) {
         setItems([])
-        const msg = res.data.message || "Qidiruv xato"
-        setLastInfo(`Backend: ${msg}`)
+        const msg = res.data.message || copy.searchError
+        setLastInfo(`${copy.backendInfo}: ${msg}`)
         if (showAlert) toast.error(msg)
         return
       }
@@ -550,7 +824,7 @@ export default function Flights() {
         return next
       })
 
-      const info = `Backend: ${res.data.message} · options=${res.data.data.options.length} · currency=${res.data.data.currency}`
+      const info = `${copy.backendInfo}: ${res.data.message} · options=${res.data.data.options.length} · currency=${res.data.data.currency}`
       setItems(mapped)
       setLastInfo(info)
       flightsCache.set(queryKey, { items: mapped, info })
@@ -574,12 +848,12 @@ export default function Flights() {
       const status = err?.response?.status
       const msg =
         status === 502
-          ? "Backend vaqtincha javob bermayapti (502 Bad Gateway)."
+          ? copy.backendBusy
           : err?.code === "ECONNABORTED"
-            ? "Server juda sekin javob berdi. So'rov timeout bo'ldi."
-            : err?.response?.data?.message || "Qidiruv xato"
+            ? copy.timeout
+            : err?.response?.data?.message || copy.searchError
       setItems([])
-      setLastInfo(`Backend: ${msg}`)
+      setLastInfo(`${copy.backendInfo}: ${msg}`)
       if (showAlert) toast.error(msg)
     } finally {
       if (requestId === requestIdRef.current) {
@@ -587,7 +861,7 @@ export default function Flights() {
         abortRef.current = null
       }
     }
-  }, [mapResponseToFlights, mergeFeaturedCards, toFeaturedCards])
+  }, [copy.backendBusy, copy.backendInfo, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights, mergeFeaturedCards, toFeaturedCards])
 
   const onSearch = () => {
     const criteria = {
@@ -597,7 +871,7 @@ export default function Flights() {
       pax,
     }
     if (!criteria.from || !criteria.to) {
-      toast.error("Jo'nash va manzil uchun to'g'ri variantni tanlang.")
+      toast.error(copy.invalidRoute)
       return
     }
     lastAutoQueryRef.current = JSON.stringify(criteria)
@@ -709,11 +983,11 @@ export default function Flights() {
     )[0]
 
     return [
-      { key: "cheap", badge: "Eng arzon", tone: "blue" as const, flight: cheapest },
-      { key: "best", badge: "Optimal", tone: "gold" as const, flight: best },
-      { key: "fast", badge: "Eng tez", tone: "rose" as const, flight: fastest },
+      { key: "cheap", badge: copy.highlightCheap, tone: "blue" as const, flight: cheapest },
+      { key: "best", badge: copy.highlightBest, tone: "gold" as const, flight: best },
+      { key: "fast", badge: copy.highlightFast, tone: "rose" as const, flight: fastest },
     ]
-  }, [filtered])
+  }, [copy.highlightBest, copy.highlightCheap, copy.highlightFast, filtered])
 
   const onPick = (flight: Flight) => {
     setSelected(flight)
@@ -768,23 +1042,23 @@ export default function Flights() {
             <div className="relative overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_35%,#eef2fb_58%,#f7f1f5_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] dark:bg-[linear-gradient(135deg,rgba(16,31,60,0.96)_0%,rgba(19,35,67,0.92)_35%,rgba(22,42,79,0.94)_58%,rgba(24,44,82,0.98)_100%)] dark:shadow-[inset_0_1px_0_rgba(147,182,255,0.08)] md:p-8">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]">
                 <Sparkles size={14} />
-                Premium route selection
+                {copy.routeSelection}
               </div>
               <h1 className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#1d2430] dark:text-white md:text-[48px]">
-                Reyslar ichidan
+                {copy.heroTitleA}
                 <span className="bg-[linear-gradient(135deg,#243a7a_0%,#a44c72_45%,#e36b3a_100%)] bg-clip-text text-transparent"> eng qulay </span>
-                tanlovni qiling
+                {copy.heroTitleC}
               </h1>
               <p className="mt-5 max-w-[600px] text-[15px] leading-8 text-[#627188] dark:text-[#d2e0f8] md:text-[16px]">
-                Backenddan kelgan real reyslarni qidiring, solishtiring va bron qiling.
+                {copy.heroDesc}
               </p>
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <InfoChip icon={CalendarDays} label="Sana" value={date || "Tanlanmagan"} />
-                <InfoChip icon={Users} label="Yo'lovchi" value={`${pax} ta`} />
+                <InfoChip icon={CalendarDays} label={copy.date} value={date || copy.unselected} />
+                <InfoChip icon={Users} label={copy.passenger} value={`${pax} ${language === "en" ? "" : "ta"}`.trim()} />
                 <InfoChip
                   icon={PlaneTakeoff}
-                  label="Yo'nalish"
-                  value={resolvedFrom && resolvedTo ? formatRoute(resolvedFrom, resolvedTo) : "Yo'nalish kiriting"}
+                  label={copy.route}
+                  value={resolvedFrom && resolvedTo ? formatRoute(resolvedFrom, resolvedTo) : copy.routeEnter}
                 />
               </div>
             </div>
@@ -793,9 +1067,9 @@ export default function Flights() {
               <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.08)_0%,rgba(17,24,39,0.34)_100%)]" />
               <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
                 <div className="rounded-[24px] border border-white/30 bg-[rgba(12,20,38,0.46)] p-5 text-white backdrop-blur-md">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/65">Curated journeys</div>
-                  <div className="mt-2 text-2xl font-black">Aviakompaniyalar va qulay tariflar</div>
-                  <p className="mt-2 text-sm leading-7 text-white/75">Search, compare, filter va booking oqimi backend bilan birga ishlashda davom etadi.</p>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/65">{copy.curated}</div>
+                  <div className="mt-2 text-2xl font-black">{copy.curatedTitle}</div>
+                  <p className="mt-2 text-sm leading-7 text-white/75">{copy.curatedDesc}</p>
                 </div>
               </div>
             </div>
@@ -803,17 +1077,17 @@ export default function Flights() {
 
             <div className={`mt-6 overflow-visible rounded-[32px] p-5 backdrop-blur-sm ${softPanel}`}>
             <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_210px]">
-              <AutocompleteField label="Qayerdan" value={from} placeholder="Masalan: TAS yoki London" options={locationOptions} onChange={setFrom} />
-              <AutocompleteField label="Qayerga" value={to} placeholder="Masalan: IST yoki Frankfurt" options={locationOptions} onChange={setTo} />
+              <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
+              <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
                   className="flex h-full min-h-[56px] w-full flex-col justify-center rounded-[20px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)] transition hover:border-[#cfd9e8] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.28)] dark:hover:bg-[rgba(28,46,84,0.94)]"
                 >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">Sana</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.date}</div>
                   <div className="mt-2 text-[15px] font-semibold text-[#1d2430] dark:text-white">
-                    {date || "Narxli kalendarni ochish"}
+                    {date || copy.openCalendar}
                   </div>
                 </button>
                 {calendarOpen ? (
@@ -830,14 +1104,14 @@ export default function Flights() {
                   />
                 ) : null}
               </div>
-              <button onClick={onSearch} disabled={loading} className={`h-14 rounded-[18px] font-semibold uppercase tracking-[0.12em] transition disabled:opacity-60 ${luxuryBtn}`}>{loading ? "Qidirilmoqda..." : "Qidirish"}</button>
+              <button onClick={onSearch} disabled={loading} className={`h-14 rounded-[18px] font-semibold uppercase tracking-[0.12em] transition disabled:opacity-60 ${luxuryBtn}`}>{loading ? copy.searching : copy.search}</button>
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs text-[#7f8ca0] dark:text-[#a9bddb]">* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida backenddan olinadigan minimal narxli kalendar ochiladi.</div>
+              <div className="text-xs text-[#7f8ca0] dark:text-[#a9bddb]">{copy.searchHint}</div>
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]">Swap</button>
-                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]">Clear</button>
-                {(["best", "cheap", "fast"] as const).map((item) => <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] text-[#627188] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]"].join(" ")}>{item === "best" ? "Best" : item === "cheap" ? "Cheap" : "Fast"}</button>)}
+                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]">{copy.swap}</button>
+                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]">{copy.clear}</button>
+                {(["best", "cheap", "fast"] as const).map((item) => <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] text-[#627188] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]"].join(" ")}>{item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}</button>)}
               </div>
             </div>
             {lastInfo ? <div className="mt-3 text-xs text-[#627188] dark:text-[#c7d8f6]">{lastInfo}</div> : null}
@@ -854,35 +1128,35 @@ export default function Flights() {
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
           <aside className={`rounded-[30px] p-5 ${softPanel}`}>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:text-[#d4e2fb]"><Filter size={15} />Filtrlar</div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:text-[#d4e2fb]"><Filter size={15} />{copy.filters}</div>
             <div className="mt-5 space-y-5">
-              <FilterBlock title="Narx oralig'i">
+              <FilterBlock title={copy.priceRange}>
                 <input type="range" min={0} max={Math.max(maxPrice, 1)} value={maxPriceFilter ?? Math.max(maxPrice, 1)} onChange={(e) => setMaxPriceFilter(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
                 <div className="mt-2 flex items-center justify-between text-xs text-[#627188]"><span>0</span><span>{formatMoney(maxPriceFilter ?? maxPrice, sourceItems[0]?.currency || "UZS")}</span></div>
               </FilterBlock>
-              <FilterBlock title="Parvoz davomiyligi">
+              <FilterBlock title={copy.duration}>
                 <input type="range" min={0} max={Math.max(maxTripDuration, 60)} value={maxDuration ?? Math.max(maxTripDuration, 60)} onChange={(e) => setMaxDuration(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
-                <div className="mt-2 text-xs text-[#627188]">{fmtDuration(maxDuration ?? maxTripDuration)}</div>
+                <div className="mt-2 text-xs text-[#627188]">{fmtDuration(maxDuration ?? maxTripDuration, language)}</div>
               </FilterBlock>
-              <FilterBlock title="Jo'nash vaqti">
+              <FilterBlock title={copy.departureTime}>
                 <div className="grid grid-cols-2 gap-2">{[
-                  { key: "all", label: "Barchasi" },
-                  { key: "morning", label: "06:00 gacha" },
-                  { key: "day", label: "12:00-18:00" },
-                  { key: "evening", label: "18:00 dan keyin" },
+                  { key: "all", label: copy.allDay },
+                  { key: "morning", label: copy.beforeNoon },
+                  { key: "day", label: copy.day },
+                  { key: "evening", label: copy.evening },
                 ].map((item) => <button key={item.key} type="button" onClick={() => setDepartureFilter(item.key as "all" | "morning" | "day" | "evening")} className={["rounded-2xl border px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] transition", departureFilter === item.key ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}>{item.label}</button>)}</div>
               </FilterBlock>
-              <FilterBlock title="Qo'shimcha qulayliklar">
+              <FilterBlock title={copy.conveniences}>
                 <div className="space-y-3">
-                  <ToggleButton active={onlyBaggage} onClick={() => setOnlyBaggage((prev) => !prev)} title="Bagaj bor" subtitle="Faqat bagajli tariflar" />
-                  <ToggleButton active={onlyRefundable} disabled={!hasRefundableFlights} onClick={() => setOnlyRefundable((prev) => !prev)} title="Refundable" subtitle={hasRefundableFlights ? "Qaytarish mumkin bo'lgan tariflar" : "Backend hozir refundable tarif qaytarmadi"} />
+                  <ToggleButton active={onlyBaggage} onClick={() => setOnlyBaggage((prev) => !prev)} title={copy.baggageOnly} subtitle={copy.baggageOnlySub} />
+                  <ToggleButton active={onlyRefundable} disabled={!hasRefundableFlights} onClick={() => setOnlyRefundable((prev) => !prev)} title={copy.refundable} subtitle={hasRefundableFlights ? copy.refundableSub : copy.refundableNone} />
                 </div>
               </FilterBlock>
-              <FilterBlock title="Kabina turi">
-                <div className="space-y-2">{(["all", "Economy", "Business"] as const).map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span>{item === "all" ? "Barchasi" : item}</span><Ticket size={15} /></button>)}</div>
+              <FilterBlock title={copy.cabin}>
+                <div className="space-y-2">{(["all", "Economy", "Business"] as const).map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span>{item === "all" ? copy.all : item === "Economy" ? copy.economy : copy.business}</span><Ticket size={15} /></button>)}</div>
               </FilterBlock>
-              <FilterBlock title="Aviakompaniya">
-                <div className="space-y-2">{airlines.map((item) => <button key={item} type="button" onClick={() => setAirlineFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", airlineFilter === item ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span className="truncate">{item === "all" ? "Barcha kompaniyalar" : item}</span><span className="text-xs uppercase">{item === "all" ? sourceItems.length : sourceItems.filter((flight) => flight.airline === item).length}</span></button>)}</div>
+              <FilterBlock title={copy.airline}>
+                <div className="space-y-2">{airlines.map((item) => <button key={item} type="button" onClick={() => setAirlineFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", airlineFilter === item ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span className="truncate">{item === "all" ? copy.allCompanies : item}</span><span className="text-xs uppercase">{item === "all" ? sourceItems.length : sourceItems.filter((flight) => flight.airline === item).length}</span></button>)}</div>
               </FilterBlock>
             </div>
           </aside>
@@ -890,13 +1164,12 @@ export default function Flights() {
           <div className="space-y-4">
             {!loading && sourceItems.length > 0 ? (
               <div className="rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-5 py-4 text-sm text-[#51627c] shadow-[0_12px_30px_rgba(17,24,39,0.05)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d2e0f8] dark:shadow-[0_14px_32px_rgba(4,10,28,0.28)]">
-                Hozir ro'yxatda <span className="font-black text-[#1d2430] dark:text-white">{filtered.length}</span> ta ko'rinayotgan reys bor.
-                {" Bu natijalar sizning qidiruvingiz bo'yicha yangilandi."}
+                {copy.visibleFlights} <span className="font-black text-[#1d2430] dark:text-white">{filtered.length}</span> {copy.visibleFlightsSuffix}
               </div>
             ) : null}
             {loading ? <InlineLoading /> : null}
-            {!loading && filtered.length > 0 ? filtered.map((flight, index) => <FlightRowCard key={flight.id} flight={flight} index={index} onPick={onPick} formatRoute={formatRoute} />) : null}
-            {!loading && filtered.length === 0 ? <div className="rounded-[28px] border border-[#dbe3ef] bg-white px-6 py-12 text-center text-[#627188] shadow-[0_18px_40px_rgba(17,24,39,0.06)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d2e0f8] dark:shadow-[0_18px_40px_rgba(4,10,28,0.28)]">Hozircha reys topilmadi. Yo'nalish, sana va yo'lovchi sonini kiriting.</div> : null}
+            {!loading && filtered.length > 0 ? filtered.map((flight, index) => <FlightRowCard key={flight.id} flight={flight} index={index} onPick={onPick} formatRoute={formatRoute} language={language} copy={copy} />) : null}
+            {!loading && filtered.length === 0 ? <div className="rounded-[28px] border border-[#dbe3ef] bg-white px-6 py-12 text-center text-[#627188] shadow-[0_18px_40px_rgba(17,24,39,0.06)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d2e0f8] dark:shadow-[0_18px_40px_rgba(4,10,28,0.28)]">{copy.noFlights}</div> : null}
           </div>
         </div>
       </div>
@@ -906,7 +1179,7 @@ export default function Flights() {
   )
 }
 
-function AutocompleteField({ label, value, placeholder, options, onChange }: { label: string; value: string; placeholder: string; options: LocationOption[]; onChange: (value: string) => void }) {
+function AutocompleteField({ label, value, placeholder, options, onChange, selectLabel }: { label: string; value: string; placeholder: string; options: LocationOption[]; onChange: (value: string) => void; selectLabel: string }) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -982,7 +1255,7 @@ function AutocompleteField({ label, value, placeholder, options, onChange }: { l
                 <span className="block text-xs uppercase tracking-[0.14em] text-[#7f8ca0] dark:text-[#9fb4d7]">{option.code}</span>
               </span>
               <span className="rounded-full border border-[#dce7f3] bg-[#f7fbff] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#5a6f8d] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]">
-                tanlash
+                {selectLabel}
               </span>
             </button>
           ))}
@@ -1001,7 +1274,7 @@ function InfoChip({ icon: Icon, label, value }: { icon: typeof CalendarDays; lab
   )
 }
 
-function TopDealCard({ badge, tone, flight, onPick, formatRoute }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string }) {
+function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, chooseFareLabel }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; chooseFareLabel: string }) {
   const toneStyles = {
     blue: "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,33,62,0.96)_0%,rgba(22,40,74,0.94)_100%)]",
     gold: "border-[#f3e2bf] bg-[linear-gradient(135deg,#fffaf0_0%,#fff4da_100%)] dark:border-[#5c5771] dark:bg-[linear-gradient(135deg,rgba(24,38,68,0.96)_0%,rgba(46,43,74,0.94)_100%)]",
@@ -1015,9 +1288,9 @@ function TopDealCard({ badge, tone, flight, onPick, formatRoute }: { badge: stri
         <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7f8ca0] dark:text-[#9fb4d7]">{flight.airline}</div>
       </div>
       <div className="mt-4 text-xl font-black text-[#1d2430] dark:text-[#f4f8ff]">{formatRoute(flight.from, flight.to)}</div>
-      <div className="mt-2 text-sm text-[#627188] dark:text-[#b8cceb]">{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin)}</div>
+      <div className="mt-2 text-sm text-[#627188] dark:text-[#b8cceb]">{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
       <div className="mt-4 text-2xl font-black text-[#1d2430] dark:text-white">{formatMoney(flight.price, flight.currency)}</div>
-      <button type="button" onClick={() => onPick(flight)} className={`mt-4 h-11 w-full rounded-2xl text-sm font-semibold ${luxuryBtn}`}>Tarifni ko'rish</button>
+      <button type="button" onClick={() => onPick(flight)} className={`mt-4 h-11 w-full rounded-2xl text-sm font-semibold ${luxuryBtn}`}>{chooseFareLabel}</button>
     </div>
   )
 }
@@ -1049,8 +1322,8 @@ function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { 
   )
 }
 
-function FlightRowCard({ flight, index, onPick, formatRoute }: { flight: Flight; index: number; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string }) {
-  const badge = getFlightBadge(flight, index)
+function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: { flight: Flight; index: number; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; copy: Record<string, string> }) {
+  const badge = getFlightBadge(flight, index, language)
   const firstSegment = flight.segments?.[0]
   const lastSegment = flight.segments?.[flight.segments.length - 1]
   const departureTerminal = firstSegment?.departureTerminal
@@ -1082,13 +1355,13 @@ function FlightRowCard({ flight, index, onPick, formatRoute }: { flight: Flight;
             {formatCompactPrice(flight.price, flight.currency)}
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-sm text-[#445167] dark:text-[#d4e2fb]">
-            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.baggage ? `${flight.baggage} bagaj` : "Bagaj yo'q"}</span>
-            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.carryOn ? `Qo'l yuki ${flight.carryOn}` : "Qo'l yuki yo'q"}</span>
-            {flight.seatsAvailable ? <span className="rounded-full bg-[#fff0f3] px-2.5 py-1 text-[#d94b64]">Yana {flight.seatsAvailable} ta joy</span> : null}
+            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.baggage ? `${flight.baggage} ${copy.baggageOnly.toLowerCase()}` : copy.noBaggage}</span>
+            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.carryOn ? `${language === "en" ? "Carry-on" : "Qo'l yuki"} ${flight.carryOn}` : copy.noCarry}</span>
+            {flight.seatsAvailable ? <span className="rounded-full bg-[#fff0f3] px-2.5 py-1 text-[#d94b64]">{copy.moreSeats} {flight.seatsAvailable} {copy.seats}</span> : null}
           </div>
         </div>
         <button type="button" onClick={() => onPick(flight)} className="shrink-0 rounded-2xl border border-[#e5ebf3] bg-[#f7f9fc] px-4 py-2 text-sm font-semibold text-[#1d2430] transition hover:bg-white dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-white dark:hover:bg-[rgba(28,46,84,0.94)]">
-          Ko'rish
+          {copy.view}
         </button>
       </div>
 
@@ -1105,7 +1378,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute }: { flight: Flight;
             <div className="text-[18px] font-black text-[#1d2430] dark:text-white">{flight.depart}</div>
             <div className="text-sm text-[#6a778d] dark:text-[#d4e2fb]">{flight.from}</div>
             {departureTerminal ? (
-              <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">Terminal {departureTerminal}</div>
+              <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{copy.terminal} {departureTerminal}</div>
             ) : null}
             <div className="text-sm text-[#8a95a8] dark:text-[#a9bddb]">{flight.airlineName || flight.airline}</div>
           </div>
@@ -1114,7 +1387,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute }: { flight: Flight;
         <div className="min-w-0">
           <div className="flex items-center justify-center gap-3 text-sm text-[#97a2b4] dark:text-[#9fb4d7]">
             <PlaneTakeoff size={15} />
-            <span>{fmtDuration(flight.durationMin)} yo'lda, {isDirect ? "to'g'ridan-to'g'ri" : `${flight.stopsCount} ta transfer`}</span>
+            <span>{fmtDuration(flight.durationMin, language)}, {isDirect ? copy.direct : `${flight.stopsCount} ${copy.transfers}`}</span>
             <PlaneLanding size={15} />
           </div>
           <div className="mt-3 flex items-center gap-3">
@@ -1133,20 +1406,20 @@ function FlightRowCard({ flight, index, onPick, formatRoute }: { flight: Flight;
           <div className="text-[18px] font-black text-[#1d2430] dark:text-white">{flight.arrive}</div>
           <div className="text-sm text-[#6a778d] dark:text-[#d4e2fb]">{flight.to}</div>
           {arrivalTerminal ? (
-            <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">Terminal {arrivalTerminal}</div>
+            <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{copy.terminal} {arrivalTerminal}</div>
           ) : null}
           <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#f3f6fa] px-3 py-1 text-xs font-semibold text-[#5f6e84] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">
             <Ticket size={13} />
-            {flight.cabin ?? "Economy"}
+            {flight.cabin === "Business" ? copy.business : copy.economy}
           </div>
         </div>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1f6] pt-4 dark:border-[#30476f]">
         <div className="flex flex-wrap gap-2 text-sm text-[#627188] dark:text-[#d4e2fb]">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><Clock3 size={14} /> {fmtDuration(flight.durationMin)}</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><Users size={14} /> {flight.refundable ? "Qaytarish mumkin" : "Qaytarilmaydi"}</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><ArrowRight size={14} /> {flight.flightNo ?? "Reys mavjud"}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><Clock3 size={14} /> {fmtDuration(flight.durationMin, language)}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><Users size={14} /> {flight.refundable ? copy.refundableYes : copy.refundableNo}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><ArrowRight size={14} /> {flight.flightNo ?? copy.availableFlight}</span>
           {firstSegment?.origin || lastSegment?.destination ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]">
               <Plane size={14} /> {(firstSegment?.origin || flight.from) + " → " + (lastSegment?.destination || flight.to)}
@@ -1154,7 +1427,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute }: { flight: Flight;
           ) : null}
         </div>
         <button type="button" className={`h-12 rounded-2xl px-6 font-semibold transition ${luxuryBtn}`} onClick={() => onPick(flight)}>
-          Tanlash
+          {copy.select}
         </button>
       </div>
     </motion.div>

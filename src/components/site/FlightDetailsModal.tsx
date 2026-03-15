@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
 import { formatUzPhoneInput } from "@/lib/phone"
+import { useI18n } from "@/shared/i18n/i18n"
 import {
   bookAir,
   getAirOptionDetails,
@@ -119,14 +120,28 @@ const cleanRuleText = (value: string) =>
     .replace(/\s*\n\s*/g, "\n")
     .trim()
 
-const translateBookingError = (message?: string) => {
+const translateBookingError = (message: string | undefined, language: "uz" | "ru" | "en") => {
   const text = (message || "").trim()
-  if (!text) return "Booking xato"
+  if (!text) {
+    return language === "ru"
+      ? "Ошибка бронирования"
+      : language === "en"
+        ? "Booking error"
+        : "Booking xato"
+  }
   if (/Не удалось взять места по запрошенным параметрам/i.test(text)) {
-    return "Tanlangan tarif bo'yicha joy qolmagan. Reysni qayta qidirib, boshqa variantni tanlang."
+    return language === "ru"
+      ? "По выбранному тарифу мест не осталось. Выполните поиск заново и выберите другой вариант."
+      : language === "en"
+        ? "No seats are left for the selected fare. Search again and choose another option."
+        : "Tanlangan tarif bo'yicha joy qolmagan. Reysni qayta qidirib, boshqa variantni tanlang."
   }
   if (/Ошибка создания брони/i.test(text)) {
-    return "Bron yaratib bo'lmadi. Tarif yoki joy holati o'zgargan bo'lishi mumkin."
+    return language === "ru"
+      ? "Не удалось создать бронь. Возможно, тариф или наличие мест изменились."
+      : language === "en"
+        ? "Unable to create the booking. The fare or seat availability may have changed."
+        : "Bron yaratib bo'lmadi. Tarif yoki joy holati o'zgargan bo'lishi mumkin."
   }
   return text
 }
@@ -169,6 +184,249 @@ export default function FlightDetailsModal({
   onBook: (flight: Flight) => void
 }) {
   const navigate = useNavigate()
+  const { language } = useI18n()
+  const copy = {
+    uz: {
+      bookingError: "Booking xato",
+      optionMissing: "Option ID topilmadi. Qidiruvni qayta bajaring.",
+      invalidData: "Ma'lumotlar to'liq emas.",
+      loginFirst: "Avval login qiling (token yo'q).",
+      bookingSuccess: "Booking muvaffaqiyatli. Order ID:",
+      headerDate: "Sana",
+      headerPax: "Yo'lovchi",
+      finalPrice: "Yakuniy narx",
+      taxesIncluded: "Soliq va yig'imlar bilan",
+      step1: "1) Bron qilish",
+      step2: "2) Ma'lumotlar",
+      step3: "3) To'lov",
+      depart: "Uchish",
+      arrive: "Qo'nish",
+      duration: "Davomiylik",
+      fareRules: "Tarif & shartlar",
+      refundable: "Qaytarish mumkin",
+      nonRefundable: "Qaytarilmaydi",
+      carryOn: "Qo'l yuki",
+      fareTerms: "Tanlangan tarifning asosiy shartlari va bagaj ma'lumoti.",
+      faresLoading: "Tariflar yuklanmoqda...",
+      fares: "Tariflar",
+      baggage: "Bagaj",
+      flightDetails: "Reys tafsilotlari",
+      flightDetailsLoading: "Reys tafsilotlari yuklanmoqda...",
+      farePackages: "Tarif paketlari",
+      farePackagesLoading: "Tarif paketlari yuklanmoqda...",
+      farePackagesNotFound: "Tarif paketlari topilmadi.",
+      extraPrice: "Qo'shimcha narx",
+      rules: "Tarif qoidalari",
+      rulesLoading: "Qoidalar yuklanmoqda...",
+      noRules: "Qoidalar hozircha yo'q (backend `data: []` qaytardi).",
+      services: "Xizmatlar",
+      meal: "Ovqat",
+      support: "24/7 Qo'llab-quvvatlash",
+      continue: "Davom etish",
+      enterPassengerInfo: "Yo'lovchi ma'lumotlarini kiriting.",
+      select: "Tanlash",
+      formOpensFor: "ta yo'lovchi uchun forma ochiladi.",
+      payerDetails: "To'lovchi ma'lumotlari",
+      emailPhone: "Email va telefon",
+      countryCode: "Country code",
+      phoneNumber: "Telefon raqam",
+      passengersDetails: "Yo'lovchilar ma'lumotlari",
+      total: "Jami",
+      passenger: "Yo'lovchi",
+      firstName: "Ism",
+      lastName: "Familiya",
+      birthDate: "Tug'ilgan sana",
+      passportIssued: "Pasport berilgan sana",
+      citizenship: "Fuqarolik",
+      gender: "Jins",
+      passportExpiry: "Pasport amal qilish muddati",
+      passportNumber: "Pasport seriya / raqam",
+      back: "Orqaga",
+      paymentMethod: "To'lov usuli",
+      chooseMethod: "Mos usulni tanlang.",
+      finishOrder: "Buyurtma yakunlash",
+      route: "Yo'nalish",
+      passengerCount: "Yo'lovchi soni",
+      totalPrice: "Narx (jami)",
+      selectedPayment: "Tanlangan to'lov",
+      unselected: "tanlanmagan",
+      confirmData: "Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman",
+      markConfirmation: "* Rasmiylashtirish uchun tasdiqlashni belgilang.",
+      checkout: "Rasmiylashtirish",
+      toastTitle: "Xatolik",
+      segment: "Segment",
+      time: "Vaqt",
+      departTerminal: "Jo'nash terminali",
+      arriveTerminal: "Kelish terminali",
+      bookingClass: "Bron klassi",
+      serviceClass: "Xizmat klassi",
+      operatingAirline: "Operatsion aviakompaniya",
+      seatsAvailable: "Bo'sh o'rinlar",
+      aircraftType: "Samolyot turi",
+      fareCode: "Tarif kodi",
+      layover: "Kutish vaqti",
+    },
+    ru: {
+      bookingError: "Ошибка бронирования",
+      optionMissing: "Option ID не найден. Выполните поиск заново.",
+      invalidData: "Данные заполнены не полностью.",
+      loginFirst: "Сначала выполните вход (нет token).",
+      bookingSuccess: "Бронирование успешно. Order ID:",
+      headerDate: "Дата",
+      headerPax: "Пассажиры",
+      finalPrice: "Итоговая цена",
+      taxesIncluded: "С налогами и сборами",
+      step1: "1) Бронирование",
+      step2: "2) Данные",
+      step3: "3) Оплата",
+      depart: "Вылет",
+      arrive: "Прилет",
+      duration: "Длительность",
+      fareRules: "Тариф и условия",
+      refundable: "Можно вернуть",
+      nonRefundable: "Невозвратный",
+      carryOn: "Ручная кладь",
+      fareTerms: "Основные условия выбранного тарифа и информация о багаже.",
+      faresLoading: "Загрузка тарифов...",
+      fares: "Тарифы",
+      baggage: "Багаж",
+      flightDetails: "Детали рейса",
+      flightDetailsLoading: "Загрузка деталей рейса...",
+      farePackages: "Пакеты тарифа",
+      farePackagesLoading: "Загрузка пакетов тарифа...",
+      farePackagesNotFound: "Пакеты тарифа не найдены.",
+      extraPrice: "Доплата",
+      rules: "Правила тарифа",
+      rulesLoading: "Загрузка правил...",
+      noRules: "Правил пока нет (backend вернул `data: []`).",
+      services: "Услуги",
+      meal: "Питание",
+      support: "Поддержка 24/7",
+      continue: "Продолжить",
+      enterPassengerInfo: "Введите данные пассажиров.",
+      select: "Выбрать",
+      formOpensFor: "пассажиров будет в форме.",
+      payerDetails: "Данные плательщика",
+      emailPhone: "Email и телефон",
+      countryCode: "Country code",
+      phoneNumber: "Телефон",
+      passengersDetails: "Данные пассажиров",
+      total: "Всего",
+      passenger: "Пассажир",
+      firstName: "Имя",
+      lastName: "Фамилия",
+      birthDate: "Дата рождения",
+      passportIssued: "Дата выдачи паспорта",
+      citizenship: "Гражданство",
+      gender: "Пол",
+      passportExpiry: "Срок действия паспорта",
+      passportNumber: "Серия / номер паспорта",
+      back: "Назад",
+      paymentMethod: "Способ оплаты",
+      chooseMethod: "Выберите подходящий способ.",
+      finishOrder: "Завершение заказа",
+      route: "Маршрут",
+      passengerCount: "Количество пассажиров",
+      totalPrice: "Цена (итого)",
+      selectedPayment: "Выбранная оплата",
+      unselected: "не выбрано",
+      confirmData: "Подтверждаю правильность указанных выше данных",
+      markConfirmation: "* Для оформления отметьте подтверждение.",
+      checkout: "Оформить",
+      toastTitle: "Ошибка",
+      segment: "Сегмент",
+      time: "Время",
+      departTerminal: "Терминал вылета",
+      arriveTerminal: "Терминал прилета",
+      bookingClass: "Класс бронирования",
+      serviceClass: "Класс обслуживания",
+      operatingAirline: "Оперирующая авиакомпания",
+      seatsAvailable: "Свободные места",
+      aircraftType: "Тип самолета",
+      fareCode: "Код тарифа",
+      layover: "Время ожидания",
+    },
+    en: {
+      bookingError: "Booking error",
+      optionMissing: "Option ID was not found. Please search again.",
+      invalidData: "The data is incomplete.",
+      loginFirst: "Please log in first (token missing).",
+      bookingSuccess: "Booking successful. Order ID:",
+      headerDate: "Date",
+      headerPax: "Passengers",
+      finalPrice: "Final price",
+      taxesIncluded: "Including taxes and fees",
+      step1: "1) Booking",
+      step2: "2) Details",
+      step3: "3) Payment",
+      depart: "Departure",
+      arrive: "Arrival",
+      duration: "Duration",
+      fareRules: "Fare & conditions",
+      refundable: "Refundable",
+      nonRefundable: "Non-refundable",
+      carryOn: "Carry-on",
+      fareTerms: "Main conditions of the selected fare and baggage information.",
+      faresLoading: "Loading fares...",
+      fares: "Fares",
+      baggage: "Baggage",
+      flightDetails: "Flight details",
+      flightDetailsLoading: "Loading flight details...",
+      farePackages: "Fare packages",
+      farePackagesLoading: "Loading fare packages...",
+      farePackagesNotFound: "No fare packages found.",
+      extraPrice: "Extra price",
+      rules: "Fare rules",
+      rulesLoading: "Loading rules...",
+      noRules: "No rules yet (backend returned `data: []`).",
+      services: "Services",
+      meal: "Meal",
+      support: "24/7 support",
+      continue: "Continue",
+      enterPassengerInfo: "Enter passenger details.",
+      select: "Select",
+      formOpensFor: "passengers will open in the form.",
+      payerDetails: "Payer details",
+      emailPhone: "Email and phone",
+      countryCode: "Country code",
+      phoneNumber: "Phone number",
+      passengersDetails: "Passenger details",
+      total: "Total",
+      passenger: "Passenger",
+      firstName: "First name",
+      lastName: "Last name",
+      birthDate: "Birth date",
+      passportIssued: "Passport issue date",
+      citizenship: "Citizenship",
+      gender: "Gender",
+      passportExpiry: "Passport expiry date",
+      passportNumber: "Passport series / number",
+      back: "Back",
+      paymentMethod: "Payment method",
+      chooseMethod: "Choose a suitable method.",
+      finishOrder: "Complete order",
+      route: "Route",
+      passengerCount: "Passenger count",
+      totalPrice: "Price (total)",
+      selectedPayment: "Selected payment",
+      unselected: "not selected",
+      confirmData: "I confirm that the information above is correct",
+      markConfirmation: "* Mark the confirmation to proceed.",
+      checkout: "Checkout",
+      toastTitle: "Error",
+      segment: "Segment",
+      time: "Time",
+      departTerminal: "Departure terminal",
+      arriveTerminal: "Arrival terminal",
+      bookingClass: "Booking class",
+      serviceClass: "Service class",
+      operatingAirline: "Operating carrier",
+      seatsAvailable: "Seats available",
+      aircraftType: "Aircraft type",
+      fareCode: "Fare code",
+      layover: "Layover",
+    },
+  }[language]
 
   // ✅ safeFlight hooklar bir xil ishlashi uchun
   const safeFlight =
@@ -277,7 +535,7 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setFareError(res.data.message || "Fare topilmadi")
+          setFareError(res.data.message || copy.fares)
           setFareData(null)
           return
         }
@@ -285,7 +543,7 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || "Fare topilmadi"
+        const msg = err?.response?.data?.message || copy.fares
         setFareError(msg)
         setFareData(null)
       })
@@ -312,7 +570,7 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setOptionDetailsError(res.data.message || "Option details topilmadi")
+          setOptionDetailsError(res.data.message || copy.flightDetails)
           setOptionDetails(null)
           return
         }
@@ -346,7 +604,7 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || "Option details topilmadi"
+        const msg = err?.response?.data?.message || copy.flightDetails
         setOptionDetailsError(msg)
         setOptionDetails(null)
       })
@@ -373,7 +631,7 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setFareFamiliesError(res.data.message || "Fare families topilmadi")
+          setFareFamiliesError(res.data.message || copy.farePackages)
           setFareFamiliesData([])
           return
         }
@@ -397,7 +655,7 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || "Fare families topilmadi"
+        const msg = err?.response?.data?.message || copy.farePackages
         setFareFamiliesError(msg)
         setFareFamiliesData([])
       })
@@ -424,7 +682,7 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setRulesError(res.data.message || "Tarif qoidalari topilmadi")
+          setRulesError(res.data.message || copy.rules)
           setRulesData([])
           return
         }
@@ -432,7 +690,7 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || "Tarif qoidalari topilmadi"
+        const msg = err?.response?.data?.message || copy.rules
         setRulesError(msg)
         setRulesData([])
       })
@@ -485,19 +743,19 @@ export default function FlightDetailsModal({
   const errors = useMemo(() => {
     const e: string[] = []
 
-    if (!payer.email.trim() || !isEmail(payer.email)) e.push("Email noto'g'ri kiritilgan.")
-    if (!payer.phone.trim() || !isPhone(payer.phone)) e.push("Telefon raqam noto'g'ri kiritilgan.")
-    if (!payer.countryCode?.trim()) e.push("Telefon country code kiritilmagan.")
+    if (!payer.email.trim() || !isEmail(payer.email)) e.push(`${copy.payerDetails}: email`)
+    if (!payer.phone.trim() || !isPhone(payer.phone)) e.push(`${copy.payerDetails}: phone`)
+    if (!payer.countryCode?.trim()) e.push(`${copy.payerDetails}: ${copy.countryCode}`)
 
     passengers.forEach((p, idx) => {
-      if (!p.firstName.trim()) e.push(`${idx + 1}-yo'lovchi: Ism kiritilmagan.`)
-      if (!p.lastName.trim()) e.push(`${idx + 1}-yo'lovchi: Familiya kiritilmagan.`)
-      if (!p.birthDate) e.push(`${idx + 1}-yo'lovchi: Tug'ilgan sana kiritilmagan.`)
-      if (!p.passportIssued) e.push(`${idx + 1}-yo'lovchi: Pasport berilgan sana kiritilmagan.`)
-      if (!p.passportNo.trim()) e.push(`${idx + 1}-yo'lovchi: Pasport seriya/raqam kiritilmagan.`)
-      if (!p.passportExpiry) e.push(`${idx + 1}-yo'lovchi: Pasport amal qilish muddati kiritilmagan.`)
-      if (!p.citizenship.trim()) e.push(`${idx + 1}-yo'lovchi: Fuqarolik kiritilmagan.`)
-      if (!p.countryCode.trim()) e.push(`${idx + 1}-yo'lovchi: Country code kiritilmagan.`)
+      if (!p.firstName.trim()) e.push(`${copy.passenger} ${idx + 1}: ${copy.firstName}`)
+      if (!p.lastName.trim()) e.push(`${copy.passenger} ${idx + 1}: ${copy.lastName}`)
+      if (!p.birthDate) e.push(`${copy.passenger} ${idx + 1}: ${copy.birthDate}`)
+      if (!p.passportIssued) e.push(`${copy.passenger} ${idx + 1}: ${copy.passportIssued}`)
+      if (!p.passportNo.trim()) e.push(`${copy.passenger} ${idx + 1}: ${copy.passportNumber}`)
+      if (!p.passportExpiry) e.push(`${copy.passenger} ${idx + 1}: ${copy.passportExpiry}`)
+      if (!p.citizenship.trim()) e.push(`${copy.passenger} ${idx + 1}: ${copy.citizenship}`)
+      if (!p.countryCode.trim()) e.push(`${copy.passenger} ${idx + 1}: ${copy.countryCode}`)
     })
 
     return e
@@ -507,13 +765,13 @@ export default function FlightDetailsModal({
 
   const submit = async () => {
     if (!safeFlight.id) {
-      setToastMsg("Option ID topilmadi. Qidiruvni qayta bajaring.")
+      setToastMsg(copy.optionMissing)
       setToastOpen(true)
       return
     }
     if (!canSubmit) {
-      const head = errors[0] ?? "Ma'lumotlar to'liq emas."
-      const more = errors.length > 1 ? ` + yana ${errors.length - 1} ta` : ""
+      const head = errors[0] ?? copy.invalidData
+      const more = errors.length > 1 ? ` + ${errors.length - 1}` : ""
       setToastMsg(`${head}${more}`)
       setToastOpen(true)
       return
@@ -524,7 +782,7 @@ export default function FlightDetailsModal({
     try {
       const token = localStorage.getItem("access_token")
       if (!token) {
-        setToastMsg("Avval login qiling (token yo'q).")
+        setToastMsg(copy.loginFirst)
         setToastOpen(true)
         return
       }
@@ -549,12 +807,12 @@ export default function FlightDetailsModal({
       })
 
       if (res.data.status !== "success") {
-        setToastMsg(translateBookingError(res.data.message))
+        setToastMsg(translateBookingError(res.data.message, language))
         setToastOpen(true)
         return
       }
       setLastOrderId(res.data.data?.orderID ?? null)
-      setToastMsg(`Booking muvaffaqiyatli. Order ID: ${res.data.data?.orderID ?? "—"}`)
+      setToastMsg(`${copy.bookingSuccess} ${res.data.data?.orderID ?? "—"}`)
       setToastOpen(true)
       if (res.data.data?.orderID) {
         const curr = bookingCart.get()
@@ -600,7 +858,7 @@ export default function FlightDetailsModal({
         })
       }
     } catch (err: any) {
-      const msg = translateBookingError(err?.response?.data?.message || "Booking xato")
+      const msg = translateBookingError(err?.response?.data?.message || copy.bookingError, language)
       setToastMsg(msg)
       setToastOpen(true)
       return
@@ -701,17 +959,17 @@ export default function FlightDetailsModal({
                     {flight.from} → {flight.to}
                   </div>
                   <div className="mt-2 text-[#627188] text-sm dark:text-[#d2e0f8]">
-                    Sana: <span className="text-[#1d2430] dark:text-white">{date || "—"}</span> · Yo'lovchi:{" "}
+                    {copy.headerDate}: <span className="text-[#1d2430] dark:text-white">{date || "—"}</span> · {copy.headerPax}:{" "}
                     <span className="text-[#1d2430] dark:text-white">{Math.max(1, pax)}</span>
                   </div>
                 </div>
 
                 <div className="text-left md:text-right w-full md:w-auto">
-                  <div className="text-[#718198] text-xs dark:text-[#a9bddb]">Yakuniy narx</div>
+                  <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{copy.finalPrice}</div>
                   <div className="text-3xl font-extrabold text-[#1d2430] dark:text-white">
                     {formatMoney(total, safeFlight.currency)}
                   </div>
-                  <div className="text-[#718198] text-xs dark:text-[#a9bddb]">Soliq va yig'imlar bilan</div>
+                  <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{copy.taxesIncluded}</div>
                 </div>
               </div>
 
@@ -724,7 +982,7 @@ export default function FlightDetailsModal({
                       : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
                   ].join(" ")}
                 >
-                  1) Bron qilish
+                  {copy.step1}
                 </span>
                 <span className="text-[#9ba8ba] dark:text-[#8ea5cb]">→</span>
                 <span
@@ -735,7 +993,7 @@ export default function FlightDetailsModal({
                       : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
                   ].join(" ")}
                 >
-                  2) Ma'lumotlar
+                  {copy.step2}
                 </span>
                 <span className="text-[#9ba8ba] dark:text-[#8ea5cb]">→</span>
                 <span
@@ -746,15 +1004,15 @@ export default function FlightDetailsModal({
                       : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
                   ].join(" ")}
                 >
-                  3) To'lov
+                  {copy.step3}
                 </span>
               </div>
 
               {step === "select" && (
                 <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <Pill icon={PlaneTakeoff} label="Uchish" value={flight.depart} />
-                  <Pill icon={PlaneLanding} label="Qo'nish" value={flight.arrive} />
-                  <Pill icon={Clock} label="Davomiylik" value={fmtDuration(flight.durationMin)} />
+                  <Pill icon={PlaneTakeoff} label={copy.depart} value={flight.depart} />
+                  <Pill icon={PlaneLanding} label={copy.arrive} value={flight.arrive} />
+                  <Pill icon={Clock} label={copy.duration} value={fmtDuration(flight.durationMin)} />
                 </div>
               )}
             </div>
@@ -765,7 +1023,7 @@ export default function FlightDetailsModal({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
                     <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                      <div className="text-[#1d2430] font-semibold dark:text-white">Tarif & shartlar</div>
+                      <div className="text-[#1d2430] font-semibold dark:text-white">{copy.fareRules}</div>
 
                       <div className="mt-3 flex flex-wrap gap-2 text-sm">
                         <span className="rounded-full border border-[#dbe3ef] bg-[#f8fbff] px-3 py-1 text-[#234174] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d7e5ff]">
@@ -779,7 +1037,7 @@ export default function FlightDetailsModal({
                               : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]"
                           }`}
                         >
-                          {refundable ? "Qaytarish mumkin" : "Qaytarilmaydi"}
+                          {refundable ? copy.refundable : copy.nonRefundable}
                         </span>
 
                         <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#51627c] inline-flex items-center gap-2 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
@@ -789,24 +1047,24 @@ export default function FlightDetailsModal({
 
                         <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#51627c] inline-flex items-center gap-2 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
                           <Luggage size={14} />
-                          Carry-on: {flight.carryOn ?? "—"}
+                          {copy.carryOn}: {flight.carryOn ?? "—"}
                         </span>
                       </div>
 
                       <div className="mt-4 text-[#627188] text-sm leading-relaxed dark:text-[#a9bddb]">
-                        Tanlangan tarifning asosiy shartlari va bagaj ma'lumoti.
+                        {copy.fareTerms}
                       </div>
 
                       <div className="mt-4 text-[#627188] text-sm dark:text-[#a9bddb]">
-                        {fareLoading && "Tariflar yuklanmoqda..."}
-                        {!fareLoading && fareError && `Tariflar: ${fareError}`}
+                        {fareLoading && copy.faresLoading}
+                        {!fareLoading && fareError && `${copy.fares}: ${fareError}`}
                         {!fareLoading && !fareError && fareData?.families?.length ? (
                           <div className="mt-2 space-y-2">
                             {fareData.families.map((f) => (
                               <div key={f.id} className="rounded-[20px] border border-[#e2e9f2] bg-white p-3 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
                                 <div className="text-[#1d2430] font-semibold text-sm dark:text-white">{f.name}</div>
                                 <div className="mt-1 text-[#627188] text-xs dark:text-[#a9bddb]">
-                                  Bagaj: {f.baggageInfos?.join(", ") || "—"}
+                                  {copy.baggage}: {f.baggageInfos?.join(", ") || "—"}
                                 </div>
                                 {f.services && f.services.length > 0 && (
                                   <div className="mt-2 flex flex-wrap gap-2">
@@ -827,12 +1085,12 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">Reys tafsilotlari</div>
+                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{copy.flightDetails}</div>
                         <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
-                          {optionDetailsLoading && "Reys tafsilotlari yuklanmoqda..."}
+                          {optionDetailsLoading && copy.flightDetailsLoading}
                           {!optionDetailsLoading &&
                             optionDetailsError &&
-                            `Reys tafsilotlari: ${optionDetailsError}`}
+                            `${copy.flightDetails}: ${optionDetailsError}`}
                         </div>
                         {itinerarySegments.length > 0 ? (
                           <div className="mt-3 space-y-3">
@@ -840,7 +1098,7 @@ export default function FlightDetailsModal({
                               <div key={segment.id} className="rounded-[20px] border border-[#e2e9f2] bg-white p-3 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <div className="text-[#1d2430] text-sm font-semibold dark:text-white">
-                                    Segment {index + 1}: {segment.origin} → {segment.destination}
+                                    {copy.segment} {index + 1}: {segment.origin} → {segment.destination}
                                   </div>
                                   <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">
                                     {segment.carrier || "—"} {segment.flightNumber || ""}
@@ -848,45 +1106,45 @@ export default function FlightDetailsModal({
                                 </div>
                                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Vaqt: {segment.departure} → {segment.arrival}
+                                    {copy.time}: {segment.departure} → {segment.arrival}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Davomiylik: {segment.duration ? fmtDuration(segment.duration) : "—"}
+                                    {copy.duration}: {segment.duration ? fmtDuration(segment.duration) : "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Jo'nash terminali: {segment.departureTerminal || "—"}
+                                    {copy.departTerminal}: {segment.departureTerminal || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Kelish terminali: {segment.arrivalTerminal || "—"}
+                                    {copy.arriveTerminal}: {segment.arrivalTerminal || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Bagaj: {segment.baggage || "—"}
+                                    {copy.baggage}: {segment.baggage || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Qo'l yuki: {segment.carryOn || "—"}
+                                    {copy.carryOn}: {segment.carryOn || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Bron klassi: {segment.bookingClass || "—"}
+                                    {copy.bookingClass}: {segment.bookingClass || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Xizmat klassi: {segment.serviceClass || "—"}
+                                    {copy.serviceClass}: {segment.serviceClass || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Operatsion aviakompaniya: {segment.operatingCarrier || "—"}
+                                    {copy.operatingAirline}: {segment.operatingCarrier || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Bo'sh o'rinlar: {segment.seatsAvailable ?? "—"}
+                                    {copy.seatsAvailable}: {segment.seatsAvailable ?? "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Samolyot turi: {segment.equipment || "—"}
+                                    {copy.aircraftType}: {segment.equipment || "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    Tarif kodi: {segment.fareBasis || "—"}
+                                    {copy.fareCode}: {segment.fareBasis || "—"}
                                   </div>
                                 </div>
                                 {segment.layover ? (
                                   <div className="mt-2 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                    Kutish vaqti: {fmtDuration(segment.layover)}
+                                    {copy.layover}: {fmtDuration(segment.layover)}
                                   </div>
                                 ) : null}
                               </div>
@@ -896,16 +1154,16 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">Tarif paketlari</div>
+                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{copy.farePackages}</div>
                         <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
-                          {fareFamiliesLoading && "Tarif paketlari yuklanmoqda..."}
+                          {fareFamiliesLoading && copy.farePackagesLoading}
                           {!fareFamiliesLoading &&
                             fareFamiliesError &&
-                            `Tarif paketlari: ${fareFamiliesError}`}
+                            `${copy.farePackages}: ${fareFamiliesError}`}
                           {!fareFamiliesLoading &&
                             !fareFamiliesError &&
                             fareFamiliesData.length === 0 &&
-                            "Tarif paketlari topilmadi."}
+                            copy.farePackagesNotFound}
                         </div>
 
                         {!fareFamiliesLoading && !fareFamiliesError && fareFamiliesData.length > 0 && (
@@ -917,10 +1175,10 @@ export default function FlightDetailsModal({
                                   ID: {f.id}
                                 </div>
                                 <div className="mt-1 text-xs text-[#52627b] dark:text-[#d4e2fb]">
-                                  Qo'shimcha narx: {formatMoney(f.price ?? 0, safeFlight.currency)}
+                                  {copy.extraPrice}: {formatMoney(f.price ?? 0, safeFlight.currency)}
                                 </div>
                                 <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                  Bagaj: {f.baggageInfos?.join(", ") || "—"}
+                                  {copy.baggage}: {f.baggageInfos?.join(", ") || "—"}
                                 </div>
                               </div>
                             ))}
@@ -929,12 +1187,12 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">Tarif qoidalari</div>
+                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{copy.rules}</div>
                         <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
-                          {rulesLoading && "Qoidalar yuklanmoqda..."}
-                          {!rulesLoading && rulesError && `Qoidalar: ${rulesError}`}
+                          {rulesLoading && copy.rulesLoading}
+                          {!rulesLoading && rulesError && `${copy.rules}: ${rulesError}`}
                           {!rulesLoading && !rulesError && rulesData.length === 0 && (
-                            <span>Qoidalar hozircha yo'q (backend `data: []` qaytardi).</span>
+                            <span>{copy.noRules}</span>
                           )}
                         </div>
                         {!rulesLoading && !rulesError && rulesData.length > 0 && (
@@ -970,14 +1228,14 @@ export default function FlightDetailsModal({
                     </div>
 
                     <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                      <div className="text-[#1d2430] font-semibold dark:text-white">Xizmatlar</div>
+                      <div className="text-[#1d2430] font-semibold dark:text-white">{copy.services}</div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         {services.includes("wifi") && <Mini icon={Wifi} text="Wi-Fi" />}
-                        {services.includes("meal") && <Mini icon={Coffee} text="Ovqat" />}
+                        {services.includes("meal") && <Mini icon={Coffee} text={copy.meal} />}
                         {services.includes("priority") && <Mini icon={BadgeCheck} text="Priority" />}
                         {services.includes("support") && (
-                          <Mini icon={ShieldCheck} text="24/7 Qo'llab-quvvatlash" />
+                          <Mini icon={ShieldCheck} text={copy.support} />
                         )}
                       </div>
 
@@ -995,8 +1253,8 @@ export default function FlightDetailsModal({
 
                   <div className="space-y-4">
                     <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                      <div className="text-[#1d2430] font-semibold dark:text-white">Davom etish</div>
-                      <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">Yo'lovchi ma'lumotlarini kiriting.</div>
+                      <div className="text-[#1d2430] font-semibold dark:text-white">{copy.continue}</div>
+                      <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">{copy.enterPassengerInfo}</div>
 
                       <button
                         onClick={() => setStep("details")}
@@ -1008,11 +1266,11 @@ export default function FlightDetailsModal({
                           hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                         "
                       >
-                        Tanlash
+                        {copy.select}
                       </button>
 
                       <div className="mt-3 rounded-[18px] border border-[#e2e9f2] bg-white px-3 py-3 text-sm text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
-                        {Math.max(1, pax)} ta yo'lovchi uchun forma ochiladi.
+                        {Math.max(1, pax)} {copy.formOpensFor}
                       </div>
                     </div>
                   </div>
@@ -1025,14 +1283,14 @@ export default function FlightDetailsModal({
                     <div className="flex items-center justify-between">
                       <div className="text-[#1d2430] font-semibold inline-flex items-center gap-2 dark:text-white">
                         <User size={18} />
-                        To'lovchi ma'lumotlari
+                        {copy.payerDetails}
                       </div>
-                      <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">Email va telefon</div>
+                      <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.emailPhone}</div>
                     </div>
 
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
                       <Input
-                        label="Country code"
+                        label={copy.countryCode}
                         placeholder="998"
                         value={payer.countryCode ?? ""}
                         onChange={(v) => setPayer((p) => ({ ...p, countryCode: v.replace(/\D/g, "") }))}
@@ -1045,7 +1303,7 @@ export default function FlightDetailsModal({
                         onChange={(v) => setPayer((p) => ({ ...p, email: v }))}
                       />
                       <Input
-                        label="Telefon raqam"
+                        label={copy.phoneNumber}
                         placeholder="+998 95 559 54 44"
                         icon={Phone}
                         value={payer.phone}
@@ -1060,20 +1318,20 @@ export default function FlightDetailsModal({
                     <div className="flex items-center justify-between">
                       <div className="text-[#1d2430] font-semibold inline-flex items-center gap-2 dark:text-white">
                         <Users size={18} />
-                        Yo'lovchilar ma'lumotlari
+                        {copy.passengersDetails}
                       </div>
-                      <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">Jami: {Math.max(1, pax)} ta</div>
+                      <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.total}: {Math.max(1, pax)}</div>
                     </div>
 
                     <div className="mt-4 space-y-4">
                       {passengers.map((p, idx) => (
                         <div key={idx} className="rounded-[24px] border border-[#e2e9f2] bg-white p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
-                          <div className="text-[#1d2430] font-semibold text-sm dark:text-white">Yo'lovchi #{idx + 1}</div>
+                          <div className="text-[#1d2430] font-semibold text-sm dark:text-white">{copy.passenger} #{idx + 1}</div>
 
                           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                             <Input
-                              label="Ism"
-                              placeholder="Ism"
+                              label={copy.firstName}
+                              placeholder={copy.firstName}
                               value={p.firstName}
                               onChange={(v) =>
                                 setPassengers((arr) => {
@@ -1084,8 +1342,8 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
-                              label="Familiya"
-                              placeholder="Familiya"
+                              label={copy.lastName}
+                              placeholder={copy.lastName}
                               value={p.lastName}
                               onChange={(v) =>
                                 setPassengers((arr) => {
@@ -1096,7 +1354,7 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
-                              label="Tug'ilgan sana"
+                              label={copy.birthDate}
                               type="date"
                               value={p.birthDate}
                               onChange={(v) =>
@@ -1108,7 +1366,7 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
-                              label="Pasport berilgan sana"
+                              label={copy.passportIssued}
                               type="date"
                               value={p.passportIssued}
                               onChange={(v) =>
@@ -1120,8 +1378,8 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
-                              label="Fuqarolik"
-                              placeholder="O'zbekiston"
+                              label={copy.citizenship}
+                              placeholder="Uzbekistan"
                               value={p.citizenship}
                               onChange={(v) =>
                                 setPassengers((arr) => {
@@ -1132,7 +1390,7 @@ export default function FlightDetailsModal({
                               }
                             />
                             <Input
-                              label="Country code"
+                              label={copy.countryCode}
                               placeholder="UZ"
                               value={p.countryCode}
                               onChange={(v) =>
@@ -1145,7 +1403,7 @@ export default function FlightDetailsModal({
                             />
                             <div className="md:col-span-2">
                               <label className="block">
-                                <div className="mb-2 text-xs text-[#7b889c] dark:text-[#93abd0]">Jins</div>
+                                <div className="mb-2 text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.gender}</div>
                                 <select
                                   className="h-12 w-full rounded-2xl border border-[#dbe3ef] bg-[#fbfdff] px-4 text-[#1d2430] outline-none transition focus:border-[#b9cce7] focus:bg-white dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:focus:border-[#4d6fa8]"
                                   value={p.gender}
@@ -1163,7 +1421,7 @@ export default function FlightDetailsModal({
                               </label>
                             </div>
                             <Input
-                              label="Pasport amal qilish muddati"
+                              label={copy.passportExpiry}
                               type="date"
                               value={p.passportExpiry}
                               onChange={(v) =>
@@ -1176,7 +1434,7 @@ export default function FlightDetailsModal({
                             />
                             <div className="md:col-span-2">
                               <Input
-                                label="Pasport seriya / raqam"
+                                label={copy.passportNumber}
                                 placeholder="AA1234567"
                                 value={p.passportNo}
                                 onChange={(v) =>
@@ -1205,13 +1463,13 @@ export default function FlightDetailsModal({
                         hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
                       "
                     >
-                      Davom etish
+                      {copy.continue}
                     </button>
                     <button
                       onClick={() => setStep("select")}
                       className="h-12 rounded-2xl border border-[#dbe3ef] bg-white text-[#52627b] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]"
                     >
-                      Orqaga
+                      {copy.back}
                     </button>
                   </div>
                 </div>
@@ -1220,8 +1478,8 @@ export default function FlightDetailsModal({
               {step === "pay" && (
                 <div className="space-y-4">
                   <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                    <div className="text-[#1d2430] font-semibold dark:text-white">To'lov usuli</div>
-                    <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">Mos usulni tanlang.</div>
+                    <div className="text-[#1d2430] font-semibold dark:text-white">{copy.paymentMethod}</div>
+                    <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">{copy.chooseMethod}</div>
                     <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
                       {[
                         { id: "click", label: "Click" },
@@ -1248,17 +1506,17 @@ export default function FlightDetailsModal({
                   </div>
 
                   <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                    <div className="text-[#1d2430] font-semibold dark:text-white">Buyurtma yakunlash</div>
+                    <div className="text-[#1d2430] font-semibold dark:text-white">{copy.finishOrder}</div>
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <PriceRow label="Yo'nalish" value={`${safeFlight.from} → ${safeFlight.to}`} />
-                      <PriceRow label="Sana" value={date || "—"} />
-                      <PriceRow label="Yo'lovchi soni" value={`${Math.max(1, pax)} ta`} />
-                      <PriceRow label="Narx (jami)" value={formatMoney(total, safeFlight.currency)} />
+                      <PriceRow label={copy.route} value={`${safeFlight.from} → ${safeFlight.to}`} />
+                      <PriceRow label={copy.headerDate} value={date || "—"} />
+                      <PriceRow label={copy.passengerCount} value={String(Math.max(1, pax))} />
+                      <PriceRow label={copy.totalPrice} value={formatMoney(total, safeFlight.currency)} />
                     </div>
                     <div className="mt-3 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                      Tanlangan to'lov:{" "}
+                      {copy.selectedPayment}:{" "}
                       <span className="text-[#1d2430] font-semibold dark:text-white">
-                        {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
+                        {paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
                       </span>
                     </div>
                   </div>
@@ -1276,11 +1534,11 @@ export default function FlightDetailsModal({
                       onChange={(e) => setAgreeData(e.target.checked)}
                       className="mt-0.5"
                     />
-                    Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
+                    {copy.confirmData}
                   </label>
                   {!agreeData && (
                     <div className="text-xs text-[#8a97aa] dark:text-[#93abd0]">
-                      * Rasmiylashtirish uchun tasdiqlashni belgilang.
+                      {copy.markConfirmation}
                     </div>
                   )}
 
@@ -1303,13 +1561,13 @@ export default function FlightDetailsModal({
                         disabled:opacity-50 disabled:cursor-not-allowed
                       "
                     >
-                      {bookLoading ? "..." : "Rasmiylashtirish"}
+                      {bookLoading ? "..." : copy.checkout}
                     </button>
                     <button
                       onClick={() => setStep("details")}
                       className="h-12 rounded-2xl border border-[#dbe3ef] bg-white text-[#52627b] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]"
                     >
-                      Orqaga
+                      {copy.back}
                     </button>
                   </div>
                 </div>
@@ -1329,7 +1587,7 @@ export default function FlightDetailsModal({
                   <div className="rounded-2xl border border-white/15 bg-[#1a1c24]/90 backdrop-blur-xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="text-white font-semibold text-sm">Xatolik</div>
+                        <div className="text-white font-semibold text-sm">{copy.toastTitle}</div>
                         <div className="text-white/75 text-xs mt-1">{toastMsg}</div>
                       </div>
                       <button

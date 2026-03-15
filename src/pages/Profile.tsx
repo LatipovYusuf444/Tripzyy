@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 import { formatUzPhoneInput } from "@/lib/phone"
+import { useI18n } from "@/shared/i18n/i18n"
 
 const primaryButtonClass =
   "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(17,24,39,0.22)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.42)]"
@@ -25,6 +26,111 @@ const panelClass =
 
 export default function Profile() {
   const navigate = useNavigate()
+  const { language } = useI18n()
+  const copy = {
+    uz: {
+      saved: "Profil ma'lumotlari saqlandi",
+      badge: "Tripzy Profile",
+      logout: "Logout",
+      accountStatus: "Account status",
+      active: "Active",
+      token: "Token",
+      available: "Available",
+      missing: "Missing",
+      support: "Support",
+      premiumSupport: "24/7 Premium",
+      backendInfo: "Backend ulanganda bu yerga booking history, payment status va real user data chiqadi.",
+      title: "Profil ma'lumotlari",
+      desc: "Ma'lumotlaringizni yangilang va profilingizni tartibga keltiring.",
+      cancel: "Cancel",
+      edit: "Edit",
+      name: "Ism",
+      phone: "Telefon",
+      email: "Email",
+      emailHint: "Email hozircha o'zgartirilmaydi. Keyin OTP yoki email confirm qo'shiladi.",
+      overview: "Profile overview",
+      status: "Status",
+      security: "Security",
+      protected: "Protected",
+      fare: "Tarif",
+      premiumFare: "Premium",
+      actions: "Tez amallar",
+      actionsDesc: "Tahrirlashni yoqing, ism va telefonni yangilang, so'ng saqlang.",
+      saveChanges: "Save changes",
+      backendConnected: "Backend ulanganda:",
+      meFetch: "user ma'lumotlarini olish",
+      mePatch: "name va phone update",
+      bookings: "bronlar tarixi",
+    },
+    ru: {
+      saved: "Данные профиля сохранены",
+      badge: "Профиль Tripzy",
+      logout: "Выход",
+      accountStatus: "Статус аккаунта",
+      active: "Активен",
+      token: "Токен",
+      available: "Есть",
+      missing: "Нет",
+      support: "Поддержка",
+      premiumSupport: "24/7 Premium",
+      backendInfo: "Когда backend подключится, здесь появятся история бронирований, статус оплаты и реальные данные пользователя.",
+      title: "Данные профиля",
+      desc: "Обновите информацию и приведите профиль в порядок.",
+      cancel: "Отмена",
+      edit: "Редактировать",
+      name: "Имя",
+      phone: "Телефон",
+      email: "Email",
+      emailHint: "Email пока нельзя изменить. Позже добавим OTP или подтверждение по email.",
+      overview: "Обзор профиля",
+      status: "Статус",
+      security: "Безопасность",
+      protected: "Защищено",
+      fare: "Тариф",
+      premiumFare: "Премиум",
+      actions: "Быстрые действия",
+      actionsDesc: "Включите редактирование, обновите имя и телефон, затем сохраните.",
+      saveChanges: "Сохранить изменения",
+      backendConnected: "Когда backend подключится:",
+      meFetch: "получение данных пользователя",
+      mePatch: "обновление name и phone",
+      bookings: "история бронирований",
+    },
+    en: {
+      saved: "Profile details saved",
+      badge: "Tripzy Profile",
+      logout: "Logout",
+      accountStatus: "Account status",
+      active: "Active",
+      token: "Token",
+      available: "Available",
+      missing: "Missing",
+      support: "Support",
+      premiumSupport: "24/7 Premium",
+      backendInfo: "When the backend is connected, booking history, payment status, and real user data will appear here.",
+      title: "Profile details",
+      desc: "Update your information and keep your profile organized.",
+      cancel: "Cancel",
+      edit: "Edit",
+      name: "Name",
+      phone: "Phone",
+      email: "Email",
+      emailHint: "Email cannot be changed yet. OTP or email confirmation will be added later.",
+      overview: "Profile overview",
+      status: "Status",
+      security: "Security",
+      protected: "Protected",
+      fare: "Fare",
+      premiumFare: "Premium",
+      actions: "Quick actions",
+      actionsDesc: "Enable editing, update your name and phone, then save.",
+      saveChanges: "Save changes",
+      backendConnected: "When the backend is connected:",
+      meFetch: "fetch user data",
+      mePatch: "update name and phone",
+      bookings: "booking history",
+    },
+  }[language]
 
   const [name, setName] = useState("Tripzy User")
   const [email] = useState("user@tripzy.uz")
@@ -45,7 +151,7 @@ export default function Profile() {
     setLoading(true)
     try {
       setEditing(false)
-      toast.success("Profil ma'lumotlari saqlandi")
+      toast.success(copy.saved)
     } finally {
       setLoading(false)
     }
@@ -67,12 +173,12 @@ export default function Profile() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/90 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#cfe0fb]">
                 <span className="h-2 w-2 rounded-full bg-[#8A3A5A]" />
-                Tripzy Profile
+                {copy.badge}
               </div>
 
               <button onClick={logout} className={`h-11 ${secondaryButtonClass}`}>
                 <LogOut size={16} />
-                Logout
+                {copy.logout}
               </button>
             </div>
 
@@ -93,29 +199,14 @@ export default function Profile() {
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                <InfoPill
-                  title="Account status"
-                  value="Active"
-                  accent="blue"
-                  icon={<ShieldCheck size={18} />}
-                />
-                <InfoPill
-                  title="Token"
-                  value={token ? "Available" : "Missing"}
-                  accent="rose"
-                  icon={<ShieldCheck size={18} />}
-                />
-                <InfoPill
-                  title="Support"
-                  value="24/7 Premium"
-                  accent="gold"
-                  icon={<Sparkles size={18} />}
-                />
+                <InfoPill title={copy.accountStatus} value={copy.active} accent="blue" icon={<ShieldCheck size={18} />} />
+                <InfoPill title={copy.token} value={token ? copy.available : copy.missing} accent="rose" icon={<ShieldCheck size={18} />} />
+                <InfoPill title={copy.support} value={copy.premiumSupport} accent="gold" icon={<Sparkles size={18} />} />
               </div>
             </div>
 
             <div className="mt-5 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-sm text-[#627188] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-[#a9bddb]">
-              Backend ulanganda bu yerga booking history, payment status va real user data chiqadi.
+              {copy.backendInfo}
             </div>
           </motion.div>
 
@@ -128,10 +219,10 @@ export default function Profile() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-extrabold text-[#1d2430] md:text-4xl dark:text-white">
-                  Profil ma'lumotlari
+                  {copy.title}
                 </h1>
                 <p className="mt-2 max-w-[620px] text-[#627188] dark:text-[#a9bddb]">
-                  Ma'lumotlaringizni yangilang va profilingizni tartibga keltiring.
+                  {copy.desc}
                 </p>
               </div>
 
@@ -140,35 +231,17 @@ export default function Profile() {
                 className={`h-11 ${editing ? primaryButtonClass : secondaryButtonClass}`}
               >
                 <PencilLine size={16} />
-                {editing ? "Cancel" : "Edit"}
+                {editing ? copy.cancel : copy.edit}
               </button>
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-2">
-              <Field
-                label="Ism"
-                icon={<User2 size={18} className="text-[#7f8ea5]" />}
-                value={name}
-                disabled={!editing}
-                onChange={setName}
-              />
-              <Field
-                label="Telefon"
-                icon={<User2 size={18} className="text-[#7f8ea5]" />}
-                value={phone}
-                disabled={!editing}
-                onChange={(v) => setPhone(formatUzPhoneInput(v))}
-              />
+              <Field label={copy.name} icon={<User2 size={18} className="text-[#7f8ea5]" />} value={name} disabled={!editing} onChange={setName} />
+              <Field label={copy.phone} icon={<User2 size={18} className="text-[#7f8ea5]" />} value={phone} disabled={!editing} onChange={(v) => setPhone(formatUzPhoneInput(v))} />
               <div className="md:col-span-2">
-                <Field
-                  label="Email"
-                  icon={<Mail size={18} className="text-[#7f8ea5]" />}
-                  value={email}
-                  disabled
-                  onChange={() => {}}
-                />
+                <Field label={copy.email} icon={<Mail size={18} className="text-[#7f8ea5]" />} value={email} disabled onChange={() => {}} />
                 <div className="mt-2 text-xs text-[#7b8aa0] dark:text-[#93abd0]">
-                  Email hozircha o'zgartirilmaydi. Keyin OTP yoki email confirm qo'shiladi.
+                  {copy.emailHint}
                 </div>
               </div>
             </div>
@@ -176,22 +249,22 @@ export default function Profile() {
             <div className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
               <div className="rounded-[26px] border border-[#e3eaf4] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_46%,#f8f2f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_46%,rgba(30,24,53,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#7b8aa0] dark:text-[#93abd0]">
-                  Profile overview
+                  {copy.overview}
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <StatCard label="Status" value="Active" />
-                  <StatCard label="Security" value="Protected" />
-                  <StatCard label="Tarif" value="Premium" />
+                  <StatCard label={copy.status} value={copy.active} />
+                  <StatCard label={copy.security} value={copy.protected} />
+                  <StatCard label={copy.fare} value={copy.premiumFare} />
                 </div>
               </div>
 
               <div className="flex flex-col justify-between rounded-[26px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-5 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)]">
                 <div>
                   <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#7b8aa0] dark:text-[#93abd0]">
-                    Tez amallar
+                    {copy.actions}
                   </div>
                   <div className="mt-2 text-sm text-[#627188] dark:text-[#a9bddb]">
-                    Tahrirlashni yoqing, ism va telefonni yangilang, so‘ng saqlang.
+                    {copy.actionsDesc}
                   </div>
                 </div>
 
@@ -202,20 +275,20 @@ export default function Profile() {
                     className={`h-12 w-full sm:w-auto ${primaryButtonClass}`}
                   >
                     <Save size={18} />
-                    {loading ? "..." : "Save changes"}
+                    {loading ? "..." : copy.saveChanges}
                   </button>
                 </div>
               </div>
             </div>
 
             <div className="mt-6 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-sm text-[#627188] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-[#a9bddb]">
-              Backend ulanganda:
+              {copy.backendConnected}
               <div className="mt-2 text-xs leading-relaxed text-[#7b8aa0] dark:text-[#93abd0]">
-                - GET <span className="font-semibold text-[#1d2430]">/me</span> → user ma'lumotlarini olish
+                - GET <span className="font-semibold text-[#1d2430]">/me</span> → {copy.meFetch}
                 <br />
-                - PATCH <span className="font-semibold text-[#1d2430]">/me</span> → name va phone update
+                - PATCH <span className="font-semibold text-[#1d2430]">/me</span> → {copy.mePatch}
                 <br />
-                - GET <span className="font-semibold text-[#1d2430]">/bookings</span> → bronlar tarixi
+                - GET <span className="font-semibold text-[#1d2430]">/bookings</span> → {copy.bookings}
               </div>
             </div>
           </motion.div>

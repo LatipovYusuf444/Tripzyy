@@ -5,6 +5,7 @@ import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 
 import { login } from "@/shared/api/auth/auth.api"
+import { useI18n } from "@/shared/i18n/i18n"
 
 type Mode = "register" | "login"
 
@@ -19,6 +20,102 @@ const panelClass =
 
 export default function RegisterPage({ initialMode = "register" }: { initialMode?: Mode }) {
   const navigate = useNavigate()
+  const { language } = useI18n()
+  const copy = {
+    uz: {
+      registerOff: "Register vaqtincha o'chirilgan. Iltimos, login qiling.",
+      loginError: "Login xato",
+      loginSuccess: "Login muvaffaqiyatli",
+      premiumAccess: "Tripzy Premium Access",
+      heroTitle: "Luxury bron qilish tajribasi, sodda va ishonchli kirish bilan",
+      heroDesc: "Reyslarni qidiring, tariflarni solishtiring, bagaj va refund shartlarini ko'ring. Kirish oqimi real backend bilan ishlaydi.",
+      supportTitle: "24/7 Support",
+      supportDesc: "Telegram va call yordam",
+      clearPrice: "Shaffof narx",
+      clearPriceDesc: "Yashirin fee yo'q",
+      premiumService: "Premium servis",
+      premiumServiceDesc: "Priority va VIP oqim",
+      secureTitle: "Secure",
+      secureDesc: "Protected login flow",
+      registerClosed: "Register vaqtincha yopilgan",
+      registerClosedDesc: "Fayl saqlandi. Keyin real backend register endpoint to'liq tayyor bo'lganda qayta ochiladi.",
+      login: "Kirish",
+      loginDesc: "Hisobingizga kiring va reyslarni bron qiling.",
+      remember: "Remember me",
+      forgot: "Parolni unutdingizmi?",
+      forgotSoon: "Parolni tiklash bo'limi tez orada qo'shiladi",
+      password: "Parol",
+      authEndpoint: "Auth endpoint",
+      endpointLabel: "Ulanadigan endpoint:",
+      registerDisabled: "Register vaqtincha o'chirilgan. Hozir faqat login orqali kirish mumkin.",
+      backHome: "Bosh sahifaga qaytish",
+      showPassword: "Show password",
+      registerTab: "Register",
+      loginTab: "Login",
+    },
+    ru: {
+      registerOff: "Регистрация временно отключена. Пожалуйста, войдите.",
+      loginError: "Ошибка входа",
+      loginSuccess: "Вход выполнен успешно",
+      premiumAccess: "Tripzy Premium Access",
+      heroTitle: "Luxury бронирование с простым и надежным входом",
+      heroDesc: "Ищите рейсы, сравнивайте тарифы, багаж и условия refund. Вход работает с реальным backend.",
+      supportTitle: "24/7 Support",
+      supportDesc: "Помощь через Telegram и звонок",
+      clearPrice: "Прозрачная цена",
+      clearPriceDesc: "Без скрытых комиссий",
+      premiumService: "Премиум сервис",
+      premiumServiceDesc: "Priority и VIP поток",
+      secureTitle: "Secure",
+      secureDesc: "Защищенный вход",
+      registerClosed: "Регистрация временно закрыта",
+      registerClosedDesc: "Файл сохранен. Когда реальный backend register endpoint будет готов, раздел снова откроется.",
+      login: "Вход",
+      loginDesc: "Войдите в аккаунт и бронируйте рейсы.",
+      remember: "Запомнить меня",
+      forgot: "Забыли пароль?",
+      forgotSoon: "Раздел восстановления пароля скоро будет добавлен",
+      password: "Пароль",
+      authEndpoint: "Auth endpoint",
+      endpointLabel: "Подключаемый endpoint:",
+      registerDisabled: "Регистрация временно отключена. Сейчас доступен только вход.",
+      backHome: "Вернуться на главную",
+      showPassword: "Показать пароль",
+      registerTab: "Register",
+      loginTab: "Login",
+    },
+    en: {
+      registerOff: "Registration is temporarily disabled. Please log in.",
+      loginError: "Login error",
+      loginSuccess: "Login successful",
+      premiumAccess: "Tripzy Premium Access",
+      heroTitle: "A luxury booking experience with simple and reliable access",
+      heroDesc: "Search flights, compare fares, baggage, and refund rules. The login flow works with the real backend.",
+      supportTitle: "24/7 Support",
+      supportDesc: "Telegram and call support",
+      clearPrice: "Transparent pricing",
+      clearPriceDesc: "No hidden fees",
+      premiumService: "Premium service",
+      premiumServiceDesc: "Priority and VIP flow",
+      secureTitle: "Secure",
+      secureDesc: "Protected login flow",
+      registerClosed: "Registration is temporarily closed",
+      registerClosedDesc: "The file is saved. When the real backend register endpoint is fully ready, this section will reopen.",
+      login: "Login",
+      loginDesc: "Sign in to your account and book flights.",
+      remember: "Remember me",
+      forgot: "Forgot password?",
+      forgotSoon: "Password recovery will be added soon",
+      password: "Password",
+      authEndpoint: "Auth endpoint",
+      endpointLabel: "Connected endpoint:",
+      registerDisabled: "Registration is temporarily disabled. Only login is available right now.",
+      backHome: "Back to home",
+      showPassword: "Show password",
+      registerTab: "Register",
+      loginTab: "Login",
+    },
+  }[language]
   const registerDisabled = true
 
   const [mode, setMode] = useState<Mode>(registerDisabled ? "login" : initialMode)
@@ -32,7 +129,7 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
     e.preventDefault()
 
     if (mode === "register") {
-      toast.info("Register vaqtincha o'chirilgan. Iltimos, login qiling.")
+      toast.info(copy.registerOff)
       setMode("login")
       return
     }
@@ -42,7 +139,7 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
       const res = await login({ email, password })
       const token = res.data?.data?.token
       if (!token) {
-        toast.error(res.data?.message || "Login xato")
+        toast.error(res.data?.message || copy.loginError)
         return
       }
 
@@ -50,10 +147,10 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
       else sessionStorage.setItem("access_token", token)
 
       window.dispatchEvent(new Event("tripzy-auth"))
-      toast.success("Login muvaffaqiyatli")
+      toast.success(copy.loginSuccess)
       navigate("/")
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Login xato")
+      toast.error(err?.response?.data?.message || copy.loginError)
     } finally {
       setLoading(false)
     }
@@ -73,37 +170,36 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/90 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#cfe0fb]">
               <span className="h-2 w-2 rounded-full bg-[#8A3A5A]" />
-              Tripzy Premium Access
+              {copy.premiumAccess}
             </div>
 
             <h2 className="mt-6 max-w-[520px] text-3xl font-extrabold leading-tight text-[#1d2430] md:text-4xl dark:text-white">
-              Luxury bron qilish tajribasi, sodda va ishonchli kirish bilan
+              {copy.heroTitle}
             </h2>
 
             <p className="mt-4 max-w-[560px] leading-8 text-[#627188] dark:text-[#a9bddb]">
-              Reyslarni qidiring, tariflarni solishtiring, bagaj va refund
-              shartlarini ko'ring. Kirish oqimi real backend bilan ishlaydi.
+              {copy.heroDesc}
             </p>
 
             <div className="mt-7 grid gap-3 sm:grid-cols-2">
               <FeatureCard
-                title="24/7 Support"
-                desc="Telegram va call yordam"
+                title={copy.supportTitle}
+                desc={copy.supportDesc}
                 tone="blue"
               />
               <FeatureCard
-                title="Shaffof narx"
-                desc="Yashirin fee yo'q"
+                title={copy.clearPrice}
+                desc={copy.clearPriceDesc}
                 tone="rose"
               />
               <FeatureCard
-                title="Premium servis"
-                desc="Priority va VIP oqim"
+                title={copy.premiumService}
+                desc={copy.premiumServiceDesc}
                 tone="gold"
               />
               <FeatureCard
                 title="Secure"
-                desc="Protected login flow"
+                desc={copy.secureDesc}
                 tone="blue"
               />
             </div>
@@ -114,9 +210,9 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
                   <ShieldCheck size={20} />
                 </div>
                 <div>
-                  <div className="font-semibold text-[#1d2430] dark:text-white">Register vaqtincha yopilgan</div>
+                  <div className="font-semibold text-[#1d2430] dark:text-white">{copy.registerClosed}</div>
                   <div className="mt-1 text-sm leading-6 text-[#627188] dark:text-[#a9bddb]">
-                    Fayl saqlandi. Keyin real backend register endpoint to'liq tayyor bo'lganda qayta ochiladi.
+                    {copy.registerClosedDesc}
                   </div>
                 </div>
               </div>
@@ -131,15 +227,15 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h1 className="text-3xl font-extrabold text-[#1d2430] dark:text-white">Kirish</h1>
+                <h1 className="text-3xl font-extrabold text-[#1d2430] dark:text-white">{copy.login}</h1>
                 <p className="mt-2 text-[#627188] dark:text-[#a9bddb]">
-                  Hisobingizga kiring va reyslarni bron qiling.
+                  {copy.loginDesc}
                 </p>
               </div>
 
               <div className="flex rounded-2xl border border-[#dde5f0] bg-white/90 p-1 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
-                <TabBtn active={false} onClick={() => {}} text="Register" disabled />
-                <TabBtn active onClick={() => setMode("login")} text="Login" />
+                <TabBtn active={false} onClick={() => {}} text={copy.registerTab} disabled />
+                <TabBtn active onClick={() => setMode("login")} text={copy.loginTab} />
               </div>
             </div>
 
@@ -157,7 +253,7 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
               <div className="relative">
                 <Field
                   icon={<Lock size={18} className="text-[#8ca0bc]" />}
-                  placeholder="Parol"
+                  placeholder={copy.password}
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={setPassword}
@@ -167,7 +263,7 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
 
                 <button
                   type="button"
-                  aria-label="Show password"
+                  aria-label={copy.showPassword}
                   onClick={() => setShowPass((p) => !p)}
                   className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl border border-[#dbe3ef] bg-white text-[#627188] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.94)]"
                 >
@@ -183,35 +279,35 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
                     onChange={(e) => setRemember(e.target.checked)}
                     className="accent-[#8A3A5A]"
                   />
-                  Remember me
+                  {copy.remember}
                 </label>
 
                 <button
                   type="button"
                   className="text-left text-[#627188] transition hover:text-[#1d2430] sm:text-right dark:text-[#a9bddb] dark:hover:text-white"
-                  onClick={() => toast.info("Parolni tiklash bo'limi tez orada qo'shiladi")}
+                  onClick={() => toast.info(copy.forgotSoon)}
                 >
-                  Parolni unutdingizmi?
+                  {copy.forgot}
                 </button>
               </div>
 
               <button disabled={loading} className={`h-12 w-full ${primaryButtonClass}`}>
-                {loading ? "..." : "Kirish"}
+                {loading ? "..." : copy.login}
               </button>
 
               <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)]">
                 <div className="text-xs uppercase tracking-[0.14em] text-[#7b8aa0] dark:text-[#93abd0]">
-                  Auth endpoint
+                  {copy.authEndpoint}
                 </div>
                 <div className="mt-2 text-sm text-[#627188] dark:text-[#a9bddb]">
-                  Ulanadigan endpoint:{" "}
+                  {copy.endpointLabel}{" "}
                   <span className="font-semibold text-[#1d2430] dark:text-white">POST /auth/login</span>
                 </div>
               </div>
             </form>
 
             <div className="mt-6 rounded-2xl border border-[#f0e0b8] bg-[linear-gradient(135deg,#fffaf2_0%,#fff2db_100%)] p-4 text-sm text-[#7c6328] dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
-              Register vaqtincha o'chirilgan. Hozir faqat login orqali kirish mumkin.
+              {copy.registerDisabled}
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -220,7 +316,7 @@ export default function RegisterPage({ initialMode = "register" }: { initialMode
                 onClick={() => navigate("/")}
                 className={`h-11 w-full sm:w-auto ${secondaryButtonClass}`}
               >
-                Bosh sahifaga qaytish
+                {copy.backHome}
               </button>
             </div>
           </motion.div>

@@ -16,11 +16,13 @@ import { toast } from "sonner"
 
 import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
-import heroImage from "@/assets/images/avubuluttour.png"
+import heroDesktopImage from "@/assets/svg/aviation-tour-logo.webp"
+import heroMobileImage from "@/assets/svg/emirates.webp"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { FEATURED_ROUTE_CARDS_KEY, type FeaturedRouteCard } from "@/shared/air/featuredRoutes"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
+import { useI18n } from "@/shared/i18n/i18n"
 
 type LocationOption = { code: string; name: string; searchText: string }
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
@@ -69,41 +71,9 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
   return firstMatch?.code ?? (upper.length <= 3 ? upper : "")
 }
 
-const titleLines = [
-  "Premium avia qidiruv",
-  "va tez bron",
-]
-
-const faqItems = [
-  {
-    question: "Aviabilet qidirishda qaysi kodlarni kiritish kerak?",
-    answer:
-      "Qidiruvda aeroportning IATA kodlarini kiriting: masalan, Toshkent uchun TAS, Istanbul uchun SAW yoki IST. Sana esa YYYY-MM-DD formatida bo'lishi kerak.",
-  },
-  {
-    question: "Bron qilish jarayoni qanday ishlaydi?",
-    answer:
-      "Avval reysni tanlaysiz, keyin yo'lovchi ma'lumotlarini kiritasiz va yakuniy tasdiqlash bosqichidan o'tasiz. Har bir qadam aniq ko'rsatiladi.",
-  },
-  {
-    question: "Bagaj va xizmatlar haqida ma'lumot qayerda ko'rinadi?",
-    answer:
-      "Har bir reys kartasida bagaj, parvoz vaqti, davomiylik va tarif ma'lumotlari ko'rsatiladi. Batafsil oynada esa qo'shimcha xizmatlar ham chiqadi.",
-  },
-  {
-    question: "To'lov va bron xavfsizligi qanday ta'minlanadi?",
-    answer:
-      "Platforma foydalanuvchi ma'lumotlarini himoyalangan oqimda saqlaydi. To'lov va rasmiylashtirish jarayoni bosqichma-bosqich tekshirib boriladi.",
-  },
-  {
-    question: "Hamkorlik va korporativ xizmatlar uchun qanday murojaat qilaman?",
-    answer:
-      "Biz aviatsiya va sayohat yo'nalishida uzoq muddatli hamkorlikni qo'llab-quvvatlaymiz. Aloqa bo'limi yoki so'rov formasi orqali murojaat qilsangiz, jamoamiz tezda javob beradi.",
-  },
-]
-
 export default function Home() {
   const navigate = useNavigate()
+  const { language } = useI18n()
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
   const [date, setDate] = useState("")
@@ -123,6 +93,204 @@ export default function Home() {
   }>(null)
   const [featuredRoutes, setFeaturedRoutes] = useState<FeaturedRouteCard[]>([])
   const [openDestination, setOpenDestination] = useState<string | null>(null)
+
+  const copy = {
+    uz: {
+      titleLines: ["Xalqaro avia qatnovlar", "va tezkor bron"],
+      subtitle: "Jonli tariflar, ishonchli aviakompaniyalar va qulay bron jarayoni bir ekranda jamlangan.",
+      chips: ["Jonli tarif", "Aviakompaniyalar", "Tezkor bron"],
+      totalFlights: "Jami",
+      flightsSuffix: "ta reys",
+      from: "Qayerdan",
+      to: "Qayerga",
+      date: "Qachon",
+      passenger: "Yo'lovchi",
+      selectDate: "Sanani tanlang",
+      priceCalendar: "Narxli kalendar",
+      search: "Bilet topish",
+      invalidRoute: "Qayerdan va qayerga uchun to'g'ri variantni tanlang.",
+      invalidDate: "Sanani tanlang.",
+      popularBadge: "Populyarnye napravleniya",
+      popularTitleA: "Real backenddan",
+      popularTitleB: "yig'ilgan yo'nalishlar",
+      popularDesc: "Har bir blok bitta destination bo'yicha guruhlangan. Qatorni bossangiz shu reysning rasmiylashtirish oqimiga o'tadi.",
+      fromPrice: "dan",
+      latestUpdate: "Oxirgi yangilanish",
+      viewFare: "Tarifni ko'rish",
+      faqBadge: "Tez-tez so'raladigan savollar",
+      faqTitleA: "Parvoz va bron jarayoni bo'yicha",
+      faqTitleB: "eng muhim savollar",
+      faqDesc: "Aviabilet qidirish, bron qilish, bagaj, to'lov va hamkorlik bo'yicha asosiy savollarni bir joyga jamladik.",
+      ask: "Savolingiz bormi?",
+      askPlaceholder: "Masalan: Bagaj limiti qanday ishlaydi?",
+      send: "Yuborish",
+      helpBadge: "Yordam va to'lov",
+      helpTitleA: "Parvozdan oldin kerak bo'ladigan",
+      helpTitleB: "muhim yo'riqnomalar",
+      helpDesc: "To'lov usullari, elektron aviachipta va reysni almashtirish bo'yicha asosiy ma'lumotlarni bir qarashda topishingiz mumkin.",
+      helpCards: [
+        {
+          title: "Saytda xavfsiz to'lov",
+          text: "Aviabilet va xizmatlar uchun qulay to'lovni bir necha usulda amalga oshiring.",
+          extra: "",
+        },
+        {
+          title: "Elektron aviachipta nima?",
+          text: "Bron tasdiqlangach, barcha parvoz ma'lumotlari elektron ko'rinishda shakllanadi va yo'lovchi uchun qulay saqlanadi.",
+          extra: "Unda yo'nalish, vaqt, bagaj, tarif va yo'lovchi ma'lumotlari bir joyda ko'rsatiladi.",
+        },
+        {
+          title: "Reysni almashtirish qanday ishlaydi?",
+          text: "Tarif shartlariga qarab sana, yo'nalish yoki xizmat turini yangilash imkoniyati ko'rib chiqiladi.",
+          extra: "Yordam bo'limi va operatorlar reys almashinuvi bo'yicha tezkor yo'naltiradi.",
+        },
+      ],
+      faqItems: [
+        {
+          question: "Aviabilet qidirishda qaysi kodlarni kiritish kerak?",
+          answer: "Qidiruvda aeroportning IATA kodlarini kiriting: masalan, Toshkent uchun TAS, Istanbul uchun SAW yoki IST. Sana esa YYYY-MM-DD formatida bo'lishi kerak.",
+        },
+        {
+          question: "Bron qilish jarayoni qanday ishlaydi?",
+          answer: "Avval reysni tanlaysiz, keyin yo'lovchi ma'lumotlarini kiritasiz va yakuniy tasdiqlash bosqichidan o'tasiz. Har bir qadam aniq ko'rsatiladi.",
+        },
+        {
+          question: "Bagaj va xizmatlar haqida ma'lumot qayerda ko'rinadi?",
+          answer: "Har bir reys kartasida bagaj, parvoz vaqti, davomiylik va tarif ma'lumotlari ko'rsatiladi. Batafsil oynada esa qo'shimcha xizmatlar ham chiqadi.",
+        },
+      ],
+    },
+    ru: {
+      titleLines: ["Премиальный поиск авиабилетов", "и быстрое бронирование"],
+      subtitle: "Реальные рейсы, точные цены и упрощенный процесс бронирования.",
+      chips: ["Реальная цена", "Интерфейс на узбекском", "Быстрое бронирование"],
+      totalFlights: "Всего",
+      flightsSuffix: "рейсов",
+      from: "Откуда",
+      to: "Куда",
+      date: "Когда",
+      passenger: "Пассажир",
+      selectDate: "Выберите дату",
+      priceCalendar: "Календарь цен",
+      search: "Найти билет",
+      invalidRoute: "Выберите корректные значения для пунктов отправления и прибытия.",
+      invalidDate: "Выберите дату.",
+      popularBadge: "Популярные направления",
+      popularTitleA: "Направления, собранные",
+      popularTitleB: "из реального backend",
+      popularDesc: "Каждый блок сгруппирован по destination. При нажатии на строку открывается оформление именно этого рейса.",
+      fromPrice: "от",
+      latestUpdate: "Последнее обновление",
+      viewFare: "Посмотреть тариф",
+      faqBadge: "Частые вопросы",
+      faqTitleA: "Самые важные вопросы",
+      faqTitleB: "о перелете и бронировании",
+      faqDesc: "Мы собрали основные вопросы по поиску билетов, бронированию, багажу, оплате и сотрудничеству.",
+      ask: "Есть вопрос?",
+      askPlaceholder: "Например: как работает лимит багажа?",
+      send: "Отправить",
+      helpBadge: "Помощь и оплата",
+      helpTitleA: "Важные инструкции",
+      helpTitleB: "перед перелетом",
+      helpDesc: "Здесь можно быстро найти информацию об оплате, электронном билете и изменении рейса.",
+      helpCards: [
+        {
+          title: "Безопасная оплата на сайте",
+          text: "Оплачивайте авиабилеты и услуги удобным для вас способом.",
+          extra: "",
+        },
+        {
+          title: "Что такое электронный билет?",
+          text: "После подтверждения брони все данные рейса формируются в электронном виде.",
+          extra: "В одном месте отображаются маршрут, время, багаж, тариф и данные пассажира.",
+        },
+        {
+          title: "Как работает обмен рейса?",
+          text: "В зависимости от правил тарифа можно изменить дату, направление или тип услуги.",
+          extra: "Служба поддержки быстро сориентирует по изменению рейса.",
+        },
+      ],
+      faqItems: [
+        {
+          question: "Какие коды нужно вводить при поиске авиабилета?",
+          answer: "Используйте IATA-коды аэропортов: например, TAS для Ташкента, SAW или IST для Стамбула. Дата вводится в формате YYYY-MM-DD.",
+        },
+        {
+          question: "Как проходит процесс бронирования?",
+          answer: "Сначала выбирается рейс, затем вводятся данные пассажира и подтверждается оформление. Каждый шаг показывается отдельно.",
+        },
+        {
+          question: "Где отображается информация о багаже и услугах?",
+          answer: "На карточке рейса видны багаж, время, длительность и тариф. В деталях отображаются дополнительные услуги.",
+        },
+      ],
+    },
+    en: {
+      titleLines: ["Premium flight search", "and fast booking"],
+      subtitle: "Real flights, accurate pricing, and a simplified booking flow.",
+      chips: ["Real pricing", "Uzbek interface", "Fast booking"],
+      totalFlights: "Total",
+      flightsSuffix: "flights",
+      from: "From",
+      to: "To",
+      date: "When",
+      passenger: "Passenger",
+      selectDate: "Select a date",
+      priceCalendar: "Price calendar",
+      search: "Find ticket",
+      invalidRoute: "Select valid origin and destination values.",
+      invalidDate: "Select a date.",
+      popularBadge: "Popular directions",
+      popularTitleA: "Directions collected",
+      popularTitleB: "from the real backend",
+      popularDesc: "Each block is grouped by destination. Clicking a row opens the checkout flow for that exact flight.",
+      fromPrice: "from",
+      latestUpdate: "Last update",
+      viewFare: "View fare",
+      faqBadge: "Frequently asked questions",
+      faqTitleA: "Key questions about",
+      faqTitleB: "flights and booking",
+      faqDesc: "We collected the main questions about searching tickets, booking, baggage, payments, and partnerships.",
+      ask: "Have a question?",
+      askPlaceholder: "For example: how does baggage allowance work?",
+      send: "Send",
+      helpBadge: "Help and payment",
+      helpTitleA: "Important instructions",
+      helpTitleB: "before your flight",
+      helpDesc: "Quick access to payment methods, e-ticket details, and flight change guidance.",
+      helpCards: [
+        {
+          title: "Secure payment on the site",
+          text: "Pay for tickets and services using several convenient methods.",
+          extra: "",
+        },
+        {
+          title: "What is an e-ticket?",
+          text: "After booking is confirmed, all flight information is generated electronically.",
+          extra: "Route, timing, baggage, fare, and passenger data are available in one place.",
+        },
+        {
+          title: "How do flight changes work?",
+          text: "Depending on fare rules, date, route, or service type changes may be available.",
+          extra: "Support agents will guide you through flight change options quickly.",
+        },
+      ],
+      faqItems: [
+        {
+          question: "Which codes should be entered when searching for a ticket?",
+          answer: "Use airport IATA codes: for example TAS for Tashkent, SAW or IST for Istanbul. The date should be in YYYY-MM-DD format.",
+        },
+        {
+          question: "How does the booking process work?",
+          answer: "First you select a flight, then fill in passenger details, and finally confirm the booking. Each step is shown clearly.",
+        },
+        {
+          question: "Where can I see baggage and service information?",
+          answer: "Each flight card shows baggage, timing, duration, and fare details. The detail modal shows extra services as well.",
+        },
+      ],
+    },
+  }[language]
 
   useEffect(() => {
     try {
@@ -248,11 +416,11 @@ export default function Home() {
     const resolvedTo = resolveLocationCode(to, locationOptions)
 
     if (!resolvedFrom || !resolvedTo) {
-      toast.error("Qayerdan va qayerga uchun to'g'ri variantni tanlang.")
+      toast.error(copy.invalidRoute)
       return
     }
     if (!date.trim()) {
-      toast.error("Sanani tanlang.")
+      toast.error(copy.invalidDate)
       return
     }
 
@@ -287,22 +455,27 @@ export default function Home() {
 
   return (
     <div className="overflow-x-hidden bg-[linear-gradient(180deg,#dfe5ea_0%,#eef3f7_18%,#f8fbff_62%,#eaf0f7_100%)] text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_18%,#15254a_62%,#11203d_100%)] dark:text-white">
-      <section className="overflow-visible pt-[74px] md:pt-[84px]">
-        <div className="border-y border-[#d8dde4] bg-[#eef3f7] shadow-[0_22px_60px_rgba(16,24,40,0.08)] dark:border-[#2b4067] dark:bg-[rgba(10,20,42,0.38)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.38)]">
-        <div className="relative min-h-[720px] w-full overflow-visible sm:min-h-[760px] lg:min-h-[820px]">
+      <section className="overflow-hidden pt-[76px] md:pt-[82px]">
+        <div className="bg-[#eef3f7] shadow-[0_18px_48px_rgba(16,24,40,0.07)] dark:bg-[rgba(10,20,42,0.34)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.34)]">
+        <div className="relative min-h-[660px] w-full overflow-hidden sm:min-h-[700px] lg:min-h-[740px]">
           <div className="absolute inset-0">
-            <img
-              src={heroImage}
-              alt="Aviatsiya hamkorlik hero rasmi"
-              className="absolute inset-0 h-full w-full scale-[1.08] object-cover object-[70%_center] opacity-95 sm:scale-[1.14] sm:object-[62%_center] lg:scale-[1.06] lg:object-center"
+            <motion.img
+              src={heroDesktopImage}
+              alt="Aviation tour hero"
+              initial={{ scale: 1.12, opacity: 0.98 }}
+              animate={{ scale: [1.12, 1.16, 1.12], opacity: [0.98, 1, 0.98] }}
+              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 hidden h-full w-full object-cover object-[50%_56%] md:block"
             />
-            <div
-              className="absolute inset-0 mix-blend-screen opacity-20"
-              style={{
-                background:
-                  "linear-gradient(108deg,rgba(255,255,255,0)_18%,rgba(255,255,255,0.32)_38%,rgba(120,170,255,0.22)_54%,rgba(255,255,255,0)_72%)",
-              }}
+            <motion.img
+              src={heroMobileImage}
+              alt="Emirates mobile hero"
+              initial={{ scale: 1.02, opacity: 0.98 }}
+              animate={{ scale: [1.02, 1.06, 1.02], opacity: [0.98, 1, 0.98] }}
+              transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 h-full w-full object-cover object-[50%_48%] md:hidden"
             />
+            <div className="absolute inset-0 dark:bg-[linear-gradient(180deg,rgba(5,12,28,0.16)_0%,rgba(5,12,28,0.10)_48%,rgba(5,12,28,0.28)_100%)]" />
           </div>
           <BubbleBackground
             interactive
@@ -314,21 +487,24 @@ export default function Home() {
               fifth: "164,208,255",
               sixth: "214,234,255",
             }}
-            className="pointer-events-none absolute inset-0 opacity-70"
+            className="pointer-events-none absolute inset-0 hidden opacity-0 dark:opacity-45 md:block"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(255,255,255,0.06)_56%,rgba(246,248,251,0.14)_100%)] dark:bg-[linear-gradient(180deg,rgba(7,15,35,0.34)_0%,rgba(7,15,35,0.12)_24%,rgba(7,15,35,0.22)_56%,rgba(4,10,28,0.42)_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_left_center,rgba(255,255,255,0.34)_0%,rgba(255,255,255,0.16)_22%,rgba(255,255,255,0)_46%)] dark:bg-[radial-gradient(circle_at_left_center,rgba(75,114,201,0.26)_0%,rgba(27,48,91,0.12)_22%,rgba(4,10,28,0)_46%)]" />
-          <div
-            className="pointer-events-none absolute inset-x-[8%] bottom-[14%] h-[160px] rounded-full bg-[radial-gradient(circle,rgba(71,105,181,0.24)_0%,rgba(71,105,181,0.10)_44%,transparent_74%)] blur-3xl"
+          <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_left_center,rgba(75,114,201,0.18)_0%,rgba(27,48,91,0.08)_24%,rgba(4,10,28,0)_50%)]" />
+          <motion.div
+            aria-hidden
+            initial={{ opacity: 0.2, scale: 0.92 }}
+            animate={{ opacity: [0.2, 0.32, 0.2], scale: [0.92, 1.02, 0.92] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="pointer-events-none absolute right-[6%] top-[10%] hidden h-[220px] w-[220px] rounded-full bg-[radial-gradient(circle,rgba(128,185,255,0.2)_0%,rgba(128,185,255,0.08)_44%,transparent_74%)] blur-3xl dark:block md:h-[320px] md:w-[320px]"
           />
 
-          <div className="relative z-10 flex items-start justify-center px-4 py-5 pb-16 sm:px-6 sm:pb-20 md:px-12 md:pb-24 xl:px-16 xl:pb-28">
+          <div className="relative z-10 flex items-center justify-center px-4 py-14 sm:px-6 sm:py-16 md:px-12 md:py-18 xl:px-16 xl:py-20">
             <div className="flex w-full justify-center">
-              <div className="w-full max-w-[1240px] rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.20)_48%,rgba(255,255,255,0.10)_100%)] px-4 py-10 pt-[92px] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.34)_0%,rgba(16,30,57,0.16)_48%,rgba(10,20,42,0.10)_100%)] sm:px-6 sm:pt-[118px] md:px-8 md:py-14 md:pt-[138px]">
+              <div className="w-full max-w-[1160px] rounded-[28px] bg-transparent px-4 py-16 dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.10)_0%,rgba(16,30,57,0.05)_48%,rgba(10,20,42,0.02)_100%)] sm:px-6 sm:py-18 md:px-8 md:py-20">
                 <motion.h1
-                  className="mx-auto max-w-[920px] text-center text-[34px] font-extrabold leading-[0.96] tracking-[-0.06em] text-[#202838] dark:text-white sm:text-[42px] md:text-[50px] xl:text-[56px]"
+                  className="mx-auto max-w-[920px] text-center text-[34px] font-extrabold leading-[0.96] tracking-[-0.06em] text-[#1d2a3d] dark:text-white sm:text-[42px] md:text-[50px] md:[text-shadow:0_10px_34px_rgba(255,255,255,0.16)] xl:text-[56px]"
                 >
-                  {titleLines.map((line, lineIndex) => (
+                  {copy.titleLines.map((line, lineIndex) => (
                     <span key={line} className="block">
                       {line.split("").map((char, charIndex) => (
                         <motion.span
@@ -353,9 +529,9 @@ export default function Home() {
                   initial={{ opacity: 0, y: 24 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.55, delay: 0.28, ease: "easeOut" }}
-                  className="mx-auto mt-5 max-w-[700px] text-center text-[18px] leading-8 text-[#44536a] dark:text-[#d7e5ff] sm:text-[19px] md:mt-5 md:text-[20px]"
+                  className="mx-auto mt-5 max-w-[700px] text-center text-[18px] leading-8 text-[#45576f] dark:text-[#d7e5ff] sm:text-[19px] md:mt-5 md:text-[20px] md:[text-shadow:0_8px_22px_rgba(255,255,255,0.12)]"
                 >
-                  Real reyslar, aniq narxlar va soddalashtirilgan bron jarayoni.
+                  {copy.subtitle}
                 </motion.p>
 
                 <motion.div
@@ -364,10 +540,10 @@ export default function Home() {
                   transition={{ duration: 0.5, delay: 0.36, ease: "easeOut" }}
                   className="mt-6 flex flex-wrap justify-center gap-3"
                 >
-                  {["Real narx", "Uzbekcha interfeys", "Tez bron"].map((item) => (
+                  {copy.chips.map((item) => (
                     <span
                       key={item}
-                      className="rounded-full border border-white/70 bg-white/80 px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.16em] text-[#44536a] shadow-[0_8px_18px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.78)] dark:text-[#deebff] dark:shadow-[0_14px_24px_rgba(4,10,28,0.22)]"
+                      className="rounded-full border border-white/55 bg-white/78 px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.16em] text-[#37475e] backdrop-blur-md dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.44)] dark:text-[#deebff] dark:shadow-[0_14px_24px_rgba(4,10,28,0.22)]"
                     >
                       {item}
                     </span>
@@ -383,7 +559,7 @@ export default function Home() {
                   >
                   <div className="inline-flex flex-wrap items-center gap-2 rounded-[20px] border border-[#dbe5f0] bg-white/80 px-4 py-3 text-sm text-[#52627b] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb] dark:shadow-[0_14px_28px_rgba(4,10,28,0.26)]">
                     <span className="font-semibold text-[#1d2430] dark:text-white">
-                      Jami {lastResultMeta.count} ta reys
+                      {copy.totalFlights} {lastResultMeta.count} {copy.flightsSuffix}
                     </span>
                     <span className="text-[#8a97aa]">•</span>
                     <span>
@@ -399,28 +575,25 @@ export default function Home() {
                   initial={{ opacity: 0, y: 34, scale: 0.985 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.65, delay: 0.5, ease: "easeOut" }}
-                  className="relative mx-auto mt-8 max-w-[1120px] overflow-visible rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.86)_0%,rgba(246,249,255,0.78)_100%)] p-3 shadow-[0_22px_60px_rgba(22,31,48,0.12)] backdrop-blur-md dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.78)_0%,rgba(17,31,60,0.74)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.46)] md:mt-10 md:rounded-[30px] md:p-4"
+                  className="relative mx-auto mt-9 max-w-[1120px] overflow-visible rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.90)_0%,rgba(246,249,255,0.84)_100%)] p-3 shadow-[0_22px_60px_rgba(22,31,48,0.12)] backdrop-blur-md dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.78)_0%,rgba(17,31,60,0.74)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.46)] md:mt-12 md:rounded-[30px] md:p-4"
                 >
-                  <div
-                    className="pointer-events-none absolute inset-y-0 w-[28%] bg-[linear-gradient(90deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.58)_50%,rgba(255,255,255,0)_100%)] opacity-60 blur-xl"
-                  />
-                  <div className="grid overflow-visible gap-0 rounded-[24px] border border-[#dbe3ef] bg-white shadow-[0_18px_45px_rgba(18,28,45,0.08)] dark:border-[#35507f] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.38)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.9fr)_260px]">
-                    <HomeAutocompleteField label="Qayerdan" value={from} placeholder="Toshkent" options={locationOptions} onChange={setFrom} />
-                    <HomeAutocompleteField label="Qayerga" value={to} placeholder="Quda" options={locationOptions} onChange={setTo} />
-                    <div className="relative flex min-h-[68px] flex-col justify-center border-t border-[#dbe3ef] px-5 py-3 dark:border-[#30476f] xl:h-[74px] xl:min-h-0 xl:border-r xl:border-t-0 xl:px-6 xl:py-0">
+                  <div className="grid overflow-visible gap-2 rounded-[24px] border border-transparent bg-transparent shadow-none dark:bg-transparent xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.9fr)_260px]">
+                    <HomeAutocompleteField label={copy.from} value={from} placeholder="Toshkent" options={locationOptions} onChange={setFrom} />
+                    <HomeAutocompleteField label={copy.to} value={to} placeholder="Quda" options={locationOptions} onChange={setTo} />
+                    <div className="relative flex min-h-[68px] flex-col justify-center rounded-[20px] bg-white/92 px-5 py-3 shadow-[0_14px_32px_rgba(18,28,45,0.07)] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_18px_36px_rgba(4,10,28,0.34)] xl:h-[74px] xl:min-h-0 xl:px-6 xl:py-0">
                       <button
                         type="button"
                         onClick={() => setCalendarOpen((prev) => !prev)}
                         className="text-left"
                       >
                         <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
-                          <span>Qachon</span>
+                          <span>{copy.date}</span>
                           <CalendarDays size={16} className="text-[#2474e8]" />
                         </div>
                         <div className="mt-1 text-[14px] font-semibold text-[#1b2433] dark:text-white xl:text-[17px]">
-                          {date || "Sanani tanlang"}
+                          {date || copy.selectDate}
                         </div>
-                        <div className="text-[13px] text-[#8d98aa] dark:text-[#a5b8d8]">Narxli kalendar</div>
+                        <div className="text-[13px] text-[#8d98aa] dark:text-[#a5b8d8]">{copy.priceCalendar}</div>
                       </button>
                       {calendarOpen ? (
                         <FareCalendarPicker
@@ -440,12 +613,12 @@ export default function Home() {
                     <motion.button
                       type="button"
                       onClick={onSearch}
-                      className="inline-flex h-[72px] items-center justify-center gap-2 rounded-b-[24px] bg-[linear-gradient(135deg,#ff8a33_0%,#ff7424_100%)] px-7 text-[16px] font-bold text-white shadow-[0_18px_45px_rgba(255,116,36,0.28)] transition hover:brightness-110 dark:bg-[linear-gradient(135deg,#3f72ff_0%,#1d4fd7_100%)] dark:shadow-[0_18px_45px_rgba(35,84,218,0.34)] xl:h-[74px] xl:text-[18px] xl:rounded-b-none xl:rounded-r-[28px]"
+                      className="inline-flex h-[72px] items-center justify-center gap-2 rounded-[22px] bg-[linear-gradient(135deg,#ff8a33_0%,#ff7424_100%)] px-7 text-[16px] font-bold text-white shadow-[0_18px_45px_rgba(255,116,36,0.28)] transition hover:brightness-110 dark:bg-[linear-gradient(135deg,#3f72ff_0%,#1d4fd7_100%)] dark:shadow-[0_18px_45px_rgba(35,84,218,0.34)] xl:h-[74px] xl:text-[18px] xl:rounded-[24px]"
                       whileHover={{ y: -1, scale: 1.01 }}
                       whileTap={{ scale: 0.985 }}
                     >
                       <Search size={18} />
-                      Bilet topish
+                      {copy.search}
                     </motion.button>
                   </div>
                 </motion.div>
@@ -464,23 +637,21 @@ export default function Home() {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
                   <Ticket size={14} />
-                  Populyarnye napravleniya
+                  {copy.popularBadge}
                 </div>
                 <h2 className="mt-4 text-3xl font-extrabold tracking-[-0.04em] text-[#1d2430] dark:text-white sm:text-4xl">
-                  Real backend reyslardan
+                  {copy.popularTitleA}
                   <span className="block bg-[linear-gradient(135deg,#3a6db8_0%,#7a5a98_48%,#d97753_100%)] bg-clip-text text-transparent">
-                    yig'ilgan yo'nalishlar
+                    {copy.popularTitleB}
                   </span>
                 </h2>
                 <p className="mt-3 max-w-[700px] text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-base">
-                  Har bir blok bitta destination bo'yicha yig'iladi. Ichidagi yo'nalishlardan
-                  birini bossangiz, shu reysning `Yo'lovchilar / rasmiylashtirish` bosqichiga
-                  o'tadi.
+                  {copy.popularDesc}
                 </p>
               </div>
               {lastResultMeta ? (
                 <div className="rounded-[20px] border border-[#dbe5f0] bg-white/80 px-4 py-3 text-sm text-[#52627b] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
-                  Oxirgi yangilanish: <span className="font-semibold text-[#1d2430] dark:text-white">{lastResultMeta.date}</span>
+                  {copy.latestUpdate}: <span className="font-semibold text-[#1d2430] dark:text-white">{lastResultMeta.date}</span>
                 </div>
               ) : null}
             </div>
@@ -570,17 +741,16 @@ export default function Home() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
               <CircleHelp size={14} />
-              Tez-tez so'raladigan savollar
+              {copy.faqBadge}
             </div>
             <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#1d2430] dark:text-white sm:text-4xl md:text-5xl">
-              Parvoz va bron jarayoni bo'yicha
+              {copy.faqTitleA}
               <span className="block bg-[linear-gradient(135deg,#3a6db8_0%,#7a5a98_48%,#d97753_100%)] bg-clip-text text-transparent">
-                eng muhim savollar
+                {copy.faqTitleB}
               </span>
             </h2>
             <p className="mx-auto mt-4 max-w-[720px] text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-base">
-              Aviabilet qidirish, bron qilish, bagaj, to'lov va hamkorlik bo'yicha
-              asosiy savollarni bir joyga jamladik.
+              {copy.faqDesc}
             </p>
           </div>
 
@@ -588,7 +758,7 @@ export default function Home() {
             <div className="grid gap-4 md:grid-cols-[1fr_170px]">
               <label className="block">
                 <div className="mb-2 text-sm font-semibold text-[#52627b] dark:text-[#d4e2fb]">
-                  Savolingiz bormi?
+                  {copy.ask}
                 </div>
                 <div className="flex h-14 items-center gap-3 rounded-2xl border border-[#dbe3ef] bg-white px-4 shadow-[0_8px_20px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.3)]">
                   <CircleHelp size={18} className="text-[#8da0ba] dark:text-[#9eb5db]" />
@@ -596,7 +766,7 @@ export default function Home() {
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
                     className="h-full w-full bg-transparent text-[15px] font-medium text-[#1d2430] outline-none placeholder:text-[#9aa8bb] dark:text-white dark:placeholder:text-[#8ea5cb]"
-                    placeholder="Masalan: Bagaj limiti qanday ishlaydi?"
+                    placeholder={copy.askPlaceholder}
                   />
                 </div>
               </label>
@@ -606,12 +776,12 @@ export default function Home() {
                 className="inline-flex h-14 items-center justify-center gap-2 self-end rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_40px_rgba(63,135,212,0.22)] transition hover:brightness-110 dark:border-[#36507f] dark:bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] dark:shadow-[0_18px_40px_rgba(33,79,184,0.34)]"
               >
                 <Send size={16} />
-                Yuborish
+                {copy.send}
               </button>
             </div>
 
             <div className="mt-8 space-y-3">
-              {faqItems.map((item, index) => {
+              {copy.faqItems.map((item, index) => {
                 const isOpen = faqOpen === index
 
                 return (
@@ -662,17 +832,16 @@ export default function Home() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
               <CreditCard size={14} />
-              Yordam va to'lov
+              {copy.helpBadge}
             </div>
             <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#1d2430] dark:text-white sm:text-4xl md:text-5xl">
-              Parvozdan oldin kerak bo'ladigan
+              {copy.helpTitleA}
               <span className="block bg-[linear-gradient(135deg,#3a6db8_0%,#7a5a98_48%,#d97753_100%)] bg-clip-text text-transparent">
-                muhim yo'riqnomalar
+                {copy.helpTitleB}
               </span>
             </h2>
             <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-base">
-              To'lov usullari, elektron aviachipta va reysni almashtirish bo'yicha
-              asosiy ma'lumotlarni bir qarashda topishingiz mumkin.
+              {copy.helpDesc}
             </p>
           </div>
 
@@ -680,8 +849,8 @@ export default function Home() {
             <HelpCard
               icon={<CreditCard size={34} />}
               accent="blue"
-              title="Saytda xavfsiz to'lov"
-              text="Aviabilet va xizmatlar uchun qulay to'lovni bir necha usulda amalga oshiring."
+              title={copy.helpCards[0].title}
+              text={copy.helpCards[0].text}
             >
               <div className="mt-4 flex flex-wrap gap-2">
                 {["Click", "Visa", "Mastercard", "Humo"].map((item) => (
@@ -698,22 +867,22 @@ export default function Home() {
             <HelpCard
               icon={<Ticket size={34} />}
               accent="gold"
-              title="Elektron aviachipta nima?"
-              text="Bron tasdiqlangach, barcha parvoz ma'lumotlari elektron ko'rinishda shakllanadi va yo'lovchi uchun qulay saqlanadi."
+              title={copy.helpCards[1].title}
+              text={copy.helpCards[1].text}
             >
               <p className="mt-4 text-sm leading-6 text-[#627188] dark:text-[#d2e0f8]">
-                Unda yo'nalish, vaqt, bagaj, tarif va yo'lovchi ma'lumotlari bir joyda ko'rsatiladi.
+                {copy.helpCards[1].extra}
               </p>
             </HelpCard>
 
             <HelpCard
               icon={<RefreshCcw size={34} />}
               accent="rose"
-              title="Reysni almashtirish qanday ishlaydi?"
-              text="Tarif shartlariga qarab sana, yo'nalish yoki xizmat turini yangilash imkoniyati ko'rib chiqiladi."
+              title={copy.helpCards[2].title}
+              text={copy.helpCards[2].text}
             >
               <p className="mt-4 text-sm leading-6 text-[#627188] dark:text-[#d2e0f8]">
-                Yordam bo'limi va operatorlar reys almashinuvi bo'yicha tezkor yo'naltiradi.
+                {copy.helpCards[2].extra}
               </p>
             </HelpCard>
           </div>
@@ -736,8 +905,14 @@ function HomeAutocompleteField({
   options: LocationOption[]
   onChange: (value: string) => void
 }) {
+  const { language } = useI18n()
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  const copy = {
+    uz: { select: "tanlash", noResult: "Mos airport yoki shahar topilmadi.", chooseOption: "Variantni tanlang", close: "Ro'yxatni yopish" },
+    ru: { select: "выбрать", noResult: "Подходящий аэропорт или город не найден.", chooseOption: "Выберите вариант", close: "Закрыть список" },
+    en: { select: "select", noResult: "No matching airport or city found.", chooseOption: "Choose an option", close: "Close list" },
+  }[language]
 
   const filteredOptions = useMemo(() => {
     const query = normalizeText(value)
@@ -778,7 +953,7 @@ function HomeAutocompleteField({
         }}
         onClick={() => pickOption(option)}
         className={[
-          "flex w-full items-center justify-between border-b border-[#eef3f8] px-4 py-3 text-left transition last:border-b-0",
+          "flex w-full items-center justify-between px-4 py-3 text-left transition",
           activeIndex === index ? "bg-[#f8fbff]" : "hover:bg-[#f8fbff]",
         ].join(" ")}
       >
@@ -787,18 +962,18 @@ function HomeAutocompleteField({
           <span className="block text-xs uppercase tracking-[0.14em] text-[#7f8ca0]">{option.code}</span>
         </span>
         <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#637791]">
-          tanlash
+          {copy.select}
         </span>
       </button>
     ))
   ) : (
     <div className="px-4 py-4 text-sm text-[#627188]">
-      Mos airport yoki shahar topilmadi.
+      {copy.noResult}
     </div>
   )
 
   return (
-    <label className="relative flex min-h-[68px] flex-col justify-center border-b border-[#dbe3ef] px-5 py-3 last:border-b-0 dark:border-[#30476f] xl:h-[74px] xl:min-h-0 xl:border-b-0 xl:border-r xl:px-6 xl:py-0">
+    <label className="relative flex min-h-[68px] flex-col justify-center rounded-[20px] bg-white/92 px-5 py-3 shadow-[0_14px_32px_rgba(18,28,45,0.07)] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_18px_36px_rgba(4,10,28,0.34)] xl:h-[74px] xl:min-h-0 xl:px-6 xl:py-0">
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
         {label}
       </div>
@@ -838,7 +1013,7 @@ function HomeAutocompleteField({
         <>
           <button
             type="button"
-            aria-label="Ro'yxatni yopish"
+            aria-label={copy.close}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
@@ -850,7 +1025,7 @@ function HomeAutocompleteField({
                 {label}
               </div>
               <div className="mt-1 text-sm font-semibold text-[#1d2430] dark:text-white">
-                Variantni tanlang
+                {copy.chooseOption}
               </div>
             </div>
             <div className="max-h-[calc(62svh-70px)] overflow-y-auto xl:max-h-[320px]">
@@ -870,7 +1045,13 @@ function PassengerField({
   pax: number
   onChange: (value: number) => void
 }) {
+  const { language } = useI18n()
   const [open, setOpen] = useState(false)
+  const copy = {
+    uz: { passenger: "Yo'lovchi", passengersCount: "Yo'lovchilar soni", people: "yo'lovchi", count: "ta", done: "Tayyor", close: "Yo'lovchi oynasini yopish" },
+    ru: { passenger: "Пассажир", passengersCount: "Количество пассажиров", people: "пассажир", count: "", done: "Готово", close: "Закрыть окно пассажиров" },
+    en: { passenger: "Passenger", passengersCount: "Passenger count", people: "passenger", count: "", done: "Done", close: "Close passenger panel" },
+  }[language]
 
   useEffect(() => {
     if (!open || typeof window === "undefined" || window.innerWidth >= 1280) return undefined
@@ -884,17 +1065,17 @@ function PassengerField({
   }, [open])
 
   return (
-    <div className="relative flex min-h-[68px] flex-col justify-center border-t border-[#dbe3ef] px-5 py-3 dark:border-[#30476f] xl:h-[74px] xl:min-h-0 xl:border-r xl:border-t-0 xl:px-6 xl:py-0">
+    <div className="relative flex min-h-[68px] flex-col justify-center rounded-[20px] bg-white/92 px-5 py-3 shadow-[0_14px_32px_rgba(18,28,45,0.07)] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_18px_36px_rgba(4,10,28,0.34)] xl:h-[74px] xl:min-h-0 xl:px-6 xl:py-0">
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className="text-left"
       >
         <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
-          <span>Yo'lovchi</span>
+          <span>{copy.passenger}</span>
           <ChevronDown size={16} className={`text-[#8d98aa] transition dark:text-[#a5b8d8] ${open ? "rotate-180" : ""}`} />
         </div>
-        <div className="mt-1 text-[14px] font-semibold text-[#1b2433] dark:text-white xl:text-[17px]">{pax} yo'lovchi</div>
+        <div className="mt-1 text-[14px] font-semibold text-[#1b2433] dark:text-white xl:text-[17px]">{pax} {copy.people}</div>
         <div className="text-[13px] text-[#8d98aa] dark:text-[#a5b8d8]">Economy</div>
       </button>
 
@@ -902,13 +1083,13 @@ function PassengerField({
         <>
           <button
             type="button"
-            aria-label="Yo'lovchi oynasini yopish"
+            aria-label={copy.close}
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
           />
           <div className="fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.98)_0%,rgba(18,32,60,0.97)_100%)] dark:shadow-[0_24px_60px_rgba(4,10,28,0.42)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:w-[240px] xl:rounded-[22px] xl:bg-white dark:xl:bg-[rgba(18,32,60,0.97)]">
             <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
-            <div className="text-sm font-semibold text-[#1d2430]">Yo'lovchilar soni</div>
+            <div className="text-sm font-semibold text-[#1d2430] dark:text-white">{copy.passengersCount}</div>
             <div className="mt-3 flex items-center justify-between rounded-[18px] bg-[#f6f8fb] px-3 py-3">
               <button
                 type="button"
@@ -917,7 +1098,7 @@ function PassengerField({
               >
                 -
               </button>
-              <div className="text-base font-bold text-[#1d2430]">{pax} ta</div>
+              <div className="text-base font-bold text-[#1d2430] dark:text-white">{pax} {copy.count}</div>
               <button
                 type="button"
                 onClick={() => onChange(Math.min(9, pax + 1))}
@@ -931,7 +1112,7 @@ function PassengerField({
               onClick={() => setOpen(false)}
               className="mt-3 h-11 w-full rounded-[16px] bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white"
             >
-              Tayyor
+              {copy.done}
             </button>
           </div>
         </>

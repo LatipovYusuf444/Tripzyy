@@ -24,6 +24,7 @@ import {
   voidOrderService,
 } from "@/shared/api/order/order.api"
 import { bookAir, getAirPnrDetails } from "@/shared/api/air/air.api"
+import { useI18n } from "@/shared/i18n/i18n"
 
 type Draft = Omit<Passenger, "id"> & { id?: string }
 
@@ -53,6 +54,312 @@ const dangerButtonClass =
   `${btnBase} border-[#f0d8d9] bg-[linear-gradient(135deg,#fff7f7_0%,#fff0f1_100%)] text-[#9e4e5b] shadow-[0_12px_28px_rgba(158,78,91,0.10)] hover:bg-[#fff6f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]`
 
 export default function PassengersPage() {
+  const { language } = useI18n()
+  const copy = {
+    uz: {
+      pageTitle: "Yo'lovchilar (Karzinka)",
+      flowDesc: "Reys tanlaganingdan keyin bron qilish jarayoni 3 bosqichda yakunlanadi.",
+      flight: "Reys",
+      date: "Sana",
+      ticketCount: "Bilet soni",
+      clearCart: "Karzinkani tozalash",
+      book: "Bron qilish",
+      payment: "To'lov",
+      ticketIssue: "Chipta olish",
+      step1Desc: "Reys ma'lumotlari va tanlovni tekshirish",
+      step2Desc: "Bog'lanish va to'lov ma'lumotlari",
+      step3Desc: "Yo'lovchi ma'lumotlari va tasdiqlash",
+      stepHint: "* Bosqich kartasiga bosib o‘tish mumkin. To‘lov bo‘limi 2-bosqichda chiqadi.",
+      currentStep: "Joriy bosqich",
+      stage: "bosqich",
+      routeDetails: "Yo'nalish tafsilotlari",
+      routeDetailsDesc: "Mahalliy jo'nash va kelish vaqtlari, terminal va reys tafsilotlari.",
+      route: "Yo'nalish",
+      cabin: "Kabina",
+      baggage: "Bagaj",
+      airline: "Aviakompaniya",
+      flightNo: "Reys raqami",
+      segments: "Segmentlar",
+      terminal: "Terminal",
+      price: "Narx",
+      finalPriceServices: "Yakuniy narx va xizmatlar.",
+      finalPrice: "Yakuniy narx",
+      continue: "Davom etish",
+      contactInfo: "Bog'lanish uchun ma'lumot",
+      contactInfoDesc: "Chipta va o'zgarishlar bo'yicha xabarlar shu manzillarga yuboriladi.",
+      countryCode: "Country code",
+      email: "Elektron pochta",
+      emailRepeat: "Elektron pochta (re-)",
+      phone: "Telefon",
+      continueBlock: "Davom etish",
+      continueBlockDesc: "Ma'lumotlar to'liq bo'lsa, 3-bosqichga o'ting.",
+      paymentMethod: "To'lov usuli",
+      paymentMethodDesc: "To'lov usulini tanlang va bronni davom ettiring.",
+      selectedPayment: "Tanlangan to'lov",
+      unselected: "tanlanmagan",
+      gatewayNotice: "Payment gateway hali backend bilan ulanmagan. Bu tanlov saqlanadi, lekin avtomatik to'lov oynasi ochilmaydi.",
+      goStep3: "3-bosqichga o'tish",
+      back: "Orqaga",
+      passengerEntry: "Yo'lovchilarga kirish",
+      passengerEntryDesc: "Har bir yo'lovchi uchun pasport va shaxsiy ma'lumotlar.",
+      addPassenger: "Yo'lovchi qo'shish",
+      noPassengers: "Hozircha yo'lovchi yo'q. \"Yo'lovchi qo'shish\" ni bosing.",
+      paxHint: "* Pax:",
+      paxHintSuffix: "ta. Checkoutdan keyin yo'lovchilar shu yerga tushadi.",
+      confirmation: "Tasdiqlash",
+      confirmationDesc: "Ma'lumotlarni tekshiring va rasmiylashtirishni yakunlang.",
+      passenger: "Yo'lovchi",
+      paymentShort: "To'lov",
+      paymentApiNotice: "Hozirgi holat: booking API ishlaydi, lekin payment redirect yoki transaction callback frontendga ulanmagan.",
+      checkoutTerms: "Tasdiqlash shartlari",
+      confirmData: "Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman",
+      agreeRules: "Men tanishdim va tarifning qoidalari va shartlariga roziman",
+      checkout: "Rasmiylashtirish",
+      issuePnr: "Issue PNR",
+      cancelPnr: "Cancel PNR",
+      voidPnr: "VOID PNR",
+      orderDetails: "Order details",
+      getOrderById: "Get Order by ID",
+      status: "Status",
+      client: "Client",
+      service: "Service",
+      reservation: "Reservation (PNR)",
+      pnrCheck: "PNR tekshirish",
+      pnrPlaceholder: "PNR locator (ABC123)",
+      getPnr: "Get PNR",
+      passengersCount: "Passengers",
+      editPassenger: "Yo'lovchini tahrirlash",
+      savePassenger: "Saqlash",
+      firstName: "Ism",
+      lastName: "Familiya",
+      birthDate: "Tug'ilgan sana",
+      gender: "Gender",
+      citizenship: "Fuqarolik",
+      passportNo: "Pasport seriya / raqam",
+      passportIssued: "Pasport berilgan sana",
+      passportExpiry: "Pasport amal qilish muddati",
+      delete: "O'chirish",
+      edit: "Tahrirlash",
+      optionMissing: "Option ID topilmadi. Qidiruvni qayta bajaring.",
+      incompleteData: "Ma'lumotlar to'liq emas.",
+      bookingError: "Booking xato",
+      orderMissing: "Order ID topilmadi.",
+      cancelDone: "Cancel bajarildi",
+      cancelError: "Cancel xato",
+      issueDone: "Issue bajarildi",
+      issueError: "Issue xato",
+      voidDone: "VOID bajarildi",
+      voidError: "VOID xato",
+      locatorPrompt: "Locator kiriting. Masalan: ABC123",
+      pnrNotFound: "PNR topilmadi",
+      requestError: "PNR so'rovi xato",
+      orderNotFound: "Order topilmadi",
+      orderRequestError: "Order so'rovi xato",
+      success: "Success",
+    },
+    ru: {
+      pageTitle: "Пассажиры (корзина)",
+      flowDesc: "После выбора рейса процесс бронирования завершается в 3 этапа.",
+      flight: "Рейс",
+      date: "Дата",
+      ticketCount: "Количество билетов",
+      clearCart: "Очистить корзину",
+      book: "Бронирование",
+      payment: "Оплата",
+      ticketIssue: "Выпуск билета",
+      step1Desc: "Проверка данных рейса и выбора",
+      step2Desc: "Контактные данные и оплата",
+      step3Desc: "Данные пассажиров и подтверждение",
+      stepHint: "* Можно переходить нажатием на карточку этапа. Блок оплаты открывается на 2-м этапе.",
+      currentStep: "Текущий этап",
+      stage: "этап",
+      routeDetails: "Детали маршрута",
+      routeDetailsDesc: "Местное время вылета и прилета, терминалы и детали рейса.",
+      route: "Маршрут",
+      cabin: "Класс",
+      baggage: "Багаж",
+      airline: "Авиакомпания",
+      flightNo: "Номер рейса",
+      segments: "Сегменты",
+      terminal: "Терминал",
+      price: "Цена",
+      finalPriceServices: "Итоговая цена и услуги.",
+      finalPrice: "Итоговая цена",
+      continue: "Продолжить",
+      contactInfo: "Контактные данные",
+      contactInfoDesc: "Уведомления о билете и изменениях будут отправляться сюда.",
+      countryCode: "Country code",
+      email: "Электронная почта",
+      emailRepeat: "Электронная почта (повтор)",
+      phone: "Телефон",
+      continueBlock: "Продолжение",
+      continueBlockDesc: "Если данные заполнены, переходите на 3-й этап.",
+      paymentMethod: "Способ оплаты",
+      paymentMethodDesc: "Выберите способ оплаты и продолжите бронирование.",
+      selectedPayment: "Выбранная оплата",
+      unselected: "не выбрано",
+      gatewayNotice: "Payment gateway еще не подключен к backend. Выбор сохраняется, но автоматическое окно оплаты не откроется.",
+      goStep3: "Перейти к этапу 3",
+      back: "Назад",
+      passengerEntry: "Данные пассажиров",
+      passengerEntryDesc: "Паспортные и личные данные для каждого пассажира.",
+      addPassenger: "Добавить пассажира",
+      noPassengers: "Пассажиров пока нет. Нажмите «Добавить пассажира».",
+      paxHint: "* Pax:",
+      paxHintSuffix: ". После checkout пассажиры появятся здесь.",
+      confirmation: "Подтверждение",
+      confirmationDesc: "Проверьте данные и завершите оформление.",
+      passenger: "Пассажир",
+      paymentShort: "Оплата",
+      paymentApiNotice: "Текущее состояние: booking API работает, но payment redirect или transaction callback не подключены к frontend.",
+      checkoutTerms: "Условия подтверждения",
+      confirmData: "Подтверждаю, что указанные выше данные верны",
+      agreeRules: "Я ознакомился и согласен с правилами и условиями тарифа",
+      checkout: "Оформить",
+      issuePnr: "Issue PNR",
+      cancelPnr: "Cancel PNR",
+      voidPnr: "VOID PNR",
+      orderDetails: "Детали заказа",
+      getOrderById: "Получить заказ по ID",
+      status: "Статус",
+      client: "Клиент",
+      service: "Сервис",
+      reservation: "Бронирование (PNR)",
+      pnrCheck: "Проверка PNR",
+      pnrPlaceholder: "Локатор PNR (ABC123)",
+      getPnr: "Получить PNR",
+      passengersCount: "Пассажиры",
+      editPassenger: "Редактировать пассажира",
+      savePassenger: "Сохранить",
+      firstName: "Имя",
+      lastName: "Фамилия",
+      birthDate: "Дата рождения",
+      gender: "Пол",
+      citizenship: "Гражданство",
+      passportNo: "Серия / номер паспорта",
+      passportIssued: "Дата выдачи паспорта",
+      passportExpiry: "Срок действия паспорта",
+      delete: "Удалить",
+      edit: "Редактировать",
+      optionMissing: "Option ID не найден. Выполните поиск заново.",
+      incompleteData: "Данные заполнены не полностью.",
+      bookingError: "Ошибка бронирования",
+      orderMissing: "Order ID не найден.",
+      cancelDone: "Cancel выполнен",
+      cancelError: "Ошибка cancel",
+      issueDone: "Issue выполнен",
+      issueError: "Ошибка issue",
+      voidDone: "VOID выполнен",
+      voidError: "Ошибка VOID",
+      locatorPrompt: "Введите locator. Например: ABC123",
+      pnrNotFound: "PNR не найден",
+      requestError: "Ошибка запроса PNR",
+      orderNotFound: "Order не найден",
+      orderRequestError: "Ошибка запроса Order",
+      success: "Успешно",
+    },
+    en: {
+      pageTitle: "Passengers (cart)",
+      flowDesc: "After selecting a flight, the booking flow is completed in 3 steps.",
+      flight: "Flight",
+      date: "Date",
+      ticketCount: "Ticket count",
+      clearCart: "Clear cart",
+      book: "Booking",
+      payment: "Payment",
+      ticketIssue: "Ticket issue",
+      step1Desc: "Review flight details and selection",
+      step2Desc: "Contact and payment details",
+      step3Desc: "Passenger details and confirmation",
+      stepHint: "* You can switch by clicking a step card. The payment section appears in step 2.",
+      currentStep: "Current step",
+      stage: "step",
+      routeDetails: "Route details",
+      routeDetailsDesc: "Local departure and arrival times, terminals, and flight details.",
+      route: "Route",
+      cabin: "Cabin",
+      baggage: "Baggage",
+      airline: "Airline",
+      flightNo: "Flight number",
+      segments: "Segments",
+      terminal: "Terminal",
+      price: "Price",
+      finalPriceServices: "Final price and services.",
+      finalPrice: "Final price",
+      continue: "Continue",
+      contactInfo: "Contact information",
+      contactInfoDesc: "Ticket and change notifications will be sent to these contacts.",
+      countryCode: "Country code",
+      email: "Email",
+      emailRepeat: "Email (repeat)",
+      phone: "Phone",
+      continueBlock: "Continue",
+      continueBlockDesc: "If the data is complete, go to step 3.",
+      paymentMethod: "Payment method",
+      paymentMethodDesc: "Choose a payment method and continue the booking.",
+      selectedPayment: "Selected payment",
+      unselected: "not selected",
+      gatewayNotice: "The payment gateway is not connected to the backend yet. The selection is saved, but no automatic payment window will open.",
+      goStep3: "Go to step 3",
+      back: "Back",
+      passengerEntry: "Passenger entry",
+      passengerEntryDesc: "Passport and personal details for each passenger.",
+      addPassenger: "Add passenger",
+      noPassengers: "No passengers yet. Click “Add passenger”.",
+      paxHint: "* Pax:",
+      paxHintSuffix: ". After checkout, passengers will appear here.",
+      confirmation: "Confirmation",
+      confirmationDesc: "Review the information and complete checkout.",
+      passenger: "Passenger",
+      paymentShort: "Payment",
+      paymentApiNotice: "Current status: booking API works, but payment redirect or transaction callback is not connected to the frontend.",
+      checkoutTerms: "Confirmation terms",
+      confirmData: "I confirm that the information above is correct",
+      agreeRules: "I have read and agree to the fare rules and conditions",
+      checkout: "Checkout",
+      issuePnr: "Issue PNR",
+      cancelPnr: "Cancel PNR",
+      voidPnr: "VOID PNR",
+      orderDetails: "Order details",
+      getOrderById: "Get Order by ID",
+      status: "Status",
+      client: "Client",
+      service: "Service",
+      reservation: "Reservation (PNR)",
+      pnrCheck: "PNR check",
+      pnrPlaceholder: "PNR locator (ABC123)",
+      getPnr: "Get PNR",
+      passengersCount: "Passengers",
+      editPassenger: "Edit passenger",
+      savePassenger: "Save",
+      firstName: "First name",
+      lastName: "Last name",
+      birthDate: "Birth date",
+      gender: "Gender",
+      citizenship: "Citizenship",
+      passportNo: "Passport series / number",
+      passportIssued: "Passport issue date",
+      passportExpiry: "Passport expiry date",
+      delete: "Delete",
+      edit: "Edit",
+      optionMissing: "Option ID was not found. Please search again.",
+      incompleteData: "The data is incomplete.",
+      bookingError: "Booking error",
+      orderMissing: "Order ID was not found.",
+      cancelDone: "Cancel completed",
+      cancelError: "Cancel error",
+      issueDone: "Issue completed",
+      issueError: "Issue error",
+      voidDone: "VOID completed",
+      voidError: "VOID error",
+      locatorPrompt: "Enter a locator. Example: ABC123",
+      pnrNotFound: "PNR was not found",
+      requestError: "PNR request error",
+      orderNotFound: "Order was not found",
+      orderRequestError: "Order request error",
+      success: "Success",
+    },
+  }[language]
   const [cart, setCart] = useState(() => bookingCart.get())
   const [step, setStep] = useState<1 | 2 | 3>(1)
 
@@ -148,8 +455,8 @@ export default function PassengersPage() {
   const title = useMemo(() => {
     const r = cart.route ? ` · ${cart.route}` : ""
     const d = cart.date ? ` · ${cart.date}` : ""
-    return `Yo'lovchilar (Karzinka)${r}${d}`
-  }, [cart.route, cart.date])
+    return `${copy.pageTitle}${r}${d}`
+  }, [cart.route, cart.date, copy.pageTitle])
 
   const onAdd = () => {
     setDraft({
@@ -236,11 +543,11 @@ export default function PassengersPage() {
     setIssueMsg(null)
     setVoidMsg(null)
     if (!cart.flightId) {
-      setBookError("Option ID topilmadi. Qidiruvni qayta bajaring.")
+      setBookError(copy.optionMissing)
       return
     }
     if (!canCheckout) {
-      setBookError("Ma'lumotlar to'liq emas.")
+      setBookError(copy.incompleteData)
       return
     }
 
@@ -266,7 +573,7 @@ export default function PassengersPage() {
       })
 
       if (res.data.status !== "success") {
-        setBookError(res.data.message || "Booking xato")
+        setBookError(res.data.message || copy.bookingError)
         return
       }
       setLastOrderId(res.data.data?.orderID ?? null)
@@ -289,7 +596,7 @@ export default function PassengersPage() {
         })
       }
     } catch (err: any) {
-      setBookError(err?.response?.data?.message || "Booking xato")
+      setBookError(err?.response?.data?.message || copy.bookingError)
     } finally {
       setBookLoading(false)
     }
@@ -297,16 +604,16 @@ export default function PassengersPage() {
 
   const onCancelService = async () => {
     if (!lastOrderId) {
-      setCancelMsg("Order ID topilmadi.")
+      setCancelMsg(copy.orderMissing)
       return
     }
     setCancelLoading(true)
     setCancelMsg(null)
     try {
       const res = await cancelOrderService(lastOrderId)
-      setCancelMsg(res.data.message || "Cancel bajarildi")
+      setCancelMsg(res.data.message || copy.cancelDone)
     } catch (err: any) {
-      setCancelMsg(err?.response?.data?.message || "Cancel xato")
+      setCancelMsg(err?.response?.data?.message || copy.cancelError)
     } finally {
       setCancelLoading(false)
     }
@@ -314,16 +621,16 @@ export default function PassengersPage() {
 
   const onIssueOrder = async () => {
     if (!lastOrderId) {
-      setIssueMsg("Order ID topilmadi.")
+      setIssueMsg(copy.orderMissing)
       return
     }
     setIssueLoading(true)
     setIssueMsg(null)
     try {
       const res = await issueOrder(lastOrderId)
-      setIssueMsg(res.data.message || "Issue bajarildi")
+      setIssueMsg(res.data.message || copy.issueDone)
     } catch (err: any) {
-      setIssueMsg(err?.response?.data?.message || "Issue xato")
+      setIssueMsg(err?.response?.data?.message || copy.issueError)
     } finally {
       setIssueLoading(false)
     }
@@ -331,16 +638,16 @@ export default function PassengersPage() {
 
   const onVoidService = async () => {
     if (!lastOrderId) {
-      setVoidMsg("Order ID topilmadi.")
+      setVoidMsg(copy.orderMissing)
       return
     }
     setVoidLoading(true)
     setVoidMsg(null)
     try {
       const res = await voidOrderService(lastOrderId)
-      setVoidMsg(res.data.message || "VOID bajarildi")
+      setVoidMsg(res.data.message || copy.voidDone)
     } catch (err: any) {
-      setVoidMsg(err?.response?.data?.message || "VOID xato")
+      setVoidMsg(err?.response?.data?.message || copy.voidError)
     } finally {
       setVoidLoading(false)
     }
@@ -349,7 +656,7 @@ export default function PassengersPage() {
   const onGetPnr = async () => {
     const locator = pnrLocator.trim().toUpperCase()
     if (!locator) {
-      setPnrMsg("Locator kiriting. Masalan: ABC123")
+      setPnrMsg(copy.locatorPrompt)
       return
     }
     setPnrLoading(true)
@@ -358,13 +665,13 @@ export default function PassengersPage() {
     try {
       const res = await getAirPnrDetails(locator)
       if (res.data.status !== "success") {
-        setPnrMsg(res.data.message || "PNR topilmadi")
+        setPnrMsg(res.data.message || copy.pnrNotFound)
         return
       }
       setPnrData(res.data.data ?? null)
-      setPnrMsg(res.data.message || "Success")
+      setPnrMsg(res.data.message || copy.success)
     } catch (err: any) {
-      setPnrMsg(err?.response?.data?.message || "PNR so'rovi xato")
+      setPnrMsg(err?.response?.data?.message || copy.requestError)
     } finally {
       setPnrLoading(false)
     }
@@ -373,7 +680,7 @@ export default function PassengersPage() {
   const onGetOrder = async () => {
     const id = lastOrderId ?? cart.lastOrderId
     if (!id) {
-      setOrderMsg("Order ID topilmadi.")
+      setOrderMsg(copy.orderMissing)
       return
     }
     setOrderLoading(true)
@@ -382,7 +689,7 @@ export default function PassengersPage() {
     try {
       const res = await getOrderById(id)
       if (res.data.status !== "success") {
-        setOrderMsg(res.data.message || "Order topilmadi")
+        setOrderMsg(res.data.message || copy.orderNotFound)
         return
       }
       const item = res.data.data?.[0]
@@ -395,9 +702,9 @@ export default function PassengersPage() {
         serviceType: item?.services?.[0]?.type,
         reservationId: item?.services?.[0]?.reservation?.id,
       })
-      setOrderMsg(res.data.message || "Success")
+      setOrderMsg(res.data.message || copy.success)
     } catch (err: any) {
-      setOrderMsg(err?.response?.data?.message || "Order so'rovi xato")
+      setOrderMsg(err?.response?.data?.message || copy.orderRequestError)
     } finally {
       setOrderLoading(false)
     }
@@ -415,21 +722,21 @@ export default function PassengersPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-[#1d2430] dark:text-white">{title}</h1>
             <p className="mt-2 text-[#627188] text-sm dark:text-[#d2e0f8]">
-              Reys tanlaganingdan keyin bron qilish jarayoni 3 bosqichda yakunlanadi.
+              {copy.flowDesc}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Pill icon={Ticket} label="Reys" value={cart.route ?? "—"} />
-              <Pill icon={CalendarDays} label="Sana" value={cart.date ?? "—"} />
-              <Pill icon={Users2} label="Bilet soni" value={`${pax} ta`} />
+              <Pill icon={Ticket} label={copy.flight} value={cart.route ?? "—"} />
+              <Pill icon={CalendarDays} label={copy.date} value={cart.date ?? "—"} />
+              <Pill icon={Users2} label={copy.ticketCount} value={String(pax)} />
             </div>
           </div>
 
           <button
             onClick={onClearCart}
             className={`h-11 px-4 ${secondaryButtonClass}`}
-            title="Karzinkani tozalash"
+            title={copy.clearCart}
           >
-            Karzinkani tozalash
+            {copy.clearCart}
           </button>
         </motion.div>
 
@@ -442,34 +749,34 @@ export default function PassengersPage() {
               active={step === 1}
               done={step > 1}
               icon={ClipboardCheck}
-              title="Bron qilish"
-              desc="Reys ma'lumotlari va tanlovni tekshirish"
+              title={copy.book}
+              desc={copy.step1Desc}
               onClick={() => setStep(1)}
             />
             <StepCard
               active={step === 2}
               done={step > 2}
               icon={CreditCard}
-              title="To'lov"
-              desc="Bog'lanish va to'lov ma'lumotlari"
+              title={copy.payment}
+              desc={copy.step2Desc}
               onClick={() => setStep(2)}
             />
             <StepCard
               active={step === 3}
               done={step > 3}
               icon={BadgeCheck}
-              title="Chipta olish"
-              desc="Yo'lovchi ma'lumotlari va tasdiqlash"
+              title={copy.ticketIssue}
+              desc={copy.step3Desc}
               onClick={() => setStep(3)}
             />
           </div>
         </motion.div>
 
         <motion.div variants={fadeUp} className="mt-4 text-xs text-[#718198] dark:text-[#a9bddb]">
-          * Bosqich kartasiga bosib o‘tish mumkin. To‘lov bo‘limi 2-bosqichda chiqadi.
+          {copy.stepHint}
         </motion.div>
         <motion.div variants={fadeUp} className="mt-3 flex items-center gap-2 text-xs text-[#627188] dark:text-[#d2e0f8]">
-          <span>Joriy bosqich:</span>
+          <span>{copy.currentStep}:</span>
           <span className="rounded-full border border-[#dbe3ef] bg-white/90 px-2.5 py-1 text-[#1d2430] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-white">
             {step}
           </span>
@@ -486,7 +793,7 @@ export default function PassengersPage() {
                     : "bg-white/80 border-[#dbe3ef] text-[#627188] hover:bg-white dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#d7e5ff] dark:hover:bg-[rgba(24,43,80,0.92)]",
                 ].join(" ")}
               >
-                {s}-bosqich
+                {s}-{copy.stage}
               </button>
             ))}
           </div>
@@ -495,17 +802,17 @@ export default function PassengersPage() {
         {step === 1 && (
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className={`lg:col-span-2 rounded-[28px] p-6 ${lightPanel}`}>
-              <div className="text-lg font-extrabold dark:text-white">Yo'nalish tafsilotlari</div>
+              <div className="text-lg font-extrabold dark:text-white">{copy.routeDetails}</div>
               <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
-                Mahalliy jo'nash va kelish vaqtlari, terminal va reys tafsilotlari.
+                {copy.routeDetailsDesc}
               </div>
 
               <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoCard label="Yo'nalish" value={cart.route ?? "TAS → DXB"} />
-                <InfoCard label="Sana" value={cart.date ?? "2026-03-17"} />
-                <InfoCard label="Kabina" value={cart.cabin ?? "—"} />
+                <InfoCard label={copy.route} value={cart.route ?? "TAS → DXB"} />
+                <InfoCard label={copy.date} value={cart.date ?? "2026-03-17"} />
+                <InfoCard label={copy.cabin} value={cart.cabin ?? "—"} />
                 <InfoCard
-                  label="Bagaj"
+                  label={copy.baggage}
                   value={
                     [cart.baggage, cart.carryOn ? `carry-on ${cart.carryOn}` : ""]
                       .filter(Boolean)
@@ -515,14 +822,14 @@ export default function PassengersPage() {
               </div>
               {cart.airline || cart.flightNo ? (
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoCard label="Aviakompaniya" value={cart.airline ?? "—"} />
-                  <InfoCard label="Reys raqami" value={cart.flightNo ?? "—"} />
+                  <InfoCard label={copy.airline} value={cart.airline ?? "—"} />
+                  <InfoCard label={copy.flightNo} value={cart.flightNo ?? "—"} />
                 </div>
               ) : null}
 
               {cart.segments?.length ? (
                 <div className="mt-4 rounded-2xl border border-[#dde5f0] bg-white/80 p-4">
-                  <div className="text-sm font-semibold text-[#1d2430]">Segmentlar</div>
+                  <div className="text-sm font-semibold text-[#1d2430]">{copy.segments}</div>
                   <div className="mt-3 space-y-3">
                     {cart.segments.map((segment, index) => (
                       <div key={segment.id} className="rounded-2xl border border-[#e6edf6] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-3">
@@ -536,8 +843,8 @@ export default function PassengersPage() {
                         </div>
                         <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-[#627188]">
                           <div>{segment.departure} → {segment.arrival}</div>
-                          <div>Terminal: {segment.departureTerminal || "—"} / {segment.arrivalTerminal || "—"}</div>
-                          <div>Bagaj: {segment.baggage || "—"}</div>
+                          <div>{copy.terminal}: {segment.departureTerminal || "—"} / {segment.arrivalTerminal || "—"}</div>
+                          <div>{copy.baggage}: {segment.baggage || "—"}</div>
                           <div>Carry-on: {segment.carryOn || "—"}</div>
                         </div>
                       </div>
@@ -548,20 +855,20 @@ export default function PassengersPage() {
             </div>
 
             <div className={`rounded-[28px] p-6 ${lightPanel}`}>
-              <div className="text-lg font-extrabold">Narx</div>
-              <div className="mt-2 text-[#627188] text-sm">Yakuniy narx va xizmatlar.</div>
+              <div className="text-lg font-extrabold">{copy.price}</div>
+              <div className="mt-2 text-[#627188] text-sm">{copy.finalPriceServices}</div>
               <div className="mt-5 rounded-2xl border border-[#f0d8cf] bg-[linear-gradient(135deg,#fff8f3_0%,#fff1f5_100%)] p-4 dark:border-[#4a3f5f] dark:bg-[linear-gradient(135deg,rgba(46,36,69,0.96)_0%,rgba(33,23,52,0.94)_100%)]">
-                <div className="text-[#8d6d70] text-xs dark:text-[#d6bfd0]">Yakuniy narx</div>
+                <div className="text-[#8d6d70] text-xs dark:text-[#d6bfd0]">{copy.finalPrice}</div>
                 <div className="text-2xl font-extrabold text-[#b4586f] dark:text-[#ffd7e4]">
                   {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
                 </div>
-                <div className="mt-1 text-[#8d6d70] text-xs dark:text-[#d6bfd0]">Pax: {pax} ta</div>
+                <div className="mt-1 text-[#8d6d70] text-xs dark:text-[#d6bfd0]">Pax: {pax}</div>
               </div>
               <button
                 onClick={() => setStep(2)}
                 className={`mt-5 h-12 w-full ${primaryButtonClass}`}
               >
-                Davom etish
+                {copy.continue}
               </button>
             </div>
           </div>
@@ -570,14 +877,14 @@ export default function PassengersPage() {
         {step === 2 && (
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className={`lg:col-span-2 rounded-[28px] p-6 ${lightPanel}`}>
-              <div className="text-lg font-extrabold">Bog'lanish uchun ma'lumot</div>
+              <div className="text-lg font-extrabold">{copy.contactInfo}</div>
               <div className="mt-2 text-[#627188] text-sm">
-                Chipta va o'zgarishlar bo'yicha xabarlar shu manzillarga yuboriladi.
+                {copy.contactInfoDesc}
               </div>
 
               <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field
-                  label="Country code"
+                  label={copy.countryCode}
                   value={payer.countryCode ?? ""}
                   onChange={(v) =>
                     setPayer((p) => {
@@ -589,7 +896,7 @@ export default function PassengersPage() {
                   placeholder="998"
                 />
                 <Field
-                  label="Elektron pochta"
+                  label={copy.email}
                   icon={Mail}
                   value={payer.email}
                   onChange={(v) =>
@@ -602,14 +909,14 @@ export default function PassengersPage() {
                   placeholder="name@example.com"
                 />
                 <Field
-                  label="Elektron pochta (re-)"
+                  label={copy.emailRepeat}
                   icon={Mail}
                   value={confirmEmail}
                   onChange={(v) => setConfirmEmail(v)}
                   placeholder="name@example.com"
                 />
                 <Field
-                  label="Telefon"
+                  label={copy.phone}
                   icon={Phone}
                   value={payer.phone}
                   onChange={(v) =>
@@ -625,14 +932,14 @@ export default function PassengersPage() {
             </div>
 
             <div className={`rounded-[28px] p-6 ${lightPanel}`}>
-              <div className="text-lg font-extrabold">Davom etish</div>
+              <div className="text-lg font-extrabold">{copy.continueBlock}</div>
               <div className="mt-2 text-[#627188] text-sm">
-                Ma'lumotlar to'liq bo'lsa, 3-bosqichga o'ting.
+                {copy.continueBlockDesc}
               </div>
                 <div className="mt-4 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)]">
-                  <div className="text-[#1d2430] font-semibold dark:text-white">To'lov usuli</div>
+                  <div className="text-[#1d2430] font-semibold dark:text-white">{copy.paymentMethod}</div>
                   <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
-                    To'lov usulini tanlang va bronni davom ettiring.
+                    {copy.paymentMethodDesc}
                   </div>
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
@@ -662,13 +969,13 @@ export default function PassengersPage() {
                   ))}
                 </div>
                 <div className="mt-3 text-xs text-[#627188] dark:text-[#a9bddb]">
-                  Tanlangan to'lov:{" "}
+                  {copy.selectedPayment}:{" "}
                   <span className="text-[#1d2430] font-semibold dark:text-white">
-                    {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
+                    {paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
                   </span>
                 </div>
                 <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
-                  Payment gateway hali backend bilan ulanmagan. Bu tanlov saqlanadi, lekin avtomatik to'lov oynasi ochilmaydi.
+                  {copy.gatewayNotice}
                 </div>
               </div>
               <button
@@ -676,13 +983,13 @@ export default function PassengersPage() {
                 disabled={!canContinueStep2}
                 className={`mt-5 h-12 w-full ${primaryButtonClass}`}
               >
-                3-bosqichga o'tish
+                {copy.goStep3}
               </button>
               <button
                 onClick={() => setStep(1)}
                 className={`mt-3 h-11 w-full ${secondaryButtonClass}`}
               >
-                Orqaga
+                {copy.back}
               </button>
             </div>
           </div>
@@ -694,16 +1001,16 @@ export default function PassengersPage() {
               <div className={`rounded-[28px] p-6 ${lightPanel}`}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="text-lg font-extrabold">Yo'lovchilarga kirish</div>
+                    <div className="text-lg font-extrabold">{copy.passengerEntry}</div>
                     <div className="mt-1 text-[#627188] text-sm">
-                      Har bir yo'lovchi uchun pasport va shaxsiy ma'lumotlar.
+                      {copy.passengerEntryDesc}
                     </div>
                   </div>
                   <button
                     onClick={onAdd}
                     className={`h-11 min-w-[190px] gap-2 px-4 sm:ml-auto ${primaryButtonClass}`}
                   >
-                    Yo'lovchi qo'shish <Plus size={16} />
+                    {copy.addPassenger} <Plus size={16} />
                   </button>
                 </div>
 
@@ -713,13 +1020,13 @@ export default function PassengersPage() {
                       <thead>
                         <tr className="text-left text-[#718198] text-sm">
                           <th className="px-3 py-3">#</th>
-                          <th className="px-3 py-3">Ism</th>
-                          <th className="px-3 py-3">Familiya</th>
-                          <th className="px-3 py-3">Tug'ilgan sana</th>
-                          <th className="px-3 py-3">Fuqarolik</th>
-                          <th className="px-3 py-3">Pasport</th>
-                          <th className="px-3 py-3">Amal qilish</th>
-                          <th className="px-3 py-3">Amal</th>
+                          <th className="px-3 py-3">{copy.firstName}</th>
+                          <th className="px-3 py-3">{copy.lastName}</th>
+                          <th className="px-3 py-3">{copy.birthDate}</th>
+                          <th className="px-3 py-3">{copy.citizenship}</th>
+                          <th className="px-3 py-3">{copy.passportNo}</th>
+                          <th className="px-3 py-3">{copy.passportExpiry}</th>
+                          <th className="px-3 py-3">{copy.edit}</th>
                         </tr>
                       </thead>
 
@@ -727,7 +1034,7 @@ export default function PassengersPage() {
                         {cart.passengers.length === 0 ? (
                           <tr>
                             <td className="px-3 py-6 text-[#627188] dark:text-[#a9bddb]" colSpan={8}>
-                              Hozircha yo'lovchi yo'q. "Yo'lovchi qo'shish" ni bosing.
+                              {copy.noPassengers}
                             </td>
                           </tr>
                         ) : (
@@ -748,7 +1055,7 @@ export default function PassengersPage() {
                                   <button
                                     onClick={() => onEdit(p)}
                                     className="grid h-9 w-9 place-items-center rounded-xl border border-[#dbe3ef] bg-white transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:hover:bg-[rgba(24,43,80,0.92)]"
-                                    title="Tahrirlash"
+                                    title={copy.edit}
                                   >
                                     <Pencil size={16} className="text-[#1C96C8]" />
                                   </button>
@@ -756,7 +1063,7 @@ export default function PassengersPage() {
                                   <button
                                     onClick={() => onDelete(p.id)}
                                     className="grid h-9 w-9 place-items-center rounded-xl border border-[#f0d8d9] bg-white transition hover:bg-[#fff5f6] dark:border-[#66415f] dark:bg-[rgba(45,27,50,0.82)] dark:hover:bg-[rgba(62,32,70,0.94)]"
-                                    title="O'chirish"
+                                    title={copy.delete}
                                   >
                                     <Trash2 size={16} className="text-[#8A3A5A]" />
                                   </button>
@@ -770,7 +1077,7 @@ export default function PassengersPage() {
                   </div>
 
                   <div className="mt-3 text-xs text-[#718198] dark:text-[#93abd0]">
-                    * Pax: {pax} ta. Checkoutdan keyin yo'lovchilar shu yerga tushadi.
+                    {copy.paxHint} {pax}{copy.paxHintSuffix}
                   </div>
                 </div>
               </div>
@@ -779,9 +1086,9 @@ export default function PassengersPage() {
             <div className={`rounded-[28px] p-6 lg:sticky lg:top-28 ${lightPanel}`}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-lg font-extrabold">Tasdiqlash</div>
+                  <div className="text-lg font-extrabold">{copy.confirmation}</div>
                   <div className="mt-2 text-[#627188] text-sm">
-                    Ma'lumotlarni tekshiring va rasmiylashtirishni yakunlang.
+                    {copy.confirmationDesc}
                   </div>
                 </div>
                 <div className="rounded-full border border-[#dbe3ef] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#627188]">
@@ -790,15 +1097,15 @@ export default function PassengersPage() {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <MiniStat label="Yo'lovchi" value={`${cart.passengers.length}/${pax}`} />
+                <MiniStat label={copy.passenger} value={`${cart.passengers.length}/${pax}`} />
                 <MiniStat
-                  label="To'lov"
-                  value={paymentMethod ? paymentMethod.toUpperCase() : "Tanlanmagan"}
+                  label={copy.paymentShort}
+                  value={paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
                 />
               </div>
 
               <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
-                Hozirgi holat: booking API ishlaydi, lekin payment redirect yoki transaction callback frontendga ulanmagan.
+                {copy.paymentApiNotice}
               </div>
 
               {lastOrderId ? (
@@ -826,7 +1133,7 @@ export default function PassengersPage() {
               <div className="mt-4 rounded-[24px] border border-[#f0d8cf] bg-[linear-gradient(135deg,#fff8f3_0%,#fff1f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:border-[#4a3f5f] dark:bg-[linear-gradient(135deg,rgba(46,36,69,0.96)_0%,rgba(33,23,52,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs uppercase tracking-[0.14em] text-[#8d6d70] dark:text-[#d6bfd0]">Narx</div>
+                    <div className="text-xs uppercase tracking-[0.14em] text-[#8d6d70] dark:text-[#d6bfd0]">{copy.price}</div>
                     <div className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#b4586f] dark:text-[#ffd7e4]">
                       {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
                     </div>
@@ -836,9 +1143,9 @@ export default function PassengersPage() {
                   </div>
                 </div>
                 <div className="mt-3 text-xs text-[#8d6d70] dark:text-[#d6bfd0]">
-                  To'lov:{" "}
+                  {copy.selectedPayment}:{" "}
                   <span className="font-semibold text-[#1d2430] dark:text-white">
-                    {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
+                    {paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
                   </span>
                 </div>
               </div>
@@ -850,7 +1157,7 @@ export default function PassengersPage() {
               ) : null}
 
               <div className="mt-4 rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
-                <div className="text-sm font-semibold text-[#1d2430]">Tasdiqlash shartlari</div>
+                <div className="text-sm font-semibold text-[#1d2430]">{copy.checkoutTerms}</div>
                 <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-[#627188]">
                   <input
                     type="checkbox"
@@ -858,7 +1165,7 @@ export default function PassengersPage() {
                     onChange={(e) => setAgreeData(e.target.checked)}
                     className="mt-0.5"
                   />
-                  Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
+                  {copy.confirmData}
                 </label>
                 <label className="mt-2 flex items-start gap-2 text-xs leading-5 text-[#627188]">
                   <input
@@ -867,7 +1174,7 @@ export default function PassengersPage() {
                     onChange={(e) => setAgreeRules(e.target.checked)}
                     className="mt-0.5"
                   />
-                  Men tanishdim va tarifning qoidalari va shartlariga roziman
+                  {copy.agreeRules}
                 </label>
               </div>
 
@@ -877,7 +1184,7 @@ export default function PassengersPage() {
                   disabled={!canCheckout || bookLoading}
                   className={`h-12 w-full ${primaryButtonClass}`}
                 >
-                  {bookLoading ? "..." : "Rasmiylashtirish"}
+                  {bookLoading ? "..." : copy.checkout}
                 </button>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -886,14 +1193,14 @@ export default function PassengersPage() {
                     disabled={!lastOrderId || issueLoading}
                     className={`h-11 w-full ${secondaryButtonClass}`}
                   >
-                    {issueLoading ? "Issue..." : "Issue PNR"}
+                    {issueLoading ? "Issue..." : copy.issuePnr}
                   </button>
                   <button
                     onClick={onCancelService}
                     disabled={!lastOrderId || cancelLoading}
                     className={`h-11 w-full ${dangerButtonClass}`}
                   >
-                    {cancelLoading ? "Cancel..." : "Cancel PNR"}
+                    {cancelLoading ? "Cancel..." : copy.cancelPnr}
                   </button>
                 </div>
 
@@ -903,43 +1210,43 @@ export default function PassengersPage() {
                     disabled={!lastOrderId || voidLoading}
                     className={`h-11 w-full ${dangerButtonClass}`}
                   >
-                    {voidLoading ? "VOID..." : "VOID PNR"}
+                    {voidLoading ? "VOID..." : copy.voidPnr}
                   </button>
                   <button
                     onClick={() => setStep(2)}
                     className={`h-11 w-full ${secondaryButtonClass}`}
                   >
-                    Orqaga
+                    {copy.back}
                   </button>
                 </div>
               </div>
 
               <div className="mt-5 space-y-4 border-t border-[#e7edf5] pt-5">
                 <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
-                  <div className="text-[#1d2430] font-semibold dark:text-white">Order details</div>
+                  <div className="text-[#1d2430] font-semibold dark:text-white">{copy.orderDetails}</div>
                   <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">GET /orders/{`{id}`}</div>
                   <button
                     onClick={onGetOrder}
                     disabled={orderLoading || !(lastOrderId || cart.lastOrderId)}
                     className={`mt-3 h-10 w-full rounded-xl ${secondaryButtonClass}`}
                   >
-                    {orderLoading ? "..." : "Get Order by ID"}
+                    {orderLoading ? "..." : copy.getOrderById}
                   </button>
                   {orderMsg && <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">{orderMsg}</div>}
                   {orderData && (
                     <div className="mt-2 space-y-1 text-xs text-[#627188] dark:text-[#a9bddb]">
                       <div>ID: {orderData.id ?? "—"}</div>
-                      <div>Status: {orderData.status ?? "—"}</div>
-                      <div>Narx: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
-                      <div>Client: {orderData.client ?? "—"}</div>
-                      <div>Service: {orderData.serviceType ?? "—"}</div>
-                      <div>Reservation (PNR): {orderData.reservationId ?? "—"}</div>
+                      <div>{copy.status}: {orderData.status ?? "—"}</div>
+                      <div>{copy.price}: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
+                      <div>{copy.client}: {orderData.client ?? "—"}</div>
+                      <div>{copy.service}: {orderData.serviceType ?? "—"}</div>
+                      <div>{copy.reservation}: {orderData.reservationId ?? "—"}</div>
                     </div>
                   )}
                 </div>
 
                 <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
-                  <div className="text-[#1d2430] font-semibold dark:text-white">PNR tekshirish</div>
+                  <div className="text-[#1d2430] font-semibold dark:text-white">{copy.pnrCheck}</div>
                   <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">
                     `GET /air/get-pnr?locator=ABC123`
                   </div>
@@ -947,7 +1254,7 @@ export default function PassengersPage() {
                     <input
                       value={pnrLocator}
                       onChange={(e) => setPnrLocator(e.target.value.toUpperCase())}
-                      placeholder="PNR locator (ABC123)"
+                      placeholder={copy.pnrPlaceholder}
                       className="h-10 flex-1 rounded-xl border border-[#dbe3ef] bg-white px-3 outline-none focus:border-[#c7d4e7]"
                     />
                     <button
@@ -955,14 +1262,14 @@ export default function PassengersPage() {
                       disabled={pnrLoading}
                       className={`h-10 px-3 rounded-xl ${secondaryButtonClass}`}
                     >
-                      {pnrLoading ? "..." : "Get PNR"}
+                      {pnrLoading ? "..." : copy.getPnr}
                     </button>
                   </div>
                   {pnrMsg && <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">{pnrMsg}</div>}
                   {pnrData && (
                     <div className="mt-3 space-y-2 text-xs text-[#627188] dark:text-[#a9bddb]">
-                      <div>Narx: {formatMoney(pnrData.price ?? 0, cart.currency || "UZS")}</div>
-                      <div>Segments: {pnrData.segments?.length ?? 0}</div>
+                      <div>{copy.price}: {formatMoney(pnrData.price ?? 0, cart.currency || "UZS")}</div>
+                      <div>{copy.segments}: {pnrData.segments?.length ?? 0}</div>
                       {pnrData.segments?.slice(0, 2).map((s, i) => (
                         <div key={i} className="rounded-lg border border-[#dde5f0] bg-white p-2">
                           {(s.origin || "—") + " → " + (s.destination || "—")} · {(s.carrier || "—")}
@@ -972,7 +1279,7 @@ export default function PassengersPage() {
                           </div>
                         </div>
                       ))}
-                      <div>Passengers: {pnrData.passengers?.length ?? 0}</div>
+                      <div>{copy.passengersCount}: {pnrData.passengers?.length ?? 0}</div>
                     </div>
                   )}
                 </div>
@@ -999,7 +1306,7 @@ export default function PassengersPage() {
             >
               <div className="flex items-center justify-between">
                 <div className="text-lg font-extrabold text-[#1d2430] dark:text-white">
-                  {draft.id ? "Yo'lovchini tahrirlash" : "Yo'lovchi qo'shish"}
+                  {draft.id ? copy.editPassenger : copy.addPassenger}
                 </div>
                 <button
                 onClick={() => setOpen(false)}
@@ -1011,25 +1318,25 @@ export default function PassengersPage() {
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field
-                  label="Ism"
+                  label={copy.firstName}
                   value={draft.firstName}
                   onChange={(v) => setDraft((p) => ({ ...p, firstName: v }))}
-                  placeholder="Ism"
+                  placeholder={copy.firstName}
                 />
                 <Field
-                  label="Familiya"
+                  label={copy.lastName}
                   value={draft.lastName}
                   onChange={(v) => setDraft((p) => ({ ...p, lastName: v }))}
-                  placeholder="Familiya"
+                  placeholder={copy.lastName}
                 />
                 <Field
-                  label="Tug'ilgan sana"
+                  label={copy.birthDate}
                   type="date"
                   value={draft.birthDate}
                   onChange={(v) => setDraft((p) => ({ ...p, birthDate: v }))}
                 />
                 <Field
-                  label="Gender"
+                  label={copy.gender}
                   value={draft.gender ?? "M"}
                   onChange={(v) =>
                     setDraft((p) => ({ ...p, gender: (v.toUpperCase() === "F" ? "F" : "M") }))
@@ -1037,31 +1344,31 @@ export default function PassengersPage() {
                   placeholder="M / F"
                 />
                 <Field
-                  label="Fuqarolik"
+                  label={copy.citizenship}
                   value={draft.citizenship}
                   onChange={(v) => setDraft((p) => ({ ...p, citizenship: v }))}
                   placeholder="O'zbekiston"
                 />
                 <Field
-                  label="Country code"
+                  label={copy.countryCode}
                   value={draft.countryCode ?? "UZ"}
                   onChange={(v) => setDraft((p) => ({ ...p, countryCode: v.toUpperCase() }))}
                   placeholder="UZ"
                 />
                 <Field
-                  label="Pasport seriya / raqam"
+                  label={copy.passportNo}
                   value={draft.passportNo}
                   onChange={(v) => setDraft((p) => ({ ...p, passportNo: v.toUpperCase() }))}
                   placeholder="AA1234567"
                 />
                 <Field
-                  label="Pasport berilgan sana"
+                  label={copy.passportIssued}
                   type="date"
                   value={draft.passportIssued ?? ""}
                   onChange={(v) => setDraft((p) => ({ ...p, passportIssued: v }))}
                 />
                 <Field
-                  label="Pasport amal qilish muddati"
+                  label={copy.passportExpiry}
                   type="date"
                   value={draft.passportExpiry}
                   onChange={(v) => setDraft((p) => ({ ...p, passportExpiry: v }))}
@@ -1073,7 +1380,7 @@ export default function PassengersPage() {
                 disabled={!canSave}
                 className={`mt-4 h-12 w-full ${primaryButtonClass}`}
               >
-                Saqlash
+                {copy.savePassenger}
               </button>
             </div>
           </div>
