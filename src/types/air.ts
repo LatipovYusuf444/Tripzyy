@@ -26,16 +26,33 @@ export type AirSearchResponse = {
   message: string
   data?: {
     currency: string
+    minPrice?: number
+    maxPrice?: number
+    carriers?: Array<{
+      code: string
+      name: string
+      logo?: string
+    }>
+    cities?: Array<{
+      code: string
+      name: string
+    }>
+    airports?: Array<{
+      code: string
+      name: string
+    }>
     options: Array<{
       id: string
       currency: string
       price: number
       carrier?: string
+      isRefundable?: boolean
       trips: Array<{
         id: string
         origin: string
         destination: string
         duration?: number
+        numberOfStops?: number
         segments: Array<{
           arrival: string
           arrivalTerminal?: string

@@ -1,14 +1,31 @@
 import { useMemo, useState } from "react"
 import { motion } from "framer-motion"
-import { Mail, User2, ShieldCheck, LogOut, PencilLine, Save } from "lucide-react"
+import {
+  LogOut,
+  Mail,
+  PencilLine,
+  Save,
+  ShieldCheck,
+  Sparkles,
+  User2,
+} from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+
 import { formatUzPhoneInput } from "@/lib/phone"
-// import { http } from "@/shared/api/http" // ✅ backend ulaganda ochasan
+
+const primaryButtonClass =
+  "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(17,24,39,0.22)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.42)]"
+
+const secondaryButtonClass =
+  "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#dbe3ef] bg-white/90 px-5 text-sm font-semibold text-[#1d2430] shadow-[0_12px_30px_rgba(17,24,39,0.08)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.28)] dark:hover:bg-[rgba(24,43,80,0.94)]"
+
+const panelClass =
+  "rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.92)_100%)] shadow-[0_24px_70px_rgba(17,24,39,0.08)] backdrop-blur-xl dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]"
 
 export default function Profile() {
   const navigate = useNavigate()
 
-  // ✅ demo user (keyin backenddan keladi)
   const [name, setName] = useState("Tripzy User")
   const [email] = useState("user@tripzy.uz")
   const [phone, setPhone] = useState("+998")
@@ -19,6 +36,7 @@ export default function Profile() {
 
   const logout = async () => {
     localStorage.removeItem("access_token")
+    sessionStorage.removeItem("access_token")
     window.dispatchEvent(new Event("tripzy-auth"))
     navigate("/login")
   }
@@ -26,104 +44,117 @@ export default function Profile() {
   const onSave = async () => {
     setLoading(true)
     try {
-      // ✅ BACKENDGA ULANDA:
-      // const res = await http.get("/me")
-      // setName(res.data.name) ...
-      //
-      // await http.patch("/me", { name, phone })
-
       setEditing(false)
-      alert("Demo: Profil saqlandi ✅ (keyin backendga ulanadi)")
+      toast.success("Profil ma'lumotlari saqlandi")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <section className="relative overflow-hidden pt-24">
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_36%,#e7edf5_100%)] pt-24 text-[#1d2430] dark:bg-[linear-gradient(180deg,#07111f_0%,#0a1730_24%,#102347_58%,#0a1730_100%)] dark:text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(760px_320px_at_14%_0%,rgba(88,122,196,0.16),transparent_62%),radial-gradient(560px_260px_at_88%_6%,rgba(219,121,104,0.14),transparent_56%),radial-gradient(680px_320px_at_48%_36%,rgba(157,90,129,0.08),transparent_62%)] dark:bg-[radial-gradient(920px_380px_at_16%_0%,rgba(78,118,204,0.24),transparent_58%),radial-gradient(760px_320px_at_84%_6%,rgba(126,82,194,0.16),transparent_56%),radial-gradient(760px_320px_at_50%_24%,rgba(40,87,168,0.22),transparent_62%)]" />
 
-      <div className="relative mx-auto max-w-[1200px] px-5 py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* left card */}
+      <div className="relative mx-auto max-w-[1200px] px-4 py-10 sm:px-5 sm:py-14">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 md:p-7 shadow-[0_45px_140px_rgba(0,0,0,0.55)]"
+            className={`overflow-hidden p-6 md:p-7 ${panelClass}`}
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-white/85">
+            <div className="pointer-events-none absolute" />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/90 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#cfe0fb]">
                 <span className="h-2 w-2 rounded-full bg-[#8A3A5A]" />
-                TRIPZY • Profile
+                Tripzy Profile
               </div>
 
-              <button
-                onClick={logout}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/8 px-4 py-2 text-white/85
-                           hover:bg-white/12 transition"
-              >
+              <button onClick={logout} className={`h-11 ${secondaryButtonClass}`}>
                 <LogOut size={16} />
                 Logout
               </button>
             </div>
 
-            <div className="mt-6">
-              <div className="text-3xl font-extrabold text-white leading-tight">
-                {name}
+            <div className="mt-7 rounded-[26px] border border-[#e3eaf4] bg-[linear-gradient(135deg,#fbfdff_0%,#f5f9ff_42%,#f9f2f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_42%,rgba(30,24,53,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="flex items-start gap-4">
+                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[22px] bg-[linear-gradient(135deg,#eef5ff_0%,#e5eefc_100%)] text-[#31569e] shadow-[0_12px_30px_rgba(49,86,158,0.12)] dark:bg-[linear-gradient(135deg,rgba(39,72,133,0.9)_0%,rgba(26,47,87,0.96)_100%)] dark:text-[#d4e2fb] dark:shadow-[0_16px_34px_rgba(2,8,24,0.24)]">
+                  <User2 size={28} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-3xl font-extrabold leading-tight text-[#1d2430] dark:text-white">
+                    {name}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 break-all text-sm text-[#627188] dark:text-[#a9bddb]">
+                    <Mail size={16} className="text-[#7f8ea5]" />
+                    {email}
+                  </div>
+                </div>
               </div>
-              <div className="mt-2 text-white/70 flex items-center gap-2">
-                <Mail size={16} className="text-white/70" />
-                {email}
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                <InfoPill
+                  title="Account status"
+                  value="Active"
+                  accent="blue"
+                  icon={<ShieldCheck size={18} />}
+                />
+                <InfoPill
+                  title="Token"
+                  value={token ? "Available" : "Missing"}
+                  accent="rose"
+                  icon={<ShieldCheck size={18} />}
+                />
+                <InfoPill
+                  title="Support"
+                  value="24/7 Premium"
+                  accent="gold"
+                  icon={<Sparkles size={18} />}
+                />
               </div>
             </div>
 
-            <div className="mt-7 grid grid-cols-1 gap-3">
-              <InfoPill title="Account status" value="Active" icon={<ShieldCheck size={18} />} />
-              <InfoPill title="Token (demo)" value={token ? "Available" : "Missing"} icon={<ShieldCheck size={18} />} />
-              <InfoPill title="Support" value="24/7 Premium" icon={<ShieldCheck size={18} />} />
-            </div>
-
-            <div className="mt-7 rounded-2xl border border-white/12 bg-white/5 p-4 text-white/70 text-sm">
-              TODO: Backend ulanganida bu yerga: booking history, payment status, real user data chiqadi.
+            <div className="mt-5 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-sm text-[#627188] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-[#a9bddb]">
+              Backend ulanganda bu yerga booking history, payment status va real user data chiqadi.
             </div>
           </motion.div>
 
-          {/* right card */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.05 }}
-            className="lg:col-span-2 rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 md:p-7 shadow-[0_45px_140px_rgba(0,0,0,0.55)]"
+            className={`lg:col-span-2 p-6 md:p-7 ${panelClass}`}
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="text-3xl md:text-4xl font-extrabold text-white">Profil ma’lumotlari</h1>
-                <p className="mt-2 text-white/70">
-                  Ma’lumotlaringizni yangilang. (Hozir demo, keyin backendga ulanadi.)
+                <h1 className="text-3xl font-extrabold text-[#1d2430] md:text-4xl dark:text-white">
+                  Profil ma'lumotlari
+                </h1>
+                <p className="mt-2 max-w-[620px] text-[#627188] dark:text-[#a9bddb]">
+                  Ma'lumotlaringizni yangilang va profilingizni tartibga keltiring.
                 </p>
               </div>
 
               <button
                 onClick={() => setEditing((p) => !p)}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/8 px-4 py-2 text-white/85
-                           hover:bg-white/12 transition"
+                className={`h-11 ${editing ? primaryButtonClass : secondaryButtonClass}`}
               >
                 <PencilLine size={16} />
                 {editing ? "Cancel" : "Edit"}
               </button>
             </div>
 
-            <div className="mt-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-7 grid gap-4 md:grid-cols-2">
               <Field
                 label="Ism"
-                icon={<User2 size={18} className="text-white/75" />}
+                icon={<User2 size={18} className="text-[#7f8ea5]" />}
                 value={name}
                 disabled={!editing}
                 onChange={setName}
               />
               <Field
                 label="Telefon"
-                icon={<User2 size={18} className="text-white/75" />}
+                icon={<User2 size={18} className="text-[#7f8ea5]" />}
                 value={phone}
                 disabled={!editing}
                 onChange={(v) => setPhone(formatUzPhoneInput(v))}
@@ -131,38 +162,60 @@ export default function Profile() {
               <div className="md:col-span-2">
                 <Field
                   label="Email"
-                  icon={<Mail size={18} className="text-white/75" />}
+                  icon={<Mail size={18} className="text-[#7f8ea5]" />}
                   value={email}
-                  disabled={true}
+                  disabled
                   onChange={() => {}}
                 />
-                <div className="mt-2 text-xs text-white/50">
-                  Email hozircha o‘zgartirilmaydi. Keyin OTP/email confirm qo‘shamiz.
+                <div className="mt-2 text-xs text-[#7b8aa0] dark:text-[#93abd0]">
+                  Email hozircha o'zgartirilmaydi. Keyin OTP yoki email confirm qo'shiladi.
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 flex items-center justify-end gap-3">
-              <button
-                disabled={!editing || loading}
-                onClick={onSave}
-                className="h-12 px-6 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] font-semibold text-white
-                           transition disabled:opacity-60
-                           shadow-[0_18px_60px_rgba(138,58,90,0.35)] hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <Save size={18} />
-                  {loading ? "..." : "Save changes"}
-                </span>
-              </button>
+            <div className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="rounded-[26px] border border-[#e3eaf4] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_46%,#f8f2f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_46%,rgba(30,24,53,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#7b8aa0] dark:text-[#93abd0]">
+                  Profile overview
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <StatCard label="Status" value="Active" />
+                  <StatCard label="Security" value="Protected" />
+                  <StatCard label="Tarif" value="Premium" />
+                </div>
+              </div>
+
+              <div className="flex flex-col justify-between rounded-[26px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-5 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)]">
+                <div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#7b8aa0] dark:text-[#93abd0]">
+                    Tez amallar
+                  </div>
+                  <div className="mt-2 text-sm text-[#627188] dark:text-[#a9bddb]">
+                    Tahrirlashni yoqing, ism va telefonni yangilang, so‘ng saqlang.
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    disabled={!editing || loading}
+                    onClick={onSave}
+                    className={`h-12 w-full sm:w-auto ${primaryButtonClass}`}
+                  >
+                    <Save size={18} />
+                    {loading ? "..." : "Save changes"}
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-white/12 bg-white/5 p-4 text-white/70 text-sm">
-              ✅ Backend ulanganida:
-              <div className="mt-2 text-white/60 text-xs leading-relaxed">
-                - GET <span className="text-white/75">/me</span> → user ma’lumotlarini olish<br />
-                - PATCH <span className="text-white/75">/me</span> → name/phone update<br />
-                - GET <span className="text-white/75">/bookings</span> → bronlar tarixi
+            <div className="mt-6 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-sm text-[#627188] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-[#a9bddb]">
+              Backend ulanganda:
+              <div className="mt-2 text-xs leading-relaxed text-[#7b8aa0] dark:text-[#93abd0]">
+                - GET <span className="font-semibold text-[#1d2430]">/me</span> → user ma'lumotlarini olish
+                <br />
+                - PATCH <span className="font-semibold text-[#1d2430]">/me</span> → name va phone update
+                <br />
+                - GET <span className="font-semibold text-[#1d2430]">/bookings</span> → bronlar tarixi
               </div>
             </div>
           </motion.div>
@@ -176,20 +229,30 @@ function InfoPill({
   title,
   value,
   icon,
+  accent,
 }: {
   title: string
   value: string
   icon: React.ReactNode
+  accent: "blue" | "rose" | "gold"
 }) {
+  const accentStyles = {
+    blue: "bg-[linear-gradient(135deg,#f5f9ff_0%,#e8f1ff_100%)] border-[#dce7fb] text-[#31569e] dark:bg-[linear-gradient(135deg,rgba(30,55,104,0.92)_0%,rgba(20,35,66,0.96)_100%)] dark:border-[#4067a5] dark:text-[#d6e6ff]",
+    rose: "bg-[linear-gradient(135deg,#fff7f9_0%,#fff0f3_100%)] border-[#f1d9df] text-[#9b506b] dark:bg-[linear-gradient(135deg,rgba(69,34,71,0.94)_0%,rgba(38,28,59,0.96)_100%)] dark:border-[#6d4c8f] dark:text-[#f3d7ea]",
+    gold: "bg-[linear-gradient(135deg,#fffaf2_0%,#fff2db_100%)] border-[#f0e0b8] text-[#93631a] dark:bg-[linear-gradient(135deg,rgba(73,54,22,0.94)_0%,rgba(39,32,25,0.96)_100%)] dark:border-[#7d6632] dark:text-[#f5e2a8]",
+  } as const
+
   return (
-    <div className="rounded-2xl border border-white/15 bg-white/8 backdrop-blur-xl p-4">
+    <div
+      className={`rounded-2xl border p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:shadow-[0_16px_34px_rgba(2,8,24,0.28)] ${accentStyles[accent]}`}
+    >
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-white/12 grid place-items-center">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/70 dark:bg-[rgba(255,255,255,0.08)]">
           {icon}
         </div>
-        <div>
-          <div className="text-white/60 text-xs">{title}</div>
-          <div className="text-white font-semibold">{value}</div>
+        <div className="min-w-0">
+          <div className="text-xs uppercase tracking-[0.14em] text-[#7b8aa0] dark:text-[#93abd0]">{title}</div>
+          <div className="font-semibold text-[#1d2430] dark:text-white">{value}</div>
         </div>
       </div>
     </div>
@@ -211,21 +274,30 @@ function Field({
 }) {
   return (
     <div>
-      <div className="text-xs text-white/60 mb-2">{label}</div>
+      <div className="mb-2 text-xs text-[#7b8aa0] dark:text-[#93abd0]">{label}</div>
       <div
         className={[
-          "h-12 w-full rounded-2xl bg-white/5 border border-white/10 px-4 flex items-center gap-3 transition",
-          disabled ? "opacity-80" : "focus-within:border-white/25",
+          "flex h-12 w-full items-center gap-3 rounded-2xl border border-[#dbe3ef] bg-white px-4 shadow-[0_8px_20px_rgba(17,24,39,0.04)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:shadow-[0_16px_34px_rgba(2,8,24,0.22)]",
+          disabled ? "opacity-80" : "focus-within:border-[#c7d4e7] dark:focus-within:border-[#537dc2]",
         ].join(" ")}
       >
         <span className="shrink-0">{icon}</span>
         <input
-          className="h-full w-full bg-transparent text-white outline-none placeholder:text-white/45"
+          className="h-full w-full bg-transparent text-[#1d2430] outline-none placeholder:text-[#97a5ba] dark:text-white dark:placeholder:text-[#8ba4ca]"
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
         />
       </div>
+    </div>
+  )
+}
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[#dde5f0] bg-white/85 p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:shadow-[0_16px_34px_rgba(2,8,24,0.22)]">
+      <div className="text-xs uppercase tracking-[0.14em] text-[#7b8aa0] dark:text-[#93abd0]">{label}</div>
+      <div className="mt-1 text-lg font-semibold text-[#1d2430] dark:text-white">{value}</div>
     </div>
   )
 }

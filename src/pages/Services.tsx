@@ -1,91 +1,108 @@
-﻿import { motion } from "framer-motion"
+import { motion } from "framer-motion"
 import {
-  ShieldCheck,
-  Headphones,
   BadgeCheck,
-  CreditCard,
-  Luggage,
-  Sparkles,
   Building2,
-  Timer,
-  Plane,
-  Palmtree,
-  Stamp,
+  CreditCard,
+  Headphones,
   HeartHandshake,
+  Luggage,
+  Palmtree,
+  Plane,
+  ShieldCheck,
+  Sparkles,
+  Stamp,
+  Timer,
 } from "lucide-react"
 
 const services = [
-  { title: "Mehmonxona bronlari", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: Building2 },
-  { title: "Transport va transfer", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: Plane },
-  { title: "Ekskursiyalar", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: Palmtree },
-  { title: "Visa support", desc: "Zarur hujjatlarni tayyorlash va viza masalalarini hal qilishda ko'mak.", icon: Stamp },
-  { title: "Sug'urta", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: BadgeCheck },
-  { title: "24/7 qo'llab-quvvatlash", desc: "Har bir xizmat avia sayohatingizni qulay, tez va xavfsiz qiladi.", icon: HeartHandshake },
-  { title: "24/7 Support", desc: "Telegram/Call orqali tezkor yordam.", icon: Headphones },
-  { title: "Shaffof narxlar", desc: "Yashirin fee yo'q. Yakuniy narx aniq.", icon: BadgeCheck },
-  { title: "Xavfsiz to'lov", desc: "PCI-ready oqim (backend ulanganida).", icon: CreditCard },
-  { title: "Bagaj & qoidalar", desc: "Bagaj, qaytarish va o'zgartirish shartlari.", icon: Luggage },
-  { title: "Premium paket", desc: "Priority, VIP support, tez qayta rasmiylashtirish.", icon: Sparkles },
-  { title: "Korporativ xizmat", desc: "Kompaniyalar uchun hisobot va limit.", icon: Building2 },
-  { title: "Ishonch & himoya", desc: "To'lov va ma'lumotlar himoyasi.", icon: ShieldCheck },
-  { title: "Tez bron", desc: "Minimal vaqt, maksimal qulaylik.", icon: Timer },
+  { title: "Aviabilet bronlash", desc: "Ichki va xalqaro yo'nalishlar uchun qulay tariflarni tanlash va tez bron qilish.", icon: Plane },
+  { title: "Tur paketlar", desc: "Aviachipta, yashash va dastur birlashtirilgan tayyor tur yechimlari.", icon: Palmtree },
+  { title: "Mehmonxona bronlari", desc: "Safaringizga mos mehmonxona va joylashuv variantlarini tanlab berish.", icon: Building2 },
+  { title: "Transfer xizmati", desc: "Aeroport, mehmonxona va uchrashuv nuqtalari orasida tartibli transfer.", icon: Timer },
+  { title: "Visa support", desc: "Viza uchun hujjatlar tayyorlash va topshirish bosqichlarida ko'mak.", icon: Stamp },
+  { title: "Safar sug'urtasi", desc: "Safar davomida qo'shimcha himoya va ishonch uchun sug'urta yechimlari.", icon: BadgeCheck },
+  { title: "24/7 qo'llab-quvvatlash", desc: "Parvoz, bron va safar jarayonida doimiy aloqa va yordam.", icon: HeartHandshake },
+  { title: "Tezkor support", desc: "Telefon va messenjer orqali tezkor javob va yo'naltirish.", icon: Headphones },
+  { title: "Shaffof narxlar", desc: "Yashirin to'lovlarsiz, yakuniy summani oldindan aniq ko'rsatish.", icon: CreditCard },
+  { title: "Bagaj va tarif qoidalari", desc: "Bagaj normasi, refund va change shartlarini tushunarli ko'rsatish.", icon: Luggage },
+  { title: "Premium safar paketi", desc: "Priority xizmatlar, VIP support va tezkor qayta rasmiylashtirish.", icon: Sparkles },
+  { title: "Korporativ safar", desc: "Kompaniyalar uchun xizmat safari, limit va hisobot yechimlari.", icon: Building2 },
+  { title: "Ishonch va himoya", desc: "Ma'lumotlar xavfsizligi va to'lov oqimini nazorat qiluvchi himoya qatlamlari.", icon: ShieldCheck },
 ]
-
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
-}
-
-const item = {
-  hidden: { opacity: 0, y: 16, scale: 0.98 },
-  show: { opacity: 1, y: 0, scale: 1 },
-}
 
 export default function Services() {
   return (
-    <section className="relative overflow-hidden pt-20">
-      <div className="relative mx-auto max-w-[1200px] px-5 py-14 md:py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="text-center"
-        >
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white">Xizmatlarimiz</h1>
-          <p className="mt-4 text-white/70 max-w-3xl mx-auto text-lg">
-            Biz TRIPZY'da aviabilet topishdan boshlab bron qilishgacha bo'lgan
-            jarayonni premium darajada qilamiz.
-          </p>
-        </motion.div>
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#e2e8ef_0%,#eef3f8_18%,#f8fbff_62%,#eaf0f7_100%)] pt-20 text-[#1d2430] dark:bg-[linear-gradient(180deg,#07111f_0%,#0a1730_24%,#102347_58%,#0a1730_100%)] dark:text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(860px_340px_at_16%_0%,rgba(81,121,197,0.16),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(219,116,101,0.12),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(156,88,129,0.08),transparent_60%)] dark:bg-[radial-gradient(920px_380px_at_16%_0%,rgba(78,118,204,0.24),transparent_58%),radial-gradient(760px_320px_at_84%_6%,rgba(126,82,194,0.16),transparent_56%),radial-gradient(760px_320px_at_50%_24%,rgba(40,87,168,0.22),transparent_62%)]" />
 
-        <motion.div
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          {services.map((s, i) => (
-            <motion.div
-              key={s.title}
-              variants={item}
-              transition={{ duration: 0.4, delay: i * 0.01 }}
-              whileHover={{ y: -6, scale: 1.01 }}
-              className="rounded-[28px] border border-white/15 bg-white/10 backdrop-blur-2xl p-6 shadow-[0_30px_90px_rgba(0,0,0,0.35)] hover:bg-white/12 transition"
-            >
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 text-white">
-                <s.icon size={20} />
+      <div className="relative mx-auto max-w-[1240px] px-4 py-10 sm:px-6 md:px-8 md:py-12">
+        <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7 dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]">
+          <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative overflow-hidden rounded-[32px] border border-[#dce4ef] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_36%,#eef3fb_62%,#f8f3f7_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-8 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_36%,rgba(20,39,74,0.92)_62%,rgba(28,28,62,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87] dark:border-[#3d5a8e] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#cfe0fb]">
+                <Sparkles size={14} />
+                Avia tour xizmatlari
               </div>
-              <div className="mt-4 text-white font-bold text-lg">{s.title}</div>
-              <div className="mt-2 text-white/70 text-sm leading-relaxed">{s.desc}</div>
 
-              <div className="mt-4 text-xs text-white/50">
-                {/* TODO backend */}
-                TODO: backend ulanganida servislar real tarifga bog'lanadi.
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#1d2430] md:text-[48px] dark:text-white"
+              >
+                Safaringiz uchun
+                <span className="bg-[linear-gradient(135deg,#243a7a_0%,#a44c72_45%,#e36b3a_100%)] bg-clip-text text-transparent">
+                  {" "}asosiy xizmatlar
+                </span>
+              </motion.h1>
+
+              <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#627188] md:text-[16px] dark:text-[#a9bddb]">
+                TRIPZY avia safar va tur jarayonini bir joyda boshqarishga yordam beradi.
+                Aviabilet, mehmonxona, transfer, viza, sug'urta va korporativ safar xizmatlari
+                bitta oqimda jamlangan.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                { label: "24/7", value: "Safar supporti" },
+                { label: "Tour", value: "Tayyor paketlar" },
+                { label: "Flight", value: "Aviabilet oqimi" },
+                { label: "Safe", value: "Himoyalangan bron" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_22px_60px_rgba(2,8,24,0.34)]"
+                >
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0] dark:text-[#93abd0]">
+                    {item.label}
+                  </div>
+                  <div className="mt-2 text-xl font-black text-[#1d2430] dark:text-white">{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {services.map((service, index) => (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, delay: index * 0.02 }}
+                whileHover={{ y: -4 }}
+                className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_20px_50px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]"
+              >
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#3b6db6] dark:bg-[linear-gradient(135deg,rgba(39,72,133,0.9)_0%,rgba(26,47,87,0.96)_100%)] dark:text-[#d4e2fb]">
+                  <service.icon size={20} />
+                </div>
+                <div className="mt-4 text-lg font-black text-[#1d2430] dark:text-white">{service.title}</div>
+                <div className="mt-2 text-sm leading-7 text-[#627188] dark:text-[#a9bddb]">{service.desc}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )

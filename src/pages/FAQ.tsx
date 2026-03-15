@@ -3,12 +3,30 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown } from "lucide-react"
 
 const faqs = [
-  { q: "TRIPZY nima?", a: "TRIPZY — premium aviabilet qidirish va bron qilish platformasi (demo). Backend ulanganida real reyslar chiqadi." },
-  { q: "Narxlar yashirin fee bormi?", a: "Yo‘q. Biz shaffof ko‘rsatishga harakat qilamiz. Yakuniy narx backenddan keladi." },
-  { q: "Bagaj qancha?", a: "Har bir reys taklifida bagaj ko‘rsatiladi. Keyin backenddan real bagaj keladi." },
-  { q: "Refund (qaytarish) bormi?", a: "Ba’zi tariflar refundable bo‘ladi. Taklif ichida ko‘rsatiladi." },
-  { q: "To‘lov qanday bo‘ladi?", a: "Hozir demo. Keyin Click/Payme/Visa/Master orqali backendda payment integratsiya qilinadi." },
-  { q: "Qo‘llab-quvvatlash?", a: "24/7 support. Kontakt sahifasidan yozishingiz mumkin." },
+  {
+    q: "TRIPZY nima?",
+    a: "TRIPZY premium aviabilet qidirish va bron qilish platformasi.",
+  },
+  {
+    q: "Narxlar yashirin fee bormi?",
+    a: "Yo'q. Biz shaffof narx ko'rsatishga harakat qilamiz. Yakuniy narx tizimdan olinadi.",
+  },
+  {
+    q: "Bagaj qancha?",
+    a: "Har bir reys taklifida bagaj miqdori alohida ko'rsatiladi.",
+  },
+  {
+    q: "Refund (qaytarish) bormi?",
+    a: "Ba'zi tariflar refundable bo'ladi. Taklif ichida ko'rsatiladi.",
+  },
+  {
+    q: "To'lov qanday bo'ladi?",
+    a: "To'lov usullari reys tanlash va bron jarayonida ko'rsatiladi.",
+  },
+  {
+    q: "Qo'llab-quvvatlash?",
+    a: "24/7 support. Kontakt sahifasidan yozishingiz mumkin.",
+  },
 ]
 
 export default function FAQ() {
@@ -16,7 +34,6 @@ export default function FAQ() {
 
   return (
     <section className="relative overflow-hidden pt-20">
-
       <div className="relative mx-auto max-w-[900px] px-5 py-14 md:py-16">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -24,25 +41,25 @@ export default function FAQ() {
           transition={{ duration: 0.45 }}
           className="text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white">FAQ</h1>
-          <p className="mt-4 text-white/70 text-lg">
-            Eng ko‘p beriladigan savollar va javoblar.
+          <h1 className="text-4xl font-extrabold text-white md:text-5xl">FAQ</h1>
+          <p className="mt-4 text-lg text-white/70">
+            Eng ko'p beriladigan savollar va javoblar.
           </p>
         </motion.div>
 
         <div className="mt-10 space-y-3">
-          {faqs.map((f, idx) => {
+          {faqs.map((faq, idx) => {
             const isOpen = open === idx
             return (
               <div
-                key={f.q}
-                className="rounded-[22px] border border-white/15 bg-white/10 backdrop-blur-2xl overflow-hidden"
+                key={faq.q}
+                className="overflow-hidden rounded-[22px] border border-white/15 bg-white/10 backdrop-blur-2xl"
               >
                 <button
                   onClick={() => setOpen(isOpen ? null : idx)}
-                  className="w-full px-5 py-4 flex items-center justify-between text-left text-white"
+                  className="flex w-full items-center justify-between px-5 py-4 text-left text-white"
                 >
-                  <span className="font-semibold">{f.q}</span>
+                  <span className="font-semibold">{faq.q}</span>
                   <ChevronDown className={`transition ${isOpen ? "rotate-180" : ""}`} />
                 </button>
 
@@ -54,8 +71,8 @@ export default function FAQ() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25 }}
                     >
-                      <div className="px-5 pb-5 text-white/70 text-sm leading-relaxed">
-                        {f.a}
+                      <div className="px-5 pb-5 text-sm leading-relaxed text-white/70">
+                        {faq.a}
                       </div>
                     </motion.div>
                   )}
@@ -63,10 +80,6 @@ export default function FAQ() {
               </div>
             )
           })}
-        </div>
-
-        <div className="mt-8 text-center text-xs text-white/50">
-          TODO: backend ulanganida FAQ lar admin paneldan boshqariladi.
         </div>
       </div>
     </section>

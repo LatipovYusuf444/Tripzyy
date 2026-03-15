@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react"
 import { Link, NavLink, useNavigate } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
-import { LogOut, Menu, Search, UserCircle2, Users, X } from "lucide-react"
+import { LogOut, Menu, MoonStar, Search, SunMedium, UserCircle2, Users, X, type LucideIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import logoImage from "@/assets/images/logo.png"
 import { bookingCart } from "@/shared/store/bookingCart"
+import { getStoredTheme, setTheme as setSiteTheme, type SiteTheme } from "@/shared/theme/theme"
 
 const leftLinks = [
   { to: "/flights", label: "Aeroport" },
@@ -13,19 +15,24 @@ const leftLinks = [
 ]
 
 const rightLinks = [
-  { to: "/services", label: "Hamkorlar" },
+  { to: "/services", label: "Xizmatlar" },
   { to: "/contact", label: "Kontakt" },
 ]
 
 const mobileLinks = [...leftLinks, ...rightLinks]
 
+const backdropVariants = {
+  closed: { opacity: 0 },
+  open: { opacity: 1 },
+}
+
 const menuVariants = {
-  closed: { opacity: 0, y: -12, scale: 0.98 },
+  closed: { opacity: 0, y: 24, scale: 0.98 },
   open: { opacity: 1, y: 0, scale: 1 },
 }
 
 const actionBtnClass =
-  "h-11 rounded-full border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_rgba(17,24,39,0.22)] hover:brightness-110"
+  "h-11 rounded-full border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_10px_24px_rgba(17,24,39,0.22)] hover:brightness-110 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(4,10,28,0.46)]"
 
 export default function Navbar() {
   const navigate = useNavigate()
@@ -33,6 +40,7 @@ export default function Navbar() {
   const [token, setToken] = useState<string | null>(() =>
     localStorage.getItem("access_token")
   )
+  const [theme, setTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [paxCount, setPaxCount] = useState<number>(
     () => bookingCart.get().passengers.length
   )
@@ -72,6 +80,18 @@ export default function Navbar() {
     }
   }, [open])
 
+  useEffect(() => {
+    const syncTheme = () => setTheme(getStoredTheme())
+    syncTheme()
+    window.addEventListener("storage", syncTheme)
+    window.addEventListener("tripzy-theme-change", syncTheme as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", syncTheme)
+      window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
+    }
+  }, [])
+
   const goAuth = () => {
     setOpen(false)
     navigate("/login")
@@ -89,13 +109,18 @@ export default function Navbar() {
     navigate("/login")
   }
 
+  const onToggleTheme = () => {
+    const nextTheme: SiteTheme = theme === "dark" ? "light" : "dark"
+    setTheme(setSiteTheme(nextTheme))
+  }
+
   return (
     <header className="fixed inset-x-0 top-0 z-[100] flex justify-center">
       <motion.nav
         initial={{ opacity: 0, y: -14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="w-full border-y border-[#d9dde4] bg-[rgba(240,243,247,0.92)] px-5 py-5 shadow-[0_8px_24px_rgba(37,55,89,0.04)] backdrop-blur-sm md:px-10"
+        className="w-full border-y border-[#d9dde4] bg-[rgba(240,243,247,0.92)] px-5 py-3 shadow-[0_8px_24px_rgba(37,55,89,0.04)] backdrop-blur-sm dark:border-[#38517f]/70 dark:bg-[rgba(8,18,38,0.44)] dark:shadow-[0_12px_32px_rgba(3,8,24,0.34)] md:px-10 md:py-4"
       >
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
           <div className="hidden items-center gap-9 lg:flex">
@@ -112,14 +137,16 @@ export default function Navbar() {
 
           <Link
             to="/"
-            className="justify-self-center text-center leading-none text-[#161d2a]"
+            className="justify-self-center flex items-center justify-center px-4"
             onClick={() => setOpen(false)}
+            aria-label="Tripzy bosh sahifa"
           >
-            <div className="text-[10px] uppercase tracking-[0.55em] text-[#7d8593]">
-              Tripzy
-            </div>
-            <div className="mt-1 font-serif text-[40px] font-semibold tracking-[0.16em] md:text-[52px]">
-              Handling
+            <div className="flex h-[62px] items-center justify-center md:h-[72px]">
+              <img
+                src={logoImage}
+                alt="Tripzy logo"
+                className="block h-auto w-[172px] object-contain drop-shadow-[0_10px_28px_rgba(17,24,39,0.14)] dark:drop-shadow-[0_14px_34px_rgba(2,8,24,0.5)] md:w-[194px] lg:w-[220px]"
+              />
             </div>
           </Link>
 
@@ -128,14 +155,24 @@ export default function Navbar() {
               <NavItem key={link.to} to={link.to} label={link.label} />
             ))}
 
-            <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#2a3140]">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-[#2a3140] dark:text-white/85">
               UZ
             </span>
 
             <button
               type="button"
+              aria-label="Temani almashtirish"
+              onClick={onToggleTheme}
+              className="inline-flex h-9 items-center gap-2 rounded-full border border-[#dde4ee] bg-white/85 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#243042] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)] dark:hover:bg-[rgba(28,46,84,0.94)]"
+            >
+              {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
+              {theme === "dark" ? "Light" : "Dark"}
+            </button>
+
+            <button
+              type="button"
               aria-label="Qidirish"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#2a3140] transition hover:bg-white/70"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#2a3140] transition hover:bg-white/70 dark:text-white dark:hover:bg-white/10"
             >
               <Search size={15} />
             </button>
@@ -171,7 +208,7 @@ export default function Navbar() {
             type="button"
             aria-label="Menyuni ochish"
             onClick={() => setOpen((value) => !value)}
-            className="justify-self-end rounded-md border border-white/60 bg-white/75 p-2 text-[#1d2430] lg:hidden"
+            className="justify-self-end rounded-md border border-white/60 bg-white/75 p-2 text-[#1d2430] dark:border-[#36507f] dark:bg-[rgba(18,33,62,0.8)] dark:text-white lg:hidden"
           >
             {open ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -179,64 +216,129 @@ export default function Navbar() {
 
         <AnimatePresence>
           {open && (
-            <motion.div
-              initial="closed"
-              animate="open"
-              exit="closed"
-              variants={menuVariants}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="mt-4 rounded-[18px] border border-white/60 bg-[rgba(255,255,255,0.86)] p-3 lg:hidden"
-            >
-              <div className="flex flex-col gap-1">
-                {mobileLinks.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
+            <>
+              <motion.button
+                type="button"
+                aria-label="Menyuni yopish"
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={backdropVariants}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                onClick={() => setOpen(false)}
+                className="fixed inset-0 z-[105] bg-[rgba(15,23,42,0.22)] backdrop-blur-[3px] dark:bg-[rgba(4,10,28,0.52)] lg:hidden"
+              />
+              <motion.div
+                initial="closed"
+                animate="open"
+                exit="closed"
+                variants={menuVariants}
+                transition={{ duration: 0.24, ease: "easeOut" }}
+                className="fixed inset-x-3 top-[82px] z-[106] max-h-[calc(100svh-96px)] overflow-hidden rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,248,253,0.96)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.16)] dark:border-[#36507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.98)_0%,rgba(18,32,60,0.97)_100%)] dark:shadow-[0_28px_70px_rgba(4,10,28,0.56)] lg:hidden"
+              >
+                <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3 dark:border-[#2c416a]">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7d8593] dark:text-[#9fb4d7]">
+                      Menyu
+                    </div>
+                    <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[#161d2a] dark:text-white">
+                      Navigation
+                    </div>
+                  </div>
+                  <button
+                    type="button"
                     onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                      [
-                        "flex items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold text-[#1d2430] transition",
-                        isActive ? "bg-[#eef3f9]" : "hover:bg-[#f6f8fb]",
-                      ].join(" ")
-                    }
+                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] dark:border-[#36507f] dark:bg-[rgba(24,39,72,0.9)] dark:text-white"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      {"icon" in link && link.icon ? <link.icon size={16} /> : null}
-                      {link.label}
-                    </span>
-                    {link.to === "/passengers" && paxCount > 0 ? (
-                      <span className="rounded-full bg-[#eef3f9] px-2 py-0.5 text-[11px]">
-                        {paxCount}
-                      </span>
-                    ) : null}
-                  </NavLink>
-                ))}
+                    <X size={18} />
+                  </button>
+                </div>
 
-                {!authed ? (
-                  <Button
-                    onClick={goAuth}
-                    className="mt-2 h-11 rounded-xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(17,24,39,0.22)] hover:brightness-110"
-                  >
-                    Kirish
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={goProfile}
-                      className="mt-2 h-11 rounded-xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(17,24,39,0.22)] hover:brightness-110"
+                <div className="max-h-[calc(100svh-204px)] overflow-y-auto pr-1">
+                <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={onToggleTheme}
+                      className="flex items-center justify-between rounded-[18px] border border-[#e7edf6] bg-white/85 px-4 py-3 text-sm font-semibold text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:hover:bg-[rgba(28,46,84,0.94)]"
                     >
-                      Profil
-                    </Button>
+                      <span className="inline-flex items-center gap-3">
+                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[rgba(56,85,136,0.24)] dark:text-[#dbe8ff]">
+                          {theme === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+                        </span>
+                        <span>{theme === "dark" ? "Light mode" : "Dark blue mode"}</span>
+                      </span>
+                      <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
+                        {theme === "dark" ? "ON" : "OFF"}
+                      </span>
+                    </button>
+
+                    {mobileLinks.map((link) => {
+                      const LinkIcon = ("icon" in link ? link.icon : undefined) as LucideIcon | undefined
+
+                      return (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                          [
+                            "flex items-center justify-between rounded-[18px] border px-4 py-3 text-sm font-semibold text-[#1d2430] transition dark:text-white",
+                            isActive
+                              ? "border-[#d8e5f8] bg-[linear-gradient(180deg,#f4f8ff_0%,#edf4ff_100%)] shadow-[0_10px_24px_rgba(71,120,197,0.08)] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:shadow-[0_16px_34px_rgba(4,10,28,0.36)]"
+                              : "border-[#e7edf6] bg-white/85 hover:bg-[#f8fbff] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)] dark:hover:bg-[rgba(28,46,84,0.94)]",
+                          ].join(" ")
+                        }
+                      >
+                        <span className="inline-flex items-center gap-3">
+                          {LinkIcon ? (
+                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[rgba(56,85,136,0.24)] dark:text-[#dbe8ff]">
+                              <LinkIcon size={16} />
+                            </span>
+                          ) : (
+                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[11px] font-bold uppercase tracking-[0.14em] text-[#28466f] dark:bg-[rgba(56,85,136,0.24)] dark:text-[#dbe8ff]">
+                              {link.label.slice(0, 2)}
+                            </span>
+                          )}
+                          <span>{link.label}</span>
+                        </span>
+                        {link.to === "/passengers" && paxCount > 0 ? (
+                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
+                            {paxCount}
+                          </span>
+                        ) : null}
+                      </NavLink>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-3 border-t border-[#e6edf6] pt-3 dark:border-[#2c416a]">
+                  {!authed ? (
                     <Button
-                      onClick={logout}
-                      className="h-11 rounded-xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_10px_24px_rgba(17,24,39,0.22)] hover:brightness-110"
+                      onClick={goAuth}
+                      className="h-12 w-full rounded-[18px] border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_14px_32px_rgba(17,24,39,0.22)] hover:brightness-110"
                     >
-                      Chiqish
+                      Kirish
                     </Button>
-                  </>
-                )}
-              </div>
-            </motion.div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        onClick={goProfile}
+                        className="h-12 rounded-[18px] border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_14px_32px_rgba(17,24,39,0.22)] hover:brightness-110"
+                      >
+                        Profil
+                      </Button>
+                      <Button
+                        onClick={logout}
+                        className="h-12 rounded-[18px] border border-[#e8d7dd] bg-[linear-gradient(180deg,#fff9fb_0%,#fff1f4_100%)] text-sm font-semibold text-[#a54864] shadow-[0_10px_24px_rgba(165,72,100,0.08)] hover:bg-[#fff5f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]"
+                      >
+                        Chiqish
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </motion.nav>
@@ -261,14 +363,14 @@ function NavItem({
       className={({ isActive }) =>
         [
           "inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.28em] transition",
-          isActive ? "text-[#111827]" : "text-[#2d3544] hover:text-[#111827]",
+          isActive ? "text-[#111827] dark:text-white" : "text-[#2d3544] hover:text-[#111827] dark:text-white/78 dark:hover:text-white",
         ].join(" ")
       }
     >
       {Icon ? <Icon size={14} strokeWidth={2.1} /> : null}
       <span>{label}</span>
       {badge > 0 ? (
-        <span className="rounded-full bg-[#e8eef8] px-1.5 py-0.5 text-[10px] tracking-normal text-[#173260]">
+        <span className="rounded-full bg-[#e8eef8] px-1.5 py-0.5 text-[10px] tracking-normal text-[#173260] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
           {badge}
         </span>
       ) : null}

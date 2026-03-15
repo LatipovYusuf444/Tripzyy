@@ -5,6 +5,7 @@ import {
   type Variants,
 } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Cake,
   Map,
@@ -293,7 +294,7 @@ export default function About() {
   };
 
   return (
-    <div className="relative overflow-hidden bg-[#f7f7f8] text-[#111827]">
+    <div className="relative overflow-hidden bg-[#f7f7f8] text-[#111827] dark:bg-[linear-gradient(180deg,#07111f_0%,#0a1730_24%,#102347_58%,#0a1730_100%)] dark:text-white">
       {!reduceMotion && (
         <>
           <LuxuryGlow className="left-[-120px] top-[120px] h-[280px] w-[280px] bg-[#ff6a00]/20" />
@@ -303,8 +304,8 @@ export default function About() {
       )}
 
       {/* HERO */}
-      <section ref={heroRef} className="relative bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,106,0,0.08),transparent_35%),radial-gradient(circle_at_top_right,rgba(138,58,90,0.08),transparent_32%),linear-gradient(to_bottom,rgba(255,255,255,1),rgba(250,250,250,1))]" />
+      <section ref={heroRef} className="relative bg-white dark:bg-transparent">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,106,0,0.08),transparent_35%),radial-gradient(circle_at_top_right,rgba(138,58,90,0.08),transparent_32%),linear-gradient(to_bottom,rgba(255,255,255,1),rgba(250,250,250,1))] dark:bg-[radial-gradient(circle_at_top_left,rgba(57,98,188,0.22),transparent_35%),radial-gradient(circle_at_top_right,rgba(119,72,175,0.18),transparent_32%),linear-gradient(to_bottom,rgba(8,18,38,0.78),rgba(7,17,31,0.28))]" />
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
@@ -330,7 +331,7 @@ export default function About() {
 
               <motion.p
                 variants={fadeUp}
-                className="mt-4 max-w-[600px] text-[#4a5361] text-base md:text-lg leading-8"
+                className="mt-4 max-w-[600px] text-[#4a5361] text-base md:text-lg leading-8 dark:text-[#a9bddb]"
               >
                 Biz bilan istalgan mamlakatga ishonchli, qulay va mazmunli tur
                 paketlarini tanlang. Professional jamoa, shaffof narx va yuqori servis.
@@ -357,7 +358,7 @@ export default function About() {
                 <motion.button
                   whileHover={{ y: -3, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="h-12 px-6 rounded-2xl border border-black/10 bg-white/80 backdrop-blur text-[#1b1f2a] text-sm font-semibold hover:shadow-xl transition"
+                  className="h-12 px-6 rounded-2xl border border-black/10 bg-white/80 backdrop-blur text-[#1b1f2a] text-sm font-semibold hover:shadow-xl transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:hover:bg-[rgba(24,43,80,0.96)]"
                 >
                   Batafsil
                 </motion.button>
@@ -365,7 +366,7 @@ export default function About() {
 
               <motion.div
                 variants={fadeUp}
-                className="mt-8 flex flex-wrap items-center gap-5 text-sm text-[#5b6470]"
+                className="mt-8 flex flex-wrap items-center gap-5 text-sm text-[#5b6470] dark:text-[#a9bddb]"
               >
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)]" />
@@ -391,7 +392,7 @@ export default function About() {
                   variants={softScale}
                   whileHover={{ y: -8, scale: 1.02 }}
                   transition={{ duration: 0.4 }}
-                  className={`group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/70 shadow-[0_18px_60px_rgba(0,0,0,0.12)] backdrop-blur ${
+                  className={`group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/70 shadow-[0_18px_60px_rgba(0,0,0,0.12)] backdrop-blur dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)] ${
                     i === 1 ? "mt-10" : ""
                   }`}
                 >
@@ -413,8 +414,8 @@ export default function About() {
         </motion.div>
 
         <div className="mt-6" ref={statsRef}>
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#dfe9f1] via-[#bfd2e3] to-[#91aac3]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.25),transparent_45%)]" />
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#dfe9f1] via-[#bfd2e3] to-[#91aac3] dark:bg-[linear-gradient(135deg,#102347_0%,#15315f_48%,#0c1d3d_100%)]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.25),transparent_45%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_48%)]" />
             <motion.div
               initial="hidden"
               whileInView="show"
@@ -433,7 +434,7 @@ export default function About() {
       </section>
 
       {/* ABOUT */}
-      <section className="relative py-16 bg-white">
+      <section className="relative py-16 bg-white dark:bg-transparent">
         <div className="mx-auto max-w-[1200px] px-5">
           <motion.div
             initial="hidden"
@@ -443,12 +444,12 @@ export default function About() {
             className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start"
           >
             <motion.div variants={fadeUp}>
-              <div className="text-lg font-extrabold tracking-[0.2em] text-[#ff6a00]">
+              <div className="text-lg font-extrabold tracking-[0.2em] text-[#ff6a00] dark:text-[#ff9b57]">
                 TRPZY AVIA TOUR
               </div>
 
-              <p className="mt-4 text-[#4a5361] text-base leading-8">
-                <span className="font-semibold text-[#1b1f2a]">
+              <p className="mt-4 text-[#4a5361] text-base leading-8 dark:text-[#a9bddb]">
+                <span className="font-semibold text-[#1b1f2a] dark:text-white">
                   TRPZY AVIA TOUR
                 </span>{" "}
                 — O‘zbekistondagi yirik tur operatorlaridan biri bo‘lib, inbound va
@@ -456,20 +457,20 @@ export default function About() {
                 shug‘ullanadi.
               </p>
 
-              <p className="mt-4 text-[#4a5361] text-base leading-8">
+              <p className="mt-4 text-[#4a5361] text-base leading-8 dark:text-[#a9bddb]">
                 Sayohat agentligi{" "}
-                <span className="font-semibold text-[#1b1f2a]">
+                <span className="font-semibold text-[#1b1f2a] dark:text-white">
                   TRPZY AVIA TOUR
                 </span>{" "}
                 sizga dunyoning har bir go‘zal burchagini his qilish imkonini
                 beruvchi eksklyuziv va qiziqarli tur mahsulotlarini taklif etadi.
               </p>
 
-              <p className="mt-4 text-[#4a5361] text-base leading-8">
+              <p className="mt-4 text-[#4a5361] text-base leading-8 dark:text-[#a9bddb]">
                 Biz faqat ishonchli hamkorlar bilan ishlaymiz. Mehmonxonalar
                 tanlashda yuqori servis, qulaylik va to‘liq xavfsizlik
                 tamoyillariga amal qilamiz.
-                <span className="font-semibold text-[#1b1f2a]">
+                <span className="font-semibold text-[#1b1f2a] dark:text-white">
                   {" "}
                   TRPZY AVIA TOUR
                 </span>{" "}
@@ -477,11 +478,11 @@ export default function About() {
                 bu mijozlarimiz uchun xavfsizlik va qulaylik kafolatidir.
               </p>
 
-              <div className="mt-6 text-[#1b1f2a] font-semibold">
+              <div className="mt-6 text-[#1b1f2a] font-semibold dark:text-white">
                 TRPZY AVIA TOUR jamoasi sizga quyidagi xizmatlarni taklif etadi:
               </div>
 
-              <ul className="mt-4 space-y-3 text-[#4a5361] text-sm">
+              <ul className="mt-4 space-y-3 text-[#4a5361] text-sm dark:text-[#a9bddb]">
                 {[
                   "dunyo bo‘ylab aviachiptalar uchun eng qulay tariflar;",
                   "butun dunyo bo‘ylab keng mehmonxona bazasi;",
@@ -506,7 +507,7 @@ export default function About() {
             <motion.div
               variants={softScale}
               whileHover={{ y: -6 }}
-              className="group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/80 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.12)] backdrop-blur"
+              className="group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/80 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.12)] backdrop-blur dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.78)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]"
             >
               <img
                 src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80&fm=webp"
@@ -562,7 +563,7 @@ export default function About() {
                 key={x.title}
                 variants={softScale}
                 whileHover={{ y: -8, scale: 1.01 }}
-                className="group relative overflow-hidden rounded-[24px] border border-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.08)]"
+                className="group relative overflow-hidden rounded-[24px] border border-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.08)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]"
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-br from-[#ff6a00]/0 via-[#ff6a00]/0 to-[#8A3A5A]/0"
@@ -573,14 +574,14 @@ export default function About() {
                 />
                 {!reduceMotion && <ShineOverlay />}
                 <div className="relative flex gap-5 items-start">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-[#ff6a00]/30 bg-[#ff6a00]/10 text-[#ff6a00] shadow-[0_10px_25px_rgba(255,106,0,0.12)]">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-[#ff6a00]/30 bg-[#ff6a00]/10 text-[#ff6a00] shadow-[0_10px_25px_rgba(255,106,0,0.12)] dark:border-[#6b4a27] dark:bg-[rgba(82,63,23,0.4)] dark:text-[#ffb37e] dark:shadow-[0_14px_28px_rgba(2,8,24,0.24)]">
                     <x.icon size={24} />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold tracking-wide text-[#1b1f2a]">
+                    <div className="text-sm font-semibold tracking-wide text-[#1b1f2a] dark:text-white">
                       {x.title}
                     </div>
-                    <div className="mt-2 text-sm leading-7 text-[#4a5361]">
+                    <div className="mt-2 text-sm leading-7 text-[#4a5361] dark:text-[#a9bddb]">
                       {x.desc}
                     </div>
                   </div>
@@ -592,7 +593,7 @@ export default function About() {
       </section>
 
       {/* CERTIFICATES */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-transparent">
         <div className="mx-auto max-w-[1200px] px-5 text-center">
           <motion.div
             initial="hidden"
@@ -602,14 +603,14 @@ export default function About() {
           >
             <motion.div
               variants={fadeUp}
-              className="text-sm tracking-widest font-semibold text-[#ff6a00]"
+              className="text-sm tracking-widest font-semibold text-[#ff6a00] dark:text-[#ff9b57]"
             >
               SERTIFIKATLAR
             </motion.div>
 
             <motion.h3
               variants={fadeUp}
-              className="mt-3 text-3xl md:text-4xl font-extrabold text-[#1b1f2a]"
+              className="mt-3 text-3xl md:text-4xl font-extrabold text-[#1b1f2a] dark:text-white"
             >
               BIZNING SERTIFIKATLAR
             </motion.h3>
@@ -625,7 +626,7 @@ export default function About() {
                   key={src}
                   variants={softScale}
                   whileHover={{ y: -8, scale: 1.03 }}
-                  className="group relative overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_14px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_70px_rgba(0,0,0,0.18)]"
+                  className="group relative overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_14px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_70px_rgba(0,0,0,0.18)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_20px_55px_rgba(2,8,24,0.34)] dark:hover:shadow-[0_28px_80px_rgba(2,8,24,0.46)]"
                 >
                   <img
                     src={src}
@@ -643,7 +644,7 @@ export default function About() {
       </section>
 
       {/* PARTNERS */}
-      <section className="py-16 bg-[#fcfcfd]">
+      <section className="py-16 bg-[#fcfcfd] dark:bg-transparent">
         <div className="mx-auto max-w-[1200px] px-5 text-center">
           <motion.div
             initial="hidden"
@@ -653,14 +654,14 @@ export default function About() {
           >
             <motion.div
               variants={fadeUp}
-              className="text-sm tracking-widest font-semibold text-[#ff6a00]"
+              className="text-sm tracking-widest font-semibold text-[#ff6a00] dark:text-[#ff9b57]"
             >
               HAMKORLAR
             </motion.div>
 
             <motion.h3
               variants={fadeUp}
-              className="mt-3 text-3xl md:text-4xl font-extrabold text-[#1b1f2a]"
+              className="mt-3 text-3xl md:text-4xl font-extrabold text-[#1b1f2a] dark:text-white"
             >
               BIZNING HAMKORLAR
             </motion.h3>
@@ -675,13 +676,13 @@ export default function About() {
                 type="button"
                 aria-label="Oldingi"
                 onClick={() => moveCarousel("left")}
-                className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 h-11 w-11 rounded-full border border-black/10 bg-white/90 shadow-md backdrop-blur hover:shadow-xl transition"
+                className="absolute -left-4 top-1/2 z-10 -translate-y-1/2 h-11 w-11 rounded-full border border-black/10 bg-white/90 shadow-md backdrop-blur hover:shadow-xl transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.34)]"
               >
                 ‹
               </button>
 
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-[#fcfcfd] to-transparent" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-[#fcfcfd] to-transparent" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-[#fcfcfd] to-transparent dark:from-[#0a1730]" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-[#fcfcfd] to-transparent dark:from-[#0a1730]" />
 
               <div
                 ref={carouselRef}
@@ -695,7 +696,7 @@ export default function About() {
                       key={`${p.name}-${i}`}
                       data-partner-card
                       whileHover={{ y: -6, scale: 1.02 }}
-                      className="group min-w-[210px] h-24 rounded-2xl border border-black/5 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.08)] grid place-items-center px-5"
+                      className="group min-w-[210px] h-24 rounded-2xl border border-black/5 bg-white shadow-[0_12px_28px_rgba(0,0,0,0.08)] grid place-items-center px-5 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_18px_40px_rgba(2,8,24,0.34)]"
                     >
                       <img
                         src={p.logo}
@@ -712,7 +713,7 @@ export default function About() {
                 type="button"
                 aria-label="Keyingi"
                 onClick={() => moveCarousel("right")}
-                className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 h-11 w-11 rounded-full border border-black/10 bg-white/90 shadow-md backdrop-blur hover:shadow-xl transition"
+                className="absolute -right-4 top-1/2 z-10 -translate-y-1/2 h-11 w-11 rounded-full border border-black/10 bg-white/90 shadow-md backdrop-blur hover:shadow-xl transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.34)]"
               >
                 ›
               </button>
@@ -729,7 +730,7 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden rounded-[32px] border border-black/10 shadow-[0_35px_100px_rgba(0,0,0,0.22)]"
+            className="relative overflow-hidden rounded-[32px] border border-black/10 shadow-[0_35px_100px_rgba(0,0,0,0.22)] dark:border-[#35507f] dark:shadow-[0_40px_110px_rgba(2,8,24,0.46)]"
           >
             <img
               src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80&fm=webp"
@@ -746,13 +747,13 @@ export default function About() {
                 whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
-                className="relative overflow-hidden rounded-[28px] border border-white/40 bg-white/90 p-7 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl"
+                className="relative overflow-hidden rounded-[28px] border border-white/40 bg-white/90 p-7 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.92)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_28px_80px_rgba(2,8,24,0.42)]"
               >
                 {!reduceMotion && <ShineOverlay />}
                 <div className="relative text-center text-lg md:text-xl font-semibold">
                   Aloqa ma’lumotlari
                 </div>
-                <div className="relative mt-1 text-center text-sm text-[#6b7280]">
+                <div className="relative mt-1 text-center text-sm text-[#6b7280] dark:text-[#a9bddb]">
                   Kontaktlaringizni qoldiring, biz siz bilan bog‘lanamiz
                 </div>
 
@@ -760,14 +761,14 @@ export default function About() {
                   className="relative mt-6 space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    alert("Arizangiz qabul qilindi (demo)");
+                    toast.success("Arizangiz qabul qilindi");
                   }}
                 >
                   <LuxuryInput placeholder="Ism" />
                   <LuxuryInput placeholder="Telefon" />
                   <LuxuryInput placeholder="Qiziqqan yo‘nalish" />
 
-                  <label className="flex items-center gap-2 text-xs text-[#6b7280]">
+                  <label className="flex items-center gap-2 text-xs text-[#6b7280] dark:text-[#a9bddb]">
                     <input type="checkbox" className="accent-[#ff6a00]" />
                     Shartlarga roziman
                   </label>
@@ -813,7 +814,7 @@ export default function About() {
                   <motion.button
                     whileHover={{ y: -3, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="h-12 px-6 rounded-2xl border border-white/30 bg-white/10 backdrop-blur text-white text-sm font-semibold"
+                    className="h-12 px-6 rounded-2xl border border-white/30 bg-white/10 backdrop-blur text-white text-sm font-semibold dark:border-[#4a6aa3] dark:bg-[rgba(20,35,66,0.38)]"
                   >
                     Xizmatlar haqida
                   </motion.button>
@@ -834,7 +835,7 @@ function LuxuryInput({ placeholder }: { placeholder: string }) {
   return (
     <motion.input
       whileFocus={{ scale: 1.01 }}
-      className="h-12 w-full rounded-2xl border border-black/10 bg-white/80 px-4 outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_4px_rgba(255,106,0,0.12)]"
+      className="h-12 w-full rounded-2xl border border-black/10 bg-white/80 px-4 outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_4px_rgba(255,106,0,0.12)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:placeholder:text-[#8ea5cb] dark:focus:border-[#4d6fa8] dark:focus:shadow-[0_0_0_4px_rgba(77,111,168,0.18)]"
       placeholder={placeholder}
       value={value}
       onChange={(e) => {
@@ -890,27 +891,27 @@ function StatItem({
   return (
     <motion.div
       whileHover={{ y: -8, scale: 1.02 }}
-      className="group relative h-full overflow-hidden rounded-[24px] border border-white/25 bg-white/20 p-5 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(255,255,255,0.06)]"
+      className="group relative h-full overflow-hidden rounded-[24px] border border-white/25 bg-white/20 p-5 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(255,255,255,0.06)] dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.58)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.3)]"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent dark:from-white/8 dark:via-white/4" />
       <motion.div
         animate={{ y: [0, -5, 0] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
         className="relative flex flex-col items-center"
       >
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/50 shadow-[0_10px_25px_rgba(0,0,0,0.08)]">
-          <Icon size={34} className="text-[#8A3A5A]" />
+        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/50 shadow-[0_10px_25px_rgba(0,0,0,0.08)] dark:bg-[rgba(24,43,80,0.8)] dark:shadow-[0_14px_28px_rgba(2,8,24,0.26)]">
+          <Icon size={34} className="text-[#8A3A5A] dark:text-[#d7a7bd]" />
         </div>
 
-        <div className="mt-4 text-4xl font-extrabold text-black">
+        <div className="mt-4 text-4xl font-extrabold text-black dark:text-white">
           {display}
         </div>
 
-        <div className="mt-2 min-h-[40px] flex items-center justify-center text-center text-sm font-semibold tracking-wide text-black">
+        <div className="mt-2 min-h-[40px] flex items-center justify-center text-center text-sm font-semibold tracking-wide text-black dark:text-white">
           {data.title}
         </div>
 
-        <div className="mt-4 min-h-[72px] flex items-center justify-center text-center text-sm md:text-base text-black/80 leading-relaxed">
+        <div className="mt-4 min-h-[72px] flex items-center justify-center text-center text-sm md:text-base text-black/80 leading-relaxed dark:text-[#cfe0fb]">
           {data.desc}
         </div>
       </motion.div>

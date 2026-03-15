@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 .text-p {
   font-family: "Work Sans", sans-serif;
   font-optical-sizing: auto;
@@ -14,7 +13,8 @@
   font-weight: 700;
   font-style: normal;
 }
-/* ✅ Autofill (Chrome/Edge) oq fonni yo‘qotish */
+
+/* Chrome/Edge autofill text color should follow the field's own text color. */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -24,14 +24,13 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
-  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.06) inset !important; /* shaffof fon */
-  box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.06) inset !important;
-  caret-color: rgba(255, 255, 255, 0.92) !important;
+  -webkit-text-fill-color: currentColor !important;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  caret-color: currentColor !important;
   transition: background-color 9999s ease-in-out 0s !important;
 }
 
-/* ✅ Inputning o‘zi ham doim shaffof bo‘lsin */
 input,
 textarea,
 select {

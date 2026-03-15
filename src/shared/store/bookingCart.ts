@@ -1,33 +1,59 @@
-// src/shared/store/bookingCart.ts
-
 export type PayerInfo = {
   email: string
   phone: string
   countryCode?: string
 }
 
+export type BookingSegment = {
+  id: string
+  origin: string
+  destination: string
+  departure: string
+  arrival: string
+  departureTerminal?: string | null
+  arrivalTerminal?: string | null
+  baggage?: string
+  carryOn?: string
+  bookingClass?: string
+  serviceClass?: string
+  carrier?: string
+  operatingCarrier?: string
+  duration?: number
+  layover?: number
+  equipment?: string
+  fareBasis?: string
+  flightNumber?: string
+  seatsAvailable?: number
+}
+
 export type Passenger = {
   id: string
   firstName: string
   lastName: string
-  birthDate: string // YYYY-MM-DD
+  birthDate: string
   citizenship: string
-
-  // ✅ qo‘shildi
   passportNo: string
-  passportExpiry: string // YYYY-MM-DD
-  passportIssued?: string // YYYY-MM-DD
+  passportExpiry: string
+  passportIssued?: string
   gender?: "M" | "F"
   countryCode?: string
 }
 
 export type BookingCart = {
   flightId?: string
-  route?: string // "TAS → IST"
+  route?: string
   date?: string
   pax?: number
   amount?: number
   currency?: string
+  airline?: string
+  flightNo?: string
+  cabin?: string
+  baggage?: string
+  carryOn?: string
+  paymentMethod?: "click" | "payme" | "uzum" | "paynet" | "visa" | ""
+  paymentStatus?: "not_connected" | "pending" | "paid"
+  segments?: BookingSegment[]
   lastOrderId?: number
   history?: Array<{
     orderId: number
@@ -35,10 +61,7 @@ export type BookingCart = {
     date?: string
     createdAt: string
   }>
-
-  // ✅ qo‘shildi
   payer?: PayerInfo
-
   passengers: Passenger[]
 }
 
@@ -63,6 +86,14 @@ export const bookingCart = {
         pax: parsed.pax,
         amount: parsed.amount,
         currency: parsed.currency,
+        airline: parsed.airline,
+        flightNo: parsed.flightNo,
+        cabin: parsed.cabin,
+        baggage: parsed.baggage,
+        carryOn: parsed.carryOn,
+        paymentMethod: parsed.paymentMethod,
+        paymentStatus: parsed.paymentStatus,
+        segments: Array.isArray(parsed.segments) ? parsed.segments : [],
         lastOrderId: parsed.lastOrderId,
         history: Array.isArray(parsed.history) ? parsed.history : [],
         payer: parsed.payer,

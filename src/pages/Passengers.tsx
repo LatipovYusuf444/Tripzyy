@@ -37,6 +37,21 @@ const fadeUp = {
   show: { opacity: 1, y: 0 },
 }
 
+const primaryBtn =
+  "bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_18px_50px_rgba(17,24,39,0.22)] hover:brightness-110 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] dark:shadow-[0_18px_40px_rgba(33,79,184,0.34)]"
+
+const lightPanel =
+  "border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.92)_100%)] backdrop-blur-xl shadow-[0_25px_70px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] dark:shadow-[0_25px_70px_rgba(4,10,28,0.42)]"
+
+const btnBase =
+  "inline-flex items-center justify-center rounded-2xl border text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+
+const primaryButtonClass = `${btnBase} border-[#1a2231]/10 ${primaryBtn}`
+const secondaryButtonClass =
+  `${btnBase} border-[#dbe3ef] bg-white/90 text-[#1d2430] shadow-[0_12px_30px_rgba(17,24,39,0.08)] hover:bg-white dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:shadow-[0_14px_28px_rgba(4,10,28,0.28)] dark:hover:bg-[rgba(28,46,84,0.94)]`
+const dangerButtonClass =
+  `${btnBase} border-[#f0d8d9] bg-[linear-gradient(135deg,#fff7f7_0%,#fff0f1_100%)] text-[#9e4e5b] shadow-[0_12px_28px_rgba(158,78,91,0.10)] hover:bg-[#fff6f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]`
+
 export default function PassengersPage() {
   const [cart, setCart] = useState(() => bookingCart.get())
   const [step, setStep] = useState<1 | 2 | 3>(1)
@@ -84,7 +99,7 @@ export default function PassengersPage() {
   } | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<
     "click" | "payme" | "uzum" | "paynet" | "visa" | ""
-  >("")
+  >(cart.paymentMethod ?? "")
   const [pnrLocator, setPnrLocator] = useState("")
   const [pnrLoading, setPnrLoading] = useState(false)
   const [pnrMsg, setPnrMsg] = useState<string | null>(null)
@@ -125,6 +140,10 @@ export default function PassengersPage() {
         : { email: "", phone: "+998", countryCode: "998" }
     )
   }, [cart.payer?.email, cart.payer?.phone, cart.payer?.countryCode])
+
+  useEffect(() => {
+    setPaymentMethod(cart.paymentMethod ?? "")
+  }, [cart.paymentMethod])
 
   const title = useMemo(() => {
     const r = cart.route ? ` · ${cart.route}` : ""
@@ -256,6 +275,8 @@ export default function PassengersPage() {
         bookingCart.set({
           ...curr,
           lastOrderId: res.data.data.orderID,
+          paymentMethod,
+          paymentStatus: "pending",
           history: [
             ...(curr.history ?? []),
             {
@@ -382,7 +403,8 @@ export default function PassengersPage() {
     }
   }
   return (
-    <section className="relative min-h-screen text-white pt-24">
+    <section className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_34%,#e8edf5_100%)] pt-24 text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_26%,#15254a_62%,#11203d_100%)] dark:text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(760px_320px_at_14%_0%,rgba(88,122,196,0.16),transparent_62%),radial-gradient(560px_260px_at_88%_6%,rgba(219,121,104,0.14),transparent_56%),radial-gradient(680px_320px_at_48%_36%,rgba(157,90,129,0.08),transparent_62%)] dark:bg-[radial-gradient(760px_320px_at_14%_0%,rgba(75,114,201,0.2),transparent_62%),radial-gradient(560px_260px_at_88%_6%,rgba(72,104,176,0.18),transparent_56%),radial-gradient(680px_320px_at_48%_36%,rgba(47,71,122,0.18),transparent_62%)]" />
       <motion.div
         variants={container}
         initial="hidden"
@@ -391,8 +413,8 @@ export default function PassengersPage() {
       >
         <motion.div variants={fadeUp} className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-white">{title}</h1>
-            <p className="mt-2 text-white/70 text-sm">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#1d2430] dark:text-white">{title}</h1>
+            <p className="mt-2 text-[#627188] text-sm dark:text-[#d2e0f8]">
               Reys tanlaganingdan keyin bron qilish jarayoni 3 bosqichda yakunlanadi.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -404,12 +426,7 @@ export default function PassengersPage() {
 
           <button
             onClick={onClearCart}
-            className="
-              h-11 px-4 rounded-2xl
-              border border-white/15 bg-white/10
-              text-white/85 font-semibold
-              hover:bg-white/15 transition
-            "
+            className={`h-11 px-4 ${secondaryButtonClass}`}
             title="Karzinkani tozalash"
           >
             Karzinkani tozalash
@@ -418,7 +435,7 @@ export default function PassengersPage() {
 
         <motion.div
           variants={fadeUp}
-          className="mt-8 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
+          className={`mt-8 rounded-3xl p-5 ${lightPanel}`}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StepCard
@@ -448,12 +465,12 @@ export default function PassengersPage() {
           </div>
         </motion.div>
 
-        <motion.div variants={fadeUp} className="mt-4 text-xs text-white/60">
+        <motion.div variants={fadeUp} className="mt-4 text-xs text-[#718198] dark:text-[#a9bddb]">
           * Bosqich kartasiga bosib o‘tish mumkin. To‘lov bo‘limi 2-bosqichda chiqadi.
         </motion.div>
-        <motion.div variants={fadeUp} className="mt-3 flex items-center gap-2 text-xs text-white/70">
+        <motion.div variants={fadeUp} className="mt-3 flex items-center gap-2 text-xs text-[#627188] dark:text-[#d2e0f8]">
           <span>Joriy bosqich:</span>
-          <span className="rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-white/85">
+          <span className="rounded-full border border-[#dbe3ef] bg-white/90 px-2.5 py-1 text-[#1d2430] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-white">
             {step}
           </span>
           <div className="ml-auto flex items-center gap-2">
@@ -465,8 +482,8 @@ export default function PassengersPage() {
                 className={[
                   "h-8 px-3 rounded-full border text-xs font-semibold transition",
                   step === s
-                    ? "bg-white/15 border-white/30 text-white"
-                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10",
+                    ? "bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] border-[#1a2231]/10 text-white"
+                    : "bg-white/80 border-[#dbe3ef] text-[#627188] hover:bg-white dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#d7e5ff] dark:hover:bg-[rgba(24,43,80,0.92)]",
                 ].join(" ")}
               >
                 {s}-bosqich
@@ -477,39 +494,72 @@ export default function PassengersPage() {
 
         {step === 1 && (
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="lg:col-span-2 rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
-              <div className="text-lg font-extrabold">Yo'nalish tafsilotlari</div>
-              <div className="mt-2 text-white/70 text-sm">
+            <div className={`lg:col-span-2 rounded-[28px] p-6 ${lightPanel}`}>
+              <div className="text-lg font-extrabold dark:text-white">Yo'nalish tafsilotlari</div>
+              <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
                 Mahalliy jo'nash va kelish vaqtlari, terminal va reys tafsilotlari.
               </div>
 
               <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InfoCard label="Yo'nalish" value={cart.route ?? "TAS → DXB"} />
                 <InfoCard label="Sana" value={cart.date ?? "2026-03-17"} />
-                <InfoCard label="Kabina" value="Economy / Business" />
-                <InfoCard label="Bagaj" value="20kg + 7kg cabin" />
+                <InfoCard label="Kabina" value={cart.cabin ?? "—"} />
+                <InfoCard
+                  label="Bagaj"
+                  value={
+                    [cart.baggage, cart.carryOn ? `carry-on ${cart.carryOn}` : ""]
+                      .filter(Boolean)
+                      .join(" · ") || "—"
+                  }
+                />
               </div>
+              {cart.airline || cart.flightNo ? (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InfoCard label="Aviakompaniya" value={cart.airline ?? "—"} />
+                  <InfoCard label="Reys raqami" value={cart.flightNo ?? "—"} />
+                </div>
+              ) : null}
+
+              {cart.segments?.length ? (
+                <div className="mt-4 rounded-2xl border border-[#dde5f0] bg-white/80 p-4">
+                  <div className="text-sm font-semibold text-[#1d2430]">Segmentlar</div>
+                  <div className="mt-3 space-y-3">
+                    {cart.segments.map((segment, index) => (
+                      <div key={segment.id} className="rounded-2xl border border-[#e6edf6] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-semibold text-[#1d2430]">
+                            {index + 1}. {segment.origin} → {segment.destination}
+                          </div>
+                          <div className="text-xs text-[#627188]">
+                            {segment.carrier || "—"}{segment.flightNumber ? `-${segment.flightNumber}` : ""}
+                          </div>
+                        </div>
+                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-[#627188]">
+                          <div>{segment.departure} → {segment.arrival}</div>
+                          <div>Terminal: {segment.departureTerminal || "—"} / {segment.arrivalTerminal || "—"}</div>
+                          <div>Bagaj: {segment.baggage || "—"}</div>
+                          <div>Carry-on: {segment.carryOn || "—"}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
-            <div className="rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
+            <div className={`rounded-[28px] p-6 ${lightPanel}`}>
               <div className="text-lg font-extrabold">Narx</div>
-              <div className="mt-2 text-white/70 text-sm">Yakuniy narx va xizmatlar.</div>
-              <div className="mt-5 rounded-2xl bg-white/10 p-4">
-                <div className="text-white/70 text-xs">Yakuniy narx</div>
-                <div className="text-2xl font-extrabold text-[#F4D7E3]">
+              <div className="mt-2 text-[#627188] text-sm">Yakuniy narx va xizmatlar.</div>
+              <div className="mt-5 rounded-2xl border border-[#f0d8cf] bg-[linear-gradient(135deg,#fff8f3_0%,#fff1f5_100%)] p-4 dark:border-[#4a3f5f] dark:bg-[linear-gradient(135deg,rgba(46,36,69,0.96)_0%,rgba(33,23,52,0.94)_100%)]">
+                <div className="text-[#8d6d70] text-xs dark:text-[#d6bfd0]">Yakuniy narx</div>
+                <div className="text-2xl font-extrabold text-[#b4586f] dark:text-[#ffd7e4]">
                   {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
                 </div>
-                <div className="mt-1 text-white/60 text-xs">Pax: {pax} ta</div>
+                <div className="mt-1 text-[#8d6d70] text-xs dark:text-[#d6bfd0]">Pax: {pax} ta</div>
               </div>
               <button
                 onClick={() => setStep(2)}
-                className="
-                  mt-5 h-12 w-full rounded-2xl
-                  bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                  text-white font-semibold transition
-                  shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                  hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                "
+                className={`mt-5 h-12 w-full ${primaryButtonClass}`}
               >
                 Davom etish
               </button>
@@ -519,9 +569,9 @@ export default function PassengersPage() {
 
         {step === 2 && (
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="lg:col-span-2 rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
+            <div className={`lg:col-span-2 rounded-[28px] p-6 ${lightPanel}`}>
               <div className="text-lg font-extrabold">Bog'lanish uchun ma'lumot</div>
-              <div className="mt-2 text-white/70 text-sm">
+              <div className="mt-2 text-[#627188] text-sm">
                 Chipta va o'zgarishlar bo'yicha xabarlar shu manzillarga yuboriladi.
               </div>
 
@@ -574,16 +624,16 @@ export default function PassengersPage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
+            <div className={`rounded-[28px] p-6 ${lightPanel}`}>
               <div className="text-lg font-extrabold">Davom etish</div>
-              <div className="mt-2 text-white/70 text-sm">
+              <div className="mt-2 text-[#627188] text-sm">
                 Ma'lumotlar to'liq bo'lsa, 3-bosqichga o'ting.
               </div>
-              <div className="mt-4 rounded-2xl border border-white/12 bg-white/6 p-4">
-                <div className="text-white font-semibold">To'lov usuli</div>
-                <div className="mt-2 text-white/70 text-sm">
-                  Demo: hozircha faqat tanlash. Backendga yuborilmaydi.
-                </div>
+                <div className="mt-4 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)]">
+                  <div className="text-[#1d2430] font-semibold dark:text-white">To'lov usuli</div>
+                  <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
+                    To'lov usulini tanlang va bronni davom ettiring.
+                  </div>
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
                     { id: "click", label: "Click" },
@@ -595,42 +645,42 @@ export default function PassengersPage() {
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() => setPaymentMethod(m.id as any)}
+                      onClick={() => {
+                        const nextMethod = m.id as "click" | "payme" | "uzum" | "paynet" | "visa"
+                        setPaymentMethod(nextMethod)
+                        bookingCart.patch({ paymentMethod: nextMethod })
+                      }}
                       className={[
-                        "h-11 rounded-2xl border text-sm font-semibold transition",
+                        `h-11 ${btnBase}`,
                         paymentMethod === m.id
-                          ? "border-white/35 bg-white/20 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
-                          : "border-white/12 bg-white/6 text-white/80 hover:bg-white/12",
+                          ? `border-[#1a2231]/10 ${primaryBtn}`
+                          : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]",
                       ].join(" ")}
                     >
                       {m.label}
                     </button>
                   ))}
                 </div>
-                <div className="mt-3 text-xs text-white/60">
+                <div className="mt-3 text-xs text-[#627188] dark:text-[#a9bddb]">
                   Tanlangan to'lov:{" "}
-                  <span className="text-white/85 font-semibold">
+                  <span className="text-[#1d2430] font-semibold dark:text-white">
                     {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
                   </span>
+                </div>
+                <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
+                  Payment gateway hali backend bilan ulanmagan. Bu tanlov saqlanadi, lekin avtomatik to'lov oynasi ochilmaydi.
                 </div>
               </div>
               <button
                 onClick={() => setStep(3)}
                 disabled={!canContinueStep2}
-                className="
-                  mt-5 h-12 w-full rounded-2xl
-                  bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                  text-white font-semibold transition
-                  shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                  hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
+                className={`mt-5 h-12 w-full ${primaryButtonClass}`}
               >
                 3-bosqichga o'tish
               </button>
               <button
                 onClick={() => setStep(1)}
-                className="mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition"
+                className={`mt-3 h-11 w-full ${secondaryButtonClass}`}
               >
                 Orqaga
               </button>
@@ -639,52 +689,44 @@ export default function PassengersPage() {
         )}
 
         {step === 3 && (
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <div className="rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
-                <div className="flex items-center justify-between gap-3">
+              <div className={`rounded-[28px] p-6 ${lightPanel}`}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="text-lg font-extrabold">Yo'lovchilarga kirish</div>
-                    <div className="mt-1 text-white/70 text-sm">
+                    <div className="mt-1 text-[#627188] text-sm">
                       Har bir yo'lovchi uchun pasport va shaxsiy ma'lumotlar.
                     </div>
                   </div>
                   <button
                     onClick={onAdd}
-                    className="
-                      h-11 px-4 rounded-2xl
-                      bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                      text-white font-semibold
-                      inline-flex items-center gap-2
-                      transition
-                      shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                      hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                    "
+                    className={`h-11 min-w-[190px] gap-2 px-4 sm:ml-auto ${primaryButtonClass}`}
                   >
                     Yo'lovchi qo'shish <Plus size={16} />
                   </button>
                 </div>
 
-                <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="mt-5 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)]">
                   <div className="overflow-auto">
                     <table className="w-full min-w-[880px]">
                       <thead>
-                        <tr className="text-left text-white/60 text-sm">
-                          <th className="py-3 px-3">#</th>
-                          <th className="py-3 px-3">Ism</th>
-                          <th className="py-3 px-3">Familiya</th>
-                          <th className="py-3 px-3">Tug'ilgan sana</th>
-                          <th className="py-3 px-3">Fuqarolik</th>
-                          <th className="py-3 px-3">Pasport</th>
-                          <th className="py-3 px-3">Amal qilish</th>
-                          <th className="py-3 px-3">Amal</th>
+                        <tr className="text-left text-[#718198] text-sm">
+                          <th className="px-3 py-3">#</th>
+                          <th className="px-3 py-3">Ism</th>
+                          <th className="px-3 py-3">Familiya</th>
+                          <th className="px-3 py-3">Tug'ilgan sana</th>
+                          <th className="px-3 py-3">Fuqarolik</th>
+                          <th className="px-3 py-3">Pasport</th>
+                          <th className="px-3 py-3">Amal qilish</th>
+                          <th className="px-3 py-3">Amal</th>
                         </tr>
                       </thead>
 
                       <tbody>
                         {cart.passengers.length === 0 ? (
                           <tr>
-                            <td className="py-6 px-3 text-white/65" colSpan={8}>
+                            <td className="px-3 py-6 text-[#627188] dark:text-[#a9bddb]" colSpan={8}>
                               Hozircha yo'lovchi yo'q. "Yo'lovchi qo'shish" ni bosing.
                             </td>
                           </tr>
@@ -692,25 +734,20 @@ export default function PassengersPage() {
                           cart.passengers.map((p, idx) => (
                             <tr
                               key={p.id}
-                              className="border-t border-white/10 bg-white/[0.03] hover:bg-white/[0.06] transition"
+                              className="border-t border-[#edf2f7] bg-white/60 transition hover:bg-white dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.64)] dark:hover:bg-[rgba(24,43,80,0.88)]"
                             >
-                              <td className="py-4 px-3 text-white/70">{idx + 1}</td>
-                              <td className="py-4 px-3 text-white font-semibold">{p.firstName}</td>
-                              <td className="py-4 px-3 text-white font-semibold">{p.lastName}</td>
-                              <td className="py-4 px-3 text-white/75">{p.birthDate}</td>
-                              <td className="py-4 px-3 text-white/75">{p.citizenship}</td>
-                              <td className="py-4 px-3 text-white/85 font-mono">{p.passportNo}</td>
-                              <td className="py-4 px-3 text-white/75">{p.passportExpiry}</td>
-                              <td className="py-4 px-3">
+                              <td className="px-3 py-4 text-[#627188] dark:text-[#a9bddb]">{idx + 1}</td>
+                              <td className="px-3 py-4 font-semibold text-[#1d2430] dark:text-white">{p.firstName}</td>
+                              <td className="px-3 py-4 font-semibold text-[#1d2430] dark:text-white">{p.lastName}</td>
+                              <td className="px-3 py-4 text-[#627188] dark:text-[#a9bddb]">{p.birthDate}</td>
+                              <td className="px-3 py-4 text-[#627188] dark:text-[#a9bddb]">{p.citizenship}</td>
+                              <td className="px-3 py-4 font-mono text-[#1d2430] dark:text-white">{p.passportNo}</td>
+                              <td className="px-3 py-4 text-[#627188] dark:text-[#a9bddb]">{p.passportExpiry}</td>
+                              <td className="px-3 py-4">
                                 <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => onEdit(p)}
-                                    className="
-                                      h-9 w-9 rounded-xl
-                                      border border-white/15 bg-white/10
-                                      hover:bg-white/15 transition
-                                      grid place-items-center
-                                    "
+                                    className="grid h-9 w-9 place-items-center rounded-xl border border-[#dbe3ef] bg-white transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:hover:bg-[rgba(24,43,80,0.92)]"
                                     title="Tahrirlash"
                                   >
                                     <Pencil size={16} className="text-[#1C96C8]" />
@@ -718,12 +755,7 @@ export default function PassengersPage() {
 
                                   <button
                                     onClick={() => onDelete(p.id)}
-                                    className="
-                                      h-9 w-9 rounded-xl
-                                      border border-white/15 bg-white/10
-                                      hover:bg-white/15 transition
-                                      grid place-items-center
-                                    "
+                                    className="grid h-9 w-9 place-items-center rounded-xl border border-[#f0d8d9] bg-white transition hover:bg-[#fff5f6] dark:border-[#66415f] dark:bg-[rgba(45,27,50,0.82)] dark:hover:bg-[rgba(62,32,70,0.94)]"
                                     title="O'chirish"
                                   >
                                     <Trash2 size={16} className="text-[#8A3A5A]" />
@@ -737,217 +769,241 @@ export default function PassengersPage() {
                     </table>
                   </div>
 
-                  <div className="mt-3 text-xs text-white/55">
+                  <div className="mt-3 text-xs text-[#718198] dark:text-[#93abd0]">
                     * Pax: {pax} ta. Checkoutdan keyin yo'lovchilar shu yerga tushadi.
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/12 bg-white/7 backdrop-blur-2xl p-6 shadow-[0_25px_70px_rgba(0,0,0,0.35)]">
-              <div className="text-lg font-extrabold">Tasdiqlash</div>
-              <div className="mt-2 text-white/70 text-sm">
-                Ma'lumotlarni tekshiring va rasmiylashtirishni yakunlang.
+            <div className={`rounded-[28px] p-6 lg:sticky lg:top-28 ${lightPanel}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-lg font-extrabold">Tasdiqlash</div>
+                  <div className="mt-2 text-[#627188] text-sm">
+                    Ma'lumotlarni tekshiring va rasmiylashtirishni yakunlang.
+                  </div>
+                </div>
+                <div className="rounded-full border border-[#dbe3ef] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#627188]">
+                  3-bosqich
+                </div>
               </div>
-              {lastOrderId && (
-                <div className="mt-3 text-emerald-200 text-sm">
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <MiniStat label="Yo'lovchi" value={`${cart.passengers.length}/${pax}`} />
+                <MiniStat
+                  label="To'lov"
+                  value={paymentMethod ? paymentMethod.toUpperCase() : "Tanlanmagan"}
+                />
+              </div>
+
+              <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
+                Hozirgi holat: booking API ishlaydi, lekin payment redirect yoki transaction callback frontendga ulanmagan.
+              </div>
+
+              {lastOrderId ? (
+                <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                   Order ID: {lastOrderId}
                 </div>
-              )}
-              {cancelMsg && (
-                <div className="mt-3 text-sm text-white/80">
+              ) : null}
+
+              {cancelMsg ? (
+                <div className="mt-3 rounded-2xl border border-[#f1d9d9] bg-[#fff7f7] px-4 py-3 text-sm text-[#9e4e5b]">
                   {cancelMsg}
                 </div>
-              )}
-              {issueMsg && (
-                <div className="mt-3 text-sm text-white/80">
+              ) : null}
+              {issueMsg ? (
+                <div className="mt-3 rounded-2xl border border-[#dbe3ef] bg-[#f8fbff] px-4 py-3 text-sm text-[#627188]">
                   {issueMsg}
                 </div>
-              )}
-              {voidMsg && (
-                <div className="mt-3 text-sm text-white/80">
+              ) : null}
+              {voidMsg ? (
+                <div className="mt-3 rounded-2xl border border-[#f1d9d9] bg-[#fff7f7] px-4 py-3 text-sm text-[#9e4e5b]">
                   {voidMsg}
                 </div>
-              )}
+              ) : null}
 
-              <div className="mt-4 rounded-2xl bg-white/10 p-4">
-                <div className="text-white/70 text-xs">Narx</div>
-                <div className="text-2xl font-extrabold text-[#F4D7E3]">
-                  {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
+              <div className="mt-4 rounded-[24px] border border-[#f0d8cf] bg-[linear-gradient(135deg,#fff8f3_0%,#fff1f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:border-[#4a3f5f] dark:bg-[linear-gradient(135deg,rgba(46,36,69,0.96)_0%,rgba(33,23,52,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.14em] text-[#8d6d70] dark:text-[#d6bfd0]">Narx</div>
+                    <div className="mt-2 text-3xl font-extrabold tracking-[-0.03em] text-[#b4586f] dark:text-[#ffd7e4]">
+                      {formatMoney(cart.amount ?? 0, cart.currency || "UZS")}
+                    </div>
+                  </div>
+                  <div className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-[#8d6d70] dark:bg-white/10 dark:text-[#f2d9e7]">
+                    Pax: {pax}
+                  </div>
                 </div>
-                <div className="mt-2 text-xs text-white/60">
+                <div className="mt-3 text-xs text-[#8d6d70] dark:text-[#d6bfd0]">
                   To'lov:{" "}
-                  <span className="text-white/85 font-semibold">
+                  <span className="font-semibold text-[#1d2430] dark:text-white">
                     {paymentMethod ? paymentMethod.toUpperCase() : "tanlanmagan"}
                   </span>
                 </div>
               </div>
-              {bookError && (
-                <div className="mt-3 rounded-2xl border border-red-500/25 bg-red-500/10 p-3 text-red-100 text-sm">
+
+              {bookError ? (
+                <div className="mt-3 rounded-2xl border border-[#f1d9d9] bg-[#fff7f7] p-3 text-sm text-[#9e4e5b]">
                   {bookError}
                 </div>
-              )}
-              {lastOrderId && (
-                <div className="mt-3 text-emerald-200 text-sm">
-                  Order ID: {lastOrderId}
-                </div>
-              )}
+              ) : null}
 
-              <label className="mt-4 flex items-start gap-2 text-xs text-white/70">
-                <input
-                  type="checkbox"
-                  checked={agreeData}
-                  onChange={(e) => setAgreeData(e.target.checked)}
-                  className="mt-0.5"
-                />
-                Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
-              </label>
-              <label className="mt-2 flex items-start gap-2 text-xs text-white/70">
-                <input
-                  type="checkbox"
-                  checked={agreeRules}
-                  onChange={(e) => setAgreeRules(e.target.checked)}
-                  className="mt-0.5"
-                />
-                Men tanishdim va tarifning qoidalari va shartlariga roziman
-              </label>
-
-              <button
-                onClick={onBook}
-                disabled={!canCheckout || bookLoading}
-                className="
-                  mt-4 h-12 w-full rounded-2xl
-                  bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                  text-white font-semibold transition
-                  shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                  hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
-              >
-                {bookLoading ? "..." : "Rasmiylashtirish"}
-              </button>
-              <button
-                onClick={onCancelService}
-                disabled={!lastOrderId || cancelLoading}
-                className="
-                  mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
-              >
-                {cancelLoading ? "Cancel..." : "Cancel PNR"}
-              </button>
-              <button
-                onClick={onIssueOrder}
-                disabled={!lastOrderId || issueLoading}
-                className="
-                  mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
-              >
-                {issueLoading ? "Issue..." : "Issue PNR"}
-              </button>
-              <button
-                onClick={onVoidService}
-                disabled={!lastOrderId || voidLoading}
-                className="
-                  mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
-              >
-                {voidLoading ? "VOID..." : "VOID PNR"}
-              </button>
-              <button
-                onClick={() => setStep(2)}
-                className="mt-3 h-11 w-full rounded-2xl border border-white/15 bg-white/5 text-white/85 hover:bg-white/10 transition"
-              >
-                Orqaga
-              </button>
-
-              <div className="mt-4 rounded-2xl border border-white/12 bg-white/6 p-4">
-                <div className="text-white font-semibold">Order details</div>
-                <div className="mt-2 text-xs text-white/65">GET /orders/{`{id}`}</div>
-                <button
-                  onClick={onGetOrder}
-                  disabled={orderLoading || !(lastOrderId || cart.lastOrderId)}
-                  className="mt-3 h-10 w-full rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 transition disabled:opacity-60"
-                >
-                  {orderLoading ? "..." : "Get Order by ID"}
-                </button>
-                {orderMsg && <div className="mt-2 text-xs text-white/80">{orderMsg}</div>}
-                {orderData && (
-                  <div className="mt-2 text-xs text-white/80 space-y-1">
-                    <div>ID: {orderData.id ?? "—"}</div>
-                    <div>Status: {orderData.status ?? "—"}</div>
-                    <div>Narx: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
-                    <div>Client: {orderData.client ?? "—"}</div>
-                    <div>Service: {orderData.serviceType ?? "—"}</div>
-                    <div>Reservation (PNR): {orderData.reservationId ?? "—"}</div>
-                  </div>
-                )}
+              <div className="mt-4 rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
+                <div className="text-sm font-semibold text-[#1d2430]">Tasdiqlash shartlari</div>
+                <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-[#627188]">
+                  <input
+                    type="checkbox"
+                    checked={agreeData}
+                    onChange={(e) => setAgreeData(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman
+                </label>
+                <label className="mt-2 flex items-start gap-2 text-xs leading-5 text-[#627188]">
+                  <input
+                    type="checkbox"
+                    checked={agreeRules}
+                    onChange={(e) => setAgreeRules(e.target.checked)}
+                    className="mt-0.5"
+                  />
+                  Men tanishdim va tarifning qoidalari va shartlariga roziman
+                </label>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/12 bg-white/6 p-4">
-                <div className="text-white font-semibold">PNR tekshirish</div>
-                <div className="mt-2 text-xs text-white/65">
-                  `GET /air/get-pnr?locator=ABC123`
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <input
-                    value={pnrLocator}
-                    onChange={(e) => setPnrLocator(e.target.value.toUpperCase())}
-                    placeholder="PNR locator (ABC123)"
-                    className="h-10 flex-1 rounded-xl bg-white/5 border border-white/10 px-3 outline-none focus:border-white/25"
-                  />
+              <div className="mt-4 space-y-3">
+                <button
+                  onClick={onBook}
+                  disabled={!canCheckout || bookLoading}
+                  className={`h-12 w-full ${primaryButtonClass}`}
+                >
+                  {bookLoading ? "..." : "Rasmiylashtirish"}
+                </button>
+
+                <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={onGetPnr}
-                    disabled={pnrLoading}
-                    className="h-10 px-3 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 transition disabled:opacity-60"
+                    onClick={onIssueOrder}
+                    disabled={!lastOrderId || issueLoading}
+                    className={`h-11 w-full ${secondaryButtonClass}`}
                   >
-                    {pnrLoading ? "..." : "Get PNR"}
+                    {issueLoading ? "Issue..." : "Issue PNR"}
+                  </button>
+                  <button
+                    onClick={onCancelService}
+                    disabled={!lastOrderId || cancelLoading}
+                    className={`h-11 w-full ${dangerButtonClass}`}
+                  >
+                    {cancelLoading ? "Cancel..." : "Cancel PNR"}
                   </button>
                 </div>
-                {pnrMsg && <div className="mt-2 text-xs text-white/80">{pnrMsg}</div>}
-                {pnrData && (
-                  <div className="mt-3 text-xs text-white/80 space-y-2">
-                    <div>Narx: {formatMoney(pnrData.price ?? 0, cart.currency || "UZS")}</div>
-                    <div>Segments: {pnrData.segments?.length ?? 0}</div>
-                    {pnrData.segments?.slice(0, 2).map((s, i) => (
-                      <div key={i} className="rounded-lg border border-white/12 bg-white/6 p-2">
-                        {(s.origin || "—") + " → " + (s.destination || "—")} · {(s.carrier || "—")}
-                        {(s.flightNumber && `-${s.flightNumber}`) || ""}
-                        <div className="text-white/65 mt-1">
-                          {s.departure || "—"} → {s.arrival || "—"} · Bagaj: {s.baggage || "—"}
-                        </div>
-                      </div>
-                    ))}
-                    <div>Passengers: {pnrData.passengers?.length ?? 0}</div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={onVoidService}
+                    disabled={!lastOrderId || voidLoading}
+                    className={`h-11 w-full ${dangerButtonClass}`}
+                  >
+                    {voidLoading ? "VOID..." : "VOID PNR"}
+                  </button>
+                  <button
+                    onClick={() => setStep(2)}
+                    className={`h-11 w-full ${secondaryButtonClass}`}
+                  >
+                    Orqaga
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-4 border-t border-[#e7edf5] pt-5">
+                <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
+                  <div className="text-[#1d2430] font-semibold dark:text-white">Order details</div>
+                  <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">GET /orders/{`{id}`}</div>
+                  <button
+                    onClick={onGetOrder}
+                    disabled={orderLoading || !(lastOrderId || cart.lastOrderId)}
+                    className={`mt-3 h-10 w-full rounded-xl ${secondaryButtonClass}`}
+                  >
+                    {orderLoading ? "..." : "Get Order by ID"}
+                  </button>
+                  {orderMsg && <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">{orderMsg}</div>}
+                  {orderData && (
+                    <div className="mt-2 space-y-1 text-xs text-[#627188] dark:text-[#a9bddb]">
+                      <div>ID: {orderData.id ?? "—"}</div>
+                      <div>Status: {orderData.status ?? "—"}</div>
+                      <div>Narx: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
+                      <div>Client: {orderData.client ?? "—"}</div>
+                      <div>Service: {orderData.serviceType ?? "—"}</div>
+                      <div>Reservation (PNR): {orderData.reservationId ?? "—"}</div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
+                  <div className="text-[#1d2430] font-semibold dark:text-white">PNR tekshirish</div>
+                  <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">
+                    `GET /air/get-pnr?locator=ABC123`
                   </div>
-                )}
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={pnrLocator}
+                      onChange={(e) => setPnrLocator(e.target.value.toUpperCase())}
+                      placeholder="PNR locator (ABC123)"
+                      className="h-10 flex-1 rounded-xl border border-[#dbe3ef] bg-white px-3 outline-none focus:border-[#c7d4e7]"
+                    />
+                    <button
+                      onClick={onGetPnr}
+                      disabled={pnrLoading}
+                      className={`h-10 px-3 rounded-xl ${secondaryButtonClass}`}
+                    >
+                      {pnrLoading ? "..." : "Get PNR"}
+                    </button>
+                  </div>
+                  {pnrMsg && <div className="mt-2 text-xs text-[#627188] dark:text-[#a9bddb]">{pnrMsg}</div>}
+                  {pnrData && (
+                    <div className="mt-3 space-y-2 text-xs text-[#627188] dark:text-[#a9bddb]">
+                      <div>Narx: {formatMoney(pnrData.price ?? 0, cart.currency || "UZS")}</div>
+                      <div>Segments: {pnrData.segments?.length ?? 0}</div>
+                      {pnrData.segments?.slice(0, 2).map((s, i) => (
+                        <div key={i} className="rounded-lg border border-[#dde5f0] bg-white p-2">
+                          {(s.origin || "—") + " → " + (s.destination || "—")} · {(s.carrier || "—")}
+                          {(s.flightNumber && `-${s.flightNumber}`) || ""}
+                          <div className="mt-1 text-[#718198]">
+                            {s.departure || "—"} → {s.arrival || "—"} · Bagaj: {s.baggage || "—"}
+                          </div>
+                        </div>
+                      ))}
+                      <div>Passengers: {pnrData.passengers?.length ?? 0}</div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {open && (
-          <div className="fixed inset-0 z-[80] bg-black/55 grid place-items-center p-4">
+          <div className="fixed inset-0 z-[80] bg-[rgba(15,23,42,0.45)] backdrop-blur-sm grid place-items-center p-4">
             <div
               className="
                 w-full max-w-[720px]
                 rounded-[28px]
-                border border-white/18
-                bg-white/10
+                border border-white/80
+                bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.94)_100%)]
                 backdrop-blur-2xl
-                shadow-[0_45px_140px_rgba(0,0,0,0.65)]
+                shadow-[0_45px_140px_rgba(17,24,39,0.22)]
                 p-5
+                dark:border-[#35507f]
+                dark:bg-[linear-gradient(180deg,rgba(10,22,44,0.98)_0%,rgba(14,28,54,0.96)_100%)]
+                dark:shadow-[0_45px_140px_rgba(2,8,24,0.65)]
               "
             >
               <div className="flex items-center justify-between">
-                <div className="text-lg font-extrabold text-white">
+                <div className="text-lg font-extrabold text-[#1d2430] dark:text-white">
                   {draft.id ? "Yo'lovchini tahrirlash" : "Yo'lovchi qo'shish"}
                 </div>
                 <button
-                  onClick={() => setOpen(false)}
-                  className="h-10 w-10 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 transition text-white"
+                onClick={() => setOpen(false)}
+                  className="h-10 w-10 rounded-xl border border-[#dbe3ef] bg-white text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:hover:bg-[rgba(24,43,80,0.92)]"
                 >
                   ✕
                 </button>
@@ -1015,14 +1071,7 @@ export default function PassengersPage() {
               <button
                 onClick={onSave}
                 disabled={!canSave}
-                className="
-                  mt-4 h-12 w-full rounded-2xl
-                  bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                  text-white font-semibold transition
-                  shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                  hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                "
+                className={`mt-4 h-12 w-full ${primaryButtonClass}`}
               >
                 Saqlash
               </button>
@@ -1036,10 +1085,10 @@ export default function PassengersPage() {
 
 function Pill({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-4 py-2">
-      <Icon size={14} className="text-white/70" />
-      <div className="text-xs text-white/60">{label}:</div>
-      <div className="text-sm font-semibold text-white/90">{value}</div>
+    <div className="inline-flex items-center gap-2 rounded-full border border-[#dde5f0] bg-white/90 px-4 py-2 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.24)]">
+      <Icon size={14} className="text-[#6e7f96] dark:text-[#9fb4d7]" />
+      <div className="text-xs text-[#7b8aa0] dark:text-[#a9bddb]">{label}:</div>
+      <div className="text-sm font-semibold text-[#1d2430] dark:text-white">{value}</div>
     </div>
   )
 }
@@ -1065,9 +1114,9 @@ function StepCard({
       className={`
         w-full text-left
         rounded-2xl border
-        ${active ? "border-white/30 bg-white/15" : "border-white/10 bg-white/6"}
-        p-4 shadow-[0_18px_40px_rgba(0,0,0,0.25)]
-        ${onClick ? "cursor-pointer hover:bg-white/10 transition" : ""}
+        ${active ? "border-[#cbd7e8] bg-white dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)]" : "border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)]"}
+        p-4 shadow-[0_18px_40px_rgba(17,24,39,0.07)]
+        ${onClick ? "cursor-pointer hover:bg-white transition" : ""}
       `}
       onClick={onClick}
     >
@@ -1075,14 +1124,14 @@ function StepCard({
         <div
           className={`
             h-11 w-11 rounded-2xl grid place-items-center
-            ${done ? "bg-[#1C96C8]/25 text-[#CFEFFF]" : "bg-white/10 text-white"}
+            ${done ? "bg-[linear-gradient(135deg,#eef5ff_0%,#dce9ff_100%)] text-[#3058a6] dark:bg-[linear-gradient(135deg,rgba(57,95,170,0.34)_0%,rgba(43,72,128,0.38)_100%)] dark:text-[#cfe0ff]" : "bg-[linear-gradient(135deg,#fff6f7_0%,#f6f8ff_100%)] text-[#7b6a8f] dark:bg-[linear-gradient(135deg,rgba(44,60,102,0.44)_0%,rgba(34,49,82,0.42)_100%)] dark:text-[#d7c9ef]"}
           `}
         >
           <Icon size={18} />
         </div>
         <div>
-          <div className="text-white font-semibold">{title}</div>
-          <div className="text-white/65 text-xs">{desc}</div>
+          <div className="text-[#1d2430] font-semibold dark:text-white">{title}</div>
+          <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{desc}</div>
         </div>
       </div>
     </button>
@@ -1091,9 +1140,18 @@ function StepCard({
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
-      <div className="text-white/60 text-xs">{label}</div>
-      <div className="mt-1 text-white font-semibold">{value}</div>
+    <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)]">
+      <div className="text-[#7b8aa0] text-xs dark:text-[#a9bddb]">{label}</div>
+      <div className="mt-1 text-[#1d2430] font-semibold dark:text-white">{value}</div>
+    </div>
+  )
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)]">
+      <div className="text-[11px] uppercase tracking-[0.14em] text-[#7b8aa0] dark:text-[#a9bddb]">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-[#1d2430] dark:text-white">{value}</div>
     </div>
   )
 }
@@ -1115,10 +1173,10 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="text-white/60 text-xs mb-2">{label}</div>
+      <div className="text-[#7b8aa0] text-xs mb-2 dark:text-[#a9bddb]">{label}</div>
       <div className="relative">
         {Icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8ca0bc] dark:text-[#9fb4d7]">
             <Icon size={16} />
           </div>
         )}
@@ -1129,11 +1187,11 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           className={`
             h-12 w-full rounded-2xl
-            bg-white/5 border border-white/10
+            bg-white border border-[#dbe3ef] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]
             ${Icon ? "pl-10 pr-4" : "px-4"}
             outline-none
-            focus:border-white/25 focus:bg-white/10
-            transition text-white
+            focus:border-[#c7d4e7] focus:bg-white dark:focus:bg-[rgba(28,46,84,0.94)]
+            transition text-[#1d2430] placeholder:text-[#97a5ba] dark:text-white dark:placeholder:text-[#8ea5cb]
           `}
         />
       </div>

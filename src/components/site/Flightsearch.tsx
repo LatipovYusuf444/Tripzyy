@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 type SearchForm = {
   from: string
@@ -26,7 +27,7 @@ export default function FlightSearch() {
     e.preventDefault()
     if (!isValid) return
     if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
-      alert("Sana formati: YYYY-MM-DD")
+      toast.error("Sana formati: YYYY-MM-DD")
       return
     }
 

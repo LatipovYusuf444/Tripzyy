@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -80,37 +80,37 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.19 0.03 258);
+  --foreground: oklch(0.96 0.01 255);
+  --card: oklch(0.24 0.035 258);
+  --card-foreground: oklch(0.96 0.01 255);
+  --popover: oklch(0.22 0.035 258);
+  --popover-foreground: oklch(0.96 0.01 255);
+  --primary: oklch(0.72 0.13 252);
+  --primary-foreground: oklch(0.18 0.03 258);
+  --secondary: oklch(0.28 0.03 255);
+  --secondary-foreground: oklch(0.96 0.01 255);
+  --muted: oklch(0.27 0.02 255);
+  --muted-foreground: oklch(0.77 0.02 250);
+  --accent: oklch(0.3 0.04 248);
+  --accent-foreground: oklch(0.98 0.01 255);
+  --destructive: oklch(0.68 0.18 20);
+  --border: oklch(0.42 0.04 252 / 34%);
+  --input: oklch(0.34 0.03 252 / 44%);
+  --ring: oklch(0.67 0.12 248);
+  --chart-1: oklch(0.62 0.16 255);
+  --chart-2: oklch(0.7 0.11 208);
+  --chart-3: oklch(0.76 0.1 180);
+  --chart-4: oklch(0.68 0.14 285);
+  --chart-5: oklch(0.74 0.13 330);
+  --sidebar: oklch(0.2 0.03 258);
+  --sidebar-foreground: oklch(0.96 0.01 255);
+  --sidebar-primary: oklch(0.66 0.15 252);
+  --sidebar-primary-foreground: oklch(0.16 0.03 258);
+  --sidebar-accent: oklch(0.28 0.035 252);
+  --sidebar-accent-foreground: oklch(0.96 0.01 255);
+  --sidebar-border: oklch(0.42 0.04 252 / 34%);
+  --sidebar-ring: oklch(0.67 0.12 248);
 }
 
 @layer base {
@@ -119,6 +119,60 @@
   }
   body {
     @apply text-foreground;
-    background: #f5f5f5;
+    background:
+      radial-gradient(circle at top, rgba(152, 186, 245, 0.2), transparent 32%),
+      linear-gradient(180deg, #f3f6fa 0%, #ebf1f7 100%);
+    transition: background 0.35s ease, color 0.35s ease;
   }
+
+  html[data-theme="dark"] body,
+  body[data-theme="dark"] {
+    background:
+      radial-gradient(circle at top, rgba(73, 116, 224, 0.22), transparent 34%),
+      linear-gradient(180deg, #0d1830 0%, #111e3b 52%, #162548 100%);
+  }
+}
+
+.text-p {
+  font-family: "Work Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.text-h1 {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: currentColor !important;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  caret-color: currentColor !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+}
+
+input,
+textarea,
+select {
+  background-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }

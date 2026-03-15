@@ -7,7 +7,6 @@ import Flights from "@/pages/Flights";
 import Services from "@/pages/Services";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
-import RegisterPage from "@/pages/auth/RegisterPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import Profile from "@/pages/Profile";
 import ProtectedRoute from "@/pages/auth/ProtectedRoute";
@@ -31,7 +30,7 @@ export const router = createBrowserRouter([
       { path: "contact", element: <Contact /> },
       { path: "faq", element: <FAQ /> },
 
-      { path: "register", element: <RegisterPage /> },
+      { path: "register", element: <Navigate to="/login" replace /> },
       { path: "login", element: <LoginPage /> },
 
       {

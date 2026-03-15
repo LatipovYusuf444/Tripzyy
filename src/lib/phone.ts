@@ -14,4 +14,3 @@ export function formatUzPhoneInput(value: string) {
   if (d) out += ` ${d}`
   return out
 }
-
