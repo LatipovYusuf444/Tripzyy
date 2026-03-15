@@ -1121,7 +1121,16 @@ export default function Flights() {
         {highlightCards.length > 0 ? (
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {highlightCards.map((card) => (
-              <TopDealCard key={card.key} badge={card.badge} tone={card.tone} flight={card.flight} onPick={onPick} formatRoute={formatRoute} />
+              <TopDealCard
+                key={card.key}
+                badge={card.badge}
+                tone={card.tone}
+                flight={card.flight}
+                onPick={onPick}
+                formatRoute={formatRoute}
+                language={language}
+                chooseFareLabel={copy.chooseFare}
+              />
             ))}
           </div>
         ) : null}
