@@ -13,10 +13,9 @@ import type { ReactNode } from "react"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-
 import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
-import heroDesktopImage from "@/assets/svg/aviation-tour-logo.webp"
+import heroDesktopImage from "@/assets/images/avubuluttour.png"
 import heroMobileImage from "@/assets/svg/emirates.webp"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { FEATURED_ROUTE_CARDS_KEY, type FeaturedRouteCard } from "@/shared/air/featuredRoutes"
@@ -28,8 +27,8 @@ type LocationOption = { code: string; name: string; searchText: string }
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
 const DEFAULT_HOME_SEARCH = {
-  from: "TAS",
-  to: "IST",
+  from: "",
+  to: "",
   pax: 1,
 }
 
@@ -96,7 +95,7 @@ export default function Home() {
 
   const copy = {
     uz: {
-      titleLines: ["Xalqaro avia qatnovlar", "va tezkor bron"],
+      titleLines: ["Xalqaro avia qatnovlar", "va tezkor reyslar"],
       subtitle: "Jonli tariflar, ishonchli aviakompaniyalar va qulay bron jarayoni bir ekranda jamlangan.",
       chips: ["Jonli tarif", "Aviakompaniyalar", "Tezkor bron"],
       totalFlights: "Jami",
@@ -497,7 +496,6 @@ export default function Home() {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             className="pointer-events-none absolute right-[6%] top-[10%] hidden h-[220px] w-[220px] rounded-full bg-[radial-gradient(circle,rgba(128,185,255,0.2)_0%,rgba(128,185,255,0.08)_44%,transparent_74%)] blur-3xl dark:block md:h-[320px] md:w-[320px]"
           />
-
           <div className="relative z-10 flex items-center justify-center px-4 py-14 sm:px-6 sm:py-16 md:px-12 md:py-18 xl:px-16 xl:py-20">
             <div className="flex w-full justify-center">
               <div className="w-full max-w-[1160px] rounded-[28px] bg-transparent px-4 py-16 dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.10)_0%,rgba(16,30,57,0.05)_48%,rgba(10,20,42,0.02)_100%)] sm:px-6 sm:py-18 md:px-8 md:py-20">
