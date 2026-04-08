@@ -20,7 +20,7 @@ export default function FlightSearch() {
       from: "Qayerdan",
       to: "Qayerga",
       search: "Qidirish",
-      dateHint: "* Sana backendga `YYYY-MM-DD` formatda yuboriladi. Keyin aeroport autocomplete (TAS/IST/DXB) va qaytish sanasi qo'shiladi.",
+      dateHint: "* Sana backendga `YYYY-MM-DD` formatda yuboriladi. Hozir real ishlayotgan misol yo'nalish: LON -> FRA.",
       passenger: "Yo'lovchi",
       count: "ta",
     },
@@ -38,15 +38,15 @@ export default function FlightSearch() {
       from: "From",
       to: "To",
       search: "Search",
-      dateHint: "* The date is sent to the backend in `YYYY-MM-DD` format. Airport autocomplete (TAS/IST/DXB) and return date will be added later.",
+      dateHint: "* The date is sent to the backend in `YYYY-MM-DD` format. The confirmed working route example is LON -> FRA.",
       passenger: "Passenger",
       count: "",
     },
   }[language]
 
   const [form, setForm] = useState<SearchForm>({
-    from: "Toshkent",
-    to: "Istanbul",
+    from: "LON",
+    to: "FRA",
     date: "",
     pax: 1,
   })

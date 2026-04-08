@@ -1,4 +1,5 @@
 import axios from "axios"
+import { getAccessToken } from "@/shared/auth/token"
 import { useAppLoading } from "@/shared/store/appLoading"
 
 const apiKey = import.meta.env.VITE_API_KEY
@@ -14,11 +15,10 @@ const client = axios.create({
 
 client.interceptors.request.use((config) => {
   useAppLoading.getState().start()
-  const token = localStorage.getItem("access_token")
+  const token = getAccessToken()
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  if (apiKey) {
+    config.headers["X-API-KEY"] = `Bearer ${token}`
+  } else if (apiKey) {
     config.headers["X-API-KEY"] = apiKey
   }
   return config

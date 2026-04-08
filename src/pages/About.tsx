@@ -379,7 +379,7 @@ export default function About() {
       )}
       <section ref={heroRef} className="relative bg-white dark:bg-transparent">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,106,0,0.08),transparent_35%),radial-gradient(circle_at_top_right,rgba(138,58,90,0.08),transparent_32%),linear-gradient(to_bottom,rgba(255,255,255,1),rgba(250,250,250,1))] dark:bg-[radial-gradient(circle_at_top_left,rgba(57,98,188,0.22),transparent_35%),radial-gradient(circle_at_top_right,rgba(119,72,175,0.18),transparent_32%),linear-gradient(to_bottom,rgba(8,18,38,0.78),rgba(7,17,31,0.28))]" />
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative mx-auto max-w-[1200px] px-5 pb-10 pt-32">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-32 md:px-8 2xl:max-w-[1680px]">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }}>
               <motion.h1 variants={fadeUp} className="mt-5 text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl xl:text-6xl">
@@ -425,7 +425,7 @@ export default function About() {
         <div className="mt-6" ref={statsRef}>
           <div className="relative overflow-hidden bg-gradient-to-br from-[#dfe9f1] via-[#bfd2e3] to-[#91aac3] dark:bg-[linear-gradient(135deg,#102347_0%,#15315f_48%,#0c1d3d_100%)]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.25),transparent_45%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_48%)]" />
-            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="relative mx-auto grid max-w-[1200px] grid-cols-2 gap-6 px-5 py-12 md:grid-cols-3 lg:grid-cols-6">
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="relative mx-auto grid max-w-[1500px] grid-cols-2 gap-6 px-5 py-12 md:grid-cols-3 md:px-8 lg:grid-cols-6 2xl:max-w-[1680px]">
               {stats.map((s) => (
                 <motion.div key={s.title} variants={softScale}>
                   <StatItem data={s} animate={animate} />
@@ -437,7 +437,7 @@ export default function About() {
       </section>
 
       <section className="relative bg-white py-16 dark:bg-transparent">
-        <div className="mx-auto max-w-[1200px] px-5">
+        <div className="mx-auto max-w-[1500px] px-5 md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
             <motion.div variants={fadeUp}>
               <div className="text-lg font-extrabold tracking-[0.2em] text-[#ff6a00] dark:text-[#ff9b57]">{copy.aboutKicker}</div>
@@ -480,7 +480,7 @@ export default function About() {
         </div>
       </section>
       <section className="bg-white py-16 dark:bg-transparent">
-        <div className="mx-auto max-w-[1200px] px-5 text-center">
+        <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
               {copy.certificates}
@@ -503,7 +503,7 @@ export default function About() {
       </section>
 
       <section className="bg-[#fcfcfd] py-16 dark:bg-transparent">
-        <div className="mx-auto max-w-[1200px] px-5 text-center">
+        <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
               {copy.partners}

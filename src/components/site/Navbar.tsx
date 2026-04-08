@@ -14,6 +14,7 @@ import {
 
 import { Button } from "@/components/ui/button"
 import logoImage from "@/assets/images/logo.png"
+import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
 import { bookingCart } from "@/shared/store/bookingCart"
 import {
   getStoredTheme,
@@ -46,9 +47,7 @@ export default function Navbar() {
   const { language, setLanguage } = useI18n()
 
   const [open, setOpen] = useState(false)
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem("access_token")
-  )
+  const [token, setToken] = useState<string | null>(() => getAccessToken())
   const [theme, setTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [paxCount, setPaxCount] = useState<number>(
     () => bookingCart.get().passengers.length
@@ -58,8 +57,8 @@ export default function Navbar() {
   const authed = useMemo(() => !!token, [token])
 
   useEffect(() => {
-    const onStorage = () => setToken(localStorage.getItem("access_token"))
-    const onAuth = () => setToken(localStorage.getItem("access_token"))
+    const onStorage = () => setToken(getAccessToken())
+    const onAuth = () => setToken(getAccessToken())
 
     window.addEventListener("storage", onStorage)
     window.addEventListener("tripzy-auth", onAuth as EventListener)
@@ -126,9 +125,10 @@ export default function Navbar() {
   }
 
   const logout = () => {
-    localStorage.removeItem("access_token")
+    clearAccessToken()
     setToken(null)
     setOpen(false)
+    window.dispatchEvent(new Event("tripzy-auth"))
     navigate("/login")
   }
 
@@ -226,7 +226,7 @@ export default function Navbar() {
           isScrolled ? "py-2 md:py-1.5" : "py-3 md:py-2.5",
         ].join(" ")}
       >
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 lg:gap-5">
+        <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-3 lg:gap-5 2xl:max-w-[1820px]">
           <Link
             to="/"
             className="hidden shrink-0 items-center justify-center lg:flex"

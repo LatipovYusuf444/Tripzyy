@@ -10,7 +10,7 @@ export default function Layout() {
         <Navbar />
       </header>
 
-      <main className="flex-1 bg-[linear-gradient(180deg,#e9f1f8_0%,#eef3f7_28%,#edf2f6_100%)] text-[#1d2430]">
+      <main className="flex-1 bg-[linear-gradient(180deg,#e9f1f8_0%,#eef3f7_28%,#edf2f6_100%)] pt-[86px] text-[#1d2430] md:pt-[94px] xl:pt-[102px]">
         <Outlet />
       </main>
 

@@ -716,7 +716,7 @@ export default function PassengersPage() {
         variants={container}
         initial="hidden"
         animate="show"
-        className="relative mx-auto max-w-[1200px] px-5 py-10"
+        className="relative mx-auto max-w-[1500px] px-4 py-10 sm:px-6 xl:px-8 2xl:max-w-[1680px]"
       >
         <motion.div variants={fadeUp} className="flex items-start justify-between gap-4 flex-wrap">
           <div>

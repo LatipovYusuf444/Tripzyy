@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 import { formatUzPhoneInput } from "@/lib/phone"
+import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 
 const primaryButtonClass =
@@ -138,11 +139,10 @@ export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const token = useMemo(() => localStorage.getItem("access_token"), [])
+  const token = useMemo(() => getAccessToken(), [])
 
   const logout = async () => {
-    localStorage.removeItem("access_token")
-    sessionStorage.removeItem("access_token")
+    clearAccessToken()
     window.dispatchEvent(new Event("tripzy-auth"))
     navigate("/login")
   }
@@ -161,7 +161,7 @@ export default function Profile() {
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_36%,#e7edf5_100%)] pt-24 text-[#1d2430] dark:bg-[linear-gradient(180deg,#07111f_0%,#0a1730_24%,#102347_58%,#0a1730_100%)] dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(760px_320px_at_14%_0%,rgba(88,122,196,0.16),transparent_62%),radial-gradient(560px_260px_at_88%_6%,rgba(219,121,104,0.14),transparent_56%),radial-gradient(680px_320px_at_48%_36%,rgba(157,90,129,0.08),transparent_62%)] dark:bg-[radial-gradient(920px_380px_at_16%_0%,rgba(78,118,204,0.24),transparent_58%),radial-gradient(760px_320px_at_84%_6%,rgba(126,82,194,0.16),transparent_56%),radial-gradient(760px_320px_at_50%_24%,rgba(40,87,168,0.22),transparent_62%)]" />
 
-      <div className="relative mx-auto max-w-[1200px] px-4 py-10 sm:px-5 sm:py-14">
+      <div className="relative mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-14 xl:px-8 2xl:max-w-[1680px]">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <motion.div
             initial={{ opacity: 0, y: 12 }}

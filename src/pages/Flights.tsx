@@ -12,7 +12,6 @@ import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { FEATURED_ROUTE_CARDS_KEY, type FeaturedRouteCard } from "@/shared/air/featuredRoutes"
 import { useI18n } from "@/shared/i18n/i18n"
-import { bookingCart } from "@/shared/store/bookingCart"
 
 const luxuryBtn =
   "border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_14px_28px_rgba(17,24,39,0.22)] hover:brightness-110"
@@ -22,7 +21,8 @@ const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
 
-type SearchCriteria = { from: string; to: string; date: string; pax: number }
+type TravelClassCode = "Y" | "C" | "F"
+type SearchCriteria = { from: string; to: string; date: string; pax: number; travelClass: TravelClassCode }
 type LocationOption = { code: string; name: string; searchText: string }
 
 type SearchDataLike = {
@@ -80,6 +80,12 @@ const toTime = (value?: string) => {
   if (!value) return "—"
   const t = value.split(" ")[1]
   return t ? t.slice(0, 5) : value
+}
+
+const toDateOnly = (value?: string) => {
+  if (!value) return "—"
+  const d = value.split(" ")[0]
+  return d || value
 }
 
 const toApiAsset = (path?: string) => {
@@ -157,10 +163,11 @@ const getSuggestedDepartureDate = () => {
 }
 
 const DEFAULT_AUTO_SEARCH: SearchCriteria = {
-  from: "TAS",
-  to: "IST",
+  from: "LON",
+  to: "FRA",
   date: getSuggestedDepartureDate(),
   pax: 1,
+  travelClass: "Y",
 }
 
 const normalizeText = (value: string) =>
@@ -188,8 +195,27 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
   const exactName = options.find((option) => normalizeText(option.name) === normalized)
   if (exactName) return exactName.code
 
-  const firstMatch = options.find((option) => option.searchText.includes(normalized))
-  return firstMatch?.code ?? (upper.length <= 3 ? upper : "")
+  return upper.length === 3 ? upper : ""
+}
+
+const normalizeTravelClass = (value?: string): TravelClassCode => {
+  const upper = (value || "").toUpperCase()
+  if (upper === "C" || upper === "F") return upper
+  return "Y"
+}
+
+const formatCabinClass = (code?: string, language: "uz" | "ru" | "en" = "en") => {
+  const upper = (code || "").toUpperCase()
+  if (upper === "C" || upper === "J") {
+    return language === "uz" ? "Biznes (C)" : language === "ru" ? "Бизнес (C)" : "Business (C)"
+  }
+  if (upper === "F") {
+    return language === "uz" ? "Birinchi klass (F)" : language === "ru" ? "Первый класс (F)" : "First (F)"
+  }
+  if (upper === "Y" || upper === "W" || upper === "M" || upper === "L" || upper === "X" || upper === "U") {
+    return language === "uz" ? "Ekonom (Y)" : language === "ru" ? "Эконом (Y)" : "Economy (Y)"
+  }
+  return upper || (language === "uz" ? "Ekonom (Y)" : language === "ru" ? "Эконом (Y)" : "Economy (Y)")
 }
 
 export default function Flights() {
@@ -201,9 +227,10 @@ export default function Flights() {
   const [to, setTo] = useState("")
   const [date, setDate] = useState("")
   const [pax, setPax] = useState(1)
+  const [travelClass, setTravelClass] = useState<TravelClassCode>("Y")
   const [sort, setSort] = useState<"best" | "cheap" | "fast">("best")
   const [airlineFilter, setAirlineFilter] = useState("all")
-  const [cabinFilter, setCabinFilter] = useState<"all" | "Economy" | "Business">("all")
+  const [cabinFilter, setCabinFilter] = useState("all")
   const [maxDuration, setMaxDuration] = useState<number | null>(null)
   const [maxPriceFilter, setMaxPriceFilter] = useState<number | null>(null)
   const [departureFilter, setDepartureFilter] = useState<
@@ -214,7 +241,6 @@ export default function Flights() {
 
   const [items, setItems] = useState<Flight[]>([])
   const [loading, setLoading] = useState(false)
-  const [lastInfo, setLastInfo] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState<Flight | null>(null)
   const [dynamicAirportLabels, setDynamicAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
@@ -226,39 +252,40 @@ export default function Flights() {
       fillSearch: "Qayerdan, qayerga va sanani to'ldiring.",
       dateFormat: "Sana formati: YYYY-MM-DD",
       searchError: "Qidiruv xato",
-      backendBusy: "Backend vaqtincha javob bermayapti (502 Bad Gateway).",
+      backendBusy: "Xizmat vaqtincha javob bermayapti.",
       timeout: "Server juda sekin javob berdi. So'rov timeout bo'ldi.",
       invalidRoute: "Jo'nash va manzil uchun to'g'ri variantni tanlang.",
       highlightCheap: "Eng arzon",
       highlightBest: "Optimal",
       highlightFast: "Eng tez",
-      heroBadge: "Premium route selection",
+      heroBadge: "Qulay yo'nalish tanlovi",
       heroTitleA: "Reyslar ichidan",
       heroTitleB: "eng qulay",
       heroTitleC: "tanlovni qiling",
-      heroDesc: "Backenddan kelgan real reyslarni qidiring, solishtiring va bron qiling.",
+      heroDesc: "Real reyslarni qidiring, solishtiring va bron qiling.",
       date: "Sana",
       passenger: "Yo'lovchi",
       route: "Yo'nalish",
       unselected: "Tanlanmagan",
       routeEnter: "Yo'nalish kiriting",
-      routeSelection: "Premium yo'nalish tanlovi",
-      curated: "Curated journeys",
+      routeSelection: "Tanlangan yo'nalishlar",
+      curated: "Tavsiya etilgan yo'nalishlar",
       curatedTitle: "Aviakompaniyalar va qulay tariflar",
-      curatedDesc: "Search, compare, filter va booking oqimi backend bilan birga ishlashda davom etadi.",
+      curatedDesc: "Reyslarni qidiring, solishtiring va qulay tarifni tanlang.",
       from: "Qayerdan",
       to: "Qayerga",
-      fromPlaceholder: "Masalan: TAS yoki London",
-      toPlaceholder: "Masalan: IST yoki Frankfurt",
+      fromPlaceholder: "Masalan: LON yoki London",
+      toPlaceholder: "Masalan: FRA yoki Frankfurt",
       openCalendar: "Narxli kalendarni ochish",
+      classLabel: "Klass",
       search: "Qidirish",
       searching: "Qidirilmoqda...",
-      searchHint: "* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida backenddan olinadigan minimal narxli kalendar ochiladi.",
-      swap: "Swap",
-      clear: "Clear",
-      best: "Best",
-      cheap: "Cheap",
-      fast: "Fast",
+      searchHint: "* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida minimal narxli kalendar ochiladi.",
+      swap: "Almashtirish",
+      clear: "Tozalash",
+      best: "Optimal",
+      cheap: "Arzon",
+      fast: "Tez",
       filters: "Filtrlar",
       priceRange: "Narx oralig'i",
       duration: "Parvoz davomiyligi",
@@ -268,7 +295,7 @@ export default function Flights() {
       baggageOnlySub: "Faqat bagajli tariflar",
       refundable: "Refundable",
       refundableSub: "Qaytarish mumkin bo'lgan tariflar",
-      refundableNone: "Backend hozir refundable tarif qaytarmadi",
+      refundableNone: "Hozir qaytariladigan tarif topilmadi",
       cabin: "Kabina turi",
       all: "Barchasi",
       airline: "Aviakompaniya",
@@ -276,7 +303,8 @@ export default function Flights() {
       visibleFlights: "Hozir ro'yxatda",
       visibleFlightsSuffix: "ta ko'rinayotgan reys bor. Bu natijalar sizning qidiruvingiz bo'yicha yangilandi.",
       noFlights: "Hozircha reys topilmadi. Yo'nalish, sana va yo'lovchi sonini kiriting.",
-      backendInfo: "Backend",
+      backendInfo: "",
+      foundFlights: "",
       allDay: "Barchasi",
       beforeNoon: "06:00 gacha",
       day: "12:00-18:00",
@@ -294,9 +322,13 @@ export default function Flights() {
       refundableNo: "Qaytarilmaydi",
       availableFlight: "Reys mavjud",
       select: "Tanlash",
-      economy: "Economy",
-      business: "Business",
+      economy: "Ekonom",
+      business: "Biznes",
+      first: "Birinchi klass",
       selectOption: "tanlash",
+      segments: "Segmentlar",
+      layover: "Kutish vaqti",
+      carryOnLabel: "Qo'l yuki",
     },
     ru: {
       loginFirst: "Сначала выполните вход.",
@@ -328,6 +360,7 @@ export default function Flights() {
       fromPlaceholder: "Например: TAS или London",
       toPlaceholder: "Например: IST или Frankfurt",
       openCalendar: "Открыть календарь цен",
+      classLabel: "Класс",
       search: "Поиск",
       searching: "Поиск...",
       searchHint: "* Можно вводить название города или IATA код, autocomplete сработает. В блоке даты открывается календарь минимальных цен из backend.",
@@ -354,6 +387,7 @@ export default function Flights() {
       visibleFlightsSuffix: "видимых рейсов. Эти результаты обновлены по вашему поиску.",
       noFlights: "Пока рейсы не найдены. Укажите маршрут, дату и число пассажиров.",
       backendInfo: "Backend",
+      foundFlights: "Найдено",
       allDay: "Все",
       beforeNoon: "До 06:00",
       day: "12:00-18:00",
@@ -373,7 +407,11 @@ export default function Flights() {
       select: "Выбрать",
       economy: "Эконом",
       business: "Бизнес",
+      first: "Первый",
       selectOption: "выбрать",
+      segments: "Сегменты",
+      layover: "Ожидание",
+      carryOnLabel: "Ручная кладь",
     },
     en: {
       loginFirst: "Please log in first.",
@@ -402,9 +440,10 @@ export default function Flights() {
       curatedDesc: "Search, compare, filter, and booking continue working together with the backend.",
       from: "From",
       to: "To",
-      fromPlaceholder: "For example: TAS or London",
-      toPlaceholder: "For example: IST or Frankfurt",
+      fromPlaceholder: "For example: LON or London",
+      toPlaceholder: "For example: FRA or Frankfurt",
       openCalendar: "Open price calendar",
+      classLabel: "Class",
       search: "Search",
       searching: "Searching...",
       searchHint: "* Enter a city name or IATA code to use autocomplete. The date block opens the minimum-price calendar from the backend.",
@@ -431,6 +470,7 @@ export default function Flights() {
       visibleFlightsSuffix: "flights in the list. These results were updated for your search.",
       noFlights: "No flights found yet. Enter route, date, and passenger count.",
       backendInfo: "Backend",
+      foundFlights: "Found",
       allDay: "All",
       beforeNoon: "Before 06:00",
       day: "12:00-18:00",
@@ -450,7 +490,11 @@ export default function Flights() {
       select: "Select",
       economy: "Economy",
       business: "Business",
+      first: "First",
       selectOption: "select",
+      segments: "Segments",
+      layover: "Layover",
+      carryOnLabel: "Carry-on",
     },
   }[language]
 
@@ -632,6 +676,14 @@ export default function Flights() {
           family?.name || "",
           ...familyServices.map((service: any) => `${service.type} ${service.description}`),
         ])
+        const computedDuration =
+          Number(trip?.duration || 0) ||
+          segments.reduce(
+            (sum: number, segment: any) =>
+              sum + Number(segment.duration || 0) + Number(segment.layover || 0),
+            0
+          ) ||
+          Number(seg?.duration || 0)
         const price =
           Number(opt.price || 0) ||
           Number(opt.passengerInfos?.reduce((sum: number, item: any) => sum + Number(item?.total || 0), 0) || 0)
@@ -653,13 +705,15 @@ export default function Flights() {
           airline: carrierCode || "—",
           airlineName: carrierMeta?.name || opt.carrier || seg?.carrier || "—",
           airlineLogo: carrierMeta?.logo,
-          depart: toTime(primarySegment?.departure),
-          arrive: toTime(lastSegment?.arrival),
-          durationMin: trip?.duration || seg?.duration || 0,
+          departDate: toDateOnly(trip?.departure || primarySegment?.departure),
+          depart: toTime(trip?.departure || primarySegment?.departure),
+          arriveDate: toDateOnly(trip?.arrival || lastSegment?.arrival),
+          arrive: toTime(trip?.arrival || lastSegment?.arrival),
+          durationMin: computedDuration,
           price,
           currency: opt.currency || data?.currency,
           baggage,
-          cabin: seg?.serviceClass === "C" ? "Business" : "Economy",
+          cabin: formatCabinClass(seg?.serviceClass || opt.class || criteria.travelClass, language),
           refundable: Boolean(opt.isRefundable ?? refundable),
           services,
           flightNo,
@@ -672,7 +726,7 @@ export default function Flights() {
 
       return { mapped, labels: mapLocationLabels(data) }
     },
-    [mapLocationLabels]
+    [language, mapLocationLabels]
   )
 
   useEffect(() => {
@@ -680,6 +734,7 @@ export default function Flights() {
     let qTo = sp.get("to") ?? ""
     let qDate = sp.get("date") ?? ""
     let qPax = Number(sp.get("pax") ?? "1")
+    let qClass = normalizeTravelClass(sp.get("class") ?? "")
 
     if (!qFrom || !qTo || !qDate) {
       try {
@@ -690,6 +745,7 @@ export default function Flights() {
           qTo = parsed.to ?? qTo
           qDate = parsed.date ?? qDate
           qPax = Number(parsed.pax ?? qPax)
+          qClass = normalizeTravelClass((parsed as Partial<SearchCriteria>).travelClass ?? qClass)
         }
       } catch {
         // ignore invalid localStorage
@@ -726,6 +782,7 @@ export default function Flights() {
       qTo = DEFAULT_AUTO_SEARCH.to
       qDate = DEFAULT_AUTO_SEARCH.date
       qPax = DEFAULT_AUTO_SEARCH.pax
+      qClass = DEFAULT_AUTO_SEARCH.travelClass
     }
 
     const nextPax = !Number.isNaN(qPax) && qPax >= 1 ? qPax : 1
@@ -734,9 +791,10 @@ export default function Flights() {
     setTo(qTo)
     setDate(qDate)
     setPax(nextPax)
+    setTravelClass(qClass)
     lastAutoQueryRef.current =
       qFrom && qTo && qDate
-        ? JSON.stringify({ from: qFrom, to: qTo, date: qDate, pax: nextPax })
+        ? JSON.stringify({ from: qFrom, to: qTo, date: qDate, pax: nextPax, travelClass: qClass })
         : ""
     hydratedRef.current = true
   }, [sp])
@@ -766,7 +824,7 @@ export default function Flights() {
   const runSearch = useCallback(async (criteria: SearchCriteria, showAlert: boolean) => {
     const token =
       localStorage.getItem("access_token") || sessionStorage.getItem("access_token")
-    const { from, to, date, pax } = criteria
+    const { from, to, date, pax, travelClass } = criteria
 
     if (!token) {
       if (showAlert) toast.error(copy.loginFirst)
@@ -785,7 +843,6 @@ export default function Flights() {
     const cached = flightsCache.get(queryKey)
     if (cached) {
       setItems(cached.items)
-      setLastInfo(cached.info)
       return
     }
 
@@ -801,7 +858,7 @@ export default function Flights() {
           adults: pax,
           children: 0,
           infants: 0,
-          class: "Y",
+          class: travelClass,
           trips: [{ origin: from, destination: to, departure: date }],
         },
         { signal: controller.signal }
@@ -812,7 +869,6 @@ export default function Flights() {
       if (res.data.status !== "success" || !res.data.data?.options?.length) {
         setItems([])
         const msg = res.data.message || copy.searchError
-        setLastInfo(`${copy.backendInfo}: ${msg}`)
         if (showAlert) toast.error(msg)
         return
       }
@@ -824,10 +880,8 @@ export default function Flights() {
         return next
       })
 
-      const info = `${copy.backendInfo}: ${res.data.message} · options=${res.data.data.options.length} · currency=${res.data.data.currency}`
       setItems(mapped)
-      setLastInfo(info)
-      flightsCache.set(queryKey, { items: mapped, info })
+      flightsCache.set(queryKey, { items: mapped, info: null })
       localStorage.setItem(LAST_SUCCESSFUL_SEARCH_KEY, JSON.stringify(criteria))
       localStorage.setItem(
         LAST_AIR_RESULT_META_KEY,
@@ -837,7 +891,6 @@ export default function Flights() {
           date: criteria.date,
           pax: criteria.pax,
           count: mapped.length,
-          info,
           updatedAt: new Date().toISOString(),
         })
       )
@@ -853,7 +906,6 @@ export default function Flights() {
             ? copy.timeout
             : err?.response?.data?.message || copy.searchError
       setItems([])
-      setLastInfo(`${copy.backendInfo}: ${msg}`)
       if (showAlert) toast.error(msg)
     } finally {
       if (requestId === requestIdRef.current) {
@@ -861,7 +913,7 @@ export default function Flights() {
         abortRef.current = null
       }
     }
-  }, [copy.backendBusy, copy.backendInfo, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights, mergeFeaturedCards, toFeaturedCards])
+  }, [copy.backendBusy, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights, mergeFeaturedCards, toFeaturedCards])
 
   const onSearch = () => {
     const criteria = {
@@ -869,6 +921,7 @@ export default function Flights() {
       to: resolvedTo,
       date: date.trim(),
       pax,
+      travelClass,
     }
     if (!criteria.from || !criteria.to) {
       toast.error(copy.invalidRoute)
@@ -877,8 +930,11 @@ export default function Flights() {
     lastAutoQueryRef.current = JSON.stringify(criteria)
     navigate(
       `/flights?${new URLSearchParams({
-        ...criteria,
+        from: criteria.from,
+        to: criteria.to,
+        date: criteria.date,
         pax: String(criteria.pax),
+        class: criteria.travelClass,
       }).toString()}`,
       { replace: true }
     )
@@ -892,6 +948,7 @@ export default function Flights() {
       to: resolvedTo,
       date,
       pax,
+      travelClass,
     }
     if (!criteria.from || !criteria.to) return
     const queryKey = JSON.stringify(criteria)
@@ -903,11 +960,12 @@ export default function Flights() {
         to: criteria.to,
         date: criteria.date,
         pax: String(criteria.pax),
+        class: criteria.travelClass,
       }).toString()}`,
       { replace: true }
     )
     void runSearch(criteria, false)
-  }, [date, from, navigate, pax, resolvedFrom, resolvedTo, runSearch, to])
+  }, [date, from, navigate, pax, resolvedFrom, resolvedTo, runSearch, to, travelClass])
 
   useEffect(() => () => abortRef.current?.abort(), [])
 
@@ -915,6 +973,19 @@ export default function Flights() {
 
   const airlines = useMemo(
     () => ["all", ...Array.from(new Set(sourceItems.map((item) => item.airline).filter(Boolean)))],
+    [sourceItems]
+  )
+  const cabinOptions = useMemo<string[]>(
+    () => [
+      "all",
+      ...Array.from(
+        new Set(
+          sourceItems
+            .map((item) => item.cabin)
+            .filter((item): item is string => Boolean(item))
+        )
+      ),
+    ],
     [sourceItems]
   )
   const maxPrice = useMemo(
@@ -940,8 +1011,6 @@ export default function Flights() {
 
   const filtered = useMemo(() => {
     let list = sourceItems.filter((flight) => {
-      if (resolvedFrom && flight.from.toUpperCase() !== resolvedFrom.toUpperCase()) return false
-      if (resolvedTo && flight.to.toUpperCase() !== resolvedTo.toUpperCase()) return false
       if (airlineFilter !== "all" && flight.airline !== airlineFilter) return false
       if (cabinFilter !== "all" && flight.cabin !== cabinFilter) return false
       if (maxPriceFilter !== null && flight.price > maxPriceFilter) return false
@@ -994,28 +1063,6 @@ export default function Flights() {
     setOpen(true)
   }
 
-  const onBook = (flight: Flight) => {
-    setOpen(false)
-    const cart = bookingCart.get()
-    bookingCart.set({
-      ...cart,
-      flightId: flight.id,
-      route: formatRoute(flight.from, flight.to),
-      date,
-      pax,
-      amount: flight.price,
-      currency: flight.currency,
-      airline: flight.airline,
-      flightNo: flight.flightNo,
-      cabin: flight.cabin,
-      baggage: flight.baggage,
-      carryOn: flight.carryOn,
-      segments: flight.segments ?? cart.segments ?? [],
-      passengers: cart.passengers ?? [],
-    })
-    navigate("/passengers")
-  }
-
   const onSwapRoute = () => {
     setFrom(to)
     setTo(from)
@@ -1025,8 +1072,8 @@ export default function Flights() {
     setFrom("")
     setTo("")
     setDate("")
+    setTravelClass("Y")
     setItems([])
-    setLastInfo(null)
     lastAutoQueryRef.current = ""
     localStorage.removeItem(LAST_SUCCESSFUL_SEARCH_KEY)
     localStorage.removeItem(LAST_AIR_RESULT_META_KEY)
@@ -1036,7 +1083,7 @@ export default function Flights() {
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_34%,#e7edf6_100%)] pt-20 text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_26%,#15254a_62%,#11203d_100%)] dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(860px_340px_at_16%_0%,rgba(81,121,197,0.18),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(219,116,101,0.16),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(156,88,129,0.08),transparent_60%)] dark:bg-[radial-gradient(860px_340px_at_16%_0%,rgba(75,114,201,0.22),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(72,104,176,0.18),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(47,71,122,0.18),transparent_60%)]" />
-      <div className="relative mx-auto max-w-[1280px] px-4 py-10 sm:px-5 sm:py-12">
+      <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
         <div className={`overflow-visible rounded-[36px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md dark:shadow-[0_32px_90px_rgba(4,10,28,0.42)] md:p-6 ${softPanel}`}>
           <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <div className="relative overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_35%,#eef2fb_58%,#f7f1f5_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] dark:bg-[linear-gradient(135deg,rgba(16,31,60,0.96)_0%,rgba(19,35,67,0.92)_35%,rgba(22,42,79,0.94)_58%,rgba(24,44,82,0.98)_100%)] dark:shadow-[inset_0_1px_0_rgba(147,182,255,0.08)] md:p-8">
@@ -1076,7 +1123,7 @@ export default function Flights() {
           </div>
 
             <div className={`mt-6 overflow-visible rounded-[32px] p-5 backdrop-blur-sm ${softPanel}`}>
-            <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_210px]">
+            <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_170px_170px]">
               <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
               <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
               <div className="relative">
@@ -1095,6 +1142,7 @@ export default function Flights() {
                     from={resolvedFrom}
                     to={resolvedTo}
                     pax={pax}
+                    classCode={travelClass}
                     value={date}
                     onChange={(nextDate) => {
                       setDate(nextDate)
@@ -1103,6 +1151,26 @@ export default function Flights() {
                     onClose={() => setCalendarOpen(false)}
                   />
                 ) : null}
+              </div>
+              <div className="rounded-[20px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)]">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.classLabel}</div>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {(["Y", "C", "F"] as TravelClassCode[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setTravelClass(item)}
+                      className={[
+                        "h-10 rounded-2xl border text-sm font-semibold transition",
+                        travelClass === item
+                          ? `${luxuryBtn} border-[#1a2231]/10`
+                          : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]",
+                      ].join(" ")}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
               <button onClick={onSearch} disabled={loading} className={`h-14 rounded-[18px] font-semibold uppercase tracking-[0.12em] transition disabled:opacity-60 ${luxuryBtn}`}>{loading ? copy.searching : copy.search}</button>
             </div>
@@ -1114,7 +1182,6 @@ export default function Flights() {
                 {(["best", "cheap", "fast"] as const).map((item) => <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] text-[#627188] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]"].join(" ")}>{item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}</button>)}
               </div>
             </div>
-            {lastInfo ? <div className="mt-3 text-xs text-[#627188] dark:text-[#c7d8f6]">{lastInfo}</div> : null}
           </div>
         </div>
 
@@ -1162,7 +1229,7 @@ export default function Flights() {
                 </div>
               </FilterBlock>
               <FilterBlock title={copy.cabin}>
-                <div className="space-y-2">{(["all", "Economy", "Business"] as const).map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span>{item === "all" ? copy.all : item === "Economy" ? copy.economy : copy.business}</span><Ticket size={15} /></button>)}</div>
+                <div className="space-y-2">{cabinOptions.map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span>{item === "all" ? copy.all : item}</span><Ticket size={15} /></button>)}</div>
               </FilterBlock>
               <FilterBlock title={copy.airline}>
                 <div className="space-y-2">{airlines.map((item) => <button key={item} type="button" onClick={() => setAirlineFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", airlineFilter === item ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span className="truncate">{item === "all" ? copy.allCompanies : item}</span><span className="text-xs uppercase">{item === "all" ? sourceItems.length : sourceItems.filter((flight) => flight.airline === item).length}</span></button>)}</div>
@@ -1183,7 +1250,7 @@ export default function Flights() {
         </div>
       </div>
 
-      <FlightDetailsModal open={open} onClose={() => setOpen(false)} flight={selected} pax={pax} date={date} onBook={onBook} />
+      <FlightDetailsModal open={open} onClose={() => setOpen(false)} flight={selected} pax={pax} date={date} />
     </section>
   )
 }
@@ -1194,8 +1261,8 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
 
   const filteredOptions = useMemo(() => {
     const query = normalizeText(value)
-    if (!query) return options.slice(0, 8)
-    return options.filter((option) => option.searchText.includes(query)).slice(0, 8)
+    if (!query) return options
+    return options.filter((option) => option.searchText.includes(query))
   }, [options, value])
 
   useEffect(() => {
@@ -1299,6 +1366,9 @@ function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, choos
       <div className="mt-4 text-xl font-black text-[#1d2430] dark:text-[#f4f8ff]">{formatRoute(flight.from, flight.to)}</div>
       <div className="mt-2 text-sm text-[#627188] dark:text-[#b8cceb]">{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
       <div className="mt-4 text-2xl font-black text-[#1d2430] dark:text-white">{formatMoney(flight.price, flight.currency)}</div>
+      <div className="mt-2 text-sm text-[#627188] dark:text-[#b8cceb]">
+        {flight.departDate || "—"} → {flight.arriveDate || "—"}
+      </div>
       <button type="button" onClick={() => onPick(flight)} className={`mt-4 h-11 w-full rounded-2xl text-sm font-semibold ${luxuryBtn}`}>{chooseFareLabel}</button>
     </div>
   )
@@ -1335,6 +1405,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
   const badge = getFlightBadge(flight, index, language)
   const firstSegment = flight.segments?.[0]
   const lastSegment = flight.segments?.[flight.segments.length - 1]
+  const segments = flight.segments ?? []
   const departureTerminal = firstSegment?.departureTerminal
   const arrivalTerminal = lastSegment?.arrivalTerminal
   const badgeTone =
@@ -1365,7 +1436,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-sm text-[#445167] dark:text-[#d4e2fb]">
             <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.baggage ? `${flight.baggage} ${copy.baggageOnly.toLowerCase()}` : copy.noBaggage}</span>
-            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.carryOn ? `${language === "en" ? "Carry-on" : "Qo'l yuki"} ${flight.carryOn}` : copy.noCarry}</span>
+            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.carryOn ? `${copy.carryOnLabel} ${flight.carryOn}` : copy.noCarry}</span>
             {flight.seatsAvailable ? <span className="rounded-full bg-[#fff0f3] px-2.5 py-1 text-[#d94b64]">{copy.moreSeats} {flight.seatsAvailable} {copy.seats}</span> : null}
           </div>
         </div>
@@ -1386,6 +1457,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
           <div className="min-w-0">
             <div className="text-[18px] font-black text-[#1d2430] dark:text-white">{flight.depart}</div>
             <div className="text-sm text-[#6a778d] dark:text-[#d4e2fb]">{flight.from}</div>
+            <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{flight.departDate || "—"}</div>
             {departureTerminal ? (
               <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{copy.terminal} {departureTerminal}</div>
             ) : null}
@@ -1414,15 +1486,87 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
         <div className="text-right">
           <div className="text-[18px] font-black text-[#1d2430] dark:text-white">{flight.arrive}</div>
           <div className="text-sm text-[#6a778d] dark:text-[#d4e2fb]">{flight.to}</div>
+          <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{flight.arriveDate || "—"}</div>
           {arrivalTerminal ? (
             <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{copy.terminal} {arrivalTerminal}</div>
           ) : null}
           <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#f3f6fa] px-3 py-1 text-xs font-semibold text-[#5f6e84] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">
             <Ticket size={13} />
-            {flight.cabin === "Business" ? copy.business : copy.economy}
+            {flight.cabin || "—"}
           </div>
         </div>
       </div>
+
+      {segments.length ? (
+        <div className="mt-5 rounded-[24px] border border-[#e8eef6] bg-[linear-gradient(180deg,#fbfdff_0%,#f6f9fd_100%)] p-4 dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(23,41,76,0.9)_0%,rgba(18,33,62,0.92)_100%)]">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#74839a] dark:text-[#9fb4d7]">
+            {copy.segments}
+          </div>
+
+          <div className="mt-3 space-y-3">
+            {segments.map((segment, segmentIndex) => (
+              <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`}>
+                <div className="grid gap-3 rounded-[20px] border border-[#e3ebf6] bg-white/92 p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] md:grid-cols-[220px_minmax(0,1fr)_200px]">
+                  <div>
+                    <div className="text-sm font-black text-[#1d2430] dark:text-white">
+                      {(segment.carrier || segment.operatingCarrier || flight.airline) + (segment.flightNumber ? `-${segment.flightNumber}` : "")}
+                    </div>
+                    <div className="mt-1 text-sm text-[#627188] dark:text-[#d4e2fb]">
+                      {formatRoute(segment.origin, segment.destination)}
+                    </div>
+                    <div className="mt-2 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                      {segment.equipment || "—"} • {segment.bookingClass || "—"} / {segment.serviceClass || "—"}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-3 text-sm text-[#1d2430] dark:text-white">
+                      <span className="font-black">{toTime(segment.departure)}</span>
+                      <span className="text-[#9aa8bb]">→</span>
+                      <span className="font-black">{toTime(segment.arrival)}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                      {toDateOnly(segment.departure)} → {toDateOnly(segment.arrival)}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#5f6e84] dark:text-[#d4e2fb]">
+                      <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">
+                        {segment.origin}
+                      </span>
+                      <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">
+                        {segment.destination}
+                      </span>
+                      <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">
+                        {segment.duration ? fmtDuration(segment.duration, language) : "—"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-left md:text-right">
+                    <div className="text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                      {copy.terminal}
+                    </div>
+                    <div className="mt-1 text-sm font-semibold text-[#1d2430] dark:text-white">
+                      {(segment.departureTerminal || "—") + " → " + (segment.arrivalTerminal || "—")}
+                    </div>
+                    <div className="mt-2 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                      {segment.baggage || copy.noBaggage}
+                    </div>
+                    <div className="mt-1 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                      {segment.carryOn || copy.noCarry}
+                    </div>
+                  </div>
+                </div>
+
+                {segmentIndex < segments.length - 1 ? (
+                  <div className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-[#7f8ca0] dark:text-[#9fb4d7]">
+                    {copy.layover}: {segment.layover ? fmtDuration(segment.layover, language) : "—"} • {segment.destination}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1f6] pt-4 dark:border-[#30476f]">
         <div className="flex flex-wrap gap-2 text-sm text-[#627188] dark:text-[#d4e2fb]">

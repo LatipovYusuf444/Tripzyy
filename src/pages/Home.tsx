@@ -27,8 +27,8 @@ type LocationOption = { code: string; name: string; searchText: string }
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
 const DEFAULT_HOME_SEARCH = {
-  from: "",
-  to: "",
+  from: "LON - London",
+  to: "FRA - Frankfurt",
   pax: 1,
 }
 
@@ -66,8 +66,7 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
   const exactName = options.find((option) => normalizeText(option.name) === normalized)
   if (exactName) return exactName.code
 
-  const firstMatch = options.find((option) => option.searchText.includes(normalized))
-  return firstMatch?.code ?? (upper.length <= 3 ? upper : "")
+  return upper.length === 3 ? upper : ""
 }
 
 export default function Home() {
@@ -147,7 +146,7 @@ export default function Home() {
       faqItems: [
         {
           question: "Aviabilet qidirishda qaysi kodlarni kiritish kerak?",
-          answer: "Qidiruvda aeroportning IATA kodlarini kiriting: masalan, Toshkent uchun TAS, Istanbul uchun SAW yoki IST. Sana esa YYYY-MM-DD formatida bo'lishi kerak.",
+          answer: "Qidiruvda aeroport yoki shahar IATA kodlarini kiriting: masalan, London uchun LON va Frankfurt uchun FRA. Sana esa YYYY-MM-DD formatida bo'lishi kerak.",
         },
         {
           question: "Bron qilish jarayoni qanday ishlaydi?",
@@ -277,7 +276,7 @@ export default function Home() {
       faqItems: [
         {
           question: "Which codes should be entered when searching for a ticket?",
-          answer: "Use airport IATA codes: for example TAS for Tashkent, SAW or IST for Istanbul. The date should be in YYYY-MM-DD format.",
+          answer: "Use airport or city IATA codes: for example LON for London and FRA for Frankfurt. The date should be in YYYY-MM-DD format.",
         },
         {
           question: "How does the booking process work?",
@@ -454,9 +453,9 @@ export default function Home() {
 
   return (
     <div className="overflow-x-hidden bg-[linear-gradient(180deg,#dfe5ea_0%,#eef3f7_18%,#f8fbff_62%,#eaf0f7_100%)] text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_18%,#15254a_62%,#11203d_100%)] dark:text-white">
-      <section className="overflow-hidden pt-[76px] md:pt-[82px]">
+      <section className="overflow-visible">
         <div className="bg-[#eef3f7] shadow-[0_18px_48px_rgba(16,24,40,0.07)] dark:bg-[rgba(10,20,42,0.34)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.34)]">
-        <div className="relative min-h-[660px] w-full overflow-hidden sm:min-h-[700px] lg:min-h-[740px]">
+        <div className="relative min-h-[660px] w-full overflow-visible sm:min-h-[700px] lg:min-h-[740px]">
           <div className="absolute inset-0">
             <motion.img
               src={heroDesktopImage}
@@ -496,9 +495,10 @@ export default function Home() {
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             className="pointer-events-none absolute right-[6%] top-[10%] hidden h-[220px] w-[220px] rounded-full bg-[radial-gradient(circle,rgba(128,185,255,0.2)_0%,rgba(128,185,255,0.08)_44%,transparent_74%)] blur-3xl dark:block md:h-[320px] md:w-[320px]"
           />
+
           <div className="relative z-10 flex items-center justify-center px-4 py-14 sm:px-6 sm:py-16 md:px-12 md:py-18 xl:px-16 xl:py-20">
             <div className="flex w-full justify-center">
-              <div className="w-full max-w-[1160px] rounded-[28px] bg-transparent px-4 py-16 dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.10)_0%,rgba(16,30,57,0.05)_48%,rgba(10,20,42,0.02)_100%)] sm:px-6 sm:py-18 md:px-8 md:py-20">
+              <div className="w-full max-w-[1520px] rounded-[28px] bg-transparent px-4 py-16 dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.10)_0%,rgba(16,30,57,0.05)_48%,rgba(10,20,42,0.02)_100%)] sm:px-6 sm:py-18 md:px-8 md:py-20 2xl:max-w-[1700px]">
                 <motion.h1
                   className="mx-auto max-w-[920px] text-center text-[34px] font-extrabold leading-[0.96] tracking-[-0.06em] text-[#1d2a3d] dark:text-white sm:text-[42px] md:text-[50px] md:[text-shadow:0_10px_34px_rgba(255,255,255,0.16)] xl:text-[56px]"
                 >
@@ -573,7 +573,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 34, scale: 0.985 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.65, delay: 0.5, ease: "easeOut" }}
-                  className="relative mx-auto mt-9 max-w-[1120px] overflow-visible rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.90)_0%,rgba(246,249,255,0.84)_100%)] p-3 shadow-[0_22px_60px_rgba(22,31,48,0.12)] backdrop-blur-md dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.78)_0%,rgba(17,31,60,0.74)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.46)] md:mt-12 md:rounded-[30px] md:p-4"
+                  className="relative mx-auto mt-9 max-w-[1480px] overflow-visible rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.90)_0%,rgba(246,249,255,0.84)_100%)] p-3 shadow-[0_22px_60px_rgba(22,31,48,0.12)] backdrop-blur-md dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.78)_0%,rgba(17,31,60,0.74)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.46)] md:mt-12 md:rounded-[30px] md:p-4 2xl:max-w-[1660px]"
                 >
                   <div className="grid overflow-visible gap-2 rounded-[24px] border border-transparent bg-transparent shadow-none dark:bg-transparent xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.9fr)_260px]">
                     <HomeAutocompleteField label={copy.from} value={from} placeholder="Toshkent" options={locationOptions} onChange={setFrom} />
@@ -630,7 +630,7 @@ export default function Home() {
       {groupedDestinations.length ? (
         <section className="relative px-4 pb-6 pt-12 sm:px-6 md:px-10 lg:px-14">
           <div className="pointer-events-none absolute inset-x-0 top-6 mx-auto h-32 max-w-[920px] rounded-full bg-[radial-gradient(circle,rgba(78,120,198,0.14)_0%,rgba(78,120,198,0)_72%)] blur-3xl" />
-          <div className="relative mx-auto max-w-[1180px]">
+          <div className="relative mx-auto max-w-[1500px] 2xl:max-w-[1700px]">
             <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
@@ -735,7 +735,7 @@ export default function Home() {
 
       <section className="relative px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14">
         <div className="pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.12)_0%,rgba(92,134,211,0)_72%)] blur-3xl" />
-        <div className="relative mx-auto max-w-[1120px]">
+        <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
               <CircleHelp size={14} />
@@ -826,7 +826,7 @@ export default function Home() {
       </section>
 
       <section className="relative px-4 pb-20 sm:px-6 md:px-10 lg:px-14">
-        <div className="relative mx-auto max-w-[1120px]">
+        <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
               <CreditCard size={14} />
@@ -914,8 +914,8 @@ function HomeAutocompleteField({
 
   const filteredOptions = useMemo(() => {
     const query = normalizeText(value)
-    if (!query) return options.slice(0, 8)
-    return options.filter((option) => option.searchText.includes(query)).slice(0, 8)
+    if (!query) return options
+    return options.filter((option) => option.searchText.includes(query))
   }, [options, value])
 
   useEffect(() => {

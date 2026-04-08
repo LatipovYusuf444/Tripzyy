@@ -7,6 +7,7 @@ type FareCalendarPickerProps = {
   from: string
   to: string
   pax: number
+  classCode?: string
   value: string
   onChange: (value: string) => void
   onClose: () => void
@@ -69,6 +70,7 @@ export default function FareCalendarPicker({
   from,
   to,
   pax,
+  classCode = "Y",
   value,
   onChange,
   onClose,
@@ -96,7 +98,7 @@ export default function FareCalendarPicker({
   useEffect(() => {
     if (!from || !to) return
 
-    const key = `${from}-${to}-${pax}-${visibleMonths.map((item) => `${item.getFullYear()}-${item.getMonth()}`).join("|")}`
+    const key = `${from}-${to}-${pax}-${classCode}-${visibleMonths.map((item) => `${item.getFullYear()}-${item.getMonth()}`).join("|")}`
     const cached = cache.get(key)
     if (cached) {
       setPrices(cached)
@@ -112,7 +114,7 @@ export default function FareCalendarPicker({
           adults: Math.max(1, pax),
           children: 0,
           infants: 0,
-          class: "Y",
+          class: classCode,
           trips: [{ origin: from, destination: to, departure }],
         })
       )
@@ -147,7 +149,7 @@ export default function FareCalendarPicker({
     return () => {
       alive = false
     }
-  }, [allVisibleDates, from, pax, to, visibleMonths])
+  }, [allVisibleDates, classCode, from, pax, to, visibleMonths])
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined

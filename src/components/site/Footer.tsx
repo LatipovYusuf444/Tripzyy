@@ -67,7 +67,7 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_85%_25%,rgba(214,180,140,0.15),transparent_50%)]" />
       <div className="pointer-events-none absolute inset-0 bg-black/45" />
 
-      <div className="relative mx-auto max-w-[1200px] px-5 py-12 md:py-14">
+      <div className="relative mx-auto max-w-[1680px] px-5 py-12 md:px-8 md:py-14 2xl:max-w-[1820px]">
         <div className="grid gap-10 md:grid-cols-3 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="space-y-5">
             <div className="flex items-center justify-between gap-4">

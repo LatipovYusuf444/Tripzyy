@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
 import { formatUzPhoneInput } from "@/lib/phone"
+import { getAccessToken } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 import {
   bookAir,
@@ -58,13 +59,15 @@ export type Flight = {
   airline: string
   airlineName?: string
   airlineLogo?: string
+  departDate?: string
   depart: string
+  arriveDate?: string
   arrive: string
   durationMin: number
   price: number
   currency?: string
   baggage?: string
-  cabin?: "Economy" | "Business"
+  cabin?: string
   refundable?: boolean
   services?: Array<"wifi" | "meal" | "priority" | "support">
   flightNo?: string
@@ -95,16 +98,45 @@ type PassengerForm = {
   countryCode: string
 }
 
+type FareFamilyOption = {
+  id: string
+  name: string
+  price: number
+  currency?: string
+  baggageInfos: string[]
+  serviceDescriptions: string[]
+  includedServices: string[]
+  chargeableServices: string[]
+  unavailableServices: string[]
+  carryOn?: string
+  baggage?: string
+  refundable?: boolean
+  changeable?: boolean
+  airline?: string
+  depart?: string
+  arrive?: string
+  departDate?: string
+  arriveDate?: string
+  durationMin?: number
+  from?: string
+  to?: string
+  cabin?: string
+  segments?: FlightSegment[]
+  isDefault?: boolean
+}
+
 const panel = {
   hidden: { opacity: 0, y: 16, scale: 0.98, filter: "blur(10px)" },
   show: { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" },
   exit: { opacity: 0, y: 10, scale: 0.98, filter: "blur(10px)" },
 }
 
-const fmtDuration = (mins: number) => {
+const fmtDuration = (mins: number, language: "uz" | "ru" | "en") => {
   const h = Math.floor(mins / 60)
   const m = mins % 60
-  return `${h}h ${m}m`
+  if (language === "ru") return `${h} ч ${m} мин`
+  if (language === "en") return `${h}h ${m}m`
+  return `${h} soat ${m} daqiqa`
 }
 
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim())
@@ -168,20 +200,112 @@ function resizePassengers(prev: PassengerForm[], pax: number): PassengerForm[] {
   return [...prev, ...makePassengers(n - prev.length)]
 }
 
+function uniqueStrings(values: Array<string | undefined | null>) {
+  return [...new Set(values.map((value) => (value || "").trim()).filter(Boolean))]
+}
+
+function translateServiceText(text: string, language: "uz" | "ru" | "en") {
+  const value = text.trim()
+  if (!value || language === "en") return value
+
+  const replacements: Array<[RegExp, string]> =
+    language === "uz"
+      ? [
+          [/^CARRY ON HAND BAGGAGE$/i, "Qo'l yuki"],
+          [/^CARRY ON BAGGAGE$/i, "Qo'l yuki"],
+          [/^CABIN BAG 1 PIECE 7 KG$/i, "1 dona 7 kg qo'l yuki"],
+          [/^CHECKED BAGGAGE UP TO 25 KGS$/i, "25 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 30 KGS$/i, "30 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 35 KGS$/i, "35 kg gacha topshiriladigan bagaj"],
+          [/^UPTO50LB 23KG BAGGAGE$/i, "23 kg gacha bagaj"],
+          [/^UPTO70LB 32KG BAGGAGE$/i, "32 kg gacha bagaj"],
+          [/^SPECIAL MEAL$/i, "Maxsus ovqat"],
+          [/^PRE PAID BAGGAGE$/i, "Oldindan bagaj qo'shish"],
+          [/^DEDICATED CHECK IN$/i, "Alohida ro'yxatdan o'tish"],
+          [/^PRE RESERVED SEAT ASSIGNMENT$/i, "Oldindan joy tanlash"],
+          [/^PREMIUM SEAT$/i, "Premium o'rindiq"],
+          [/^REFUNDABLE TICKET$/i, "Qaytariladigan chipta"],
+          [/^CHANGEABLE TICKET$/i, "O'zgartiriladigan chipta"],
+          [/^MEAL BEVERAGE$/i, "Ovqat va ichimlik"],
+          [/^LOUNGE ACCESS$/i, "Kutish zalidan foydalanish"],
+          [/^HOTEL ACCOMMODATIONS$/i, "Mehmonxona joylashuvi"],
+          [/^50 PCT QMILES ACCUMULATION$/i, "50% Qmiles to'planadi"],
+          [/^75 PCT QMILES ACCUMULATION$/i, "75% Qmiles to'planadi"],
+          [/^100 PCT QMILES ACCUMULATION$/i, "100% Qmiles to'planadi"],
+          [/^CHECKED BAGGAGE/i, "Topshiriladigan bagaj"],
+          [/^CABIN BAG/i, "Qo'l yuki"],
+        ]
+      : [
+          [/^CARRY ON HAND BAGGAGE$/i, "Ручная кладь"],
+          [/^CARRY ON BAGGAGE$/i, "Ручная кладь"],
+          [/^CABIN BAG 1 PIECE 7 KG$/i, "1 место ручной клади 7 кг"],
+          [/^CHECKED BAGGAGE UP TO 25 KGS$/i, "Багаж до 25 кг"],
+          [/^CHECKED BAGGAGE UP TO 30 KGS$/i, "Багаж до 30 кг"],
+          [/^CHECKED BAGGAGE UP TO 35 KGS$/i, "Багаж до 35 кг"],
+          [/^UPTO50LB 23KG BAGGAGE$/i, "Багаж до 23 кг"],
+          [/^UPTO70LB 32KG BAGGAGE$/i, "Багаж до 32 кг"],
+          [/^SPECIAL MEAL$/i, "Специальное питание"],
+          [/^PRE PAID BAGGAGE$/i, "Предоплаченный багаж"],
+          [/^DEDICATED CHECK IN$/i, "Отдельная регистрация"],
+          [/^PRE RESERVED SEAT ASSIGNMENT$/i, "Предварительный выбор места"],
+          [/^PREMIUM SEAT$/i, "Премиум место"],
+          [/^REFUNDABLE TICKET$/i, "Возвратный билет"],
+          [/^CHANGEABLE TICKET$/i, "Изменяемый билет"],
+          [/^MEAL BEVERAGE$/i, "Питание и напитки"],
+          [/^LOUNGE ACCESS$/i, "Доступ в лаунж"],
+          [/^HOTEL ACCOMMODATIONS$/i, "Размещение в отеле"],
+          [/^50 PCT QMILES ACCUMULATION$/i, "Начисление 50% Qmiles"],
+          [/^75 PCT QMILES ACCUMULATION$/i, "Начисление 75% Qmiles"],
+          [/^100 PCT QMILES ACCUMULATION$/i, "Начисление 100% Qmiles"],
+        ]
+
+  for (const [pattern, translated] of replacements) {
+    if (pattern.test(value)) return translated
+  }
+
+  return value
+}
+
+function mapSegmentsFromTrips(trips: any[] | undefined): FlightSegment[] {
+  return (
+    trips?.flatMap((trip: any) =>
+      (trip.segments ?? []).map((seg: any, index: number) => ({
+        id: `${trip.id || trip.origin || "trip"}-${index}`,
+        origin: seg.origin ?? trip.origin ?? "—",
+        destination: seg.destination ?? trip.destination ?? "—",
+        departure: seg.departure ?? "—",
+        arrival: seg.arrival ?? "—",
+        departureTerminal: seg.departureTerminal,
+        arrivalTerminal: seg.arrivalTerminal,
+        baggage: seg.baggage,
+        carryOn: seg.carryOn,
+        bookingClass: seg.bookingClass,
+        serviceClass: seg.serviceClass,
+        carrier: seg.carrier,
+        operatingCarrier: seg.operatingCarrier,
+        duration: seg.duration,
+        layover: seg.layover,
+        equipment: seg.equipment,
+        fareBasis: seg.fareBasis,
+        flightNumber: seg.flightNumber,
+        seatsAvailable: seg.seatsAvailable,
+      }))
+    ) ?? []
+  )
+}
+
 export default function FlightDetailsModal({
   open,
   onClose,
   flight,
   pax,
   date,
-  onBook,
 }: {
   open: boolean
   onClose: () => void
   flight: Flight | null
   pax: number
   date: string
-  onBook: (flight: Flight) => void
 }) {
   const navigate = useNavigate()
   const { language } = useI18n()
@@ -215,6 +339,12 @@ export default function FlightDetailsModal({
       farePackages: "Tarif paketlari",
       farePackagesLoading: "Tarif paketlari yuklanmoqda...",
       farePackagesNotFound: "Tarif paketlari topilmadi.",
+      chooseFare: "Tarifni tanlang",
+      selectedFare: "Tanlangan tarif",
+      selectedFareReady: "Shu tarif bilan bron qilinadi.",
+      fareIncluded: "Ichida bor",
+      fareChargeable: "Qo'shimcha to'lanadi",
+      fareUnavailable: "Mavjud emas",
       extraPrice: "Qo'shimcha narx",
       rules: "Tarif qoidalari",
       rulesLoading: "Qoidalar yuklanmoqda...",
@@ -228,7 +358,7 @@ export default function FlightDetailsModal({
       formOpensFor: "ta yo'lovchi uchun forma ochiladi.",
       payerDetails: "To'lovchi ma'lumotlari",
       emailPhone: "Email va telefon",
-      countryCode: "Country code",
+      countryCode: "Mamlakat kodi",
       phoneNumber: "Telefon raqam",
       passengersDetails: "Yo'lovchilar ma'lumotlari",
       total: "Jami",
@@ -295,6 +425,12 @@ export default function FlightDetailsModal({
       farePackages: "Пакеты тарифа",
       farePackagesLoading: "Загрузка пакетов тарифа...",
       farePackagesNotFound: "Пакеты тарифа не найдены.",
+      chooseFare: "Выберите тариф",
+      selectedFare: "Выбранный тариф",
+      selectedFareReady: "Бронирование будет выполнено по этому тарифу.",
+      fareIncluded: "Включено",
+      fareChargeable: "Оплачивается отдельно",
+      fareUnavailable: "Недоступно",
       extraPrice: "Доплата",
       rules: "Правила тарифа",
       rulesLoading: "Загрузка правил...",
@@ -375,6 +511,12 @@ export default function FlightDetailsModal({
       farePackages: "Fare packages",
       farePackagesLoading: "Loading fare packages...",
       farePackagesNotFound: "No fare packages found.",
+      chooseFare: "Choose a fare",
+      selectedFare: "Selected fare",
+      selectedFareReady: "Booking will be made with this fare.",
+      fareIncluded: "Included",
+      fareChargeable: "Chargeable",
+      fareUnavailable: "Unavailable",
       extraPrice: "Extra price",
       rules: "Fare rules",
       rulesLoading: "Loading rules...",
@@ -469,14 +611,9 @@ export default function FlightDetailsModal({
   const [fareFamiliesLoading, setFareFamiliesLoading] = useState(false)
   const [fareFamiliesError, setFareFamiliesError] = useState<string | null>(null)
   const [fareFamiliesData, setFareFamiliesData] = useState<
-    Array<{
-      id: string
-      name: string
-      price?: number
-      baggageInfos?: string[]
-      serviceDescriptions?: string[]
-    }>
+    FareFamilyOption[]
   >([])
+  const [selectedFareId, setSelectedFareId] = useState<string | null>(null)
   const [optionDetailsLoading, setOptionDetailsLoading] = useState(false)
   const [optionDetailsError, setOptionDetailsError] = useState<string | null>(null)
   const [optionDetails, setOptionDetails] = useState<{
@@ -504,10 +641,11 @@ export default function FlightDetailsModal({
     setFareFamiliesLoading(false)
     setFareFamiliesError(null)
     setFareFamiliesData([])
+    setSelectedFareId(null)
     setOptionDetailsLoading(false)
     setOptionDetailsError(null)
     setOptionDetails(null)
-  }, [open, safeFlight.id])
+  }, [language, open, safeFlight.id])
 
   useEffect(() => {
     if (!toastOpen) return
@@ -524,7 +662,7 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     if (!safeFlight.id) return
-    const token = localStorage.getItem("access_token")
+    const token = getAccessToken()
     if (!token) return
 
     let alive = true
@@ -558,8 +696,22 @@ export default function FlightDetailsModal({
 
   useEffect(() => {
     if (!open) return
+    if (fareFamiliesData.length === 0) {
+      setSelectedFareId(safeFlight.id || null)
+      return
+    }
+
+    setSelectedFareId((prev) => {
+      if (prev && fareFamiliesData.some((fare) => fare.id === prev)) return prev
+      const preferred = fareFamiliesData.find((fare) => fare.isDefault) ?? fareFamiliesData[0]
+      return preferred?.id ?? safeFlight.id ?? null
+    })
+  }, [open, fareFamiliesData, safeFlight.id])
+
+  useEffect(() => {
+    if (!open) return
     if (!safeFlight.id) return
-    const token = localStorage.getItem("access_token")
+    const token = getAccessToken()
     if (!token) return
 
     let alive = true
@@ -575,30 +727,7 @@ export default function FlightDetailsModal({
           return
         }
 
-        const segments =
-          res.data.data?.trips?.flatMap((trip) =>
-            (trip.segments ?? []).map((seg, index) => ({
-              id: `${trip.id}-${index}`,
-              origin: seg.origin ?? trip.origin,
-              destination: seg.destination ?? trip.destination,
-              departure: seg.departure ?? "—",
-              arrival: seg.arrival ?? "—",
-              departureTerminal: seg.departureTerminal,
-              arrivalTerminal: seg.arrivalTerminal,
-              baggage: seg.baggage,
-              carryOn: seg.carryOn,
-              bookingClass: seg.bookingClass,
-              serviceClass: seg.serviceClass,
-              carrier: seg.carrier,
-              operatingCarrier: seg.operatingCarrier,
-              duration: seg.duration,
-              layover: seg.layover,
-              equipment: seg.equipment,
-              fareBasis: seg.fareBasis,
-              flightNumber: seg.flightNumber,
-              seatsAvailable: seg.seatsAvailable,
-            }))
-          ) ?? []
+        const segments = mapSegmentsFromTrips(res.data.data?.trips)
 
         setOptionDetails({ segments })
       })
@@ -620,7 +749,7 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     if (!safeFlight.id) return
-    const token = localStorage.getItem("access_token")
+    const token = getAccessToken()
     if (!token) return
 
     let alive = true
@@ -636,18 +765,54 @@ export default function FlightDetailsModal({
           return
         }
 
-        const option = res.data.data?.find((x) => x.id === safeFlight.id) ?? res.data.data?.[0]
-        const families = option?.packages?.families ?? []
-        const combinations = option?.packages?.combinations ?? []
+        const mapped: FareFamilyOption[] = (res.data.data ?? []).map((option: any, index: number) => {
+          const trip = option.trips?.[0]
+          const services = trip?.brandServices ?? []
+          const segments = mapSegmentsFromTrips(option.trips)
+          const firstSegment = segments[0]
+          const brandedBaggage = services
+            .filter((service: any) => service?.type === "baggage")
+            .map((service: any) => service?.description)
 
-        const mapped = families.map((f) => {
-          const combo = combinations.find((c) => c.familyIDs?.includes(f.id))
           return {
-            id: f.id,
-            name: f.name,
-            price: combo?.price,
-            baggageInfos: f.baggageInfos ?? [],
-            serviceDescriptions: (f.services ?? []).map((s) => s.description).filter(Boolean),
+            id: option.id,
+            name: (trip?.brandName || trip?.brandID || `FARE ${index + 1}`).toUpperCase(),
+            price: Number(option.price ?? option.passengerInfos?.[0]?.total ?? 0),
+            currency: option.currency ?? safeFlight.currency,
+            baggageInfos: uniqueStrings([firstSegment?.baggage, ...brandedBaggage]),
+            serviceDescriptions: uniqueStrings(
+              services.map((service: any) => translateServiceText(service?.description || "", language))
+            ),
+            includedServices: uniqueStrings(
+              services
+                .filter((service: any) => service?.paymentType === "included")
+                .map((service: any) => translateServiceText(service?.description || "", language))
+            ),
+            chargeableServices: uniqueStrings(
+              services
+                .filter((service: any) => service?.paymentType === "chargeable")
+                .map((service: any) => translateServiceText(service?.description || "", language))
+            ),
+            unavailableServices: uniqueStrings(
+              services
+                .filter((service: any) => service?.paymentType === "na")
+                .map((service: any) => translateServiceText(service?.description || "", language))
+            ),
+            carryOn: firstSegment?.carryOn,
+            baggage: firstSegment?.baggage,
+            refundable: option.isRefundable,
+            changeable: option.isChangeable,
+            airline: option.carrier ?? safeFlight.airline,
+            depart: trip?.departure ?? safeFlight.depart,
+            arrive: trip?.arrival ?? safeFlight.arrive,
+            departDate: trip?.departure ?? safeFlight.departDate,
+            arriveDate: trip?.arrival ?? safeFlight.arriveDate,
+            durationMin: trip?.duration ?? safeFlight.durationMin,
+            from: trip?.origin ?? safeFlight.from,
+            to: trip?.destination ?? safeFlight.to,
+            cabin: firstSegment?.serviceClass ?? safeFlight.cabin,
+            segments,
+            isDefault: option.id === safeFlight.id,
           }
         })
 
@@ -671,7 +836,7 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     if (!safeFlight.id) return
-    const token = localStorage.getItem("access_token")
+    const token = getAccessToken()
     if (!token) return
 
     let alive = true
@@ -703,14 +868,6 @@ export default function FlightDetailsModal({
     }
   }, [open, safeFlight.id])
 
-  const cabin = safeFlight.cabin ?? "Economy"
-  const refundable = safeFlight.refundable ?? false
-  const services = safeFlight.services ?? ["support"]
-  const flightNo = safeFlight.flightNo ?? "TZ-102"
-  const itinerarySegments = useMemo(
-    () => (optionDetails?.segments.length ? optionDetails.segments : safeFlight.segments ?? []),
-    [optionDetails?.segments, safeFlight.segments]
-  )
   const backendServiceDescriptions = useMemo(() => {
     const seen = new Set<string>()
     const list: string[] = []
@@ -734,10 +891,55 @@ export default function FlightDetailsModal({
     return list
   }, [fareData, fareFamiliesData])
 
-  const taxPerPax = 30
+  const selectedFare = useMemo(
+    () => fareFamiliesData.find((fare) => fare.id === selectedFareId) ?? null,
+    [fareFamiliesData, selectedFareId]
+  )
+
+  const bookingFlight = useMemo<Flight>(() => {
+    if (!selectedFare) return safeFlight
+
+    return {
+      ...safeFlight,
+      id: selectedFare.id,
+      from: selectedFare.from ?? safeFlight.from,
+      to: selectedFare.to ?? safeFlight.to,
+      airline: selectedFare.airline ?? safeFlight.airline,
+      departDate: selectedFare.departDate ?? safeFlight.departDate,
+      depart: selectedFare.depart ?? safeFlight.depart,
+      arriveDate: selectedFare.arriveDate ?? safeFlight.arriveDate,
+      arrive: selectedFare.arrive ?? safeFlight.arrive,
+      durationMin: selectedFare.durationMin ?? safeFlight.durationMin,
+      price: selectedFare.price || safeFlight.price,
+      currency: selectedFare.currency ?? safeFlight.currency,
+      baggage: selectedFare.baggage ?? safeFlight.baggage,
+      cabin: selectedFare.cabin ?? safeFlight.cabin,
+      refundable: selectedFare.refundable ?? safeFlight.refundable,
+      carryOn: selectedFare.carryOn ?? safeFlight.carryOn,
+      segments:
+        selectedFare.segments && selectedFare.segments.length > 0
+          ? selectedFare.segments
+          : safeFlight.segments,
+    }
+  }, [safeFlight, selectedFare])
+
+  const cabin = bookingFlight.cabin ?? "—"
+  const refundable = bookingFlight.refundable ?? false
+  const services = safeFlight.services ?? ["support"]
+  const flightNo = safeFlight.flightNo ?? "TZ-102"
+  const itinerarySegments = useMemo(
+    () =>
+      bookingFlight.segments?.length
+        ? bookingFlight.segments
+        : optionDetails?.segments.length
+          ? optionDetails.segments
+          : safeFlight.segments ?? [],
+    [bookingFlight.segments, optionDetails?.segments, safeFlight.segments]
+  )
+
   const total = useMemo(
-    () => (safeFlight.price + taxPerPax) * Math.max(1, pax),
-    [safeFlight.price, pax]
+    () => bookingFlight.price,
+    [bookingFlight.price]
   )
 
   const errors = useMemo(() => {
@@ -764,7 +966,7 @@ export default function FlightDetailsModal({
   const canSubmit = errors.length === 0 && agreeData
 
   const submit = async () => {
-    if (!safeFlight.id) {
+    if (!bookingFlight.id) {
       setToastMsg(copy.optionMissing)
       setToastOpen(true)
       return
@@ -780,7 +982,7 @@ export default function FlightDetailsModal({
     setBookLoading(true)
     setLastOrderId(null)
     try {
-      const token = localStorage.getItem("access_token")
+      const token = getAccessToken()
       if (!token) {
         setToastMsg(copy.loginFirst)
         setToastOpen(true)
@@ -788,7 +990,7 @@ export default function FlightDetailsModal({
       }
 
       const res = await bookAir({
-        optionID: safeFlight.id,
+        optionID: bookingFlight.id,
         email: payer.email.trim(),
         countryCode: payer.countryCode?.trim() || "998",
         phoneNumber: payer.phone.replace(/\D/g, ""),
@@ -818,21 +1020,21 @@ export default function FlightDetailsModal({
         const curr = bookingCart.get()
         bookingCart.set({
           ...curr,
-          flightId: safeFlight.id,
-          route: `${safeFlight.from} → ${safeFlight.to}`,
+          flightId: bookingFlight.id,
+          route: `${bookingFlight.from} → ${bookingFlight.to}`,
           date,
           pax: Math.max(1, pax),
           lastOrderId: res.data.data.orderID,
           amount: total,
-          currency: safeFlight.currency,
-          airline: safeFlight.airline,
-          flightNo: safeFlight.flightNo,
-          cabin: safeFlight.cabin,
-          baggage: safeFlight.baggage,
-          carryOn: safeFlight.carryOn,
+          currency: bookingFlight.currency,
+          airline: bookingFlight.airline,
+          flightNo: bookingFlight.flightNo,
+          cabin: bookingFlight.cabin,
+          baggage: bookingFlight.baggage,
+          carryOn: bookingFlight.carryOn,
           paymentMethod,
           paymentStatus: "pending",
-          segments: safeFlight.segments ?? [],
+          segments: bookingFlight.segments ?? [],
           payer,
           passengers: passengers.map((p) => ({
             id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
@@ -844,14 +1046,14 @@ export default function FlightDetailsModal({
             passportIssued: p.passportIssued,
             passportExpiry: p.passportExpiry,
             gender: p.gender,
-            countryCode: p.countryCode,
+              countryCode: p.countryCode,
           })),
           history: [
             ...(curr.history ?? []),
             {
               orderId: res.data.data.orderID,
-              route: curr.route,
-              date: curr.date,
+              route: `${bookingFlight.from} → ${bookingFlight.to}`,
+              date,
               createdAt: new Date().toISOString(),
             },
           ],
@@ -865,43 +1067,7 @@ export default function FlightDetailsModal({
     } finally {
       setBookLoading(false)
     }
-
-    // ✅ bookingCart ga hammasini yozamiz
-    bookingCart.set({
-      ...bookingCart.get(),
-      flightId: safeFlight.id,
-      route: `${safeFlight.from} → ${safeFlight.to}`,
-      date,
-      pax: Math.max(1, pax),
-      amount: total,
-      currency: safeFlight.currency,
-      airline: safeFlight.airline,
-      flightNo: safeFlight.flightNo,
-      cabin: safeFlight.cabin,
-      baggage: safeFlight.baggage,
-      carryOn: safeFlight.carryOn,
-      paymentMethod,
-      paymentStatus: "not_connected",
-      segments: safeFlight.segments ?? [],
-      payer,
-      passengers: passengers.map((p) => ({
-        id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
-        firstName: p.firstName.trim(),
-        lastName: p.lastName.trim(),
-        birthDate: p.birthDate,
-        citizenship: p.citizenship.trim(),
-        passportNo: p.passportNo.trim().toUpperCase(),
-        passportIssued: p.passportIssued,
-        passportExpiry: p.passportExpiry,
-        gender: p.gender,
-        countryCode: p.countryCode,
-      })),
-    })
-
-    // eski oqim kerak bo'lsa qoldiramiz (parent close qiladi)
-    onBook(safeFlight)
-
-    // ✅ passengers pagega tushadi (karzinka)
+    onClose()
     navigate("/passengers")
   }
 
@@ -953,10 +1119,10 @@ export default function FlightDetailsModal({
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pr-14 md:pr-16">
                 <div>
                   <div className="text-[#627188] text-sm dark:text-[#d2e0f8]">
-                    {flight.airline} · {flightNo}
+                    {bookingFlight.airline} · {flightNo}
                   </div>
                   <div className="mt-1 text-2xl md:text-3xl font-extrabold text-[#1d2430] dark:text-white">
-                    {flight.from} → {flight.to}
+                    {bookingFlight.from} → {bookingFlight.to}
                   </div>
                   <div className="mt-2 text-[#627188] text-sm dark:text-[#d2e0f8]">
                     {copy.headerDate}: <span className="text-[#1d2430] dark:text-white">{date || "—"}</span> · {copy.headerPax}:{" "}
@@ -967,7 +1133,7 @@ export default function FlightDetailsModal({
                 <div className="text-left md:text-right w-full md:w-auto">
                   <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{copy.finalPrice}</div>
                   <div className="text-3xl font-extrabold text-[#1d2430] dark:text-white">
-                    {formatMoney(total, safeFlight.currency)}
+                    {formatMoney(total, bookingFlight.currency)}
                   </div>
                   <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{copy.taxesIncluded}</div>
                 </div>
@@ -1010,9 +1176,9 @@ export default function FlightDetailsModal({
 
               {step === "select" && (
                 <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <Pill icon={PlaneTakeoff} label={copy.depart} value={flight.depart} />
-                  <Pill icon={PlaneLanding} label={copy.arrive} value={flight.arrive} />
-                  <Pill icon={Clock} label={copy.duration} value={fmtDuration(flight.durationMin)} />
+                  <Pill icon={PlaneTakeoff} label={copy.depart} value={bookingFlight.depart} />
+                  <Pill icon={PlaneLanding} label={copy.arrive} value={bookingFlight.arrive} />
+                  <Pill icon={Clock} label={copy.duration} value={fmtDuration(bookingFlight.durationMin, language)} />
                 </div>
               )}
             </div>
@@ -1042,12 +1208,12 @@ export default function FlightDetailsModal({
 
                         <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#51627c] inline-flex items-center gap-2 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
                           <Luggage size={14} />
-                          {flight.baggage ?? "—"}
+                          {bookingFlight.baggage ?? "—"}
                         </span>
 
                         <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#51627c] inline-flex items-center gap-2 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
                           <Luggage size={14} />
-                          {copy.carryOn}: {flight.carryOn ?? "—"}
+                          {copy.carryOn}: {bookingFlight.carryOn ?? "—"}
                         </span>
                       </div>
 
@@ -1058,7 +1224,7 @@ export default function FlightDetailsModal({
                       <div className="mt-4 text-[#627188] text-sm dark:text-[#a9bddb]">
                         {fareLoading && copy.faresLoading}
                         {!fareLoading && fareError && `${copy.fares}: ${fareError}`}
-                        {!fareLoading && !fareError && fareData?.families?.length ? (
+                        {!fareLoading && !fareError && fareFamiliesData.length === 0 && fareData?.families?.length ? (
                           <div className="mt-2 space-y-2">
                             {fareData.families.map((f) => (
                               <div key={f.id} className="rounded-[20px] border border-[#e2e9f2] bg-white p-3 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
@@ -1109,7 +1275,7 @@ export default function FlightDetailsModal({
                                     {copy.time}: {segment.departure} → {segment.arrival}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
-                                    {copy.duration}: {segment.duration ? fmtDuration(segment.duration) : "—"}
+                                    {copy.duration}: {segment.duration ? fmtDuration(segment.duration, language) : "—"}
                                   </div>
                                   <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
                                     {copy.departTerminal}: {segment.departureTerminal || "—"}
@@ -1144,7 +1310,7 @@ export default function FlightDetailsModal({
                                 </div>
                                 {segment.layover ? (
                                   <div className="mt-2 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                    {copy.layover}: {fmtDuration(segment.layover)}
+                                    {copy.layover}: {fmtDuration(segment.layover, language)}
                                   </div>
                                 ) : null}
                               </div>
@@ -1167,21 +1333,107 @@ export default function FlightDetailsModal({
                         </div>
 
                         {!fareFamiliesLoading && !fareFamiliesError && fareFamiliesData.length > 0 && (
-                          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {fareFamiliesData.map((f) => (
-                              <div key={f.id} className="rounded-[20px] border border-[#e2e9f2] bg-white p-3 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
-                                <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{f.name}</div>
-                                <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                  ID: {f.id}
-                                </div>
-                                <div className="mt-1 text-xs text-[#52627b] dark:text-[#d4e2fb]">
-                                  {copy.extraPrice}: {formatMoney(f.price ?? 0, safeFlight.currency)}
-                                </div>
-                                <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                  {copy.baggage}: {f.baggageInfos?.join(", ") || "—"}
+                          <div className="mt-4 space-y-4">
+                            <div className="rounded-[22px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)]">
+                              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">
+                                {copy.chooseFare}
+                              </div>
+                              <div className="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3">
+                                {fareFamiliesData.map((f) => {
+                                  const active = selectedFareId === f.id
+                                  return (
+                                    <button
+                                      key={f.id}
+                                      type="button"
+                                      onClick={() => setSelectedFareId(f.id)}
+                                      className={[
+                                        "rounded-[24px] border p-4 text-left transition",
+                                        active
+                                          ? "border-[#1f7ae0] bg-[linear-gradient(180deg,#eff6ff_0%,#f8fbff_100%)] shadow-[0_20px_45px_rgba(31,122,224,0.14)] dark:border-[#5d97ff] dark:bg-[linear-gradient(180deg,rgba(24,47,96,0.94)_0%,rgba(19,37,72,0.92)_100%)]"
+                                          : "border-[#e2e9f2] bg-white hover:border-[#c7d8ef] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:hover:border-[#4d6fa8]",
+                                      ].join(" ")}
+                                    >
+                                      <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                          <div className="text-base font-bold text-[#1d2430] dark:text-white">
+                                            {f.name}
+                                          </div>
+                                          <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
+                                            {formatMoney(f.price, f.currency ?? bookingFlight.currency)}
+                                          </div>
+                                        </div>
+                                        {active ? (
+                                          <span className="rounded-full bg-[#1f7ae0] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                                            {copy.selectedFare}
+                                          </span>
+                                        ) : null}
+                                      </div>
+
+                                      <div className="mt-3 space-y-3 text-xs">
+                                        <div>
+                                          <div className="font-semibold text-emerald-700 dark:text-[#9ef0c6]">
+                                            {copy.fareIncluded}
+                                          </div>
+                                          <div className="mt-1 space-y-1 text-[#52627b] dark:text-[#d4e2fb]">
+                                            {(f.includedServices.length ? f.includedServices : [f.carryOn, f.baggage]
+                                              .filter(Boolean) as string[]).map((item) => (
+                                              <div key={`${f.id}-included-${item}`}>• {item}</div>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {f.chargeableServices.length > 0 && (
+                                          <div>
+                                            <div className="font-semibold text-amber-700 dark:text-[#ffd38a]">
+                                              {copy.fareChargeable}
+                                            </div>
+                                            <div className="mt-1 space-y-1 text-[#52627b] dark:text-[#d4e2fb]">
+                                              {f.chargeableServices.slice(0, 6).map((item) => (
+                                                <div key={`${f.id}-chargeable-${item}`}>• {item}</div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {f.unavailableServices.length > 0 && (
+                                          <div>
+                                            <div className="font-semibold text-rose-700 dark:text-[#ffb2bf]">
+                                              {copy.fareUnavailable}
+                                            </div>
+                                            <div className="mt-1 space-y-1 text-[#52627b] dark:text-[#d4e2fb]">
+                                              {f.unavailableServices.slice(0, 4).map((item) => (
+                                                <div key={`${f.id}-na-${item}`}>• {item}</div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+
+                            {selectedFare && (
+                              <div className="rounded-[22px] border border-[#dbe3ef] bg-white p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                  <div>
+                                    <div className="text-sm font-semibold text-[#1d2430] dark:text-white">
+                                      {copy.selectedFare}: {selectedFare.name}
+                                    </div>
+                                    <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
+                                      {copy.selectedFareReady}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.total}</div>
+                                    <div className="text-lg font-bold text-[#1d2430] dark:text-white">
+                                      {formatMoney(total, bookingFlight.currency)}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
                         )}
                       </div>
@@ -1255,6 +1507,17 @@ export default function FlightDetailsModal({
                     <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
                       <div className="text-[#1d2430] font-semibold dark:text-white">{copy.continue}</div>
                       <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">{copy.enterPassengerInfo}</div>
+
+                      {selectedFare && (
+                        <div className="mt-4 rounded-[18px] border border-[#e2e9f2] bg-white px-3 py-3 text-sm text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                          <div className="font-semibold text-[#1d2430] dark:text-white">
+                            {copy.selectedFare}: {selectedFare.name}
+                          </div>
+                          <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
+                            {formatMoney(total, bookingFlight.currency)}
+                          </div>
+                        </div>
+                      )}
 
                       <button
                         onClick={() => setStep("details")}
@@ -1508,10 +1771,10 @@ export default function FlightDetailsModal({
                   <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
                     <div className="text-[#1d2430] font-semibold dark:text-white">{copy.finishOrder}</div>
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <PriceRow label={copy.route} value={`${safeFlight.from} → ${safeFlight.to}`} />
+                      <PriceRow label={copy.route} value={`${bookingFlight.from} → ${bookingFlight.to}`} />
                       <PriceRow label={copy.headerDate} value={date || "—"} />
                       <PriceRow label={copy.passengerCount} value={String(Math.max(1, pax))} />
-                      <PriceRow label={copy.totalPrice} value={formatMoney(total, safeFlight.currency)} />
+                      <PriceRow label={copy.totalPrice} value={formatMoney(total, bookingFlight.currency)} />
                     </div>
                     <div className="mt-3 text-xs text-[#7b889c] dark:text-[#93abd0]">
                       {copy.selectedPayment}:{" "}

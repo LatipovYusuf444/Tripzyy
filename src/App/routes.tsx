@@ -4,6 +4,7 @@ import Layout from "@/pages/Layout";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Flights from "@/pages/Flights";
+import FlightCatalog from "@/pages/FlightCatalog";
 import Services from "@/pages/Services";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "services", element: <Services /> },
       { path: "flights", element: <Flights /> },
+      { path: "flight-catalog", element: <FlightCatalog /> },
 
       // Cart / passengers
       { path: "passengers", element: <PassengersPage /> },
