@@ -178,6 +178,45 @@ const translateBookingError = (message: string | undefined, language: "uz" | "ru
   return text
 }
 
+const translateBackendInfoError = (
+  message: string | undefined,
+  fallback: string,
+  language: "uz" | "ru" | "en"
+) => {
+  const text = (message || "").trim()
+  if (!text) return fallback
+
+  if (
+    /Возникла внутренняя ошибка сервера/i.test(text) ||
+    /Internal server error/i.test(text) ||
+    /Server Error/i.test(text)
+  ) {
+    return language === "ru"
+      ? "Сервис временно недоступен. Попробуйте еще раз чуть позже."
+      : language === "en"
+        ? "The service is temporarily unavailable. Please try again a bit later."
+        : "Xizmat vaqtincha ishlamayapti. Birozdan keyin yana urinib ko'ring."
+  }
+
+  if (/not found/i.test(text) || /не найден/i.test(text)) {
+    return language === "ru"
+      ? "Информация по выбранному варианту не найдена."
+      : language === "en"
+        ? "Details for the selected option were not found."
+        : "Tanlangan variant bo'yicha ma'lumot topilmadi."
+  }
+
+  if (/unauthorized|forbidden|token/i.test(text)) {
+    return language === "ru"
+      ? "Сессия истекла. Выполните вход заново."
+      : language === "en"
+        ? "Your session has expired. Please log in again."
+        : "Sessiya tugagan. Qaytadan login qiling."
+  }
+
+  return text
+}
+
 function makePassengers(pax: number): PassengerForm[] {
   return Array.from({ length: Math.max(1, pax) }).map(() => ({
     firstName: "",
@@ -321,7 +360,7 @@ export default function FlightDetailsModal({
       finalPrice: "Yakuniy narx",
       taxesIncluded: "Soliq va yig'imlar bilan",
       step1: "1) Bron qilish",
-      step2: "2) Ma'lumotlar",
+      step2: "2) Rasmiylashtirish",
       step3: "3) To'lov",
       depart: "Uchish",
       arrive: "Qo'nish",
@@ -348,14 +387,14 @@ export default function FlightDetailsModal({
       extraPrice: "Qo'shimcha narx",
       rules: "Tarif qoidalari",
       rulesLoading: "Qoidalar yuklanmoqda...",
-      noRules: "Qoidalar hozircha yo'q (backend `data: []` qaytardi).",
+      noRules: "Hozircha tarif qoidalari mavjud emas.",
       services: "Xizmatlar",
       meal: "Ovqat",
       support: "24/7 Qo'llab-quvvatlash",
       continue: "Davom etish",
-      enterPassengerInfo: "Yo'lovchi ma'lumotlarini kiriting.",
-      select: "Tanlash",
-      formOpensFor: "ta yo'lovchi uchun forma ochiladi.",
+      enterPassengerInfo: "Tanlangan reys bron bo'limiga saqlanadi. Yo'lovchi ma'lumotlari va to'lov keyingi alohida sahifada to'ldiriladi.",
+      select: "Rasmiylashtirishga o'tish",
+      formOpensFor: "ta yo'lovchi uchun alohida rasmiylashtirish sahifasi ochiladi.",
       payerDetails: "To'lovchi ma'lumotlari",
       emailPhone: "Email va telefon",
       countryCode: "Mamlakat kodi",
@@ -407,7 +446,7 @@ export default function FlightDetailsModal({
       finalPrice: "Итоговая цена",
       taxesIncluded: "С налогами и сборами",
       step1: "1) Бронирование",
-      step2: "2) Данные",
+      step2: "2) Оформление",
       step3: "3) Оплата",
       depart: "Вылет",
       arrive: "Прилет",
@@ -434,14 +473,14 @@ export default function FlightDetailsModal({
       extraPrice: "Доплата",
       rules: "Правила тарифа",
       rulesLoading: "Загрузка правил...",
-      noRules: "Правил пока нет (backend вернул `data: []`).",
+      noRules: "Правила тарифа пока недоступны.",
       services: "Услуги",
       meal: "Питание",
       support: "Поддержка 24/7",
       continue: "Продолжить",
-      enterPassengerInfo: "Введите данные пассажиров.",
-      select: "Выбрать",
-      formOpensFor: "пассажиров будет в форме.",
+      enterPassengerInfo: "Выбранный рейс сохранится в бронировании. Данные пассажиров и оплата будут заполнены на отдельной странице оформления.",
+      select: "Перейти к оформлению",
+      formOpensFor: "пассажиров будет открыта отдельная страница оформления.",
       payerDetails: "Данные плательщика",
       emailPhone: "Email и телефон",
       countryCode: "Country code",
@@ -493,7 +532,7 @@ export default function FlightDetailsModal({
       finalPrice: "Final price",
       taxesIncluded: "Including taxes and fees",
       step1: "1) Booking",
-      step2: "2) Details",
+      step2: "2) Checkout",
       step3: "3) Payment",
       depart: "Departure",
       arrive: "Arrival",
@@ -520,14 +559,14 @@ export default function FlightDetailsModal({
       extraPrice: "Extra price",
       rules: "Fare rules",
       rulesLoading: "Loading rules...",
-      noRules: "No rules yet (backend returned `data: []`).",
+      noRules: "Fare rules are not available yet.",
       services: "Services",
       meal: "Meal",
       support: "24/7 support",
       continue: "Continue",
-      enterPassengerInfo: "Enter passenger details.",
-      select: "Select",
-      formOpensFor: "passengers will open in the form.",
+      enterPassengerInfo: "The selected flight will be saved to the booking stage. Passenger details and payment will be completed on a separate checkout page.",
+      select: "Go to checkout",
+      formOpensFor: "passengers will open on a separate checkout page.",
       payerDetails: "Payer details",
       emailPhone: "Email and phone",
       countryCode: "Country code",
@@ -583,9 +622,9 @@ export default function FlightDetailsModal({
       durationMin: 0,
       price: 0,
       baggage: "—",
-      cabin: "Economy",
+      cabin: "—",
       refundable: false,
-      services: ["support"],
+      services: [],
       flightNo: "—",
       carryOn: "—",
       segments: [],
@@ -673,7 +712,7 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setFareError(res.data.message || copy.fares)
+          setFareError(translateBackendInfoError(res.data.message, copy.fares, language))
           setFareData(null)
           return
         }
@@ -681,7 +720,7 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || copy.fares
+        const msg = translateBackendInfoError(err?.response?.data?.message, copy.fares, language)
         setFareError(msg)
         setFareData(null)
       })
@@ -692,7 +731,7 @@ export default function FlightDetailsModal({
     return () => {
       alive = false
     }
-  }, [open, safeFlight.id])
+  }, [copy.fares, language, open, safeFlight.id])
 
   useEffect(() => {
     if (!open) return
@@ -722,7 +761,9 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setOptionDetailsError(res.data.message || copy.flightDetails)
+          setOptionDetailsError(
+            translateBackendInfoError(res.data.message, copy.flightDetails, language)
+          )
           setOptionDetails(null)
           return
         }
@@ -733,7 +774,11 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || copy.flightDetails
+        const msg = translateBackendInfoError(
+          err?.response?.data?.message,
+          copy.flightDetails,
+          language
+        )
         setOptionDetailsError(msg)
         setOptionDetails(null)
       })
@@ -744,7 +789,7 @@ export default function FlightDetailsModal({
     return () => {
       alive = false
     }
-  }, [open, safeFlight.id])
+  }, [copy.flightDetails, language, open, safeFlight.id])
 
   useEffect(() => {
     if (!open) return
@@ -760,7 +805,9 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setFareFamiliesError(res.data.message || copy.farePackages)
+          setFareFamiliesError(
+            translateBackendInfoError(res.data.message, copy.farePackages, language)
+          )
           setFareFamiliesData([])
           return
         }
@@ -820,7 +867,11 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || copy.farePackages
+        const msg = translateBackendInfoError(
+          err?.response?.data?.message,
+          copy.farePackages,
+          language
+        )
         setFareFamiliesError(msg)
         setFareFamiliesData([])
       })
@@ -831,7 +882,7 @@ export default function FlightDetailsModal({
     return () => {
       alive = false
     }
-  }, [open, safeFlight.id])
+  }, [copy.farePackages, language, open, safeFlight.id])
 
   useEffect(() => {
     if (!open) return
@@ -847,7 +898,7 @@ export default function FlightDetailsModal({
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
-          setRulesError(res.data.message || copy.rules)
+          setRulesError(translateBackendInfoError(res.data.message, copy.rules, language))
           setRulesData([])
           return
         }
@@ -855,7 +906,7 @@ export default function FlightDetailsModal({
       })
       .catch((err: any) => {
         if (!alive) return
-        const msg = err?.response?.data?.message || copy.rules
+        const msg = translateBackendInfoError(err?.response?.data?.message, copy.rules, language)
         setRulesError(msg)
         setRulesData([])
       })
@@ -866,7 +917,7 @@ export default function FlightDetailsModal({
     return () => {
       alive = false
     }
-  }, [open, safeFlight.id])
+  }, [copy.rules, language, open, safeFlight.id])
 
   const backendServiceDescriptions = useMemo(() => {
     const seen = new Set<string>()
@@ -925,7 +976,7 @@ export default function FlightDetailsModal({
 
   const cabin = bookingFlight.cabin ?? "—"
   const refundable = bookingFlight.refundable ?? false
-  const services = safeFlight.services ?? ["support"]
+  const services = safeFlight.services ?? []
   const flightNo = safeFlight.flightNo ?? "TZ-102"
   const itinerarySegments = useMemo(
     () =>
@@ -941,6 +992,34 @@ export default function FlightDetailsModal({
     () => bookingFlight.price,
     [bookingFlight.price]
   )
+
+  const proceedToFormalization = () => {
+    if (!bookingFlight.id) {
+      setToastMsg(copy.optionMissing)
+      setToastOpen(true)
+      return
+    }
+
+    const curr = bookingCart.get()
+    bookingCart.set({
+      ...curr,
+      flightId: bookingFlight.id,
+      route: `${bookingFlight.from} → ${bookingFlight.to}`,
+      date,
+      pax: Math.max(1, pax),
+      amount: total,
+      currency: bookingFlight.currency,
+      airline: bookingFlight.airline,
+      flightNo: bookingFlight.flightNo,
+      cabin: bookingFlight.cabin,
+      baggage: bookingFlight.baggage,
+      carryOn: bookingFlight.carryOn,
+      segments: bookingFlight.segments ?? [],
+    })
+
+    onClose()
+    navigate("/checkout")
+  }
 
   const errors = useMemo(() => {
     const e: string[] = []
@@ -1068,7 +1147,7 @@ export default function FlightDetailsModal({
       setBookLoading(false)
     }
     onClose()
-    navigate("/passengers")
+    navigate("/checkout")
   }
 
   // UI umuman render qilmaymiz (lekin hooklar ishlayveradi)
@@ -1143,9 +1222,7 @@ export default function FlightDetailsModal({
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    step === "select"
-                      ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:text-white"
-                      : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
+                    "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:text-white",
                   ].join(" ")}
                 >
                   {copy.step1}
@@ -1154,23 +1231,10 @@ export default function FlightDetailsModal({
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    step === "details"
-                      ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:text-white"
-                      : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
+                    "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
                   ].join(" ")}
                 >
                   {copy.step2}
-                </span>
-                <span className="text-[#9ba8ba] dark:text-[#8ea5cb]">→</span>
-                <span
-                  className={[
-                    "px-3 py-1 rounded-full border",
-                    step === "pay"
-                      ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:text-white"
-                      : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
-                  ].join(" ")}
-                >
-                  {copy.step3}
                 </span>
               </div>
 
@@ -1239,7 +1303,7 @@ export default function FlightDetailsModal({
                                         key={`${f.id}-${i}`}
                                         className="rounded-full border border-[#e2e9f2] bg-[#f7faff] px-2.5 py-1 text-[11px] text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]"
                                       >
-                                        {s.description}
+                                        {translateServiceText(s.description || "", language) || s.description}
                                       </span>
                                     ))}
                                   </div>
@@ -1520,7 +1584,7 @@ export default function FlightDetailsModal({
                       )}
 
                       <button
-                        onClick={() => setStep("details")}
+                        onClick={proceedToFormalization}
                         className="
                           mt-5 w-full h-12 rounded-2xl
                           bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]

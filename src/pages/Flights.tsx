@@ -1,16 +1,21 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { motion } from "motion/react"
-import { ArrowRight, CalendarDays, Clock3, Filter, Plane, PlaneLanding, PlaneTakeoff, Sparkles, Ticket, Users } from "lucide-react"
+import { ArrowRight, CalendarDays, ChevronDown, Clock3, Filter, Plane, PlaneLanding, PlaneTakeoff, Sparkles, Ticket, Users } from "lucide-react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
-import heroImage from "@/assets/images/uzb-airways-desktop.jpg"
+import amsterdamImage from "@/assets/SHaharlar/amsterdam.webp"
+import dubaiImage from "@/assets/SHaharlar/dubai-marina-cityscape-skyline-skyscrapers-buildings-city-2560x1440-4870.jpg"
+import spainImage from "@/assets/SHaharlar/Espania.webp"
+import germanyImage from "@/assets/SHaharlar/germany.webp"
+import parisImage from "@/assets/SHaharlar/parij.webp"
+import sharmImage from "@/assets/SHaharlar/sharm el sheikh.webp"
+import turkeyImage from "@/assets/SHaharlar/turkey.jpg"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
 import { formatMoney } from "@/lib/money"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
-import { FEATURED_ROUTE_CARDS_KEY, type FeaturedRouteCard } from "@/shared/air/featuredRoutes"
 import { useI18n } from "@/shared/i18n/i18n"
 
 const luxuryBtn =
@@ -21,8 +26,30 @@ const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
 
+const cityHeroSlides = [
+  { image: amsterdamImage, city: "Amsterdam" },
+  { image: dubaiImage, city: "Dubai" },
+  { image: spainImage, city: "Barcelona" },
+  { image: germanyImage, city: "Berlin" },
+  { image: parisImage, city: "Paris" },
+  { image: sharmImage, city: "Sharm El Sheikh" },
+  { image: turkeyImage, city: "Istanbul" },
+] as const
+
+const UZ_AIRPORT_OVERRIDES: Record<string, string> = {
+  ALA: "Olmaota",
+  NQZ: "Astana",
+  FRA: "Frankfurt",
+  LIS: "Lissabon",
+  ESB: "Anqara (Esenboga)",
+  AYT: "Antaliya",
+  DME: "Moskva (Domodedovo)",
+  SVO: "Moskva (Sheremetyevo)",
+}
+
 type TravelClassCode = "Y" | "C" | "F"
-type SearchCriteria = { from: string; to: string; date: string; pax: number; travelClass: TravelClassCode }
+type SearchTrip = { origin: string; destination: string; departure: string }
+type SearchCriteria = { from: string; to: string; date: string; pax: number; travelClass: TravelClassCode; trips?: SearchTrip[] }
 type LocationOption = { code: string; name: string; searchText: string }
 
 type SearchDataLike = {
@@ -88,6 +115,64 @@ const toDateOnly = (value?: string) => {
   return d || value
 }
 
+const parseBackendDateTime = (value?: string) => {
+  if (!value) return null
+  const normalized = value.trim().replace(" ", "T")
+  const parsed = new Date(normalized)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const resolveFlightDurationMinutes = ({
+  optionTrips,
+  segments,
+  fallbackMinutes,
+}: {
+  optionTrips: any[]
+  segments: any[]
+  fallbackMinutes?: number
+}) => {
+  const tripDuration = Number(
+    optionTrips.reduce((sum: number, currentTrip: any) => sum + Number(currentTrip?.duration || 0), 0) || 0
+  )
+
+  const segmentDuration = segments.reduce((sum: number, segment: any) => {
+    return sum + Number(segment.duration || 0) + Number(segment.layover || 0)
+  }, 0)
+
+  const firstDeparture = parseBackendDateTime(optionTrips[0]?.departure || segments[0]?.departure)
+  const lastArrival = parseBackendDateTime(
+    optionTrips[optionTrips.length - 1]?.arrival || segments[segments.length - 1]?.arrival
+  )
+  const endpointDuration =
+    firstDeparture && lastArrival
+      ? Math.max(0, Math.round((lastArrival.getTime() - firstDeparture.getTime()) / 60000))
+      : 0
+
+  const directSegmentDuration = Number(segments[0]?.duration || fallbackMinutes || 0)
+
+  if (segmentDuration > 0 && endpointDuration > segmentDuration * 2) {
+    return segmentDuration
+  }
+
+  if (tripDuration > 0 && endpointDuration > tripDuration * 2) {
+    return tripDuration
+  }
+
+  if (endpointDuration > 0 && endpointDuration <= 1440) {
+    return endpointDuration
+  }
+
+  if (segmentDuration > 0) {
+    return segmentDuration
+  }
+
+  if (tripDuration > 0) {
+    return tripDuration
+  }
+
+  return directSegmentDuration
+}
+
 const toApiAsset = (path?: string) => {
   if (!path) return undefined
   if (/^https?:\/\//i.test(path)) return path
@@ -151,23 +236,6 @@ const matchDepartureBucket = (
   if (bucket === "morning") return hours < 12
   if (bucket === "day") return hours >= 12 && hours < 18
   return hours >= 18
-}
-
-const getSuggestedDepartureDate = () => {
-  const base = new Date()
-  base.setDate(base.getDate() + 14)
-  const yyyy = base.getFullYear()
-  const mm = String(base.getMonth() + 1).padStart(2, "0")
-  const dd = String(base.getDate()).padStart(2, "0")
-  return `${yyyy}-${mm}-${dd}`
-}
-
-const DEFAULT_AUTO_SEARCH: SearchCriteria = {
-  from: "LON",
-  to: "FRA",
-  date: getSuggestedDepartureDate(),
-  pax: 1,
-  travelClass: "Y",
 }
 
 const normalizeText = (value: string) =>
@@ -245,6 +313,9 @@ export default function Flights() {
   const [selected, setSelected] = useState<Flight | null>(null)
   const [dynamicAirportLabels, setDynamicAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
   const [calendarOpen, setCalendarOpen] = useState(false)
+  const [searchTrips, setSearchTrips] = useState<SearchTrip[]>([])
+  const [activeCitySlide, setActiveCitySlide] = useState(0)
+  const [expandedAirline, setExpandedAirline] = useState<string | null>(null)
 
   const copy = {
     uz: {
@@ -266,6 +337,7 @@ export default function Flights() {
       date: "Sana",
       passenger: "Yo'lovchi",
       route: "Yo'nalish",
+      eta: "Yetib borish",
       unselected: "Tanlanmagan",
       routeEnter: "Yo'nalish kiriting",
       routeSelection: "Tanlangan yo'nalishlar",
@@ -293,7 +365,7 @@ export default function Flights() {
       conveniences: "Qo'shimcha qulayliklar",
       baggageOnly: "Bagaj bor",
       baggageOnlySub: "Faqat bagajli tariflar",
-      refundable: "Refundable",
+      refundable: "Qaytarish mumkin",
       refundableSub: "Qaytarish mumkin bo'lgan tariflar",
       refundableNone: "Hozir qaytariladigan tarif topilmadi",
       cabin: "Kabina turi",
@@ -310,6 +382,10 @@ export default function Flights() {
       day: "12:00-18:00",
       evening: "18:00 dan keyin",
       chooseFare: "Tarifni ko'rish",
+      offers: "ta taklif",
+      fromPriceLabel: "dan",
+      airlineChoice: "Aviakompaniyani tanlang",
+      airlineDataNote: "Narx, vaqt, klass va bagaj backenddan olinadi",
       view: "Ko'rish",
       noBaggage: "Bagaj yo'q",
       noCarry: "Qo'l yuki yo'q",
@@ -329,6 +405,7 @@ export default function Flights() {
       segments: "Segmentlar",
       layover: "Kutish vaqti",
       carryOnLabel: "Qo'l yuki",
+      skylinePreview: "Shahar panoramasi",
     },
     ru: {
       loginFirst: "Сначала выполните вход.",
@@ -349,6 +426,7 @@ export default function Flights() {
       date: "Дата",
       passenger: "Пассажир",
       route: "Маршрут",
+      eta: "Прибытие",
       unselected: "Не выбрано",
       routeEnter: "Укажите маршрут",
       routeSelection: "Премиальный выбор маршрута",
@@ -393,6 +471,10 @@ export default function Flights() {
       day: "12:00-18:00",
       evening: "После 18:00",
       chooseFare: "Посмотреть тариф",
+      offers: "предложения",
+      fromPriceLabel: "от",
+      airlineChoice: "Выберите авиакомпанию",
+      airlineDataNote: "Цена, время, класс и багаж приходят из backend",
       view: "Открыть",
       noBaggage: "Без багажа",
       noCarry: "Без ручной клади",
@@ -412,6 +494,7 @@ export default function Flights() {
       segments: "Сегменты",
       layover: "Ожидание",
       carryOnLabel: "Ручная кладь",
+      skylinePreview: "Панорама города",
     },
     en: {
       loginFirst: "Please log in first.",
@@ -432,6 +515,7 @@ export default function Flights() {
       date: "Date",
       passenger: "Passenger",
       route: "Route",
+      eta: "Arrival",
       unselected: "Not selected",
       routeEnter: "Enter a route",
       routeSelection: "Premium route selection",
@@ -476,6 +560,10 @@ export default function Flights() {
       day: "12:00-18:00",
       evening: "After 18:00",
       chooseFare: "View fare",
+      offers: "offers",
+      fromPriceLabel: "from",
+      airlineChoice: "Choose an airline",
+      airlineDataNote: "Price, time, class, and baggage come from the backend",
       view: "View",
       noBaggage: "No baggage",
       noCarry: "No carry-on",
@@ -495,6 +583,7 @@ export default function Flights() {
       segments: "Segments",
       layover: "Layover",
       carryOnLabel: "Carry-on",
+      skylinePreview: "City skyline",
     },
   }[language]
 
@@ -525,8 +614,15 @@ export default function Flights() {
     (code?: string) => {
       if (!code) return COMMON_COPY[language].unknown
       const upper = code.toUpperCase()
-      const city = airportLabels[upper]
-      return city ? `${city} (${upper})` : upper
+      const city =
+        language === "uz"
+          ? UZ_AIRPORT_OVERRIDES[upper] || airportLabels[upper]
+          : airportLabels[upper]
+      const safeCity =
+        language === "uz" && city && /[\u0400-\u04FF]/.test(city)
+          ? UZ_AIRPORT_OVERRIDES[upper] || upper
+          : city
+      return safeCity ? `${safeCity} (${upper})` : upper
     },
     [airportLabels, language]
   )
@@ -536,79 +632,6 @@ export default function Flights() {
       `${formatAirport(origin)} → ${formatAirport(destination)}`,
     [formatAirport]
   )
-
-  const toFeaturedCards = useCallback(
-    (flights: Flight[], criteria: SearchCriteria): FeaturedRouteCard[] =>
-      flights.slice(0, 6).map((flight, index) => ({
-        id: `${flight.id}-${index}`,
-        flightId: flight.id,
-        from: flight.from,
-        to: flight.to,
-        fromLabel: formatAirport(flight.from),
-        toLabel: formatAirport(flight.to),
-        date: criteria.date,
-        pax: criteria.pax,
-        airline: flight.airline,
-        airlineName: flight.airlineName || flight.airline,
-        depart: flight.depart,
-        arrive: flight.arrive,
-        durationMin: flight.durationMin,
-        price: flight.price,
-        currency: flight.currency,
-        baggage: flight.baggage,
-        carryOn: flight.carryOn,
-        stopsCount: flight.stopsCount ?? 0,
-        searchedAt: new Date().toISOString(),
-      })),
-    [formatAirport]
-  )
-
-  const mergeFeaturedCards = useCallback((nextCards: FeaturedRouteCard[]) => {
-    let existing: FeaturedRouteCard[] = []
-
-    try {
-      const raw = localStorage.getItem(FEATURED_ROUTE_CARDS_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw) as FeaturedRouteCard[]
-        if (Array.isArray(parsed)) existing = parsed
-      }
-    } catch {
-      existing = []
-    }
-
-    const merged = new Map<string, FeaturedRouteCard>()
-
-    for (const item of [...existing, ...nextCards]) {
-      const key = `${item.from}-${item.to}`
-      const prev = merged.get(key)
-
-      if (!prev) {
-        merged.set(key, item)
-        continue
-      }
-
-      if (item.price < prev.price) {
-        merged.set(key, item)
-        continue
-      }
-
-      const prevTime = new Date(prev.searchedAt || 0).getTime()
-      const nextTime = new Date(item.searchedAt || 0).getTime()
-      if (nextTime > prevTime) {
-        merged.set(key, { ...prev, searchedAt: item.searchedAt })
-      }
-    }
-
-    const result = Array.from(merged.values())
-      .sort((a, b) => {
-        const aTime = new Date(a.searchedAt || 0).getTime()
-        const bTime = new Date(b.searchedAt || 0).getTime()
-        return bTime - aTime || a.price - b.price
-      })
-      .slice(0, 120)
-
-    localStorage.setItem(FEATURED_ROUTE_CARDS_KEY, JSON.stringify(result))
-  }, [])
 
   const mapLocationLabels = useCallback((data?: SearchDataLike) => {
     const next: Record<string, string> = {}
@@ -630,32 +653,36 @@ export default function Flights() {
         ])
       )
       const mapped: Flight[] = options.map((opt) => {
-        const trip = opt.trips?.[0]
+        const optionTrips = opt.trips ?? []
+        const trip = optionTrips[0]
+        const lastTrip = optionTrips[optionTrips.length - 1] ?? trip
         const seg = trip?.segments?.[0]
         const family = opt.packages?.families?.[0]
         const carrierCode = (opt.carrier || seg?.carrier || "").toUpperCase()
         const carrierMeta = carriersMap.get(carrierCode)
-        const segments = (trip?.segments ?? []).map((segment: any, index: number) => ({
-          id: `${trip?.id || opt.id}-${index}`,
-          origin: segment?.origin || trip?.origin || criteria.from,
-          destination: segment?.destination || trip?.destination || criteria.to,
-          departure: segment?.departure || "—",
-          arrival: segment?.arrival || "—",
-          departureTerminal: segment?.departureTerminal,
-          arrivalTerminal: segment?.arrivalTerminal,
-          baggage: segment?.baggage || "—",
-          carryOn: segment?.carryOn || "—",
-          bookingClass: segment?.bookingClass,
-          serviceClass: segment?.serviceClass,
-          carrier: segment?.carrier,
-          operatingCarrier: segment?.operatingCarrier,
-          duration: segment?.duration,
-          layover: segment?.layover,
-          equipment: segment?.equipment,
-          fareBasis: segment?.fareBasis,
-          flightNumber: segment?.flightNumber,
-          seatsAvailable: segment?.seatsAvailable,
-        }))
+        const segments = optionTrips.flatMap((currentTrip: any, tripIndex: number) =>
+          (currentTrip?.segments ?? []).map((segment: any, index: number) => ({
+            id: `${currentTrip?.id || opt.id}-${tripIndex}-${index}`,
+            origin: segment?.origin || currentTrip?.origin || criteria.from,
+            destination: segment?.destination || currentTrip?.destination || criteria.to,
+            departure: segment?.departure || "—",
+            arrival: segment?.arrival || "—",
+            departureTerminal: segment?.departureTerminal,
+            arrivalTerminal: segment?.arrivalTerminal,
+            baggage: segment?.baggage || "—",
+            carryOn: segment?.carryOn || "—",
+            bookingClass: segment?.bookingClass,
+            serviceClass: segment?.serviceClass,
+            carrier: segment?.carrier,
+            operatingCarrier: segment?.operatingCarrier,
+            duration: segment?.duration,
+            layover: segment?.layover,
+            equipment: segment?.equipment,
+            fareBasis: segment?.fareBasis,
+            flightNumber: segment?.flightNumber,
+            seatsAvailable: segment?.seatsAvailable,
+          }))
+        )
         const baggage = formatAllowanceList([
           ...segments.map((segment: any) => segment.baggage),
           ...(family?.baggageInfos ?? []),
@@ -676,14 +703,11 @@ export default function Flights() {
           family?.name || "",
           ...familyServices.map((service: any) => `${service.type} ${service.description}`),
         ])
-        const computedDuration =
-          Number(trip?.duration || 0) ||
-          segments.reduce(
-            (sum: number, segment: any) =>
-              sum + Number(segment.duration || 0) + Number(segment.layover || 0),
-            0
-          ) ||
-          Number(seg?.duration || 0)
+        const computedDuration = resolveFlightDurationMinutes({
+          optionTrips,
+          segments,
+          fallbackMinutes: Number(seg?.duration || 0),
+        })
         const price =
           Number(opt.price || 0) ||
           Number(opt.passengerInfos?.reduce((sum: number, item: any) => sum + Number(item?.total || 0), 0) || 0)
@@ -701,14 +725,14 @@ export default function Flights() {
         return {
           id: opt.id,
           from: trip?.origin || criteria.from,
-          to: trip?.destination || criteria.to,
+          to: lastTrip?.destination || criteria.to,
           airline: carrierCode || "—",
           airlineName: carrierMeta?.name || opt.carrier || seg?.carrier || "—",
           airlineLogo: carrierMeta?.logo,
           departDate: toDateOnly(trip?.departure || primarySegment?.departure),
           depart: toTime(trip?.departure || primarySegment?.departure),
-          arriveDate: toDateOnly(trip?.arrival || lastSegment?.arrival),
-          arrive: toTime(trip?.arrival || lastSegment?.arrival),
+          arriveDate: toDateOnly(lastTrip?.arrival || lastSegment?.arrival),
+          arrive: toTime(lastTrip?.arrival || lastSegment?.arrival),
           durationMin: computedDuration,
           price,
           currency: opt.currency || data?.currency,
@@ -718,7 +742,15 @@ export default function Flights() {
           services,
           flightNo,
           carryOn,
-          stopsCount: Math.max(0, Number(trip?.numberOfStops ?? (segments.length ? segments.length - 1 : 0))),
+          stopsCount: Math.max(
+            0,
+            Number(
+              optionTrips.reduce(
+                (sum: number, currentTrip: any) => sum + Number(currentTrip?.numberOfStops ?? 0),
+                0
+              ) || (segments.length ? segments.length - 1 : 0)
+            )
+          ),
           seatsAvailable: Math.min(...segments.map((segment: any) => Number(segment.seatsAvailable || 99))),
           segments,
         }
@@ -730,11 +762,30 @@ export default function Flights() {
   )
 
   useEffect(() => {
+    let parsedTrips: SearchTrip[] = []
+    try {
+      const rawTrips = sp.get("trips")
+      if (rawTrips) {
+        const parsed = JSON.parse(rawTrips) as SearchTrip[]
+        if (Array.isArray(parsed)) {
+          parsedTrips = parsed.filter((item) => item?.origin && item?.destination && item?.departure)
+        }
+      }
+    } catch {
+      parsedTrips = []
+    }
+
     let qFrom = sp.get("from") ?? ""
     let qTo = sp.get("to") ?? ""
     let qDate = sp.get("date") ?? ""
     let qPax = Number(sp.get("pax") ?? "1")
     let qClass = normalizeTravelClass(sp.get("class") ?? "")
+
+    if (parsedTrips.length) {
+      qFrom = parsedTrips[0]?.origin ?? qFrom
+      qTo = parsedTrips[parsedTrips.length - 1]?.destination ?? qTo
+      qDate = parsedTrips[0]?.departure ?? qDate
+    }
 
     if (!qFrom || !qTo || !qDate) {
       try {
@@ -752,41 +803,9 @@ export default function Flights() {
       }
     }
 
-    if (!qFrom || !qTo || !qDate) {
-      try {
-        const stored = localStorage.getItem(FEATURED_ROUTE_CARDS_KEY)
-        if (stored) {
-          const parsed = JSON.parse(stored) as FeaturedRouteCard[]
-          const latest = Array.isArray(parsed)
-            ? [...parsed].sort((a, b) => {
-                const aTime = new Date(a.searchedAt || 0).getTime()
-                const bTime = new Date(b.searchedAt || 0).getTime()
-                return bTime - aTime || a.price - b.price
-              })[0]
-            : undefined
-
-          if (latest) {
-            qFrom = latest.from
-            qTo = latest.to
-            qDate = latest.date
-            qPax = Number(latest.pax ?? qPax)
-          }
-        }
-      } catch {
-        // ignore invalid localStorage
-      }
-    }
-
-    if (!qFrom || !qTo || !qDate) {
-      qFrom = DEFAULT_AUTO_SEARCH.from
-      qTo = DEFAULT_AUTO_SEARCH.to
-      qDate = DEFAULT_AUTO_SEARCH.date
-      qPax = DEFAULT_AUTO_SEARCH.pax
-      qClass = DEFAULT_AUTO_SEARCH.travelClass
-    }
-
     const nextPax = !Number.isNaN(qPax) && qPax >= 1 ? qPax : 1
 
+    setSearchTrips(parsedTrips)
     setFrom(qFrom)
     setTo(qTo)
     setDate(qDate)
@@ -794,7 +813,7 @@ export default function Flights() {
     setTravelClass(qClass)
     lastAutoQueryRef.current =
       qFrom && qTo && qDate
-        ? JSON.stringify({ from: qFrom, to: qTo, date: qDate, pax: nextPax, travelClass: qClass })
+        ? JSON.stringify({ from: qFrom, to: qTo, date: qDate, pax: nextPax, travelClass: qClass, trips: parsedTrips.length ? parsedTrips : undefined })
         : ""
     hydratedRef.current = true
   }, [sp])
@@ -824,17 +843,20 @@ export default function Flights() {
   const runSearch = useCallback(async (criteria: SearchCriteria, showAlert: boolean) => {
     const token =
       localStorage.getItem("access_token") || sessionStorage.getItem("access_token")
-    const { from, to, date, pax, travelClass } = criteria
+    const { from, to, date, pax, travelClass, trips } = criteria
+    const payloadTrips = trips?.length
+      ? trips
+      : [{ origin: from, destination: to, departure: date }]
 
     if (!token) {
       if (showAlert) toast.error(copy.loginFirst)
       return
     }
-    if (!from || !to || !date) {
+    if (!payloadTrips.length || payloadTrips.some((tripItem) => !tripItem.origin || !tripItem.destination || !tripItem.departure)) {
       if (showAlert) toast.error(copy.fillSearch)
       return
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (payloadTrips.some((tripItem) => !/^\d{4}-\d{2}-\d{2}$/.test(tripItem.departure))) {
       if (showAlert) toast.error(copy.dateFormat)
       return
     }
@@ -859,7 +881,7 @@ export default function Flights() {
           children: 0,
           infants: 0,
           class: travelClass,
-          trips: [{ origin: from, destination: to, departure: date }],
+          trips: payloadTrips,
         },
         { signal: controller.signal }
       )
@@ -894,7 +916,6 @@ export default function Flights() {
           updatedAt: new Date().toISOString(),
         })
       )
-      mergeFeaturedCards(toFeaturedCards(mapped, criteria))
     } catch (err: any) {
       if (requestId !== requestIdRef.current) return
       if (err?.code === "ERR_CANCELED" || err?.name === "CanceledError") return
@@ -913,7 +934,7 @@ export default function Flights() {
         abortRef.current = null
       }
     }
-  }, [copy.backendBusy, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights, mergeFeaturedCards, toFeaturedCards])
+  }, [copy.backendBusy, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights])
 
   const onSearch = () => {
     const criteria = {
@@ -922,12 +943,14 @@ export default function Flights() {
       date: date.trim(),
       pax,
       travelClass,
+      trips: undefined,
     }
     if (!criteria.from || !criteria.to) {
       toast.error(copy.invalidRoute)
       return
     }
     lastAutoQueryRef.current = JSON.stringify(criteria)
+    setSearchTrips([])
     navigate(
       `/flights?${new URLSearchParams({
         from: criteria.from,
@@ -949,23 +972,35 @@ export default function Flights() {
       date,
       pax,
       travelClass,
+      trips: searchTrips.length ? searchTrips : undefined,
     }
     if (!criteria.from || !criteria.to) return
     const queryKey = JSON.stringify(criteria)
     if (lastAutoQueryRef.current === queryKey) return
     lastAutoQueryRef.current = queryKey
-    navigate(
-      `/flights?${new URLSearchParams({
-        from: criteria.from,
-        to: criteria.to,
-        date: criteria.date,
-        pax: String(criteria.pax),
-        class: criteria.travelClass,
-      }).toString()}`,
-      { replace: true }
-    )
+    if (searchTrips.length) {
+      navigate(
+        `/flights?${new URLSearchParams({
+          trips: JSON.stringify(searchTrips),
+          pax: String(criteria.pax),
+          class: criteria.travelClass,
+        }).toString()}`,
+        { replace: true }
+      )
+    } else {
+      navigate(
+        `/flights?${new URLSearchParams({
+          from: criteria.from,
+          to: criteria.to,
+          date: criteria.date,
+          pax: String(criteria.pax),
+          class: criteria.travelClass,
+        }).toString()}`,
+        { replace: true }
+      )
+    }
     void runSearch(criteria, false)
-  }, [date, from, navigate, pax, resolvedFrom, resolvedTo, runSearch, to, travelClass])
+  }, [date, from, navigate, pax, resolvedFrom, resolvedTo, runSearch, searchTrips, to, travelClass])
 
   useEffect(() => () => abortRef.current?.abort(), [])
 
@@ -1009,6 +1044,14 @@ export default function Flights() {
     if (maxTripDuration) setMaxDuration(maxTripDuration)
   }, [maxTripDuration])
 
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveCitySlide((prev) => (prev + 1) % cityHeroSlides.length)
+    }, 3200)
+
+    return () => window.clearInterval(timer)
+  }, [])
+
   const filtered = useMemo(() => {
     let list = sourceItems.filter((flight) => {
       if (airlineFilter !== "all" && flight.airline !== airlineFilter) return false
@@ -1042,6 +1085,38 @@ export default function Flights() {
     resolvedTo,
     sort,
   ])
+
+  const groupedFlights = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { key: string; airline: string; airlineCode: string; airlineLogo?: string; items: Flight[]; minPrice: number }
+    >()
+
+    for (const flight of filtered) {
+      const key = `${flight.airlineName || flight.airline}-${flight.airline}`
+      const existing = grouped.get(key)
+      if (existing) {
+        existing.items.push(flight)
+        existing.minPrice = Math.min(existing.minPrice, flight.price)
+      } else {
+        grouped.set(key, {
+          key,
+          airline: flight.airlineName || flight.airline || COMMON_COPY[language].unknown,
+          airlineCode: flight.airline || "—",
+          airlineLogo: flight.airlineLogo,
+          items: [flight],
+          minPrice: flight.price,
+        })
+      }
+    }
+
+    return Array.from(grouped.values())
+      .map((group) => ({
+        ...group,
+        items: [...group.items].sort((a, b) => a.price - b.price || a.durationMin - b.durationMin),
+      }))
+      .sort((a, b) => a.minPrice - b.minPrice)
+  }, [filtered, language])
 
   const highlightCards = useMemo(() => {
     if (!filtered.length) return []
@@ -1080,62 +1155,158 @@ export default function Flights() {
     navigate("/flights", { replace: true })
   }
 
+  useEffect(() => {
+    if (!groupedFlights.length) {
+      setExpandedAirline(null)
+      return
+    }
+
+    setExpandedAirline((prev) =>
+      prev && groupedFlights.some((group) => group.key === prev) ? prev : groupedFlights[0].key
+    )
+  }, [groupedFlights])
+
+  const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
+  const heroRouteText =
+    resolvedFrom && resolvedTo ? `${resolvedFrom} → ${resolvedTo}` : copy.routeEnter
+  const heroEta = date || copy.unselected
+
   return (
     <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_34%,#e7edf6_100%)] pt-20 text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_26%,#15254a_62%,#11203d_100%)] dark:text-white">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(860px_340px_at_16%_0%,rgba(81,121,197,0.18),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(219,116,101,0.16),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(156,88,129,0.08),transparent_60%)] dark:bg-[radial-gradient(860px_340px_at_16%_0%,rgba(75,114,201,0.22),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(72,104,176,0.18),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(47,71,122,0.18),transparent_60%)]" />
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
-        <div className={`overflow-visible rounded-[36px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md dark:shadow-[0_32px_90px_rgba(4,10,28,0.42)] md:p-6 ${softPanel}`}>
-          <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <div className="relative overflow-hidden rounded-[32px] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_35%,#eef2fb_58%,#f7f1f5_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.88)] dark:bg-[linear-gradient(135deg,rgba(16,31,60,0.96)_0%,rgba(19,35,67,0.92)_35%,rgba(22,42,79,0.94)_58%,rgba(24,44,82,0.98)_100%)] dark:shadow-[inset_0_1px_0_rgba(147,182,255,0.08)] md:p-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]">
-                <Sparkles size={14} />
-                {copy.routeSelection}
+        <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md dark:shadow-[0_32px_90px_rgba(4,10,28,0.42)] md:p-6 ${softPanel}`}>
+          <div className="relative overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#0f2038_0%,#162b49_46%,#20385d_100%)] p-5 text-white shadow-[0_26px_70px_rgba(9,15,23,0.18)] md:p-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,156,255,0.18)_0%,transparent_34%),radial-gradient(circle_at_88%_14%,rgba(255,179,122,0.14)_0%,transparent_26%)]" />
+            <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/78 backdrop-blur-sm">
+                  <Sparkles size={14} />
+                  {copy.routeSelection}
+                </div>
+                <h1 className="mt-6 max-w-[720px] text-[38px] font-black leading-[0.94] tracking-[-0.06em] md:text-[60px]">
+                  {copy.heroTitleA}
+                  <span className="block bg-[linear-gradient(135deg,#8ec5ff_0%,#d4bcff_46%,#ffd29b_100%)] bg-clip-text text-transparent">
+                    {copy.heroTitleB}
+                  </span>
+                  <span className="block">{copy.heroTitleC}</span>
+                </h1>
+                <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#d2dced] md:text-[17px]">
+                  {copy.heroDesc}
+                </p>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">
+                      <CalendarDays size={14} />
+                      {copy.date}
+                    </div>
+                    <div className="mt-3 text-[24px] font-black">{date || copy.unselected}</div>
+                  </div>
+                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">
+                      <Users size={14} />
+                      {copy.passenger}
+                    </div>
+                    <div className="mt-3 text-[24px] font-black">{`${pax} ${language === "en" ? "pax" : "ta"}`.trim()}</div>
+                  </div>
+                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">
+                      <Ticket size={14} />
+                      {copy.classLabel}
+                    </div>
+                    <div className="mt-3 text-[24px] font-black">{travelClass}</div>
+                  </div>
+                </div>
               </div>
-              <h1 className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#1d2430] dark:text-white md:text-[48px]">
-                {copy.heroTitleA}
-                <span className="bg-[linear-gradient(135deg,#243a7a_0%,#a44c72_45%,#e36b3a_100%)] bg-clip-text text-transparent"> eng qulay </span>
-                {copy.heroTitleC}
-              </h1>
-              <p className="mt-5 max-w-[600px] text-[15px] leading-8 text-[#627188] dark:text-[#d2e0f8] md:text-[16px]">
-                {copy.heroDesc}
-              </p>
-              <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                <InfoChip icon={CalendarDays} label={copy.date} value={date || copy.unselected} />
-                <InfoChip icon={Users} label={copy.passenger} value={`${pax} ${language === "en" ? "" : "ta"}`.trim()} />
-                <InfoChip
-                  icon={PlaneTakeoff}
-                  label={copy.route}
-                  value={resolvedFrom && resolvedTo ? formatRoute(resolvedFrom, resolvedTo) : copy.routeEnter}
-                />
-              </div>
-            </div>
-            <div className="relative min-h-[320px] overflow-hidden rounded-[32px] border border-white/70 bg-[#dce7f2] shadow-[0_20px_60px_rgba(18,27,45,0.10)] dark:border-[#35507f] dark:bg-[rgba(18,33,62,0.86)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.42)]">
-              <img src={heroImage} alt="Premium flights" className="absolute inset-0 h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(17,24,39,0.08)_0%,rgba(17,24,39,0.34)_100%)]" />
-              <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
-                <div className="rounded-[24px] border border-white/30 bg-[rgba(12,20,38,0.46)] p-5 text-white backdrop-blur-md">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/65">{copy.curated}</div>
-                  <div className="mt-2 text-2xl font-black">{copy.curatedTitle}</div>
-                  <p className="mt-2 text-sm leading-7 text-white/75">{copy.curatedDesc}</p>
+
+              <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(255,255,255,0.06)] backdrop-blur-sm">
+                <img src={currentCitySlide.image} alt={currentCitySlide.city} className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,18,34,0.12)_0%,rgba(9,18,34,0.64)_100%)]" />
+                <div className="relative flex h-full min-h-[320px] flex-col justify-between p-5">
+                  <div className="rounded-[22px] border border-white/12 bg-[rgba(8,18,34,0.56)] p-4 backdrop-blur-md">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/68">
+                      {copy.curated}
+                    </div>
+                    <div className="mt-2 text-[26px] font-black leading-tight">
+                      {copy.curatedTitle}
+                    </div>
+                    <div className="mt-3 text-sm leading-7 text-white/80">
+                      {copy.curatedDesc}
+                    </div>
+                    <div className="mt-4 flex items-center justify-between gap-3">
+                      <div className="rounded-full border border-white/12 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/92">
+                        {currentCitySlide.city}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {cityHeroSlides.map((slide, index) => (
+                          <button
+                            key={`${slide.city}-${index}`}
+                            type="button"
+                            onClick={() => setActiveCitySlide(index)}
+                            className={[
+                              "h-2.5 rounded-full transition-all",
+                              index === activeCitySlide ? "w-8 bg-white" : "w-2.5 bg-white/40 hover:bg-white/70",
+                            ].join(" ")}
+                            aria-label={slide.city}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[24px] border border-white/12 bg-[rgba(8,18,34,0.44)] p-5 backdrop-blur-md">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/64">
+                          {copy.route}
+                        </div>
+                        <div className="mt-2 text-[28px] font-black tracking-[-0.05em]">
+                          {heroRouteText}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                          {copy.eta}
+                        </div>
+                        <div className="mt-2 text-[22px] font-black">
+                          {heroEta}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-5 flex items-center gap-3">
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/54">
+                        {copy.from}
+                      </span>
+                      <div className="relative h-[3px] flex-1 rounded-full bg-white/18">
+                        <div className="absolute inset-y-0 left-0 w-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.15)_0%,rgba(146,197,255,0.95)_48%,rgba(255,215,162,0.85)_100%)]" />
+                        <Plane className="absolute -top-[11px] left-1/2 -translate-x-1/2 text-white/80" size={18} />
+                      </div>
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/54">
+                        {copy.to}
+                      </span>
+                    </div>
+                    <div className="mt-4 text-sm text-white/78">
+                      {currentCitySlide.city} {copy.skylinePreview}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-            <div className={`mt-6 overflow-visible rounded-[32px] p-5 backdrop-blur-sm ${softPanel}`}>
-            <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_170px_170px]">
+          <div className="mt-5 overflow-visible rounded-[32px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,248,255,0.93)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] md:p-5">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_210px_190px_220px]">
               <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
               <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
-              <div className="relative">
+              <div className="relative flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#dbe3ef] bg-white/92 px-4 py-3 shadow-[0_10px_24px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]">
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.date}</div>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
-                  className="flex h-full min-h-[56px] w-full flex-col justify-center rounded-[20px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)] transition hover:border-[#cfd9e8] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.28)] dark:hover:bg-[rgba(28,46,84,0.94)]"
+                  className="text-left text-[16px] font-semibold text-[#1d2430] dark:text-white"
                 >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.date}</div>
-                  <div className="mt-2 text-[15px] font-semibold text-[#1d2430] dark:text-white">
-                    {date || copy.openCalendar}
-                  </div>
+                  {date || copy.openCalendar}
                 </button>
                 {calendarOpen ? (
                   <FareCalendarPicker
@@ -1152,9 +1323,9 @@ export default function Flights() {
                   />
                 ) : null}
               </div>
-              <div className="rounded-[20px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)]">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.classLabel}</div>
-                <div className="mt-2 grid grid-cols-3 gap-2">
+              <div className="flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#dbe3ef] bg-white/92 px-4 py-3 shadow-[0_10px_24px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.classLabel}</div>
+                <div className="grid grid-cols-3 gap-2">
                   {(["Y", "C", "F"] as TravelClassCode[]).map((item) => (
                     <button
                       key={item}
@@ -1164,7 +1335,7 @@ export default function Flights() {
                         "h-10 rounded-2xl border text-sm font-semibold transition",
                         travelClass === item
                           ? `${luxuryBtn} border-[#1a2231]/10`
-                          : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]",
+                          : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]",
                       ].join(" ")}
                     >
                       {item}
@@ -1172,14 +1343,24 @@ export default function Flights() {
                   ))}
                 </div>
               </div>
-              <button onClick={onSearch} disabled={loading} className={`h-14 rounded-[18px] font-semibold uppercase tracking-[0.12em] transition disabled:opacity-60 ${luxuryBtn}`}>{loading ? copy.searching : copy.search}</button>
+              <button onClick={onSearch} disabled={loading} className={`min-h-[84px] rounded-[24px] px-6 text-sm font-semibold uppercase tracking-[0.18em] transition disabled:opacity-60 ${luxuryBtn}`}>
+                {loading ? copy.searching : copy.search}
+              </button>
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs text-[#7f8ca0] dark:text-[#a9bddb]">{copy.searchHint}</div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]">{copy.swap}</button>
-                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]">{copy.clear}</button>
-                {(["best", "cheap", "fast"] as const).map((item) => <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] text-[#627188] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]"].join(" ")}>{item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}</button>)}
+                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                  {copy.swap}
+                </button>
+                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                  {copy.clear}
+                </button>
+                {(["best", "cheap", "fast"] as const).map((item) => (
+                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] text-[#627188] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d4e2fb]"].join(" ")}>
+                    {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -1244,7 +1425,22 @@ export default function Flights() {
               </div>
             ) : null}
             {loading ? <InlineLoading /> : null}
-            {!loading && filtered.length > 0 ? filtered.map((flight, index) => <FlightRowCard key={flight.id} flight={flight} index={index} onPick={onPick} formatRoute={formatRoute} language={language} copy={copy} />) : null}
+            {!loading && groupedFlights.length > 0 ? (
+              <div className="space-y-4">
+                {groupedFlights.map((group) => (
+                  <AirlineGroupCard
+                    key={group.key}
+                    group={group}
+                    expanded={expandedAirline === group.key}
+                    onToggle={() => setExpandedAirline((prev) => (prev === group.key ? null : group.key))}
+                    onPick={onPick}
+                    copy={copy}
+                    language={language}
+                    formatRoute={formatRoute}
+                  />
+                ))}
+              </div>
+            ) : null}
             {!loading && filtered.length === 0 ? <div className="rounded-[28px] border border-[#dbe3ef] bg-white px-6 py-12 text-center text-[#627188] shadow-[0_18px_40px_rgba(17,24,39,0.06)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d2e0f8] dark:shadow-[0_18px_40px_rgba(4,10,28,0.28)]">{copy.noFlights}</div> : null}
           </div>
         </div>
@@ -1349,6 +1545,7 @@ function InfoChip({ icon: Icon, label, value }: { icon: typeof CalendarDays; lab
     </div>
   )
 }
+void InfoChip
 
 function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, chooseFareLabel }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; chooseFareLabel: string }) {
   const toneStyles = {
@@ -1398,6 +1595,139 @@ function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { 
         <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#90a2bb] dark:bg-[#c9d8f4]"].join(" ")} />
       </div>
     </button>
+  )
+}
+
+function AirlineGroupCard({
+  group,
+  expanded,
+  onToggle,
+  onPick,
+  copy,
+  language,
+  formatRoute,
+}: {
+  group: { key: string; airline: string; airlineCode: string; airlineLogo?: string; items: Flight[]; minPrice: number }
+  expanded: boolean
+  onToggle: () => void
+  onPick: (flight: Flight) => void
+  copy: Record<string, string>
+  language: "uz" | "ru" | "en"
+  formatRoute: (origin?: string, destination?: string) => string
+}) {
+  return (
+    <div className="overflow-hidden rounded-[28px] border border-[#dbe3ef] bg-white shadow-[0_16px_40px_rgba(17,24,39,0.06)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)]">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#f8fbff] dark:hover:bg-[rgba(28,46,84,0.94)]"
+      >
+        <span className="flex min-w-0 items-center gap-3">
+          {group.airlineLogo ? (
+            <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#edf2f7] bg-white object-contain p-1" />
+          ) : (
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#eef4ff] text-[#3269b8]">
+              <Plane size={16} />
+            </span>
+          )}
+          <span className="min-w-0">
+            <span className="block truncate text-[17px] font-semibold text-[#1d2430] dark:text-white">
+              {group.airline} ({group.airlineCode})
+            </span>
+            <span className="block text-sm text-[#71819a] dark:text-[#9fb4d7]">
+              {group.items.length} {copy.offers} {copy.fromPriceLabel} {formatMoney(group.minPrice, group.items[0]?.currency)}
+            </span>
+          </span>
+        </span>
+        <ChevronDown size={18} className={`shrink-0 text-[#71819a] transition ${expanded ? "rotate-180" : ""}`} />
+      </button>
+
+      {expanded ? (
+        <div className="border-t border-[#eef2f6] px-5 py-4 dark:border-[#30476f]">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#7f8ca0] dark:text-[#9fb4d7]">
+            {copy.airlineChoice}
+          </div>
+          <div className="mb-3 text-sm text-[#627188] dark:text-[#d4e2fb]">
+            {copy.airlineDataNote}
+          </div>
+          <div className="space-y-3">
+            {group.items.map((flight) => (
+              <AirlineOptionRow
+                key={flight.id}
+                flight={flight}
+                onPick={onPick}
+                copy={copy}
+                language={language}
+                formatRoute={formatRoute}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function AirlineOptionRow({
+  flight,
+  onPick,
+  copy,
+  language,
+  formatRoute,
+}: {
+  flight: Flight
+  onPick: (flight: Flight) => void
+  copy: Record<string, string>
+  language: "uz" | "ru" | "en"
+  formatRoute: (origin?: string, destination?: string) => string
+}) {
+  const isDirect = (flight.stopsCount ?? 0) === 0
+
+  return (
+    <div className="rounded-[24px] border border-[#e4ebf4] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(23,41,76,0.9)_0%,rgba(18,33,62,0.92)_100%)]">
+      <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)_220px] lg:items-center">
+        <div className="min-w-0">
+          <div className="text-[15px] font-black text-[#172033] dark:text-white">{flight.flightNo || flight.airline}</div>
+          <div className="mt-1 text-sm text-[#627188] dark:text-[#d4e2fb]">{flight.airlineName || flight.airline}</div>
+          <div className="mt-2 text-sm text-[#8a95a8] dark:text-[#9fb4d7]">{formatRoute(flight.from, flight.to)}</div>
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-center justify-center gap-3 text-[15px] font-black text-[#172033] dark:text-white">
+            <span>{flight.depart}</span>
+            <span className="text-[#9aa8bb]">→</span>
+            <span>{flight.arrive}</span>
+          </div>
+          <div className="mt-2 text-center text-sm text-[#7b8aa2] dark:text-[#9fb4d7]">
+            {fmtDuration(flight.durationMin, language)}, {isDirect ? copy.direct : `${flight.stopsCount} ${copy.transfers}`}
+          </div>
+          <div className="mt-2 text-center text-sm text-[#627188] dark:text-[#d4e2fb]">
+            {flight.departDate || "—"} → {flight.arriveDate || "—"}
+          </div>
+        </div>
+
+        <div className="text-left lg:text-right">
+          <div className="text-[17px] font-black text-[#172033] dark:text-white">
+            {formatCompactPrice(flight.price, flight.currency)}
+          </div>
+          <div className="mt-2 flex flex-wrap justify-start gap-2 lg:justify-end">
+            {flight.cabin ? <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">{flight.cabin}</span> : null}
+            {flight.baggage ? <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">{flight.baggage} bagaj</span> : null}
+            {flight.carryOn ? <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">{copy.carryOnLabel} {flight.carryOn}</span> : null}
+            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">
+              {flight.refundable ? copy.refundableYes : copy.refundableNo}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onPick(flight)}
+            className={`mt-3 h-11 rounded-2xl px-5 text-sm font-semibold transition ${luxuryBtn}`}
+          >
+            {copy.chooseFare}
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -1586,6 +1916,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
     </motion.div>
   )
 }
+void FlightRowCard
 
 function InlineLoading() {
   return (

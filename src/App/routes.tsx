@@ -21,23 +21,22 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
 
-      { path: "about", element: <About /> },
-      { path: "services", element: <Services /> },
-      { path: "flights", element: <Flights /> },
-      { path: "flight-catalog", element: <FlightCatalog /> },
-
-      // Cart / passengers
-      { path: "passengers", element: <PassengersPage /> },
-
-      { path: "contact", element: <Contact /> },
-      { path: "faq", element: <FAQ /> },
-
       { path: "register", element: <Navigate to="/login" replace /> },
       { path: "login", element: <LoginPage /> },
 
       {
         element: <ProtectedRoute />,
-        children: [{ path: "profile", element: <Profile /> }],
+        children: [
+          { path: "about", element: <About /> },
+          { path: "services", element: <Services /> },
+          { path: "flights", element: <Flights /> },
+          { path: "flight-catalog", element: <FlightCatalog /> },
+          { path: "passengers", element: <PassengersPage /> },
+          { path: "checkout", element: <PassengersPage /> },
+          { path: "contact", element: <Contact /> },
+          { path: "faq", element: <FAQ /> },
+          { path: "profile", element: <Profile /> },
+        ],
       },
 
       { path: "404", element: <NotFound /> },

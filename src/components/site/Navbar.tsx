@@ -34,7 +34,7 @@ const menuVariants = {
 }
 
 const actionBtnClass =
-  "h-11 rounded-full border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white shadow-[0_10px_24px_rgba(17,24,39,0.18)] transition hover:brightness-110 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(4,10,28,0.42)]"
+  "h-10 rounded-full border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_10px_24px_rgba(17,24,39,0.18)] transition hover:brightness-110 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(4,10,28,0.42)]"
 
 type NavLinkItem = {
   to: string
@@ -142,7 +142,7 @@ export default function Navbar() {
       leftLinks: [
         { to: "/flights", label: "Aeroport" },
         { to: "/about", label: "Biz haqimizda" },
-        { to: "/passengers", label: "Yo'lovchilar", icon: Users },
+        { to: "/checkout", label: "Rasmiylashtirish", icon: Users },
       ] as NavLinkItem[],
       rightLinks: [
         { to: "/services", label: "Xizmatlar" },
@@ -190,7 +190,7 @@ export default function Navbar() {
       leftLinks: [
         { to: "/flights", label: "Airport" },
         { to: "/about", label: "About" },
-        { to: "/passengers", label: "Passengers", icon: Users },
+        { to: "/checkout", label: "Checkout", icon: Users },
       ] as NavLinkItem[],
       rightLinks: [
         { to: "/services", label: "Services" },
@@ -223,10 +223,10 @@ export default function Navbar() {
         transition={{ duration: 0.35 }}
         className={[
           "w-full border-b border-[#d9dde4] bg-[rgba(240,243,247,0.92)] px-4 shadow-[0_8px_24px_rgba(37,55,89,0.04)] backdrop-blur-sm transition-[padding,background-color,box-shadow] duration-300 dark:border-[#38517f]/70 dark:bg-[rgba(8,18,38,0.50)] dark:shadow-[0_12px_32px_rgba(3,8,24,0.34)] md:px-5",
-          isScrolled ? "py-2 md:py-1.5" : "py-3 md:py-2.5",
+          isScrolled ? "py-1.5 md:py-1" : "py-2.5 md:py-2",
         ].join(" ")}
       >
-        <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-3 lg:gap-5 2xl:max-w-[1820px]">
+        <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-3 lg:gap-4 2xl:max-w-[1820px]">
           <Link
             to="/"
             className="hidden shrink-0 items-center justify-center lg:flex"
@@ -238,26 +238,26 @@ export default function Navbar() {
               alt="Tripzy logo"
               className={[
                 "block h-auto object-contain drop-shadow-[0_10px_24px_rgba(17,24,39,0.10)] transition-[width,filter] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)]",
-                isScrolled ? "w-[158px] xl:w-[170px]" : "w-[172px] xl:w-[184px]",
+                isScrolled ? "w-[200px] xl:w-[258px]" : "w-[182px] xl:w-[194px]",
               ].join(" ")}
             />
           </Link>
 
           <div className="hidden min-w-0 flex-1 items-center justify-between lg:flex">
-            <div className="flex min-w-0 items-center gap-6 xl:gap-7">
+            <div className="flex min-w-0 items-center gap-5 xl:gap-6">
               {desktopLinks.map((link) => (
                 <NavItem
                   key={link.to}
                   to={link.to}
                   label={link.label}
                   icon={link.icon}
-                  badge={link.to === "/passengers" ? paxCount : 0}
+                  badge={link.to === "/checkout" ? paxCount : 0}
                   compact={isScrolled}
                 />
               ))}
             </div>
 
-            <div className="ml-5 flex shrink-0 items-center gap-2.5 xl:gap-3">
+            <div className="ml-4 flex shrink-0 items-center gap-2 xl:gap-2.5">
               <div className="flex items-center gap-1 rounded-full border border-[#dde4ee] bg-white/85 p-1 shadow-[0_8px_20px_rgba(17,24,39,0.06)] dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)]">
                 {(["uz", "ru", "en"] as const).map((lang) => (
                   <button
@@ -265,8 +265,8 @@ export default function Navbar() {
                     type="button"
                     onClick={() => setLanguage(lang)}
                     className={[
-                      "rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.08em] transition",
-                      isScrolled ? "py-0.5" : "py-1.5",
+                      "rounded-full px-2.5 text-[9px] font-semibold uppercase tracking-[0.08em] transition",
+                      isScrolled ? "py-0.5" : "py-1",
                       language === lang
                         ? "bg-[#1c2433] text-white dark:bg-[#4b79ff]"
                         : "text-[#2a3140] hover:bg-[#f3f7fc] dark:text-white/80 dark:hover:bg-white/10",
@@ -282,26 +282,26 @@ export default function Navbar() {
                 aria-label={copy.switchTheme}
                 onClick={onToggleTheme}
                 className={[
-                  "inline-flex items-center gap-2 rounded-full border border-[#dde4ee] bg-white/85 px-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#243042] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)] dark:hover:bg-[rgba(28,46,84,0.94)]",
-                  isScrolled ? "h-8.5" : "h-9.5",
+                  "inline-flex items-center gap-1.5 rounded-full border border-[#dde4ee] bg-white/85 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#243042] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)] dark:hover:bg-[rgba(28,46,84,0.94)]",
+                  isScrolled ? "h-8" : "h-9",
                 ].join(" ")}
               >
-                {theme === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+                {theme === "dark" ? <SunMedium size={14} /> : <MoonStar size={14} />}
                 {theme === "dark" ? copy.themeLight : copy.themeDark}
               </button>
 
               {!authed ? (
-                <Button onClick={goAuth} className={`${actionBtnClass} px-6`}>
+                  <Button onClick={goAuth} className={`${actionBtnClass} px-5`}>
                   {copy.login}
                 </Button>
               ) : (
                 <div className="flex items-center gap-2.5">
                   <Button onClick={goProfile} className={actionBtnClass}>
-                    <UserCircle2 className="mr-2" size={16} />
+                    <UserCircle2 className="mr-1.5" size={14} />
                     {copy.profile}
                   </Button>
                   <Button onClick={logout} className={actionBtnClass}>
-                    <LogOut className="mr-2" size={16} />
+                    <LogOut className="mr-1.5" size={14} />
                     {copy.logout}
                   </Button>
                 </div>
@@ -318,7 +318,7 @@ export default function Navbar() {
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className="block h-auto w-[150px] object-contain sm:w-[158px]"
+              className="block h-auto w-[168px] object-contain sm:w-[178px]"
             />
           </Link>
 
@@ -435,7 +435,7 @@ export default function Navbar() {
                           <span>{link.label}</span>
                         </span>
 
-                        {link.to === "/passengers" && paxCount > 0 ? (
+                        {link.to === "/checkout" && paxCount > 0 ? (
                           <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
                             {paxCount}
                           </span>
@@ -498,7 +498,7 @@ function NavItem({
       className={({ isActive }) =>
         [
           "group relative inline-flex items-center gap-1.5 whitespace-nowrap pb-1.5 font-semibold uppercase tracking-[0.12em] transition",
-          compact ? "text-[11px] xl:text-[12px]" : "text-[12px] xl:text-[13px]",
+          compact ? "text-[10px] xl:text-[11px]" : "text-[11px] xl:text-[12px]",
           isActive
             ? "text-[#111827] after:scale-x-100 after:opacity-100 dark:text-white"
             : "text-[#2d3544] hover:text-[#111827] after:scale-x-70 after:opacity-70 dark:text-white/78 dark:hover:text-white",
@@ -506,10 +506,10 @@ function NavItem({
         ].join(" ")
       }
     >
-      {Icon ? <Icon size={16} strokeWidth={2.1} /> : null}
+      {Icon ? <Icon size={14} strokeWidth={2.1} /> : null}
       <span>{label}</span>
       {badge > 0 ? (
-        <span className="rounded-full bg-[#e8eef8] px-1.5 py-0.5 text-[10px] tracking-normal text-[#173260] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
+        <span className="rounded-full bg-[#e8eef8] px-1.5 py-0.5 text-[9px] tracking-normal text-[#173260] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
           {badge}
         </span>
       ) : null}

@@ -1,36 +1,74 @@
 import { motion } from "framer-motion"
 import {
+  ArrowRightLeft,
   CalendarDays,
   ChevronDown,
   CircleHelp,
   CreditCard,
+  MapPinned,
+  PlaneLanding,
+  PlaneTakeoff,
   RefreshCcw,
   Search,
   Send,
   Ticket,
+  UsersRound,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
-import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
-import heroDesktopImage from "@/assets/images/avubuluttour.png"
-import heroMobileImage from "@/assets/svg/emirates.webp"
+import amsterdamImage from "@/assets/SHaharlar/amsterdam.webp"
+import dubaiImage from "@/assets/SHaharlar/dubai-marina-cityscape-skyline-skyscrapers-buildings-city-2560x1440-4870.jpg"
+import spainImage from "@/assets/SHaharlar/Espania.webp"
+import germanyImage from "@/assets/SHaharlar/germany.webp"
+import parisImage from "@/assets/SHaharlar/parij.webp"
+import sharmImage from "@/assets/SHaharlar/sharm el sheikh.webp"
+import turkeyImage from "@/assets/SHaharlar/turkey.jpg"
+import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
-import { FEATURED_ROUTE_CARDS_KEY, type FeaturedRouteCard } from "@/shared/air/featuredRoutes"
-import { bookingCart } from "@/shared/store/bookingCart"
-import { formatMoney } from "@/lib/money"
 import { useI18n } from "@/shared/i18n/i18n"
 
 type LocationOption = { code: string; name: string; searchText: string }
-const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
-const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
 const DEFAULT_HOME_SEARCH = {
-  from: "LON - London",
-  to: "FRA - Frankfurt",
+  from: "",
+  to: "",
   pax: 1,
 }
+const LIVE_DIRECTORY_BOOTSTRAPS = [
+  { from: "LON", to: "FRA" },
+  { from: "TAS", to: "DXB" },
+  { from: "DXB", to: "TAS" },
+  { from: "IST", to: "TAS" },
+  { from: "TAS", to: "IST" },
+  { from: "AUH", to: "TAS" },
+] as const
+
+const HOME_PRIORITY_AIRPORT_CODES = [
+  "TAS",
+  "DXB",
+  "IST",
+  "SAW",
+  "SKD",
+  "TBS",
+  "HAN",
+  "LIS",
+  "FCO",
+  "BKK",
+  "SSH",
+  "CDG",
+] as const
+
+const cityCarouselSlides = [
+  { image: amsterdamImage, name: "Amsterdam" },
+  { image: dubaiImage, name: "Dubai" },
+  { image: spainImage, name: "Spain" },
+  { image: germanyImage, name: "Germany" },
+  { image: parisImage, name: "Paris" },
+  { image: sharmImage, name: "Sharm El Sheikh" },
+  { image: turkeyImage, name: "Istanbul" },
+] as const
 
 const getDefaultHomeDate = () => {
   const base = new Date()
@@ -69,29 +107,40 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
   return upper.length === 3 ? upper : ""
 }
 
+const formatDisplayDate = (value: string) => {
+  if (!value) return ""
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+
+  return parsed.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+  })
+}
+
 export default function Home() {
   const navigate = useNavigate()
   const { language } = useI18n()
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
   const [date, setDate] = useState("")
+  const [returnDate, setReturnDate] = useState("")
   const [pax, setPax] = useState(1)
   const [airportLabels, setAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState(-1)
   const [faqQuestion, setFaqQuestion] = useState("")
-  const [lastResultMeta, setLastResultMeta] = useState<null | {
-    from: string
-    to: string
-    date: string
-    pax: number
-    count: number
-    info?: string
-    updatedAt?: string
-  }>(null)
-  const [featuredRoutes, setFeaturedRoutes] = useState<FeaturedRouteCard[]>([])
-  const [openDestination, setOpenDestination] = useState<string | null>(null)
-
+  const [tripMode, setTripMode] = useState<"round" | "oneway" | "multi">("round")
+  const [passengerTouched, setPassengerTouched] = useState(false)
+  const [activeAirportField, setActiveAirportField] = useState<string | null>(null)
+  const [multiTrips, setMultiTrips] = useState<Array<{ from: string; to: string; date: string }>>([
+    { from: "", to: "", date: "" },
+    { from: "", to: "", date: "" },
+  ])
+  const [openMultiDateIndex, setOpenMultiDateIndex] = useState<number | null>(null)
+  const [activeCitySlide, setActiveCitySlide] = useState(0)
   const copy = {
     uz: {
       titleLines: ["Xalqaro avia qatnovlar", "va tezkor reyslar"],
@@ -104,13 +153,13 @@ export default function Home() {
       date: "Qachon",
       passenger: "Yo'lovchi",
       selectDate: "Sanani tanlang",
-      priceCalendar: "Narxli kalendar",
+      priceCalendar: "Sanani Tanlang",
       search: "Bilet topish",
       invalidRoute: "Qayerdan va qayerga uchun to'g'ri variantni tanlang.",
       invalidDate: "Sanani tanlang.",
       popularBadge: "Populyarnye napravleniya",
-      popularTitleA: "Real backenddan",
-      popularTitleB: "yig'ilgan yo'nalishlar",
+      popularTitleA: "",
+      popularTitleB: "Yo'nalishlar",
       popularDesc: "Har bir blok bitta destination bo'yicha guruhlangan. Qatorni bossangiz shu reysning rasmiylashtirish oqimiga o'tadi.",
       fromPrice: "dan",
       latestUpdate: "Oxirgi yangilanish",
@@ -159,67 +208,67 @@ export default function Home() {
       ],
     },
     ru: {
-      titleLines: ["Премиальный поиск авиабилетов", "и быстрое бронирование"],
-      subtitle: "Реальные рейсы, точные цены и упрощенный процесс бронирования.",
-      chips: ["Реальная цена", "Интерфейс на узбекском", "Быстрое бронирование"],
-      totalFlights: "Всего",
-      flightsSuffix: "рейсов",
-      from: "Откуда",
-      to: "Куда",
-      date: "Когда",
-      passenger: "Пассажир",
-      selectDate: "Выберите дату",
-      priceCalendar: "Календарь цен",
-      search: "Найти билет",
-      invalidRoute: "Выберите корректные значения для пунктов отправления и прибытия.",
-      invalidDate: "Выберите дату.",
-      popularBadge: "Популярные направления",
-      popularTitleA: "Направления, собранные",
-      popularTitleB: "из реального backend",
-      popularDesc: "Каждый блок сгруппирован по destination. При нажатии на строку открывается оформление именно этого рейса.",
-      fromPrice: "от",
-      latestUpdate: "Последнее обновление",
-      viewFare: "Посмотреть тариф",
-      faqBadge: "Частые вопросы",
-      faqTitleA: "Самые важные вопросы",
-      faqTitleB: "о перелете и бронировании",
-      faqDesc: "Мы собрали основные вопросы по поиску билетов, бронированию, багажу, оплате и сотрудничеству.",
-      ask: "Есть вопрос?",
-      askPlaceholder: "Например: как работает лимит багажа?",
-      send: "Отправить",
-      helpBadge: "Помощь и оплата",
-      helpTitleA: "Важные инструкции",
-      helpTitleB: "перед перелетом",
-      helpDesc: "Здесь можно быстро найти информацию об оплате, электронном билете и изменении рейса.",
+      titleLines: ["Р В РЎСџР РЋР вЂљР В Р’ВµР В РЎВР В РЎвЂР В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќ Р В Р’В°Р В Р вЂ Р В РЎвЂР В Р’В°Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™Р В РЎвЂўР В Р вЂ ", "Р В РЎвЂ Р В Р’В±Р РЋРІР‚в„–Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р’Вµ Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦Р В РЎвЂР В Р’Вµ"],
+      subtitle: "Р В Р’В Р В Р’ВµР В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р РЋРІР‚в„–, Р РЋРІР‚С™Р В РЎвЂўР РЋРІР‚РЋР В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р РЋРІР‚В Р В Р’ВµР В Р вЂ¦Р РЋРІР‚в„– Р В РЎвЂ Р РЋРЎвЂњР В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋРІР‚В°Р В Р’ВµР В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋРІР‚В Р В Р’ВµР РЋР С“Р РЋР С“ Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦Р В РЎвЂР РЋР РЏ.",
+      chips: ["Р В Р’В Р В Р’ВµР В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В Р’В°Р РЋР РЏ Р РЋРІР‚В Р В Р’ВµР В Р вЂ¦Р В Р’В°", "Р В Р’ВР В Р вЂ¦Р РЋРІР‚С™Р В Р’ВµР РЋР вЂљР РЋРІР‚С›Р В Р’ВµР В РІвЂћвЂ“Р РЋР С“ Р В Р вЂ¦Р В Р’В° Р РЋРЎвЂњР В Р’В·Р В Р’В±Р В Р’ВµР В РЎвЂќР РЋР С“Р В РЎвЂќР В РЎвЂўР В РЎВ", "Р В РІР‚ВР РЋРІР‚в„–Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р’Вµ Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦Р В РЎвЂР В Р’Вµ"],
+      totalFlights: "Р В РІР‚в„ўР РЋР С“Р В Р’ВµР В РЎвЂ“Р В РЎвЂў",
+      flightsSuffix: "Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В РЎвЂўР В Р вЂ ",
+      from: "Р В РЎвЂєР РЋРІР‚С™Р В РЎвЂќР РЋРЎвЂњР В РўвЂР В Р’В°",
+      to: "Р В РЎв„ўР РЋРЎвЂњР В РўвЂР В Р’В°",
+      date: "Р В РЎв„ўР В РЎвЂўР В РЎвЂ“Р В РўвЂР В Р’В°",
+      passenger: "Р В РЎСџР В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљ",
+      selectDate: "Р В РІР‚в„ўР РЋРІР‚в„–Р В Р’В±Р В Р’ВµР РЋР вЂљР В РЎвЂР РЋРІР‚С™Р В Р’Вµ Р В РўвЂР В Р’В°Р РЋРІР‚С™Р РЋРЎвЂњ",
+      priceCalendar: "Р В РЎв„ўР В Р’В°Р В Р’В»Р В Р’ВµР В Р вЂ¦Р В РўвЂР В Р’В°Р РЋР вЂљР РЋР Р‰ Р РЋРІР‚В Р В Р’ВµР В Р вЂ¦",
+      search: "Р В РЎСљР В Р’В°Р В РІвЂћвЂ“Р РЋРІР‚С™Р В РЎвЂ Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™",
+      invalidRoute: "Р В РІР‚в„ўР РЋРІР‚в„–Р В Р’В±Р В Р’ВµР РЋР вЂљР В РЎвЂР РЋРІР‚С™Р В Р’Вµ Р В РЎвЂќР В РЎвЂўР РЋР вЂљР РЋР вЂљР В Р’ВµР В РЎвЂќР РЋРІР‚С™Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В Р’В·Р В Р вЂ¦Р В Р’В°Р РЋРІР‚РЋР В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ Р В РўвЂР В Р’В»Р РЋР РЏ Р В РЎвЂ”Р РЋРЎвЂњР В Р вЂ¦Р В РЎвЂќР РЋРІР‚С™Р В РЎвЂўР В Р вЂ  Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂ”Р РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ Р В РЎвЂ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂР В Р’В±Р РЋРІР‚в„–Р РЋРІР‚С™Р В РЎвЂР РЋР РЏ.",
+      invalidDate: "Р В РІР‚в„ўР РЋРІР‚в„–Р В Р’В±Р В Р’ВµР РЋР вЂљР В РЎвЂР РЋРІР‚С™Р В Р’Вµ Р В РўвЂР В Р’В°Р РЋРІР‚С™Р РЋРЎвЂњ.",
+      popularBadge: "Р В РЎСџР В РЎвЂўР В РЎвЂ”Р РЋРЎвЂњР В Р’В»Р РЋР РЏР РЋР вЂљР В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В Р вЂ¦Р В Р’В°Р В РЎвЂ”Р РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ",
+      popularTitleA: "Р В РЎСљР В Р’В°Р В РЎвЂ”Р РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ, Р РЋР С“Р В РЎвЂўР В Р’В±Р РЋР вЂљР В Р’В°Р В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ",
+      popularTitleB: "Р В РЎвЂР В Р’В· Р РЋР вЂљР В Р’ВµР В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў backend",
+      popularDesc: "Р В РЎв„ўР В Р’В°Р В Р’В¶Р В РўвЂР РЋРІР‚в„–Р В РІвЂћвЂ“ Р В Р’В±Р В Р’В»Р В РЎвЂўР В РЎвЂќ Р РЋР С“Р В РЎвЂ“Р РЋР вЂљР РЋРЎвЂњР В РЎвЂ”Р В РЎвЂ”Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦ Р В РЎвЂ”Р В РЎвЂў destination. Р В РЎСџР РЋР вЂљР В РЎвЂ Р В Р вЂ¦Р В Р’В°Р В Р’В¶Р В Р’В°Р РЋРІР‚С™Р В РЎвЂР В РЎвЂ Р В Р вЂ¦Р В Р’В° Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В РЎвЂќР РЋРЎвЂњ Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂќР РЋР вЂљР РЋРІР‚в„–Р В Р вЂ Р В Р’В°Р В Р’ВµР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РЎвЂўР РЋРІР‚С›Р В РЎвЂўР РЋР вЂљР В РЎВР В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР В Р’Вµ Р В РЎвЂР В РЎВР В Р’ВµР В Р вЂ¦Р В Р вЂ¦Р В РЎвЂў Р РЋР РЉР РЋРІР‚С™Р В РЎвЂўР В РЎвЂ“Р В РЎвЂў Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В Р’В°.",
+      fromPrice: "Р В РЎвЂўР РЋРІР‚С™",
+      latestUpdate: "Р В РЎСџР В РЎвЂўР РЋР С“Р В Р’В»Р В Р’ВµР В РўвЂР В Р вЂ¦Р В Р’ВµР В Р’Вµ Р В РЎвЂўР В Р’В±Р В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР В Р’Вµ",
+      viewFare: "Р В РЎСџР В РЎвЂўР РЋР С“Р В РЎВР В РЎвЂўР РЋРІР‚С™Р РЋР вЂљР В Р’ВµР РЋРІР‚С™Р РЋР Р‰ Р РЋРІР‚С™Р В Р’В°Р РЋР вЂљР В РЎвЂР РЋРІР‚С›",
+      faqBadge: "Р В Р’В§Р В Р’В°Р РЋР С“Р РЋРІР‚С™Р РЋРІР‚в„–Р В Р’Вµ Р В Р вЂ Р В РЎвЂўР В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚в„–",
+      faqTitleA: "Р В Р Р‹Р В Р’В°Р В РЎВР РЋРІР‚в„–Р В Р’Вµ Р В Р вЂ Р В Р’В°Р В Р’В¶Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В Р вЂ Р В РЎвЂўР В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚в„–",
+      faqTitleB: "Р В РЎвЂў Р В РЎвЂ”Р В Р’ВµР РЋР вЂљР В Р’ВµР В Р’В»Р В Р’ВµР РЋРІР‚С™Р В Р’Вµ Р В РЎвЂ Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦Р В РЎвЂР В РЎвЂ",
+      faqDesc: "Р В РЎС™Р РЋРІР‚в„– Р РЋР С“Р В РЎвЂўР В Р’В±Р РЋР вЂљР В Р’В°Р В Р’В»Р В РЎвЂ Р В РЎвЂўР РЋР С“Р В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В Р вЂ Р В РЎвЂўР В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚в„– Р В РЎвЂ”Р В РЎвЂў Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќР РЋРЎвЂњ Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™Р В РЎвЂўР В Р вЂ , Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦Р В РЎвЂР РЋР вЂ№, Р В Р’В±Р В Р’В°Р В РЎвЂ“Р В Р’В°Р В Р’В¶Р РЋРЎвЂњ, Р В РЎвЂўР В РЎвЂ”Р В Р’В»Р В Р’В°Р РЋРІР‚С™Р В Р’Вµ Р В РЎвЂ Р РЋР С“Р В РЎвЂўР РЋРІР‚С™Р РЋР вЂљР РЋРЎвЂњР В РўвЂР В Р вЂ¦Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р РЋРІР‚С™Р В Р вЂ Р РЋРЎвЂњ.",
+      ask: "Р В РІР‚СћР РЋР С“Р РЋРІР‚С™Р РЋР Р‰ Р В Р вЂ Р В РЎвЂўР В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋР С“?",
+      askPlaceholder: "Р В РЎСљР В Р’В°Р В РЎвЂ”Р РЋР вЂљР В РЎвЂР В РЎВР В Р’ВµР РЋР вЂљ: Р В РЎвЂќР В Р’В°Р В РЎвЂќ Р РЋР вЂљР В Р’В°Р В Р’В±Р В РЎвЂўР РЋРІР‚С™Р В Р’В°Р В Р’ВµР РЋРІР‚С™ Р В Р’В»Р В РЎвЂР В РЎВР В РЎвЂР РЋРІР‚С™ Р В Р’В±Р В Р’В°Р В РЎвЂ“Р В Р’В°Р В Р’В¶Р В Р’В°?",
+      send: "Р В РЎвЂєР РЋРІР‚С™Р В РЎвЂ”Р РЋР вЂљР В Р’В°Р В Р вЂ Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰",
+      helpBadge: "Р В РЎСџР В РЎвЂўР В РЎВР В РЎвЂўР РЋРІР‚В°Р РЋР Р‰ Р В РЎвЂ Р В РЎвЂўР В РЎвЂ”Р В Р’В»Р В Р’В°Р РЋРІР‚С™Р В Р’В°",
+      helpTitleA: "Р В РІР‚в„ўР В Р’В°Р В Р’В¶Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В РЎвЂР В Р вЂ¦Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР РЋРЎвЂњР В РЎвЂќР РЋРІР‚В Р В РЎвЂР В РЎвЂ",
+      helpTitleB: "Р В РЎвЂ”Р В Р’ВµР РЋР вЂљР В Р’ВµР В РўвЂ Р В РЎвЂ”Р В Р’ВµР РЋР вЂљР В Р’ВµР В Р’В»Р В Р’ВµР РЋРІР‚С™Р В РЎвЂўР В РЎВ",
+      helpDesc: "Р В РІР‚вЂќР В РўвЂР В Р’ВµР РЋР С“Р РЋР Р‰ Р В РЎВР В РЎвЂўР В Р’В¶Р В Р вЂ¦Р В РЎвЂў Р В Р’В±Р РЋРІР‚в„–Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂў Р В Р вЂ¦Р В Р’В°Р В РІвЂћвЂ“Р РЋРІР‚С™Р В РЎвЂ Р В РЎвЂР В Р вЂ¦Р РЋРІР‚С›Р В РЎвЂўР РЋР вЂљР В РЎВР В Р’В°Р РЋРІР‚В Р В РЎвЂР РЋР вЂ№ Р В РЎвЂўР В Р’В± Р В РЎвЂўР В РЎвЂ”Р В Р’В»Р В Р’В°Р РЋРІР‚С™Р В Р’Вµ, Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎвЂќР РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В Р вЂ¦Р В РЎвЂўР В РЎВ Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™Р В Р’Вµ Р В РЎвЂ Р В РЎвЂР В Р’В·Р В РЎВР В Р’ВµР В Р вЂ¦Р В Р’ВµР В Р вЂ¦Р В РЎвЂР В РЎвЂ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В Р’В°.",
       helpCards: [
         {
-          title: "Безопасная оплата на сайте",
-          text: "Оплачивайте авиабилеты и услуги удобным для вас способом.",
+          title: "Р В РІР‚ВР В Р’ВµР В Р’В·Р В РЎвЂўР В РЎвЂ”Р В Р’В°Р РЋР С“Р В Р вЂ¦Р В Р’В°Р РЋР РЏ Р В РЎвЂўР В РЎвЂ”Р В Р’В»Р В Р’В°Р РЋРІР‚С™Р В Р’В° Р В Р вЂ¦Р В Р’В° Р РЋР С“Р В Р’В°Р В РІвЂћвЂ“Р РЋРІР‚С™Р В Р’Вµ",
+          text: "Р В РЎвЂєР В РЎвЂ”Р В Р’В»Р В Р’В°Р РЋРІР‚РЋР В РЎвЂР В Р вЂ Р В Р’В°Р В РІвЂћвЂ“Р РЋРІР‚С™Р В Р’Вµ Р В Р’В°Р В Р вЂ Р В РЎвЂР В Р’В°Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™Р РЋРІР‚в„– Р В РЎвЂ Р РЋРЎвЂњР РЋР С“Р В Р’В»Р РЋРЎвЂњР В РЎвЂ“Р В РЎвЂ Р РЋРЎвЂњР В РўвЂР В РЎвЂўР В Р’В±Р В Р вЂ¦Р РЋРІР‚в„–Р В РЎВ Р В РўвЂР В Р’В»Р РЋР РЏ Р В Р вЂ Р В Р’В°Р РЋР С“ Р РЋР С“Р В РЎвЂ”Р В РЎвЂўР РЋР С“Р В РЎвЂўР В Р’В±Р В РЎвЂўР В РЎВ.",
           extra: "",
         },
         {
-          title: "Что такое электронный билет?",
-          text: "После подтверждения брони все данные рейса формируются в электронном виде.",
-          extra: "В одном месте отображаются маршрут, время, багаж, тариф и данные пассажира.",
+          title: "Р В Р’В§Р РЋРІР‚С™Р В РЎвЂў Р РЋРІР‚С™Р В Р’В°Р В РЎвЂќР В РЎвЂўР В Р’Вµ Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎвЂќР РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™?",
+          text: "Р В РЎСџР В РЎвЂўР РЋР С“Р В Р’В»Р В Р’Вµ Р В РЎвЂ”Р В РЎвЂўР В РўвЂР РЋРІР‚С™Р В Р вЂ Р В Р’ВµР РЋР вЂљР В Р’В¶Р В РўвЂР В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂ Р В Р вЂ Р РЋР С“Р В Р’Вµ Р В РўвЂР В Р’В°Р В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В Р’В° Р РЋРІР‚С›Р В РЎвЂўР РЋР вЂљР В РЎВР В РЎвЂР РЋР вЂљР РЋРЎвЂњР РЋР вЂ№Р РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В Р вЂ  Р РЋР РЉР В Р’В»Р В Р’ВµР В РЎвЂќР РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В Р вЂ¦Р В РЎвЂўР В РЎВ Р В Р вЂ Р В РЎвЂР В РўвЂР В Р’Вµ.",
+          extra: "Р В РІР‚в„ў Р В РЎвЂўР В РўвЂР В Р вЂ¦Р В РЎвЂўР В РЎВ Р В РЎВР В Р’ВµР РЋР С“Р РЋРІР‚С™Р В Р’Вµ Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В Р’В±Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°Р РЋР вЂ№Р РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РЎВР В Р’В°Р РЋР вЂљР РЋРІвЂљВ¬Р РЋР вЂљР РЋРЎвЂњР РЋРІР‚С™, Р В Р вЂ Р РЋР вЂљР В Р’ВµР В РЎВР РЋР РЏ, Р В Р’В±Р В Р’В°Р В РЎвЂ“Р В Р’В°Р В Р’В¶, Р РЋРІР‚С™Р В Р’В°Р РЋР вЂљР В РЎвЂР РЋРІР‚С› Р В РЎвЂ Р В РўвЂР В Р’В°Р В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљР В Р’В°.",
         },
         {
-          title: "Как работает обмен рейса?",
-          text: "В зависимости от правил тарифа можно изменить дату, направление или тип услуги.",
-          extra: "Служба поддержки быстро сориентирует по изменению рейса.",
+          title: "Р В РЎв„ўР В Р’В°Р В РЎвЂќ Р РЋР вЂљР В Р’В°Р В Р’В±Р В РЎвЂўР РЋРІР‚С™Р В Р’В°Р В Р’ВµР РЋРІР‚С™ Р В РЎвЂўР В Р’В±Р В РЎВР В Р’ВµР В Р вЂ¦ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В Р’В°?",
+          text: "Р В РІР‚в„ў Р В Р’В·Р В Р’В°Р В Р вЂ Р В РЎвЂР РЋР С“Р В РЎвЂР В РЎВР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂ Р В РЎвЂўР РЋРІР‚С™ Р В РЎвЂ”Р РЋР вЂљР В Р’В°Р В Р вЂ Р В РЎвЂР В Р’В» Р РЋРІР‚С™Р В Р’В°Р РЋР вЂљР В РЎвЂР РЋРІР‚С›Р В Р’В° Р В РЎВР В РЎвЂўР В Р’В¶Р В Р вЂ¦Р В РЎвЂў Р В РЎвЂР В Р’В·Р В РЎВР В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰ Р В РўвЂР В Р’В°Р РЋРІР‚С™Р РЋРЎвЂњ, Р В Р вЂ¦Р В Р’В°Р В РЎвЂ”Р РЋР вЂљР В Р’В°Р В Р вЂ Р В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР В Р’Вµ Р В РЎвЂР В Р’В»Р В РЎвЂ Р РЋРІР‚С™Р В РЎвЂР В РЎвЂ” Р РЋРЎвЂњР РЋР С“Р В Р’В»Р РЋРЎвЂњР В РЎвЂ“Р В РЎвЂ.",
+          extra: "Р В Р Р‹Р В Р’В»Р РЋРЎвЂњР В Р’В¶Р В Р’В±Р В Р’В° Р В РЎвЂ”Р В РЎвЂўР В РўвЂР В РўвЂР В Р’ВµР РЋР вЂљР В Р’В¶Р В РЎвЂќР В РЎвЂ Р В Р’В±Р РЋРІР‚в„–Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂў Р РЋР С“Р В РЎвЂўР РЋР вЂљР В РЎвЂР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В РЎвЂР РЋР вЂљР РЋРЎвЂњР В Р’ВµР РЋРІР‚С™ Р В РЎвЂ”Р В РЎвЂў Р В РЎвЂР В Р’В·Р В РЎВР В Р’ВµР В Р вЂ¦Р В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР вЂ№ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В Р’В°.",
         },
       ],
       faqItems: [
         {
-          question: "Какие коды нужно вводить при поиске авиабилета?",
-          answer: "Используйте IATA-коды аэропортов: например, TAS для Ташкента, SAW или IST для Стамбула. Дата вводится в формате YYYY-MM-DD.",
+          question: "Р В РЎв„ўР В Р’В°Р В РЎвЂќР В РЎвЂР В Р’Вµ Р В РЎвЂќР В РЎвЂўР В РўвЂР РЋРІР‚в„– Р В Р вЂ¦Р РЋРЎвЂњР В Р’В¶Р В Р вЂ¦Р В РЎвЂў Р В Р вЂ Р В Р вЂ Р В РЎвЂўР В РўвЂР В РЎвЂР РЋРІР‚С™Р РЋР Р‰ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќР В Р’Вµ Р В Р’В°Р В Р вЂ Р В РЎвЂР В Р’В°Р В Р’В±Р В РЎвЂР В Р’В»Р В Р’ВµР РЋРІР‚С™Р В Р’В°?",
+          answer: "Р В Р’ВР РЋР С“Р В РЎвЂ”Р В РЎвЂўР В Р’В»Р РЋР Р‰Р В Р’В·Р РЋРЎвЂњР В РІвЂћвЂ“Р РЋРІР‚С™Р В Р’Вµ IATA-Р В РЎвЂќР В РЎвЂўР В РўвЂР РЋРІР‚в„– Р В Р’В°Р РЋР РЉР РЋР вЂљР В РЎвЂўР В РЎвЂ”Р В РЎвЂўР РЋР вЂљР РЋРІР‚С™Р В РЎвЂўР В Р вЂ : Р В Р вЂ¦Р В Р’В°Р В РЎвЂ”Р РЋР вЂљР В РЎвЂР В РЎВР В Р’ВµР РЋР вЂљ, TAS Р В РўвЂР В Р’В»Р РЋР РЏ Р В РЎС›Р В Р’В°Р РЋРІвЂљВ¬Р В РЎвЂќР В Р’ВµР В Р вЂ¦Р РЋРІР‚С™Р В Р’В°, SAW Р В РЎвЂР В Р’В»Р В РЎвЂ IST Р В РўвЂР В Р’В»Р РЋР РЏ Р В Р Р‹Р РЋРІР‚С™Р В Р’В°Р В РЎВР В Р’В±Р РЋРЎвЂњР В Р’В»Р В Р’В°. Р В РІР‚СњР В Р’В°Р РЋРІР‚С™Р В Р’В° Р В Р вЂ Р В Р вЂ Р В РЎвЂўР В РўвЂР В РЎвЂР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В Р вЂ  Р РЋРІР‚С›Р В РЎвЂўР РЋР вЂљР В РЎВР В Р’В°Р РЋРІР‚С™Р В Р’Вµ YYYY-MM-DD.",
         },
         {
-          question: "Как проходит процесс бронирования?",
-          answer: "Сначала выбирается рейс, затем вводятся данные пассажира и подтверждается оформление. Каждый шаг показывается отдельно.",
+          question: "Р В РЎв„ўР В Р’В°Р В РЎвЂќ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋРІР‚В¦Р В РЎвЂўР В РўвЂР В РЎвЂР РЋРІР‚С™ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋРІР‚В Р В Р’ВµР РЋР С“Р РЋР С“ Р В Р’В±Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’В°Р В Р вЂ¦Р В РЎвЂР РЋР РЏ?",
+          answer: "Р В Р Р‹Р В Р вЂ¦Р В Р’В°Р РЋРІР‚РЋР В Р’В°Р В Р’В»Р В Р’В° Р В Р вЂ Р РЋРІР‚в„–Р В Р’В±Р В РЎвЂР РЋР вЂљР В Р’В°Р В Р’ВµР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“, Р В Р’В·Р В Р’В°Р РЋРІР‚С™Р В Р’ВµР В РЎВ Р В Р вЂ Р В Р вЂ Р В РЎвЂўР В РўвЂР РЋР РЏР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РўвЂР В Р’В°Р В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљР В Р’В° Р В РЎвЂ Р В РЎвЂ”Р В РЎвЂўР В РўвЂР РЋРІР‚С™Р В Р вЂ Р В Р’ВµР РЋР вЂљР В Р’В¶Р В РўвЂР В Р’В°Р В Р’ВµР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РЎвЂўР РЋРІР‚С›Р В РЎвЂўР РЋР вЂљР В РЎВР В Р’В»Р В Р’ВµР В Р вЂ¦Р В РЎвЂР В Р’Вµ. Р В РЎв„ўР В Р’В°Р В Р’В¶Р В РўвЂР РЋРІР‚в„–Р В РІвЂћвЂ“ Р РЋРІвЂљВ¬Р В Р’В°Р В РЎвЂ“ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂќР В Р’В°Р В Р’В·Р РЋРІР‚в„–Р В Р вЂ Р В Р’В°Р В Р’ВµР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РЎвЂўР РЋРІР‚С™Р В РўвЂР В Р’ВµР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂў.",
         },
         {
-          question: "Где отображается информация о багаже и услугах?",
-          answer: "На карточке рейса видны багаж, время, длительность и тариф. В деталях отображаются дополнительные услуги.",
+          question: "Р В РІР‚СљР В РўвЂР В Р’Вµ Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В Р’В±Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°Р В Р’ВµР РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РЎвЂР В Р вЂ¦Р РЋРІР‚С›Р В РЎвЂўР РЋР вЂљР В РЎВР В Р’В°Р РЋРІР‚В Р В РЎвЂР РЋР РЏ Р В РЎвЂў Р В Р’В±Р В Р’В°Р В РЎвЂ“Р В Р’В°Р В Р’В¶Р В Р’Вµ Р В РЎвЂ Р РЋРЎвЂњР РЋР С“Р В Р’В»Р РЋРЎвЂњР В РЎвЂ“Р В Р’В°Р РЋРІР‚В¦?",
+          answer: "Р В РЎСљР В Р’В° Р В РЎвЂќР В Р’В°Р РЋР вЂљР РЋРІР‚С™Р В РЎвЂўР РЋРІР‚РЋР В РЎвЂќР В Р’Вµ Р РЋР вЂљР В Р’ВµР В РІвЂћвЂ“Р РЋР С“Р В Р’В° Р В Р вЂ Р В РЎвЂР В РўвЂР В Р вЂ¦Р РЋРІР‚в„– Р В Р’В±Р В Р’В°Р В РЎвЂ“Р В Р’В°Р В Р’В¶, Р В Р вЂ Р РЋР вЂљР В Р’ВµР В РЎВР РЋР РЏ, Р В РўвЂР В Р’В»Р В РЎвЂР РЋРІР‚С™Р В Р’ВµР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р В РЎвЂўР РЋР С“Р РЋРІР‚С™Р РЋР Р‰ Р В РЎвЂ Р РЋРІР‚С™Р В Р’В°Р РЋР вЂљР В РЎвЂР РЋРІР‚С›. Р В РІР‚в„ў Р В РўвЂР В Р’ВµР РЋРІР‚С™Р В Р’В°Р В Р’В»Р РЋР РЏР РЋРІР‚В¦ Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В Р’В±Р РЋР вЂљР В Р’В°Р В Р’В¶Р В Р’В°Р РЋР вЂ№Р РЋРІР‚С™Р РЋР С“Р РЋР РЏ Р В РўвЂР В РЎвЂўР В РЎвЂ”Р В РЎвЂўР В Р’В»Р В Р вЂ¦Р В РЎвЂР РЋРІР‚С™Р В Р’ВµР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р РЋРЎвЂњР РЋР С“Р В Р’В»Р РЋРЎвЂњР В РЎвЂ“Р В РЎвЂ.",
         },
       ],
     },
@@ -305,52 +354,68 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(LAST_SUCCESSFUL_SEARCH_KEY)
-      if (!stored) {
-        setFrom(DEFAULT_HOME_SEARCH.from)
-        setTo(DEFAULT_HOME_SEARCH.to)
-        setDate(getDefaultHomeDate())
-        setPax(DEFAULT_HOME_SEARCH.pax)
-        return
+    let cancelled = false
+
+    const syncAirportDirectoryFromBackend = async () => {
+      try {
+        const liveLabels: Record<string, string> = {}
+
+        const responses = await Promise.allSettled(
+          LIVE_DIRECTORY_BOOTSTRAPS.map((trip) =>
+            searchAir({
+              adults: 1,
+              children: 0,
+              infants: 0,
+              class: "Y",
+              trips: [
+                {
+                  origin: trip.from,
+                  destination: trip.to,
+                  departure: getDefaultHomeDate(),
+                },
+              ],
+            })
+          )
+        )
+
+        if (cancelled) return
+
+        for (const result of responses) {
+          if (result.status !== "fulfilled") continue
+          if (result.value.data.status !== "success" || !result.value.data.data) continue
+
+          for (const city of result.value.data.data.cities ?? []) {
+            liveLabels[city.code.toUpperCase()] = city.name
+          }
+          for (const airport of result.value.data.data.airports ?? []) {
+            liveLabels[airport.code.toUpperCase()] = airport.name
+          }
+        }
+
+        if (!Object.keys(liveLabels).length) return
+
+        setAirportLabels((prev) => {
+          const next = { ...prev, ...liveLabels }
+          localStorage.setItem(AIRPORT_CACHE_KEY, JSON.stringify(next))
+          return next
+        })
+      } catch {
+        // Keep cached/static directory when the live bootstrap call is unavailable.
       }
-      const parsed = JSON.parse(stored) as Partial<{
-        from: string
-        to: string
-        date: string
-        pax: number
-      }>
-      setFrom(parsed.from || DEFAULT_HOME_SEARCH.from)
-      setTo(parsed.to || DEFAULT_HOME_SEARCH.to)
-      setDate(parsed.date || getDefaultHomeDate())
-      setPax(parsed.pax && parsed.pax >= 1 ? parsed.pax : DEFAULT_HOME_SEARCH.pax)
-    } catch {
-      setFrom(DEFAULT_HOME_SEARCH.from)
-      setTo(DEFAULT_HOME_SEARCH.to)
-      setDate(getDefaultHomeDate())
-      setPax(DEFAULT_HOME_SEARCH.pax)
+    }
+
+    void syncAirportDirectoryFromBackend()
+
+    return () => {
+      cancelled = true
     }
   }, [])
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(LAST_AIR_RESULT_META_KEY)
-      if (!stored) return
-      setLastResultMeta(JSON.parse(stored))
-    } catch {
-      setLastResultMeta(null)
-    }
-  }, [])
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(FEATURED_ROUTE_CARDS_KEY)
-      if (!stored) return
-      const parsed = JSON.parse(stored) as FeaturedRouteCard[]
-      setFeaturedRoutes(Array.isArray(parsed) ? parsed : [])
-    } catch {
-      setFeaturedRoutes([])
-    }
+    setFrom(DEFAULT_HOME_SEARCH.from)
+    setTo(DEFAULT_HOME_SEARCH.to)
+    setDate("")
+    setPax(DEFAULT_HOME_SEARCH.pax)
   }, [])
 
   const locationOptions = useMemo(() => {
@@ -363,62 +428,263 @@ export default function Home() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [airportLabels])
 
-  const groupedDestinations = useMemo(() => {
-    const groups = new Map<
-      string,
-      {
-        destinationCode: string
-        destinationLabel: string
-        items: FeaturedRouteCard[]
-        minPrice: number
-      }
-    >()
-
-    for (const item of featuredRoutes) {
-      const key = item.to
-      const existing = groups.get(key)
-      if (!existing) {
-        groups.set(key, {
-          destinationCode: item.to,
-          destinationLabel: item.toLabel,
-          items: [item],
-          minPrice: item.price,
-        })
-        continue
-      }
-
-      existing.items.push(item)
-      existing.minPrice = Math.min(existing.minPrice, item.price)
+  const activeAirportValue = useMemo(() => {
+    if (activeAirportField === "from") return from
+    if (activeAirportField === "to") return to
+    if (activeAirportField?.startsWith("multi-")) {
+      const [, indexRaw, field] = activeAirportField.split("-")
+      const index = Number(indexRaw)
+      const item = multiTrips[index]
+      if (!item) return ""
+      return field === "from" ? item.from : item.to
     }
+    return ""
+  }, [activeAirportField, from, to, multiTrips])
 
-    return Array.from(groups.values())
-      .map((group) => ({
-        ...group,
-        items: group.items.sort((a, b) => a.price - b.price).slice(0, 10),
-      }))
-      .sort((a, b) => a.minPrice - b.minPrice)
-      .slice(0, 6)
-  }, [featuredRoutes])
+  const airportPanelOptions = useMemo(() => {
+    const query = normalizeText(activeAirportValue)
+    if (!query) {
+      const priority = HOME_PRIORITY_AIRPORT_CODES
+        .map((code) => locationOptions.find((option) => option.code === code))
+        .filter((option): option is LocationOption => Boolean(option))
+
+      const priorityCodes = new Set(priority.map((option) => option.code))
+      const rest = locationOptions.filter((option) => !priorityCodes.has(option.code))
+      return [...priority, ...rest].slice(0, 24)
+    }
+    return locationOptions.filter((option) => option.searchText.includes(query)).slice(0, 24)
+  }, [activeAirportValue, locationOptions])
+
+  const heroCopy = {
+    uz: {
+      title: "Aviation Tour bilan qulay va ishonchli avia sayohat",
+      subtitle: "Xalqaro reyslar, tezkor bron va bir joyda jamlangan aeroport yo'nalishlari",
+      learnMore: "Batafsil",
+      tripModes: [
+        { key: "round" as const, label: "Borib-kelish" },
+        { key: "oneway" as const, label: "Bir tomonga" },
+        { key: "multi" as const, label: "Ko'p shahar" },
+      ],
+      guestCabin: "Yo'lovchi va klass",
+      guestValue: passengerTouched ? `${pax} yo'lovchi, Ekonom` : "Qo'shing",
+      travelWhen: "Qachon uchasiz?",
+      departDateLabel: "Ketish",
+      returnDateLabel: "Qaytish",
+      addDates: "Sanani qo'shing",
+      fromTitle: "Qayerdan",
+      toTitle: "Qayerga",
+      inspirationTitleA: "Abu Dhabidan",
+      inspirationTitleB: "parvozlar",
+      inspirationSubtitle: "Keyingi sayohatingiz uchun ilhom oling",
+      viewAll: "Barchasi",
+      routePrefix: "Borib-kelish - Ekonom",
+      fromPrice: "Dan",
+      originPlaceholder: "Ketish joyi",
+      destinationPlaceholder: "Borish joyi",
+      searchButton: "Qidirish",
+      addFlight: "Parvoz qo'shish",
+      bookWithMiles: "Tripzy bilan bron qilish",
+      allAirports: "Barcha aeroportlar",
+      fromPanelTitle: "Ketish aeroportlari",
+      toPanelTitle: "Borish aeroportlari",
+      flightLabel: "Parvoz",
+      addSegment: "Parvoz qo'shish",
+    },
+    ru: {
+      title: "Aviation Tour РґР»СЏ СѓРґРѕР±РЅС‹С… Рё РЅР°РґРµР¶РЅС‹С… Р°РІРёР°РїСѓС‚РµС€РµСЃС‚РІРёР№",
+      subtitle: "РњРµР¶РґСѓРЅР°СЂРѕРґРЅС‹Рµ СЂРµР№СЃС‹, Р±С‹СЃС‚СЂРѕРµ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёРµ Рё РІСЃРµ Р°СЌСЂРѕРїРѕСЂС‚РЅС‹Рµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РІ РѕРґРЅРѕРј РјРµСЃС‚Рµ",
+      learnMore: "РџРѕРґСЂРѕР±РЅРµРµ",
+      tripModes: [
+        { key: "round" as const, label: "РўСѓРґР°-РѕР±СЂР°С‚РЅРѕ" },
+        { key: "oneway" as const, label: "Р’ РѕРґРЅСѓ СЃС‚РѕСЂРѕРЅСѓ" },
+        { key: "multi" as const, label: "РњСѓР»СЊС‚Рё-РіРѕСЂРѕРґ" },
+      ],
+      guestCabin: "РџР°СЃСЃР°Р¶РёСЂС‹ Рё РєР»Р°СЃСЃ",
+      guestValue: passengerTouched ? `${pax} РїР°СЃСЃР°Р¶РёСЂ, Р­РєРѕРЅРѕРј` : "Р”РѕР±Р°РІРёС‚СЊ",
+      travelWhen: "РљРѕРіРґР° Р»РµС‚РёС‚Рµ?",
+      addDates: "Р”РѕР±Р°РІСЊС‚Рµ РґР°С‚Сѓ",
+      fromTitle: "РћС‚РєСѓРґР°",
+      toTitle: "РљСѓРґР°",
+      inspirationTitleA: "Р РµР№СЃС‹ РёР·",
+      inspirationTitleB: "РђР±Сѓ-Р”Р°Р±Рё",
+      inspirationSubtitle: "РџСѓСЃС‚СЊ СЃР»РµРґСѓСЋС‰РµРµ РїСѓС‚РµС€РµСЃС‚РІРёРµ РІРґРѕС…РЅРѕРІРёС‚ РІР°СЃ",
+      viewAll: "РЎРјРѕС‚СЂРµС‚СЊ РІСЃРµ",
+      routePrefix: "РўСѓРґР°-РѕР±СЂР°С‚РЅРѕ - Р­РєРѕРЅРѕРј",
+      fromPrice: "РћС‚",
+      originPlaceholder: "РњРµСЃС‚Рѕ РІС‹Р»РµС‚Р°",
+      destinationPlaceholder: "РњРµСЃС‚Рѕ РїСЂРёР»РµС‚Р°",
+      searchButton: "РџРѕРёСЃРє",
+      addFlight: "Р”РѕР±Р°РІРёС‚СЊ СЂРµР№СЃ",
+      bookWithMiles: "Р‘СЂРѕРЅРёСЂРѕРІР°РЅРёРµ СЃ Tripzy",
+      allAirports: "Р’СЃРµ Р°СЌСЂРѕРїРѕСЂС‚С‹",
+      fromPanelTitle: "РђСЌСЂРѕРїРѕСЂС‚С‹ РІС‹Р»РµС‚Р°",
+      toPanelTitle: "РђСЌСЂРѕРїРѕСЂС‚С‹ РїСЂРёР»РµС‚Р°",
+      flightLabel: "Р РµР№СЃ",
+      addSegment: "Р”РѕР±Р°РІРёС‚СЊ СЂРµР№СЃ",
+    },
+    en: {
+      title: "Aviation Tour for comfortable and reliable air travel",
+      subtitle: "International flights, fast booking, and airport routes gathered in one place",
+      learnMore: "Learn more",
+      tripModes: [
+        { key: "round" as const, label: "Round trip" },
+        { key: "oneway" as const, label: "One-way" },
+        { key: "multi" as const, label: "Multi-city" },
+      ],
+      guestCabin: "Passengers and Class",
+      guestValue: passengerTouched ? `${pax} Passenger, Economy` : "Add",
+      travelWhen: "Travelling when?",
+      departDateLabel: "Departure",
+      returnDateLabel: "Return",
+      addDates: "Add dates",
+      fromTitle: "From",
+      toTitle: "To",
+      inspirationTitleA: "Flights from",
+      inspirationTitleB: "Abu Dhabi",
+      inspirationSubtitle: "Let us inspire your next journey",
+      viewAll: "View all",
+      routePrefix: "Round trip - Economy",
+      fromPrice: "From",
+      originPlaceholder: "Origin",
+      destinationPlaceholder: "Destination",
+      searchButton: "Search",
+      addFlight: "Add Flight",
+      bookWithMiles: "Book with Tripzy",
+      allAirports: "All Airports",
+      fromPanelTitle: "Departure airports",
+      toPanelTitle: "Arrival airports",
+      flightLabel: "Flight",
+      addSegment: "Add Flight",
+    },
+  }[language]
+
+  const searchUiCopy = {
+    uz: {
+      tripModes: {
+        round: "Borib-kelish",
+        oneway: "Bir tomonga",
+        multi: "Ko'p shahar",
+      },
+      from: "Qayerdan",
+      to: "Qayerga",
+      depart: "Ketish",
+      return: "Qaytish",
+      passengers: "Yo'lovchi",
+      search: "Bilet topish",
+      invalidRoute: "Qayerdan va qayerga uchun to'g'ri variantni tanlang.",
+      invalidDate: "Sanani tanlang.",
+      close: "Yopish",
+      airportNotFound: "Aeroport topilmadi",
+    },
+    ru: {
+      tripModes: {
+        round: "Туда-обратно",
+        oneway: "В одну сторону",
+        multi: "Несколько городов",
+      },
+      from: "Откуда",
+      to: "Куда",
+      depart: "Туда",
+      return: "Обратно",
+      passengers: "Пассажир",
+      search: "Найти билеты",
+      invalidRoute: "Выберите корректные пункты отправления и назначения.",
+      invalidDate: "Выберите дату.",
+      close: "Закрыть",
+      airportNotFound: "Аэропорт не найден",
+    },
+    en: {
+      tripModes: {
+        round: "Round trip",
+        oneway: "One-way",
+        multi: "Multi-city",
+      },
+      from: "From",
+      to: "To",
+      depart: "Departure",
+      return: "Return",
+      passengers: "Passenger",
+      search: "Find tickets",
+      invalidRoute: "Select valid origin and destination values.",
+      invalidDate: "Select a date.",
+      close: "Close",
+      airportNotFound: "Airport not found",
+    },
+  }[language]
+
+  const airportPanelTitle =
+    activeAirportField === "from" || activeAirportField?.endsWith("-from")
+      ? heroCopy.fromPanelTitle
+      : activeAirportField === "to" || activeAirportField?.endsWith("-to")
+        ? heroCopy.toPanelTitle
+        : heroCopy.allAirports
 
   useEffect(() => {
-    if (!groupedDestinations.length) {
-      setOpenDestination(null)
+    const timer = window.setInterval(() => {
+      setActiveCitySlide((prev) => (prev + 1) % cityCarouselSlides.length)
+    }, 3200)
+
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const onSearch = () => {
+    if (tripMode === "multi") {
+      const trips = multiTrips
+        .map((item) => ({
+          origin: resolveLocationCode(item.from, locationOptions),
+          destination: resolveLocationCode(item.to, locationOptions),
+          departure: item.date.trim(),
+        }))
+        .filter((item) => item.origin || item.destination || item.departure)
+
+      if (!trips.length || trips.some((item) => !item.origin || !item.destination)) {
+        toast.error(searchUiCopy.invalidRoute)
+        return
+      }
+
+      if (trips.some((item) => !item.departure)) {
+        toast.error(searchUiCopy.invalidDate)
+        return
+      }
+
+      const q = new URLSearchParams({
+        trips: JSON.stringify(trips),
+        pax: String(Math.max(1, pax)),
+        class: "Y",
+      }).toString()
+
+      navigate(`/flights?${q}`)
       return
     }
 
-    setOpenDestination((prev) => prev ?? groupedDestinations[0].destinationCode)
-  }, [groupedDestinations])
-
-  const onSearch = () => {
     const resolvedFrom = resolveLocationCode(from, locationOptions)
     const resolvedTo = resolveLocationCode(to, locationOptions)
 
     if (!resolvedFrom || !resolvedTo) {
-      toast.error(copy.invalidRoute)
+      toast.error(searchUiCopy.invalidRoute)
       return
     }
     if (!date.trim()) {
-      toast.error(copy.invalidDate)
+      toast.error(searchUiCopy.invalidDate)
+      return
+    }
+
+    if (tripMode === "round") {
+      if (!returnDate.trim()) {
+        toast.error(searchUiCopy.invalidDate)
+        return
+      }
+
+      const q = new URLSearchParams({
+        trips: JSON.stringify([
+          { origin: resolvedFrom, destination: resolvedTo, departure: date.trim() },
+          { origin: resolvedTo, destination: resolvedFrom, departure: returnDate.trim() },
+        ]),
+        pax: String(Math.max(1, pax)),
+        class: "Y",
+      }).toString()
+
+      navigate(`/flights?${q}`)
       return
     }
 
@@ -432,306 +698,398 @@ export default function Home() {
     navigate(`/flights?${q}`)
   }
 
-  const onBookFeaturedRoute = (route: FeaturedRouteCard) => {
-    const cart = bookingCart.get()
-    bookingCart.set({
-      ...cart,
-      flightId: route.flightId,
-      route: `${route.fromLabel} → ${route.toLabel}`,
-      date: route.date,
-      pax: Math.max(1, route.pax),
-      amount: route.price,
-      currency: route.currency,
-      airline: route.airline,
-      flightNo: `${route.airline}-${route.depart}-${route.arrive}`,
-      baggage: route.baggage,
-      carryOn: route.carryOn,
-      passengers: cart.passengers ?? [],
-    })
-    navigate("/passengers")
-  }
-
   return (
-    <div className="overflow-x-hidden bg-[linear-gradient(180deg,#dfe5ea_0%,#eef3f7_18%,#f8fbff_62%,#eaf0f7_100%)] text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_18%,#15254a_62%,#11203d_100%)] dark:text-white">
-      <section className="overflow-visible">
-        <div className="bg-[#eef3f7] shadow-[0_18px_48px_rgba(16,24,40,0.07)] dark:bg-[rgba(10,20,42,0.34)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.34)]">
-        <div className="relative min-h-[660px] w-full overflow-visible sm:min-h-[700px] lg:min-h-[740px]">
-          <div className="absolute inset-0">
-            <motion.img
-              src={heroDesktopImage}
-              alt="Aviation tour hero"
-              initial={{ scale: 1.12, opacity: 0.98 }}
-              animate={{ scale: [1.12, 1.16, 1.12], opacity: [0.98, 1, 0.98] }}
-              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 hidden h-full w-full object-cover object-[50%_56%] md:block"
-            />
-            <motion.img
-              src={heroMobileImage}
-              alt="Emirates mobile hero"
-              initial={{ scale: 1.02, opacity: 0.98 }}
-              animate={{ scale: [1.02, 1.06, 1.02], opacity: [0.98, 1, 0.98] }}
-              transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute inset-0 h-full w-full object-cover object-[50%_48%] md:hidden"
-            />
-            <div className="absolute inset-0 dark:bg-[linear-gradient(180deg,rgba(5,12,28,0.16)_0%,rgba(5,12,28,0.10)_48%,rgba(5,12,28,0.28)_100%)]" />
+    <div className="overflow-x-hidden bg-[linear-gradient(180deg,#fffdf8_0%,#f7f3ea_22%,#f4efe5_100%)] text-[#1d2430] dark:bg-[linear-gradient(180deg,#0b1529_0%,#101d36_26%,#14253f_26%,#14253f_100%)] dark:text-white">
+      <section className="relative overflow-visible">
+        <div className="relative min-h-[600px] overflow-visible pt-20 sm:min-h-[650px] md:pt-24 lg:min-h-[720px]">
+          <div className="absolute inset-0 overflow-hidden">
+            {cityCarouselSlides.map((slide, index) => (
+              <div
+                key={slide.name}
+                className={[
+                  "absolute inset-0 transition-all duration-1000 ease-out",
+                  index === activeCitySlide ? "opacity-100 scale-100" : "opacity-0 scale-105",
+                ].join(" ")}
+              >
+                <img
+                  src={slide.image}
+                  alt={slide.name}
+                  className="h-full w-full object-cover object-center"
+                />
+              </div>
+            ))}
           </div>
-          <BubbleBackground
-            interactive
-            colors={{
-              first: "255,255,255",
-              second: "189,216,255",
-              third: "136,194,255",
-              fourth: "246,250,255",
-              fifth: "164,208,255",
-              sixth: "214,234,255",
-            }}
-            className="pointer-events-none absolute inset-0 hidden opacity-0 dark:opacity-45 md:block"
-          />
-          <div className="absolute inset-0 dark:bg-[radial-gradient(circle_at_left_center,rgba(75,114,201,0.18)_0%,rgba(27,48,91,0.08)_24%,rgba(4,10,28,0)_50%)]" />
-          <motion.div
-            aria-hidden
-            initial={{ opacity: 0.2, scale: 0.92 }}
-            animate={{ opacity: [0.2, 0.32, 0.2], scale: [0.92, 1.02, 0.92] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            className="pointer-events-none absolute right-[6%] top-[10%] hidden h-[220px] w-[220px] rounded-full bg-[radial-gradient(circle,rgba(128,185,255,0.2)_0%,rgba(128,185,255,0.08)_44%,transparent_74%)] blur-3xl dark:block md:h-[320px] md:w-[320px]"
-          />
-
-          <div className="relative z-10 flex items-center justify-center px-4 py-14 sm:px-6 sm:py-16 md:px-12 md:py-18 xl:px-16 xl:py-20">
-            <div className="flex w-full justify-center">
-              <div className="w-full max-w-[1520px] rounded-[28px] bg-transparent px-4 py-16 dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.10)_0%,rgba(16,30,57,0.05)_48%,rgba(10,20,42,0.02)_100%)] sm:px-6 sm:py-18 md:px-8 md:py-20 2xl:max-w-[1700px]">
-                <motion.h1
-                  className="mx-auto max-w-[920px] text-center text-[34px] font-extrabold leading-[0.96] tracking-[-0.06em] text-[#1d2a3d] dark:text-white sm:text-[42px] md:text-[50px] md:[text-shadow:0_10px_34px_rgba(255,255,255,0.16)] xl:text-[56px]"
-                >
-                  {copy.titleLines.map((line, lineIndex) => (
-                    <span key={line} className="block">
-                      {line.split("").map((char, charIndex) => (
-                        <motion.span
-                          key={`${lineIndex}-${charIndex}-${char}`}
-                          initial={{ opacity: 0, y: 18, filter: "blur(10px)" }}
-                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                          transition={{
-                            duration: 0.45,
-                            delay: lineIndex * 0.16 + charIndex * 0.018,
-                            ease: "easeOut",
-                          }}
-                          className="inline-block"
-                        >
-                          {char === " " ? "\u00A0" : char}
-                        </motion.span>
-                      ))}
-                    </span>
-                  ))}
-                </motion.h1>
-
-                <motion.p
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.55, delay: 0.28, ease: "easeOut" }}
-                  className="mx-auto mt-5 max-w-[700px] text-center text-[18px] leading-8 text-[#45576f] dark:text-[#d7e5ff] sm:text-[19px] md:mt-5 md:text-[20px] md:[text-shadow:0_8px_22px_rgba(255,255,255,0.12)]"
-                >
-                  {copy.subtitle}
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.36, ease: "easeOut" }}
-                  className="mt-6 flex flex-wrap justify-center gap-3"
-                >
-                  {copy.chips.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-white/55 bg-white/78 px-4 py-2 text-[13px] font-semibold uppercase tracking-[0.16em] text-[#37475e] backdrop-blur-md dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.44)] dark:text-[#deebff] dark:shadow-[0_14px_24px_rgba(4,10,28,0.22)]"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </motion.div>
-
-                {lastResultMeta ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, delay: 0.42, ease: "easeOut" }}
-                    className="mt-4 flex justify-center"
+          <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-3 sm:px-6 lg:px-8">
+            <div className="flex min-h-[500px] w-full items-center justify-center pt-14 sm:min-h-[500px] sm:pt-12 md:min-h-[560px] md:pt-14">
+            <motion.div
+              initial={{ opacity: 0, y: 38 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.62, delay: 0.36, ease: "easeOut" }}
+              className="relative w-full max-w-[1780px] md:-translate-y-12"
+            >
+              <div className="absolute left-1/2 top-[-30px] z-10 flex w-[calc(100%-20px)] max-w-[560px] -translate-x-1/2 items-center justify-between rounded-full border border-[#d5d8de] bg-white p-1 shadow-[0_10px_24px_rgba(17,24,39,0.08)] sm:top-[-34px] sm:inline-flex sm:w-auto sm:justify-start sm:p-1.5">
+                {heroCopy.tripModes.map((mode) => (
+                  <button
+                    key={mode.key}
+                    type="button"
+                    onClick={() => setTripMode(mode.key)}
+                    className={[
+                      "rounded-full px-3 py-2.5 text-[12px] font-semibold transition sm:px-7 sm:py-3 sm:text-[14px]",
+                      tripMode === mode.key
+                        ? "bg-[#334e5e] text-white shadow-[0_10px_24px_rgba(51,78,94,0.24)]"
+                        : "text-[#697386] hover:text-[#263442]",
+                    ].join(" ")}
                   >
-                  <div className="inline-flex flex-wrap items-center gap-2 rounded-[20px] border border-[#dbe5f0] bg-white/80 px-4 py-3 text-sm text-[#52627b] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb] dark:shadow-[0_14px_28px_rgba(4,10,28,0.26)]">
-                    <span className="font-semibold text-[#1d2430] dark:text-white">
-                      {copy.totalFlights} {lastResultMeta.count} {copy.flightsSuffix}
-                    </span>
-                    <span className="text-[#8a97aa]">•</span>
-                    <span>
-                      {lastResultMeta.from} → {lastResultMeta.to}
-                    </span>
-                    <span className="text-[#8a97aa]">•</span>
-                    <span>{lastResultMeta.date}</span>
-                  </div>
-                  </motion.div>
-                ) : null}
+                    {searchUiCopy.tripModes[mode.key]}
+                  </button>
+                ))}
+              </div>
+              <div className="rounded-[24px] bg-white p-2 shadow-[0_24px_70px_rgba(9,15,23,0.18)] sm:rounded-[22px] sm:p-3 md:rounded-[24px] md:p-3.5">
+              {tripMode === "multi" ? (
+                <div className="space-y-5">
+                  {multiTrips.map((trip, index) => (
+                    <div key={`trip-${index}`}>
+                      <div className="mb-3 text-[16px] font-semibold text-[#1d2430]">
+                        {heroCopy.flightLabel} {index + 1}
+                      </div>
+                      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                        <HomeAutocompleteField
+                          label={heroCopy.fromTitle}
+                          value={trip.from}
+                          placeholder={heroCopy.originPlaceholder}
+                          options={locationOptions}
+                          onChange={(value) =>
+                            setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, from: value } : item))
+                          }
+                          icon={<PlaneTakeoff size={18} />}
+                          onActivate={() => {
+                            setCalendarOpen(false)
+                            setOpenMultiDateIndex(null)
+                            setActiveAirportField(`multi-${index}-from`)
+                          }}
+                          onDismiss={() => setActiveAirportField(null)}
+                          useInlinePanel
+                          active={activeAirportField === `multi-${index}-from`}
+                        />
+                        <HomeAutocompleteField
+                          label={heroCopy.toTitle}
+                          value={trip.to}
+                          placeholder={heroCopy.destinationPlaceholder}
+                          options={locationOptions}
+                          onChange={(value) =>
+                            setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, to: value } : item))
+                          }
+                          icon={<PlaneLanding size={18} />}
+                          swapIcon
+                          onActivate={() => {
+                            setCalendarOpen(false)
+                            setOpenMultiDateIndex(null)
+                            setActiveAirportField(`multi-${index}-to`)
+                          }}
+                          onDismiss={() => setActiveAirportField(null)}
+                          useInlinePanel
+                          active={activeAirportField === `multi-${index}-to`}
+                        />
+                        <div className="relative flex min-h-[72px] flex-col justify-center rounded-[18px] border border-[#e2e7ef] bg-[#f8fafc] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] xl:min-h-[76px]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveAirportField(null)
+                              setCalendarOpen(false)
+                              setOpenMultiDateIndex((prev) => (prev === index ? null : index))
+                            }}
+                            className="text-left"
+                          >
+                            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#334e6a]">
+                              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#efe3c7] text-[#b28743]">
+                                <CalendarDays size={16} />
+                              </span>
+                              <span>{copy.date}</span>
+                            </div>
+                            <div className="mt-1 text-[16px] font-medium text-[#66758a]">
+                              {trip.date ? formatDisplayDate(trip.date) : heroCopy.addDates}
+                            </div>
+                          </button>
+                          {openMultiDateIndex === index ? (
+                            <FareCalendarPicker
+                              from={resolveLocationCode(trip.from, locationOptions)}
+                              to={resolveLocationCode(trip.to, locationOptions)}
+                              pax={pax}
+                              value={trip.date}
+                              onChange={(nextDate) => {
+                                setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, date: nextDate } : item))
+                                setOpenMultiDateIndex(null)
+                              }}
+                              onClose={() => setOpenMultiDateIndex(null)}
+                            />
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-                <motion.div
-                  initial={{ opacity: 0, y: 34, scale: 0.985 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.65, delay: 0.5, ease: "easeOut" }}
-                  className="relative mx-auto mt-9 max-w-[1480px] overflow-visible rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.90)_0%,rgba(246,249,255,0.84)_100%)] p-3 shadow-[0_22px_60px_rgba(22,31,48,0.12)] backdrop-blur-md dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.78)_0%,rgba(17,31,60,0.74)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.46)] md:mt-12 md:rounded-[30px] md:p-4 2xl:max-w-[1660px]"
-                >
-                  <div className="grid overflow-visible gap-2 rounded-[24px] border border-transparent bg-transparent shadow-none dark:bg-transparent xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,0.9fr)_260px]">
-                    <HomeAutocompleteField label={copy.from} value={from} placeholder="Toshkent" options={locationOptions} onChange={setFrom} />
-                    <HomeAutocompleteField label={copy.to} value={to} placeholder="Quda" options={locationOptions} onChange={setTo} />
-                    <div className="relative flex min-h-[68px] flex-col justify-center rounded-[20px] bg-white/92 px-5 py-3 shadow-[0_14px_32px_rgba(18,28,45,0.07)] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_18px_36px_rgba(4,10,28,0.34)] xl:h-[74px] xl:min-h-0 xl:px-6 xl:py-0">
+                  <div className="flex flex-wrap items-end justify-between gap-4 border-t border-[#e8edf3] pt-5">
+                    <PassengerField
+                      pax={pax}
+                      onChange={(value) => {
+                        setPax(value)
+                        setPassengerTouched(true)
+                        setActiveAirportField(null)
+                      }}
+                      label={heroCopy.guestCabin}
+                      valueLabel={heroCopy.guestValue}
+                      icon={<UsersRound size={18} />}
+                    />
+                    <div className="flex items-center gap-5">
                       <button
                         type="button"
-                        onClick={() => setCalendarOpen((prev) => !prev)}
+                        onClick={() =>
+                          setMultiTrips((prev) => [...prev, { from: "", to: "", date: "" }])
+                        }
+                        className="border-b border-[#bc8e43] pb-1 text-[18px] font-medium text-[#2f3747]"
+                      >
+                        {heroCopy.addSegment}
+                      </button>
+                      <motion.button
+                        type="button"
+                        onClick={() => {
+                          setActiveAirportField(null)
+                          onSearch()
+                        }}
+                        className="inline-flex h-[56px] items-center justify-center rounded-[18px] bg-[#0f9ae7] px-7 text-[17px] font-bold text-white shadow-[0_16px_34px_rgba(15,154,231,0.24)] transition hover:brightness-105"
+                        whileHover={{ y: -1, scale: 1.01 }}
+                        whileTap={{ scale: 0.985 }}
+                      >
+                        {searchUiCopy.search}
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={[
+                    "relative overflow-visible rounded-[20px] border border-[#d9e1ec] bg-white shadow-[0_18px_46px_rgba(15,23,42,0.12)] grid items-stretch divide-y divide-[#e4eaf2] sm:rounded-[22px] xl:divide-y-0 xl:divide-x",
+                    tripMode === "round"
+                      ? "xl:grid-cols-[2.3fr_0.9fr_0.9fr_0.85fr_220px]"
+                      : "xl:grid-cols-[2.4fr_0.9fr_0.85fr_220px]",
+                  ].join(" ")}
+                >
+                  <div className="relative grid items-stretch divide-y divide-[#e4eaf2] xl:grid-cols-2 xl:divide-x xl:divide-y-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextFrom = to
+                        const nextTo = from
+                        setFrom(nextFrom)
+                        setTo(nextTo)
+                        setActiveAirportField(null)
+                      }}
+                      className="absolute left-1/2 top-1/2 z-10 hidden h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d8dee8] bg-white text-[#9da8b8] shadow-[0_10px_24px_rgba(15,23,42,0.14)] xl:flex"
+                    >
+                      <ArrowRightLeft size={18} />
+                    </button>
+                    <HomeAutocompleteField
+                      label={searchUiCopy.from}
+                      value={from}
+                      placeholder={heroCopy.originPlaceholder}
+                      options={locationOptions}
+                      onChange={setFrom}
+                      icon={<PlaneTakeoff size={20} className="text-[#18a0ea]" />}
+                      onActivate={() => {
+                        setCalendarOpen(false)
+                        setOpenMultiDateIndex(null)
+                        setActiveAirportField("from")
+                      }}
+                      onDismiss={() => setActiveAirportField(null)}
+                      useInlinePanel
+                      active={activeAirportField === "from"}
+                      compact
+                    />
+                    <HomeAutocompleteField
+                      label={searchUiCopy.to}
+                      value={to}
+                      placeholder={heroCopy.destinationPlaceholder}
+                      options={locationOptions}
+                      onChange={setTo}
+                      icon={<PlaneLanding size={20} className="text-[#18a0ea]" />}
+                      onActivate={() => {
+                        setCalendarOpen(false)
+                        setOpenMultiDateIndex(null)
+                        setActiveAirportField("to")
+                      }}
+                      onDismiss={() => setActiveAirportField(null)}
+                      useInlinePanel
+                      active={activeAirportField === "to"}
+                      compact
+                    />
+                  </div>
+                  <PassengerField
+                    pax={pax}
+                    onChange={(value) => {
+                      setPax(value)
+                      setPassengerTouched(true)
+                      setActiveAirportField(null)
+                    }}
+                    label={searchUiCopy.passengers}
+                    valueLabel={language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`}
+                    icon={<UsersRound size={20} className="text-[#18a0ea]" />}
+                    compact
+                  />
+                  <div className="relative flex min-h-[74px] flex-col justify-center bg-transparent px-6 py-3">
+                    <button type="button" onClick={() => {
+                      setActiveAirportField(null)
+                      setOpenMultiDateIndex(null)
+                      setCalendarOpen((prev) => !prev)
+                    }} className="text-left">
+                      <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#97a3b5]">
+                        <span className="inline-flex items-center gap-2.5">
+                          <span className="grid h-8 w-8 place-items-center text-[#18a0ea]">
+                            <CalendarDays size={20} />
+                          </span>
+                          <span>{searchUiCopy.depart}</span>
+                        </span>
+                      </div>
+                      <div className="mt-1 text-[15px] font-semibold text-[#111827] xl:text-[16px]">
+                        {date ? formatDisplayDate(date) : heroCopy.addDates}
+                      </div>
+                    </button>
+                    {calendarOpen ? (
+                      <FareCalendarPicker
+                        from={resolveLocationCode(from, locationOptions)}
+                        to={resolveLocationCode(to, locationOptions)}
+                        pax={pax}
+                        value={date}
+                        onChange={(nextDate) => {
+                          setDate(nextDate)
+                          setCalendarOpen(false)
+                        }}
+                        onClose={() => setCalendarOpen(false)}
+                      />
+                    ) : null}
+                  </div>
+                  {tripMode === "round" ? (
+                    <div className="relative flex min-h-[74px] flex-col justify-center bg-transparent px-6 py-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveAirportField(null)
+                          setOpenMultiDateIndex(null)
+                          setCalendarOpen(false)
+                          setOpenMultiDateIndex(-2)
+                        }}
                         className="text-left"
                       >
-                        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
-                          <span>{copy.date}</span>
-                          <CalendarDays size={16} className="text-[#2474e8]" />
+                        <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#97a3b5]">
+                          <span className="inline-flex items-center gap-2.5">
+                            <span className="grid h-8 w-8 place-items-center text-[#18a0ea]">
+                              <CalendarDays size={20} />
+                            </span>
+                            <span>{searchUiCopy.return}</span>
+                          </span>
                         </div>
-                        <div className="mt-1 text-[14px] font-semibold text-[#1b2433] dark:text-white xl:text-[17px]">
-                          {date || copy.selectDate}
+                        <div className="mt-1 text-[15px] font-semibold text-[#111827] xl:text-[16px]">
+                          {returnDate ? formatDisplayDate(returnDate) : heroCopy.addDates}
                         </div>
-                        <div className="text-[13px] text-[#8d98aa] dark:text-[#a5b8d8]">{copy.priceCalendar}</div>
                       </button>
-                      {calendarOpen ? (
+                      {openMultiDateIndex === -2 ? (
                         <FareCalendarPicker
-                          from={resolveLocationCode(from, locationOptions)}
-                          to={resolveLocationCode(to, locationOptions)}
+                          from={resolveLocationCode(to, locationOptions)}
+                          to={resolveLocationCode(from, locationOptions)}
                           pax={pax}
-                          value={date}
+                          value={returnDate}
                           onChange={(nextDate) => {
-                            setDate(nextDate)
-                            setCalendarOpen(false)
+                            setReturnDate(nextDate)
+                            setOpenMultiDateIndex(null)
                           }}
-                          onClose={() => setCalendarOpen(false)}
+                          onClose={() => setOpenMultiDateIndex(null)}
                         />
                       ) : null}
                     </div>
-                    <PassengerField pax={pax} onChange={setPax} />
-                    <motion.button
-                      type="button"
-                      onClick={onSearch}
-                      className="inline-flex h-[72px] items-center justify-center gap-2 rounded-[22px] bg-[linear-gradient(135deg,#ff8a33_0%,#ff7424_100%)] px-7 text-[16px] font-bold text-white shadow-[0_18px_45px_rgba(255,116,36,0.28)] transition hover:brightness-110 dark:bg-[linear-gradient(135deg,#3f72ff_0%,#1d4fd7_100%)] dark:shadow-[0_18px_45px_rgba(35,84,218,0.34)] xl:h-[74px] xl:text-[18px] xl:rounded-[24px]"
-                      whileHover={{ y: -1, scale: 1.01 }}
-                      whileTap={{ scale: 0.985 }}
-                    >
-                      <Search size={18} />
-                      {copy.search}
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </section>
-
-      {groupedDestinations.length ? (
-        <section className="relative px-4 pb-6 pt-12 sm:px-6 md:px-10 lg:px-14">
-          <div className="pointer-events-none absolute inset-x-0 top-6 mx-auto h-32 max-w-[920px] rounded-full bg-[radial-gradient(circle,rgba(78,120,198,0.14)_0%,rgba(78,120,198,0)_72%)] blur-3xl" />
-          <div className="relative mx-auto max-w-[1500px] 2xl:max-w-[1700px]">
-            <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
-                  <Ticket size={14} />
-                  {copy.popularBadge}
+                  ) : null}
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      setActiveAirportField(null)
+                      onSearch()
+                    }}
+                    className="inline-flex min-h-[64px] items-center justify-center rounded-b-[18px] bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-6 text-[16px] font-bold text-white shadow-[0_16px_34px_rgba(15,154,231,0.24)] transition hover:brightness-105 sm:min-h-[70px] sm:text-[17px] xl:min-h-full xl:rounded-none xl:rounded-r-[20px]"
+                    whileHover={{ y: -1, scale: 1.01 }}
+                    whileTap={{ scale: 0.985 }}
+                  >
+                    {searchUiCopy.search}
+                  </motion.button>
                 </div>
-                <h2 className="mt-4 text-3xl font-extrabold tracking-[-0.04em] text-[#1d2430] dark:text-white sm:text-4xl">
-                  {copy.popularTitleA}
-                  <span className="block bg-[linear-gradient(135deg,#3a6db8_0%,#7a5a98_48%,#d97753_100%)] bg-clip-text text-transparent">
-                    {copy.popularTitleB}
-                  </span>
-                </h2>
-                <p className="mt-3 max-w-[700px] text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-base">
-                  {copy.popularDesc}
-                </p>
-              </div>
-              {lastResultMeta ? (
-                <div className="rounded-[20px] border border-[#dbe5f0] bg-white/80 px-4 py-3 text-sm text-[#52627b] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
-                  {copy.latestUpdate}: <span className="font-semibold text-[#1d2430] dark:text-white">{lastResultMeta.date}</span>
+              )}
+
+              {activeAirportField ? (
+                <div className="mt-3 overflow-hidden rounded-[24px] border border-[#dfe5ec] bg-white shadow-[0_20px_40px_rgba(17,24,39,0.10)]">
+                  <div className="flex items-center justify-between border-b border-[#edf1f5] px-6 py-4">
+                    <div className="text-[18px] font-medium text-[#243042]">{airportPanelTitle}</div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveAirportField(null)}
+                      className="inline-flex items-center rounded-full border border-[#d8e0ea] px-3 py-1.5 text-sm font-semibold text-[#516276] transition hover:bg-[#f8fafc]"
+                    >
+                      {searchUiCopy.close}
+                    </button>
+                  </div>
+                  <div className="max-h-[540px] overflow-y-auto px-6 py-2">
+                    {airportPanelOptions.map((option) => (
+                      <button
+                        key={option.code}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          const value = `${option.code} - ${option.name}`
+                          if (activeAirportField === "from") setFrom(value)
+                          if (activeAirportField === "to") setTo(value)
+                          if (activeAirportField?.startsWith("multi-")) {
+                            const [, indexRaw, field] = activeAirportField.split("-")
+                            const index = Number(indexRaw)
+                            setMultiTrips((prev) =>
+                              prev.map((item, itemIndex) =>
+                                itemIndex === index
+                                  ? { ...item, [field]: value }
+                                  : item
+                              )
+                            )
+                          }
+                          setActiveAirportField(null)
+                        }}
+                        className="flex w-full items-center justify-between gap-4 border-b border-[#eef2f6] py-4 text-left last:border-b-0 hover:bg-[#f8fafc]"
+                      >
+                        <span className="flex min-w-0 items-center gap-4">
+                          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-[#f7f3ea] text-[#b28743]">
+                            <MapPinned size={20} />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-[18px] font-semibold text-[#162235]">
+                              {option.name}
+                            </span>
+                            <span className="mt-1 block text-[15px] text-[#65748b]">
+                              {option.code}
+                            </span>
+                          </span>
+                        </span>
+                        <span className="rounded-[8px] bg-[#edf2f7] px-4 py-2 text-sm font-semibold text-[#46627f]">
+                          {option.code}
+                        </span>
+                      </button>
+                    ))}
+                    {!airportPanelOptions.length ? (
+                      <div className="py-8 text-center text-[15px] text-[#66758a]">
+                        {searchUiCopy.airportNotFound}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
-            </div>
-
-            <div className="mt-8 grid gap-4 xl:grid-cols-3">
-              {groupedDestinations.map((group, index) => (
-                <motion.div
-                  key={group.destinationCode}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ duration: 0.38, delay: index * 0.06, ease: "easeOut" }}
-                  className="overflow-hidden rounded-[30px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.92)_100%)] p-5 text-left shadow-[0_20px_50px_rgba(17,24,39,0.08)] transition dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] dark:shadow-[0_24px_54px_rgba(4,10,28,0.38)]"
-                >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setOpenDestination((prev) =>
-                        prev === group.destinationCode ? null : group.destinationCode
-                      )
-                    }
-                    className="flex w-full items-start justify-between gap-4"
-                  >
-                    <div>
-                      <div className="text-[30px] font-black tracking-[-0.04em] text-[#1d2430] dark:text-white">
-                        {group.destinationLabel}
-                      </div>
-                      <div className="mt-1 text-sm text-[#627188] dark:text-[#c7d8f6]">
-                        {group.destinationCode} · от {formatMoney(group.minPrice, group.items[0]?.currency)}
-                      </div>
-                    </div>
-                    <div className="rounded-full border border-[#e1e9f4] bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7c93] dark:border-[#436293] dark:bg-[rgba(27,46,85,0.84)] dark:text-[#d8e5ff]">
-                      {openDestination === group.destinationCode ? "Yopish" : "Ochish"}
-                    </div>
-                  </button>
-
-                  <div className="mt-5 space-y-2">
-                    {group.items
-                      .slice(0, openDestination === group.destinationCode ? 10 : 5)
-                      .map((route) => (
-                        <button
-                          key={route.id}
-                          type="button"
-                          onClick={() => onBookFeaturedRoute(route)}
-                          className="flex w-full items-center justify-between gap-4 rounded-[18px] border border-[#e8eef6] bg-white/88 px-4 py-3 text-left transition hover:border-[#d8e5f8] hover:bg-[linear-gradient(180deg,#f8fbff_0%,#eef5ff_100%)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)] dark:hover:border-[#4e72ab] dark:hover:bg-[linear-gradient(180deg,rgba(30,53,98,0.94)_0%,rgba(24,43,79,0.96)_100%)]"
-                        >
-                          <div className="min-w-0">
-                            <div className="truncate text-[15px] font-semibold text-[#1d2430] dark:text-white">
-                              {route.fromLabel} — {route.toLabel}
-                            </div>
-                            <div className="mt-1 text-xs text-[#7b8aa0] dark:text-[#a8bcde]">
-                              {route.depart} → {route.arrive} · {route.airlineName}
-                            </div>
-                          </div>
-                          <div className="shrink-0 text-right">
-                            <div className="text-[15px] font-bold text-[#1d67ff] dark:text-[#8cb9ff]">
-                              от {formatMoney(route.price, route.currency)}
-                            </div>
-                            <div className="mt-1 text-xs text-[#8a97aa] dark:text-[#9ab0d2]">
-                              {route.stopsCount === 0 ? "Direct" : `${route.stopsCount} stop`}
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                  </div>
-
-                  {openDestination === group.destinationCode ? (
-                    <div className="mt-4 flex flex-wrap gap-2 border-t border-[#e8eef6] pt-4 text-xs text-[#5c6c84] dark:border-[#30476f] dark:text-[#bdd0ef]">
-                      <span className="rounded-full bg-[#f3f7fb] px-3 py-1.5 dark:bg-[rgba(42,64,110,0.34)]">
-                        {group.items.length} ta real yo'nalish
-                      </span>
-                      <span className="rounded-full bg-[#f3f7fb] px-3 py-1.5 dark:bg-[rgba(42,64,110,0.34)]">
-                        Eng arzon: {formatMoney(group.minPrice, group.items[0]?.currency)}
-                      </span>
-                    </div>
-                  ) : null}
-                </motion.div>
-              ))}
+              </div>
+            </motion.div>
             </div>
           </div>
-        </section>
-      ) : null}
+        </div>
+      </section>
 
       <section className="relative px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14">
         <div className="pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.12)_0%,rgba(92,134,211,0)_72%)] blur-3xl" />
@@ -896,19 +1254,39 @@ function HomeAutocompleteField({
   placeholder,
   options,
   onChange,
+  icon,
+  swapIcon = false,
+  onActivate,
+  onDismiss,
+  useInlinePanel = false,
+  active = false,
+  compact = false,
 }: {
   label: string
   value: string
   placeholder: string
   options: LocationOption[]
   onChange: (value: string) => void
+  icon?: ReactNode
+  swapIcon?: boolean
+  onActivate?: () => void
+  onDismiss?: () => void
+  useInlinePanel?: boolean
+  active?: boolean
+  compact?: boolean
 }) {
   const { language } = useI18n()
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const copy = {
     uz: { select: "tanlash", noResult: "Mos airport yoki shahar topilmadi.", chooseOption: "Variantni tanlang", close: "Ro'yxatni yopish" },
-    ru: { select: "выбрать", noResult: "Подходящий аэропорт или город не найден.", chooseOption: "Выберите вариант", close: "Закрыть список" },
+    ru: { select: "Р В Р вЂ Р РЋРІР‚в„–Р В Р’В±Р РЋР вЂљР В Р’В°Р РЋРІР‚С™Р РЋР Р‰", noResult: "Р В РЎСџР В РЎвЂўР В РўвЂР РЋРІР‚В¦Р В РЎвЂўР В РўвЂР РЋР РЏР РЋРІР‚В°Р В РЎвЂР В РІвЂћвЂ“ Р В Р’В°Р РЋР РЉР РЋР вЂљР В РЎвЂўР В РЎвЂ”Р В РЎвЂўР РЋР вЂљР РЋРІР‚С™ Р В РЎвЂР В Р’В»Р В РЎвЂ Р В РЎвЂ“Р В РЎвЂўР РЋР вЂљР В РЎвЂўР В РўвЂ Р В Р вЂ¦Р В Р’Вµ Р В Р вЂ¦Р В Р’В°Р В РІвЂћвЂ“Р В РўвЂР В Р’ВµР В Р вЂ¦.", chooseOption: "Р В РІР‚в„ўР РЋРІР‚в„–Р В Р’В±Р В Р’ВµР РЋР вЂљР В РЎвЂР РЋРІР‚С™Р В Р’Вµ Р В Р вЂ Р В Р’В°Р РЋР вЂљР В РЎвЂР В Р’В°Р В Р вЂ¦Р РЋРІР‚С™", close: "Р В РІР‚вЂќР В Р’В°Р В РЎвЂќР РЋР вЂљР РЋРІР‚в„–Р РЋРІР‚С™Р РЋР Р‰ Р РЋР С“Р В РЎвЂ”Р В РЎвЂР РЋР С“Р В РЎвЂўР В РЎвЂќ" },
+    en: { select: "select", noResult: "No matching airport or city found.", chooseOption: "Choose an option", close: "Close list" },
+  }[language]
+  void copy
+  const safeCopy = {
+    uz: { select: "tanlash", noResult: "Mos aeroport yoki shahar topilmadi.", chooseOption: "Variantni tanlang", close: "Ro'yxatni yopish" },
+    ru: { select: "Р Р†РЎвЂ№Р В±РЎР‚Р В°РЎвЂљРЎРЉ", noResult: "Р СџР С•Р Т‘РЎвЂ¦Р С•Р Т‘РЎРЏРЎвЂ°Р С‘Р в„– Р В°РЎРЊРЎР‚Р С•Р С—Р С•РЎР‚РЎвЂљ Р С‘Р В»Р С‘ Р С–Р С•РЎР‚Р С•Р Т‘ Р Р…Р Вµ Р Р…Р В°Р в„–Р Т‘Р ВµР Р….", chooseOption: "Р вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘РЎвЂљР Вµ Р Р†Р В°РЎР‚Р С‘Р В°Р Р…РЎвЂљ", close: "Р вЂ”Р В°Р С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ РЎРѓР С—Р С‘РЎРѓР С•Р С”" },
     en: { select: "select", noResult: "No matching airport or city found.", chooseOption: "Choose an option", close: "Close list" },
   }[language]
 
@@ -960,27 +1338,56 @@ function HomeAutocompleteField({
           <span className="block text-xs uppercase tracking-[0.14em] text-[#7f8ca0]">{option.code}</span>
         </span>
         <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#637791]">
-          {copy.select}
+          {safeCopy.select}
         </span>
       </button>
     ))
   ) : (
     <div className="px-4 py-4 text-sm text-[#627188]">
-      {copy.noResult}
+      {safeCopy.noResult}
     </div>
   )
 
   return (
-    <label className="relative flex min-h-[68px] flex-col justify-center rounded-[20px] bg-white/92 px-5 py-3 shadow-[0_14px_32px_rgba(18,28,45,0.07)] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_18px_36px_rgba(4,10,28,0.34)] xl:h-[74px] xl:min-h-0 xl:px-6 xl:py-0">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
-        {label}
+    <label
+      className={[
+        compact
+          ? "relative flex min-h-[68px] flex-col justify-center bg-transparent px-4 py-3 sm:min-h-[74px] sm:px-6"
+          : "relative flex min-h-[72px] flex-col justify-center rounded-[18px] border bg-[#f8fafc] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] xl:min-h-[76px]",
+        compact
+          ? active
+            ? "bg-[#f9fbfe]"
+            : ""
+          : active
+            ? "border-[#243a52] shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_0_0_1px_rgba(36,58,82,0.04)]"
+            : "border-[#e2e7ef]",
+      ].join(" ")}
+    >
+      {swapIcon && !compact ? (
+        <span className="pointer-events-none absolute -left-4 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-[#e2e7ef] bg-white text-[#9ca4b2] shadow-[0_8px_18px_rgba(17,24,39,0.10)] xl:grid">
+          <ArrowRightLeft size={15} />
+        </span>
+      ) : null}
+      <div className={`flex items-center gap-2.5 ${compact ? "text-[10px] font-semibold uppercase tracking-[0.04em] text-[#97a3b5] sm:tracking-[0.06em]" : "text-[10px] font-semibold uppercase tracking-[0.08em] text-[#334e6a]"}`}>
+        <span className={`grid ${compact ? "h-7 w-7 bg-transparent text-[#18a0ea] sm:h-8 sm:w-8" : "h-7 w-7 rounded-full bg-[#eef2f6] text-[#98a3b5]"} place-items-center`}>
+          {icon ?? <Search size={16} />}
+        </span>
+        <span>{label}</span>
       </div>
       <input
-        className="mt-1 w-full bg-transparent text-[14px] font-semibold text-[#1b2433] outline-none placeholder:text-[#9aa8bb] dark:text-white dark:placeholder:text-[#8ea4c7] xl:text-[17px]"
+        className={`mt-1 w-full bg-transparent outline-none placeholder:text-[#8a95a8] ${compact ? "text-[14px] font-semibold text-[#111827] sm:text-[15px] xl:text-[16px]" : "text-[15px] font-medium text-[#66758a] xl:text-[16px]"}`}
         placeholder={placeholder}
         value={value}
-        onFocus={() => setOpen(true)}
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onFocus={() => {
+          setOpen(true)
+          onActivate?.()
+        }}
+        onBlur={() =>
+          window.setTimeout(() => {
+            setOpen(false)
+            if (!useInlinePanel) onDismiss?.()
+          }, 120)
+        }
         onKeyDown={(e) => {
           if (!filteredOptions.length) return
           if (e.key === "ArrowDown") {
@@ -997,33 +1404,37 @@ function HomeAutocompleteField({
             e.preventDefault()
             pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
           }
-          if (e.key === "Escape") setOpen(false)
+          if (e.key === "Escape") {
+            setOpen(false)
+            onDismiss?.()
+          }
         }}
         onChange={(e) => {
           onChange(e.target.value)
           setOpen(true)
+          onActivate?.()
         }}
       />
       {filteredOptions[0] && value.trim() ? (
-        <div className="mt-0.5 text-[13px] font-semibold text-[#8d98aa] dark:text-[#a5b8d8]">{filteredOptions[0].code}</div>
+        <div className={`mt-0.5 font-semibold text-[#8d98aa] ${compact ? "text-[10px] sm:text-[11px]" : "text-[12px]"}`}>{filteredOptions[0].code}</div>
       ) : null}
-      {open ? (
+      {open && !useInlinePanel ? (
         <>
           <button
             type="button"
-            aria-label={copy.close}
+            aria-label={safeCopy.close}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
           />
-          <div className="fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] shadow-[0_24px_60px_rgba(17,24,39,0.16)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.98)_0%,rgba(18,32,60,0.97)_100%)] dark:shadow-[0_24px_60px_rgba(4,10,28,0.42)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] xl:bg-white dark:xl:bg-[rgba(18,32,60,0.97)]">
+          <div className="fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] xl:bg-white">
             <div className="mx-auto mt-2 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
             <div className="border-b border-[#eef3f8] px-4 py-3 xl:hidden">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c]">
                 {label}
               </div>
-              <div className="mt-1 text-sm font-semibold text-[#1d2430] dark:text-white">
-                {copy.chooseOption}
+              <div className="mt-1 text-sm font-semibold text-[#1d2430]">
+                {safeCopy.chooseOption}
               </div>
             </div>
             <div className="max-h-[calc(62svh-70px)] overflow-y-auto xl:max-h-[320px]">
@@ -1039,16 +1450,30 @@ function HomeAutocompleteField({
 function PassengerField({
   pax,
   onChange,
+  label,
+  valueLabel,
+  icon,
+  compact = false,
 }: {
   pax: number
   onChange: (value: number) => void
+  label?: string
+  valueLabel?: string
+  icon?: ReactNode
+  compact?: boolean
 }) {
   const { language } = useI18n()
   const [open, setOpen] = useState(false)
   const copy = {
     uz: { passenger: "Yo'lovchi", passengersCount: "Yo'lovchilar soni", people: "yo'lovchi", count: "ta", done: "Tayyor", close: "Yo'lovchi oynasini yopish" },
-    ru: { passenger: "Пассажир", passengersCount: "Количество пассажиров", people: "пассажир", count: "", done: "Готово", close: "Закрыть окно пассажиров" },
+    ru: { passenger: "Р В РЎСџР В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљ", passengersCount: "Р В РЎв„ўР В РЎвЂўР В Р’В»Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р РЋРІР‚С™Р В Р вЂ Р В РЎвЂў Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ ", people: "Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљ", count: "", done: "Р В РІР‚СљР В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В Р вЂ Р В РЎвЂў", close: "Р В РІР‚вЂќР В Р’В°Р В РЎвЂќР РЋР вЂљР РЋРІР‚в„–Р РЋРІР‚С™Р РЋР Р‰ Р В РЎвЂўР В РЎвЂќР В Р вЂ¦Р В РЎвЂў Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ " },
     en: { passenger: "Passenger", passengersCount: "Passenger count", people: "passenger", count: "", done: "Done", close: "Close passenger panel" },
+  }[language]
+  void copy
+  const safeCopy = {
+    uz: { passenger: "Yo'lovchi", passengersCount: "Yo'lovchilar soni", people: "yo'lovchi", count: "ta", done: "Tayyor", close: "Yo'lovchi oynasini yopish", cabin: "Ekonom" },
+    ru: { passenger: "Р СџР В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚", passengersCount: "Р С™Р С•Р В»Р С‘РЎвЂЎР ВµРЎРѓРЎвЂљР Р†Р С• Р С—Р В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚Р С•Р Р†", people: "Р С—Р В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚", count: "", done: "Р вЂњР С•РЎвЂљР С•Р Р†Р С•", close: "Р вЂ”Р В°Р С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ Р С•Р С”Р Р…Р С• Р С—Р В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚Р С•Р Р†", cabin: "Р В­Р С”Р С•Р Р…Р С•Р С" },
+    en: { passenger: "Passenger", passengersCount: "Passenger count", people: "passenger", count: "", done: "Done", close: "Close passenger panel", cabin: "Economy" },
   }[language]
 
   useEffect(() => {
@@ -1063,31 +1488,36 @@ function PassengerField({
   }, [open])
 
   return (
-    <div className="relative flex min-h-[68px] flex-col justify-center rounded-[20px] bg-white/92 px-5 py-3 shadow-[0_14px_32px_rgba(18,28,45,0.07)] dark:bg-[rgba(14,26,50,0.92)] dark:shadow-[0_18px_36px_rgba(4,10,28,0.34)] xl:h-[74px] xl:min-h-0 xl:px-6 xl:py-0">
+    <div className={compact ? "relative flex min-h-[68px] flex-col justify-center bg-transparent px-4 py-3 sm:min-h-[74px] sm:px-6" : "relative flex min-h-[72px] flex-col justify-center rounded-[18px] border border-[#e2e7ef] bg-[#f8fafc] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] xl:min-h-[76px]"}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className="text-left"
       >
-        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c] dark:text-[#9fb4d7]">
-          <span>{copy.passenger}</span>
-          <ChevronDown size={16} className={`text-[#8d98aa] transition dark:text-[#a5b8d8] ${open ? "rotate-180" : ""}`} />
+        <div className={`flex items-center justify-between ${compact ? "text-[10px] font-semibold uppercase tracking-[0.04em] text-[#97a3b5] sm:tracking-[0.06em]" : "text-[10px] font-semibold uppercase tracking-[0.08em] text-[#334e6a]"}`}>
+          <span className="inline-flex items-center gap-2.5">
+            <span className={`grid place-items-center ${compact ? "h-7 w-7 text-[#18a0ea] sm:h-8 sm:w-8" : "h-7 w-7 rounded-full bg-[#eef2f6] text-[#b28743]"}`}>
+              {icon ?? <UsersRound size={16} />}
+            </span>
+            <span>{label ?? safeCopy.passenger}</span>
+          </span>
+          <ChevronDown size={16} className={`text-[#8d98aa] transition ${open ? "rotate-180" : ""}`} />
         </div>
-        <div className="mt-1 text-[14px] font-semibold text-[#1b2433] dark:text-white xl:text-[17px]">{pax} {copy.people}</div>
-        <div className="text-[13px] text-[#8d98aa] dark:text-[#a5b8d8]">Economy</div>
+        <div className={`mt-1 ${compact ? "text-[14px] font-semibold text-[#111827] sm:text-[15px] xl:text-[16px]" : "text-[15px] font-semibold text-[#0f1b2e] xl:text-[16px]"}`}>{valueLabel ?? `${pax} ${safeCopy.people}`}</div>
+        <div className="text-[11px] text-[#8d98aa] sm:text-[12px]">{safeCopy.cabin}</div>
       </button>
 
       {open ? (
         <>
           <button
             type="button"
-            aria-label={copy.close}
+            aria-label={safeCopy.close}
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
           />
-          <div className="fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.98)_0%,rgba(18,32,60,0.97)_100%)] dark:shadow-[0_24px_60px_rgba(4,10,28,0.42)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:w-[240px] xl:rounded-[22px] xl:bg-white dark:xl:bg-[rgba(18,32,60,0.97)]">
+          <div className="fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:w-[240px] xl:rounded-[22px] xl:bg-white">
             <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
-            <div className="text-sm font-semibold text-[#1d2430] dark:text-white">{copy.passengersCount}</div>
+            <div className="text-sm font-semibold text-[#1d2430]">{safeCopy.passengersCount}</div>
             <div className="mt-3 flex items-center justify-between rounded-[18px] bg-[#f6f8fb] px-3 py-3">
               <button
                 type="button"
@@ -1096,7 +1526,7 @@ function PassengerField({
               >
                 -
               </button>
-              <div className="text-base font-bold text-[#1d2430] dark:text-white">{pax} {copy.count}</div>
+              <div className="text-base font-bold text-[#1d2430]">{pax} {safeCopy.count}</div>
               <button
                 type="button"
                 onClick={() => onChange(Math.min(9, pax + 1))}
@@ -1110,7 +1540,7 @@ function PassengerField({
               onClick={() => setOpen(false)}
               className="mt-3 h-11 w-full rounded-[16px] bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white"
             >
-              {copy.done}
+              {safeCopy.done}
             </button>
           </div>
         </>
@@ -1153,3 +1583,4 @@ function HelpCard({
     </div>
   )
 }
+

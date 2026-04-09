@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
 import { searchAir } from "@/shared/api/air/air.api"
+import { useI18n } from "@/shared/i18n/i18n"
 
 type FareCalendarPickerProps = {
   from: string
@@ -16,21 +17,44 @@ type FareCalendarPickerProps = {
 type PriceMap = Record<string, number | null>
 
 const cache = new Map<string, PriceMap>()
-const weekdayLabels = ["Du", "Se", "Cho", "Pa", "Ju", "Sha", "Ya"]
-const monthNames = [
-  "Yanvar",
-  "Fevral",
-  "Mart",
-  "Aprel",
-  "May",
-  "Iyun",
-  "Iyul",
-  "Avgust",
-  "Sentabr",
-  "Oktabr",
-  "Noyabr",
-  "Dekabr",
-]
+const calendarLocale = {
+  uz: {
+    weekdayLabels: ["DU", "SE", "CH", "PA", "JU", "SH", "YA"],
+    monthNames: ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"],
+    close: "Yopish",
+    select: "Tanlash",
+    routePlaceholder: "Yo'nalishni tanlang",
+    routeHint: "Avval yo'nalishni tanlang, keyin sana bo'yicha real narxlar chiqadi.",
+    loading: "Narxlar backenddan yuklanmoqda...",
+    minPrice: "Eng past ko'rinayotgan narx",
+    noPrice: "Bu oylar uchun narx topilmadi.",
+    closeAria: "Kalendarni yopish",
+  },
+  ru: {
+    weekdayLabels: ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"],
+    monthNames: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+    close: "Закрыть",
+    select: "Выбрать",
+    routePlaceholder: "Выберите направление",
+    routeHint: "Сначала выберите направление, затем появятся реальные цены по датам.",
+    loading: "Цены загружаются с backend...",
+    minPrice: "Минимальная видимая цена",
+    noPrice: "На эти месяцы цены не найдены.",
+    closeAria: "Закрыть календарь",
+  },
+  en: {
+    weekdayLabels: ["MO", "TU", "WE", "TH", "FR", "SA", "SU"],
+    monthNames: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    close: "Close",
+    select: "Select",
+    routePlaceholder: "Choose route",
+    routeHint: "Choose a route first, then real date prices will appear.",
+    loading: "Loading prices from backend...",
+    minPrice: "Lowest visible price",
+    noPrice: "No prices found for these months.",
+    closeAria: "Close calendar",
+  },
+} as const
 
 const toISODate = (date: Date) => {
   const yyyy = date.getFullYear()
@@ -75,6 +99,8 @@ export default function FareCalendarPicker({
   onChange,
   onClose,
 }: FareCalendarPickerProps) {
+  const { language } = useI18n()
+  const copy = calendarLocale[language]
   const [startMonth, setStartMonth] = useState(() => {
     const base = value ? new Date(value) : new Date()
     return new Date(base.getFullYear(), base.getMonth(), 1)
@@ -173,41 +199,36 @@ export default function FareCalendarPicker({
     <>
       <button
         type="button"
-        aria-label="Kalendarni yopish"
+        aria-label={copy.closeAria}
         onClick={onClose}
         className="fixed inset-0 z-[118] bg-[rgba(15,23,42,0.22)] backdrop-blur-[2px] lg:hidden"
       />
 
-      <div className="fixed inset-x-3 bottom-3 z-[120] max-h-[calc(100svh-24px)] overflow-hidden rounded-[28px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-4 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-[calc(100%+16px)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:w-[min(760px,calc(100vw-64px))] lg:-translate-x-1/2 lg:p-4">
+      <div className="fixed inset-x-3 bottom-3 z-[120] max-h-[calc(100svh-24px)] overflow-hidden rounded-[24px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-[calc(100%+10px)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:w-[min(720px,calc(100vw-72px))] lg:-translate-x-1/2 lg:p-3">
         <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] lg:hidden" />
 
         <div className="flex max-h-[calc(100svh-72px)] flex-col overflow-hidden lg:max-h-none">
-          <div className="flex flex-col gap-3 border-b border-[#e7edf5] pb-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8a97aa]">
-                Narxli kalendar
-              </div>
-              <div className="mt-1 text-[20px] font-black tracking-[-0.04em] text-[#1d2430] md:text-[24px]">
-                Bir tomonga bilet narxlari
-              </div>
-              <div className="mt-1 text-sm text-[#627188]">
-                Sana bo&apos;yicha eng qulay tariflarni solishtiring.
-              </div>
+          <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-3">
+            <div className="rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-semibold text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
+              {from && to ? `${from} → ${to}` : copy.routePlaceholder}
             </div>
-
-            <div className="rounded-[18px] border border-[#dde6f1] bg-white/90 px-4 py-3 text-sm text-[#52627b] shadow-[0_12px_24px_rgba(17,24,39,0.05)]">
-              {from && to ? `${from} → ${to}` : "Yo'nalishni tanlang"}
-            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="hidden h-9 rounded-full border border-[#dbe3ef] bg-white px-4 text-[13px] font-semibold text-[#627188] transition hover:bg-[#f8fbff] lg:inline-flex lg:items-center"
+            >
+              {copy.close}
+            </button>
           </div>
 
           {!from || !to ? (
-            <div className="mt-5 rounded-[24px] border border-[#e2e8f1] bg-white px-5 py-10 text-center text-sm text-[#627188]">
-              Avval yo&apos;nalishni tanlang, keyin sana bo&apos;yicha real narxlar chiqadi.
+            <div className="mt-4 rounded-[20px] border border-[#e2e8f1] bg-white px-5 py-8 text-center text-sm text-[#627188]">
+              {copy.routeHint}
             </div>
           ) : (
             <>
-              <div className="mt-5 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-4">
+              <div className="mt-4 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-3">
                   {visibleMonths.map((monthDate, monthIndex) => {
                     const cells = getMonthDays(monthDate)
 
@@ -216,8 +237,8 @@ export default function FareCalendarPicker({
                         key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
                         className={monthIndex === 1 ? "hidden lg:block" : "block"}
                       >
-                        <div className="rounded-[22px] border border-[#e4ebf4] bg-white/95 p-3.5 shadow-[0_16px_34px_rgba(17,24,39,0.06)]">
-                          <div className="mb-3 flex items-center justify-between">
+                        <div className="rounded-[18px] border border-[#e4ebf4] bg-white/95 p-3 shadow-[0_12px_28px_rgba(17,24,39,0.05)]">
+                          <div className="mb-2 flex items-center justify-between">
                             {monthIndex === 0 ? (
                               <button
                                 type="button"
@@ -226,20 +247,17 @@ export default function FareCalendarPicker({
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() - 1, 1)
                                   )
                                 }
-                                className="grid h-9 w-9 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
+                                className="grid h-8 w-8 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
                               >
                                 <ChevronLeft size={16} />
                               </button>
                             ) : (
-                              <div className="h-9 w-9" />
+                              <div className="h-8 w-8" />
                             )}
 
                             <div className="text-center">
-                              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#94a1b5]">
-                                {monthDate.getFullYear()}
-                              </div>
-                              <div className="text-[18px] font-black tracking-[-0.04em] text-[#1d2430] md:text-[21px]">
-                                {monthNames[monthDate.getMonth()]}
+                              <div className="text-[13px] font-black text-[#1295dd] md:text-[15px]">
+                                {copy.monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
                               </div>
                             </div>
 
@@ -251,21 +269,21 @@ export default function FareCalendarPicker({
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)
                                   )
                                 }
-                                className="grid h-9 w-9 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
+                                className="grid h-8 w-8 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
                               >
                                 <ChevronRight size={16} />
                               </button>
                             ) : (
-                              <div className="h-9 w-9" />
+                              <div className="h-8 w-8" />
                             )}
                           </div>
 
-                          <div className="grid grid-cols-7 gap-x-1.5 gap-y-2 text-center text-[#7b8aa0]">
-                            {weekdayLabels.map((label, labelIndex) => (
+                          <div className="grid grid-cols-7 gap-x-1 gap-y-1.5 text-center text-[#7b8aa0]">
+                            {copy.weekdayLabels.map((label, labelIndex) => (
                               <div
                                 key={label}
                                 className={[
-                                  "py-1 text-[10px] font-semibold uppercase tracking-[0.08em]",
+                                  "py-1 text-[10px] font-semibold uppercase tracking-[0.02em]",
                                   labelIndex >= 5 ? "text-[#95a4bb]" : "text-[#243042]",
                                 ].join(" ")}
                               >
@@ -275,7 +293,7 @@ export default function FareCalendarPicker({
 
                             {cells.map((cell, index) => {
                               if (!cell) {
-                                return <div key={`empty-${index}`} className="h-[50px] md:h-[56px]" />
+                                return <div key={`empty-${index}`} className="h-[42px] md:h-[46px]" />
                               }
 
                               const iso = toISODate(cell)
@@ -291,7 +309,7 @@ export default function FareCalendarPicker({
                                   type="button"
                                   onClick={() => onChange(iso)}
                                   className={[
-                                    "flex h-[50px] w-full min-w-0 flex-col items-center justify-center rounded-[14px] border px-1 text-center transition md:h-[56px]",
+                                    "flex h-[42px] w-full min-w-0 flex-col items-center justify-center rounded-[10px] border px-1 text-center transition md:h-[46px]",
                                     isSelected
                                       ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_14px_34px_rgba(34,104,230,0.22)]"
                                       : "border-[#eef2f7] bg-[linear-gradient(180deg,#fcfdff_0%,#f6f9fd_100%)] text-[#1d2430] hover:border-[#dce6f3] hover:bg-white",
@@ -299,7 +317,7 @@ export default function FareCalendarPicker({
                                 >
                                   <span
                                     className={[
-                                      "text-[14px] font-black leading-none md:text-[16px]",
+                                      "text-[13px] font-black leading-none md:text-[14px]",
                                       isToday && !isSelected ? "text-[#1f6fff]" : "",
                                       !isSelected && weekend ? "text-[#95a4bb]" : "",
                                     ].join(" ")}
@@ -308,7 +326,7 @@ export default function FareCalendarPicker({
                                   </span>
                                   <span
                                     className={[
-                                      "mt-1 line-clamp-2 px-1 text-[8px] font-semibold leading-3 md:text-[9px]",
+                                      "mt-0.5 line-clamp-2 px-1 text-[7px] font-semibold leading-3 md:text-[8px]",
                                       isSelected
                                         ? "text-white/95"
                                         : typeof price === "number"
@@ -329,29 +347,29 @@ export default function FareCalendarPicker({
                 </div>
               </div>
 
-              <div className="mt-5 flex flex-col gap-3 border-t border-[#e7edf5] pt-4 md:flex-row md:items-center md:justify-between">
-                <div className="text-sm text-[#627188]">
+              <div className="mt-4 flex flex-col gap-3 border-t border-[#e7edf5] pt-3 md:flex-row md:items-center md:justify-between">
+                <div className="text-[13px] text-[#627188]">
                   {loading
-                    ? "Narxlar backenddan yuklanmoqda..."
+                    ? copy.loading
                     : minVisiblePrice
-                      ? `Eng past ko'rinayotgan narx: ${millionPrice(minVisiblePrice)} UZS`
-                      : "Bu oylar uchun narx topilmadi."}
+                      ? `${copy.minPrice}: ${millionPrice(minVisiblePrice)} UZS`
+                      : copy.noPrice}
                 </div>
 
                 <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-end">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-11 rounded-full border border-[#dbe3ef] bg-white px-6 text-sm font-semibold text-[#627188] transition hover:bg-[#f8fbff] sm:min-w-[140px]"
+                    className="h-10 rounded-full border border-[#dbe3ef] bg-white px-5 text-[13px] font-semibold text-[#627188] transition hover:bg-[#f8fbff] sm:min-w-[126px] lg:hidden"
                   >
-                    Yopish
+                    {copy.close}
                   </button>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-12 rounded-full bg-[linear-gradient(135deg,#33b24f_0%,#2fa646_100%)] px-7 text-sm font-bold text-white shadow-[0_16px_40px_rgba(47,157,66,0.28)] transition hover:brightness-105 sm:min-w-[280px]"
+                    className="h-10 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-6 text-[13px] font-bold text-white shadow-[0_14px_32px_rgba(15,154,231,0.24)] transition hover:brightness-105 sm:min-w-[230px]"
                   >
-                    Tanlash {minVisiblePrice ? `· ${millionPrice(minVisiblePrice)} UZS` : ""}
+                    {copy.select} {minVisiblePrice ? `- ${millionPrice(minVisiblePrice)} UZS` : ""}
                   </button>
                 </div>
               </div>

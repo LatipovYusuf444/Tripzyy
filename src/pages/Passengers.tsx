@@ -57,19 +57,19 @@ export default function PassengersPage() {
   const { language } = useI18n()
   const copy = {
     uz: {
-      pageTitle: "Yo'lovchilar (Karzinka)",
-      flowDesc: "Reys tanlaganingdan keyin bron qilish jarayoni 3 bosqichda yakunlanadi.",
+      pageTitle: "Rasmiylashtirish",
+      flowDesc: "Bron tanlangan reys bo'yicha aloqa, yo'lovchi va tasdiqlash ma'lumotlarini shu sahifada yakunlaysiz.",
       flight: "Reys",
       date: "Sana",
       ticketCount: "Bilet soni",
       clearCart: "Karzinkani tozalash",
-      book: "Bron qilish",
-      payment: "To'lov",
-      ticketIssue: "Chipta olish",
-      step1Desc: "Reys ma'lumotlari va tanlovni tekshirish",
-      step2Desc: "Bog'lanish va to'lov ma'lumotlari",
-      step3Desc: "Yo'lovchi ma'lumotlari va tasdiqlash",
-      stepHint: "* Bosqich kartasiga bosib o‘tish mumkin. To‘lov bo‘limi 2-bosqichda chiqadi.",
+      book: "Bron ma'lumoti",
+      payment: "Aloqa va to'lov",
+      ticketIssue: "Rasmiylashtirish",
+      step1Desc: "Tanlangan reys va tarifni tekshirish",
+      step2Desc: "Bog'lanish ma'lumoti va to'lov usuli",
+      step3Desc: "Yo'lovchilarni kiritish va yakunlash",
+      stepHint: "* Bu sahifa bron tanlangandan keyin alohida ochiladi. Ichki bosqichlar bo'yicha xohlagan payt o'tish mumkin.",
       currentStep: "Joriy bosqich",
       stage: "bosqich",
       routeDetails: "Yo'nalish tafsilotlari",
@@ -158,19 +158,19 @@ export default function PassengersPage() {
       success: "Success",
     },
     ru: {
-      pageTitle: "Пассажиры (корзина)",
-      flowDesc: "После выбора рейса процесс бронирования завершается в 3 этапа.",
+      pageTitle: "Оформление",
+      flowDesc: "На этой отдельной странице вы завершаете контактные данные, пассажиров и подтверждение по выбранному бронированию.",
       flight: "Рейс",
       date: "Дата",
       ticketCount: "Количество билетов",
       clearCart: "Очистить корзину",
-      book: "Бронирование",
-      payment: "Оплата",
-      ticketIssue: "Выпуск билета",
-      step1Desc: "Проверка данных рейса и выбора",
-      step2Desc: "Контактные данные и оплата",
-      step3Desc: "Данные пассажиров и подтверждение",
-      stepHint: "* Можно переходить нажатием на карточку этапа. Блок оплаты открывается на 2-м этапе.",
+      book: "Данные брони",
+      payment: "Контакты и оплата",
+      ticketIssue: "Оформление",
+      step1Desc: "Проверка выбранного рейса и тарифа",
+      step2Desc: "Контактные данные и способ оплаты",
+      step3Desc: "Данные пассажиров и завершение",
+      stepHint: "* Эта страница открывается отдельно после выбора брони. Между внутренними этапами можно переключаться свободно.",
       currentStep: "Текущий этап",
       stage: "этап",
       routeDetails: "Детали маршрута",
@@ -259,19 +259,19 @@ export default function PassengersPage() {
       success: "Успешно",
     },
     en: {
-      pageTitle: "Passengers (cart)",
-      flowDesc: "After selecting a flight, the booking flow is completed in 3 steps.",
+      pageTitle: "Checkout",
+      flowDesc: "This separate page is where you complete the contact, passenger, and confirmation details for the selected booking.",
       flight: "Flight",
       date: "Date",
       ticketCount: "Ticket count",
       clearCart: "Clear cart",
-      book: "Booking",
-      payment: "Payment",
-      ticketIssue: "Ticket issue",
-      step1Desc: "Review flight details and selection",
-      step2Desc: "Contact and payment details",
-      step3Desc: "Passenger details and confirmation",
-      stepHint: "* You can switch by clicking a step card. The payment section appears in step 2.",
+      book: "Booking details",
+      payment: "Contact and payment",
+      ticketIssue: "Checkout",
+      step1Desc: "Review the selected flight and fare",
+      step2Desc: "Contact details and payment method",
+      step3Desc: "Passenger details and final confirmation",
+      stepHint: "* This page opens separately after booking selection. You can switch between the internal steps at any time.",
       currentStep: "Current step",
       stage: "step",
       routeDetails: "Route details",
@@ -738,6 +738,16 @@ export default function PassengersPage() {
           >
             {copy.clearCart}
           </button>
+        </motion.div>
+
+        <motion.div variants={fadeUp} className="mt-5 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+          <span className="rounded-full border border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] px-3 py-1 text-[#234174] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:text-white">
+            1. {copy.book}
+          </span>
+          <span className="text-[#9ba8ba] dark:text-[#8ea5cb]">→</span>
+          <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+            2. {copy.ticketIssue}
+          </span>
         </motion.div>
 
         <motion.div
