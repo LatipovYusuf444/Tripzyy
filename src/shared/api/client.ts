@@ -1,5 +1,5 @@
 import axios from "axios"
-import { getAccessToken } from "@/shared/auth/token"
+import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
 import { useAppLoading } from "@/shared/store/appLoading"
 
 const apiKey = import.meta.env.VITE_API_KEY
@@ -31,6 +31,10 @@ client.interceptors.response.use(
   },
   (error) => {
     useAppLoading.getState().stop()
+    if (error?.response?.status === 401) {
+      clearAccessToken()
+      window.dispatchEvent(new Event("tripzy-auth"))
+    }
     return Promise.reject(error)
   }
 )

@@ -9,6 +9,7 @@ import Services from "@/pages/Services";
 import Contact from "@/pages/Contact";
 import FAQ from "@/pages/FAQ";
 import LoginPage from "@/pages/auth/LoginPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
 import Profile from "@/pages/Profile";
 import ProtectedRoute from "@/pages/auth/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
@@ -21,7 +22,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
 
-      { path: "register", element: <Navigate to="/login" replace /> },
+      { path: "register", element: <RegisterPage initialMode="register" /> },
       { path: "login", element: <LoginPage /> },
 
       {

@@ -20,10 +20,6 @@ import {
   PlaneLanding,
   Clock,
   Luggage,
-  BadgeCheck,
-  ShieldCheck,
-  Wifi,
-  Coffee,
   User,
   Users,
   Mail,
@@ -123,6 +119,7 @@ type FareFamilyOption = {
   cabin?: string
   segments?: FlightSegment[]
   isDefault?: boolean
+  seatsAvailable?: number
 }
 
 const panel = {
@@ -250,39 +247,87 @@ function translateServiceText(text: string, language: "uz" | "ru" | "en") {
   const replacements: Array<[RegExp, string]> =
     language === "uz"
       ? [
+          // Bagaj
           [/^CARRY ON HAND BAGGAGE$/i, "Qo'l yuki"],
           [/^CARRY ON BAGGAGE$/i, "Qo'l yuki"],
+          [/^CARRY BAG UP TO (\d+)\s*KG$/i, "$1 kg gacha qo'l yuki"],
           [/^CABIN BAG 1 PIECE 7 KG$/i, "1 dona 7 kg qo'l yuki"],
-          [/^CHECKED BAGGAGE UP TO 25 KGS$/i, "25 kg gacha topshiriladigan bagaj"],
-          [/^CHECKED BAGGAGE UP TO 30 KGS$/i, "30 kg gacha topshiriladigan bagaj"],
-          [/^CHECKED BAGGAGE UP TO 35 KGS$/i, "35 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 15 KGS?$/i, "15 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 20 KGS?$/i, "20 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 23 KGS?$/i, "23 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 25 KGS?$/i, "25 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 30 KGS?$/i, "30 kg gacha topshiriladigan bagaj"],
+          [/^CHECKED BAGGAGE UP TO 35 KGS?$/i, "35 kg gacha topshiriladigan bagaj"],
           [/^UPTO50LB 23KG BAGGAGE$/i, "23 kg gacha bagaj"],
           [/^UPTO70LB 32KG BAGGAGE$/i, "32 kg gacha bagaj"],
-          [/^SPECIAL MEAL$/i, "Maxsus ovqat"],
-          [/^PRE PAID BAGGAGE$/i, "Oldindan bagaj qo'shish"],
-          [/^DEDICATED CHECK IN$/i, "Alohida ro'yxatdan o'tish"],
-          [/^PRE RESERVED SEAT ASSIGNMENT$/i, "Oldindan joy tanlash"],
+          [/^1 CHECKED BAG$/i, "1 dona topshiriladigan bagaj"],
+          [/^2 CHECKED BAGS?$/i, "2 dona topshiriladigan bagaj"],
+          [/^BAGGAGE ALLOWANCE$/i, "Bagaj miqdori"],
+          [/^CHECKED BAGGAGE/i, "Topshiriladigan bagaj"],
+          [/^CABIN BAG/i, "Qo'l yuki"],
+          // O'rindiq
+          [/^STANDARD SEAT RESERVATION$/i, "Standart joy tanlash"],
+          [/^PRE RESERVED SEAT ASSIGNMENT$/i, "Oldindan joy tanlash (pullik)"],
+          [/^PREFERRED SEAT RESERVATION$/i, "Tanlangan joy bron qilish (pullik)"],
+          [/^EXTRA LEGROOM SEAT RESERVATION$/i, "Keng joy bron qilish (pullik)"],
           [/^PREMIUM SEAT$/i, "Premium o'rindiq"],
+          [/^SEAT SELECTION$/i, "Joy tanlash"],
+          [/^FREE SEAT SELECTION$/i, "Bepul joy tanlash"],
+          [/^ROUND.?TRIP SEAT RESER(VATION)?$/i, "Borib-kelish uchun joy tanlash"],
+          // Chipta o'zgartirish / qaytarish
           [/^REFUNDABLE TICKET$/i, "Qaytariladigan chipta"],
+          [/^NON.?REFUNDABLE$/i, "Qaytarilmaydi"],
+          [/^REFUND AFTER DEPARTURE$/i, "Uchishdan keyin qaytarish"],
+          [/^REFUND BEFORE DEPARTURE$/i, "Uchishdan oldin qaytarish"],
           [/^CHANGEABLE TICKET$/i, "O'zgartiriladigan chipta"],
+          [/^CHANGE BEFORE DEPARTURE$/i, "Uchishdan oldin o'zgartirish (pullik)"],
+          [/^CHANGE AFTER DEPARTURE$/i, "Uchishdan keyin o'zgartirish"],
+          [/^CHANGE IN ORIGIN\s*(FTI)?$/i, "Jo'nash sanasini o'zgartirish"],
+          [/^CANCELLATION$/i, "Bekor qilish"],
+          // Online
+          [/^CHECKING IN ONLINE\s*(FTI)?$/i, "Onlayn ro'yxatdan o'tish (pullik)"],
+          [/^ONLINE CHECK.?IN$/i, "Onlayn ro'yxatdan o'tish"],
+          [/^AIRPORT CHECK.?IN$/i, "Aeroportda ro'yxatdan o'tish"],
+          [/^DEDICATED CHECK IN$/i, "Alohida ro'yxatdan o'tish"],
+          // Ovqat
+          [/^SPECIAL MEAL$/i, "Maxsus ovqat"],
           [/^MEAL BEVERAGE$/i, "Ovqat va ichimlik"],
+          [/^MEAL ACCRUAL$/i, "Ovqat (yig'im hisoblanadi)"],
+          [/^MEAL SERVICE$/i, "Ovqat xizmati"],
+          // Upgrade / lounge
+          [/^UPGRADE ELIGIBILITY$/i, "Upgrade imkoniyati (pullik)"],
           [/^LOUNGE ACCESS$/i, "Kutish zalidan foydalanish"],
+          [/^PRIORITY BOARDING$/i, "Ustuvor posadka"],
           [/^HOTEL ACCOMMODATIONS$/i, "Mehmonxona joylashuvi"],
+          [/^PRE PAID BAGGAGE$/i, "Oldindan bagaj to'lash"],
+          // Miles
           [/^50 PCT QMILES ACCUMULATION$/i, "50% Qmiles to'planadi"],
           [/^75 PCT QMILES ACCUMULATION$/i, "75% Qmiles to'planadi"],
           [/^100 PCT QMILES ACCUMULATION$/i, "100% Qmiles to'planadi"],
-          [/^CHECKED BAGGAGE/i, "Topshiriladigan bagaj"],
-          [/^CABIN BAG/i, "Qo'l yuki"],
+          [/^MILES ACCRUAL$/i, "Millar to'planadi"],
         ]
       : [
           [/^CARRY ON HAND BAGGAGE$/i, "Ручная кладь"],
           [/^CARRY ON BAGGAGE$/i, "Ручная кладь"],
+          [/^CARRY BAG UP TO (\d+)\s*KG$/i, "Ручная кладь до $1 кг"],
           [/^CABIN BAG 1 PIECE 7 KG$/i, "1 место ручной клади 7 кг"],
-          [/^CHECKED BAGGAGE UP TO 25 KGS$/i, "Багаж до 25 кг"],
-          [/^CHECKED BAGGAGE UP TO 30 KGS$/i, "Багаж до 30 кг"],
-          [/^CHECKED BAGGAGE UP TO 35 KGS$/i, "Багаж до 35 кг"],
+          [/^CHECKED BAGGAGE UP TO 15 KGS?$/i, "Багаж до 15 кг"],
+          [/^CHECKED BAGGAGE UP TO 20 KGS?$/i, "Багаж до 20 кг"],
+          [/^CHECKED BAGGAGE UP TO 23 KGS?$/i, "Багаж до 23 кг"],
+          [/^CHECKED BAGGAGE UP TO 25 KGS?$/i, "Багаж до 25 кг"],
+          [/^CHECKED BAGGAGE UP TO 30 KGS?$/i, "Багаж до 30 кг"],
+          [/^CHECKED BAGGAGE UP TO 35 KGS?$/i, "Багаж до 35 кг"],
           [/^UPTO50LB 23KG BAGGAGE$/i, "Багаж до 23 кг"],
           [/^UPTO70LB 32KG BAGGAGE$/i, "Багаж до 32 кг"],
+          [/^STANDARD SEAT RESERVATION$/i, "Стандартный выбор места"],
+          [/^PREFERRED SEAT RESERVATION$/i, "Выбор предпочтительного места (платно)"],
+          [/^EXTRA LEGROOM SEAT RESERVATION$/i, "Место с доп. пространством (платно)"],
+          [/^CHANGE BEFORE DEPARTURE$/i, "Изменение до вылета (платно)"],
+          [/^CHANGE IN ORIGIN\s*(FTI)?$/i, "Изменение даты вылета"],
+          [/^REFUND AFTER DEPARTURE$/i, "Возврат после вылета"],
+          [/^CHECKING IN ONLINE\s*(FTI)?$/i, "Онлайн регистрация (платно)"],
+          [/^UPGRADE ELIGIBILITY$/i, "Возможность апгрейда (платно)"],
+          [/^ROUND.?TRIP SEAT RESER(VATION)?$/i, "Бронь места туда-обратно"],
           [/^SPECIAL MEAL$/i, "Специальное питание"],
           [/^PRE PAID BAGGAGE$/i, "Предоплаченный багаж"],
           [/^DEDICATED CHECK IN$/i, "Отдельная регистрация"],
@@ -291,6 +336,7 @@ function translateServiceText(text: string, language: "uz" | "ru" | "en") {
           [/^REFUNDABLE TICKET$/i, "Возвратный билет"],
           [/^CHANGEABLE TICKET$/i, "Изменяемый билет"],
           [/^MEAL BEVERAGE$/i, "Питание и напитки"],
+          [/^MEAL ACCRUAL$/i, "Питание (начисляется сбор)"],
           [/^LOUNGE ACCESS$/i, "Доступ в лаунж"],
           [/^HOTEL ACCOMMODATIONS$/i, "Размещение в отеле"],
           [/^50 PCT QMILES ACCUMULATION$/i, "Начисление 50% Qmiles"],
@@ -303,6 +349,37 @@ function translateServiceText(text: string, language: "uz" | "ru" | "en") {
   }
 
   return value
+}
+
+function translateFareName(name: string, language: "uz" | "ru" | "en"): string {
+  const upper = (name || "").trim().toUpperCase()
+  const map: Record<string, { uz: string; ru: string; en: string }> = {
+    CLASSIC:    { uz: "Klassik",        ru: "Классик",      en: "Classic" },
+    FLEX:       { uz: "Moslashuvchan",  ru: "Флекс",        en: "Flex" },
+    ECONOMY:    { uz: "Ekonom",         ru: "Эконом",       en: "Economy" },
+    ECO:        { uz: "Ekonom",         ru: "Эконом",       en: "Economy" },
+    STANDARD:   { uz: "Standart",       ru: "Стандарт",     en: "Standard" },
+    LITE:       { uz: "Yengil",         ru: "Лайт",         en: "Lite" },
+    LIGHT:      { uz: "Yengil",         ru: "Лайт",         en: "Light" },
+    BASIC:      { uz: "Asosiy",         ru: "Базовый",      en: "Basic" },
+    BASE:       { uz: "Asosiy",         ru: "Базовый",      en: "Base" },
+    COMFORT:    { uz: "Komfort",        ru: "Комфорт",      en: "Comfort" },
+    BUSINESS:   { uz: "Biznes",         ru: "Бизнес",       en: "Business" },
+    PREMIUM:    { uz: "Premium",        ru: "Премиум",      en: "Premium" },
+    PLUS:       { uz: "Plus",           ru: "Плюс",         en: "Plus" },
+    SAVER:      { uz: "Tejamkor",       ru: "Сейвер",       en: "Saver" },
+    PROMO:      { uz: "Aksiya",         ru: "Промо",        en: "Promo" },
+    FULL:       { uz: "To'liq",         ru: "Полный",       en: "Full" },
+    REFUNDABLE: { uz: "Qaytariladigan", ru: "Возвратный",   en: "Refundable" },
+    OPTIMAL:    { uz: "Optimal",        ru: "Оптимальный",  en: "Optimal" },
+  }
+  for (const [key, val] of Object.entries(map)) {
+    if (upper === key || upper.startsWith(key + " ") || upper.endsWith(" " + key)) {
+      return val[language]
+    }
+  }
+  if (language === "en") return name
+  return name
 }
 
 function mapSegmentsFromTrips(trips: any[] | undefined): FlightSegment[] {
@@ -350,11 +427,11 @@ export default function FlightDetailsModal({
   const { language } = useI18n()
   const copy = {
     uz: {
-      bookingError: "Booking xato",
-      optionMissing: "Option ID topilmadi. Qidiruvni qayta bajaring.",
+      bookingError: "Bron qilishda xatolik",
+      optionMissing: "Reys topilmadi. Qidiruvni qayta bajaring.",
       invalidData: "Ma'lumotlar to'liq emas.",
-      loginFirst: "Avval login qiling (token yo'q).",
-      bookingSuccess: "Booking muvaffaqiyatli. Order ID:",
+      loginFirst: "Avval tizimga kiring.",
+      bookingSuccess: "Bron muvaffaqiyatli amalga oshirildi. Buyurtma ID:",
       headerDate: "Sana",
       headerPax: "Yo'lovchi",
       finalPrice: "Yakuniy narx",
@@ -381,9 +458,10 @@ export default function FlightDetailsModal({
       chooseFare: "Tarifni tanlang",
       selectedFare: "Tanlangan tarif",
       selectedFareReady: "Shu tarif bilan bron qilinadi.",
-      fareIncluded: "Ichida bor",
-      fareChargeable: "Qo'shimcha to'lanadi",
-      fareUnavailable: "Mavjud emas",
+      fareIncluded: "O'z ichiga oladi",
+      fareChargeable: "Ruxsat berilgan",
+      fareUnavailable: "Ruxsat berilmagan",
+      seatsLeft: "ta o'rindiqlar qoldi",
       extraPrice: "Qo'shimcha narx",
       rules: "Tarif qoidalari",
       rulesLoading: "Qoidalar yuklanmoqda...",
@@ -468,8 +546,9 @@ export default function FlightDetailsModal({
       selectedFare: "Выбранный тариф",
       selectedFareReady: "Бронирование будет выполнено по этому тарифу.",
       fareIncluded: "Включено",
-      fareChargeable: "Оплачивается отдельно",
-      fareUnavailable: "Недоступно",
+      fareChargeable: "Разрешено",
+      fareUnavailable: "Не разрешено",
+      seatsLeft: "мест осталось",
       extraPrice: "Доплата",
       rules: "Правила тарифа",
       rulesLoading: "Загрузка правил...",
@@ -554,8 +633,9 @@ export default function FlightDetailsModal({
       selectedFare: "Selected fare",
       selectedFareReady: "Booking will be made with this fare.",
       fareIncluded: "Included",
-      fareChargeable: "Chargeable",
-      fareUnavailable: "Unavailable",
+      fareChargeable: "Allowed",
+      fareUnavailable: "Not allowed",
+      seatsLeft: "seats left",
       extraPrice: "Extra price",
       rules: "Fare rules",
       rulesLoading: "Loading rules...",
@@ -823,7 +903,7 @@ export default function FlightDetailsModal({
 
           return {
             id: option.id,
-            name: (trip?.brandName || trip?.brandID || `FARE ${index + 1}`).toUpperCase(),
+            name: translateFareName(trip?.brandName || trip?.brandID || `Tarif ${index + 1}`, language),
             price: Number(option.price ?? option.passengerInfos?.[0]?.total ?? 0),
             currency: option.currency ?? safeFlight.currency,
             baggageInfos: uniqueStrings([firstSegment?.baggage, ...brandedBaggage]),
@@ -860,6 +940,7 @@ export default function FlightDetailsModal({
             cabin: firstSegment?.serviceClass ?? safeFlight.cabin,
             segments,
             isDefault: option.id === safeFlight.id,
+            seatsAvailable: option.seatsAvailable ?? trip?.seatsAvailable ?? firstSegment?.seatsAvailable ?? null,
           }
         })
 
@@ -919,29 +1000,6 @@ export default function FlightDetailsModal({
     }
   }, [copy.rules, language, open, safeFlight.id])
 
-  const backendServiceDescriptions = useMemo(() => {
-    const seen = new Set<string>()
-    const list: string[] = []
-    fareData?.families?.forEach((f) => {
-      f.services?.forEach((s) => {
-        const text = (s.description || "").trim()
-        if (!text) return
-        if (seen.has(text)) return
-        seen.add(text)
-        list.push(text)
-      })
-    })
-    fareFamiliesData.forEach((f) => {
-      f.serviceDescriptions?.forEach((text) => {
-        const clean = (text || "").trim()
-        if (!clean || seen.has(clean)) return
-        seen.add(clean)
-        list.push(clean)
-      })
-    })
-    return list
-  }, [fareData, fareFamiliesData])
-
   const selectedFare = useMemo(
     () => fareFamiliesData.find((fare) => fare.id === selectedFareId) ?? null,
     [fareFamiliesData, selectedFareId]
@@ -976,7 +1034,6 @@ export default function FlightDetailsModal({
 
   const cabin = bookingFlight.cabin ?? "—"
   const refundable = bookingFlight.refundable ?? false
-  const services = safeFlight.services ?? []
   const flightNo = safeFlight.flightNo ?? "TZ-102"
   const itinerarySegments = useMemo(
     () =>
@@ -1398,100 +1455,130 @@ export default function FlightDetailsModal({
 
                         {!fareFamiliesLoading && !fareFamiliesError && fareFamiliesData.length > 0 && (
                           <div className="mt-4 space-y-4">
-                            <div className="rounded-[22px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)]">
-                              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">
-                                {copy.chooseFare}
-                              </div>
-                              <div className="mt-3 grid grid-cols-1 xl:grid-cols-3 gap-3">
-                                {fareFamiliesData.map((f) => {
-                                  const active = selectedFareId === f.id
-                                  return (
-                                    <button
-                                      key={f.id}
-                                      type="button"
-                                      onClick={() => setSelectedFareId(f.id)}
-                                      className={[
-                                        "rounded-[24px] border p-4 text-left transition",
-                                        active
-                                          ? "border-[#1f7ae0] bg-[linear-gradient(180deg,#eff6ff_0%,#f8fbff_100%)] shadow-[0_20px_45px_rgba(31,122,224,0.14)] dark:border-[#5d97ff] dark:bg-[linear-gradient(180deg,rgba(24,47,96,0.94)_0%,rgba(19,37,72,0.92)_100%)]"
-                                          : "border-[#e2e9f2] bg-white hover:border-[#c7d8ef] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:hover:border-[#4d6fa8]",
-                                      ].join(" ")}
-                                    >
-                                      <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                          <div className="text-base font-bold text-[#1d2430] dark:text-white">
-                                            {f.name}
-                                          </div>
-                                          <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                            {formatMoney(f.price, f.currency ?? bookingFlight.currency)}
-                                          </div>
+                            {/* ── Fare cards row ── */}
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                              {fareFamiliesData.map((f, idx) => {
+                                const active = selectedFareId === f.id
+                                const isBest = idx === 1
+                                return (
+                                  <button
+                                    key={f.id}
+                                    type="button"
+                                    onClick={() => setSelectedFareId(f.id)}
+                                    className={[
+                                      "relative rounded-[18px] border p-4 text-left transition",
+                                      active
+                                        ? "border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_14px_28px_rgba(17,24,39,0.28)]"
+                                        : "border-[#e2e9f2] bg-white text-[#1d2430] hover:border-[#c7d8ef] hover:shadow-[0_6px_18px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white",
+                                    ].join(" ")}
+                                  >
+                                    {isBest && (
+                                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#18a0ea] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(24,160,234,0.40)]">
+                                        Eng zo'r
+                                      </span>
+                                    )}
+                                    <div className="flex items-start gap-2.5">
+                                      <span className={[
+                                        "mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 transition",
+                                        active ? "border-white bg-white" : "border-[#c0cfe0] dark:border-[#5a7ab0]",
+                                      ].join(" ")}>
+                                        {active && <span className="block h-full w-full scale-50 rounded-full bg-[#1c2433]" />}
+                                      </span>
+                                      <div className="min-w-0 flex-1">
+                                        <div className={`text-[15px] font-bold ${active ? "text-white" : "text-[#1d2430] dark:text-white"}`}>
+                                          {f.name}
                                         </div>
-                                        {active ? (
-                                          <span className="rounded-full bg-[#1f7ae0] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
-                                            {copy.selectedFare}
-                                          </span>
-                                        ) : null}
-                                      </div>
-
-                                      <div className="mt-3 space-y-3 text-xs">
-                                        <div>
-                                          <div className="font-semibold text-emerald-700 dark:text-[#9ef0c6]">
-                                            {copy.fareIncluded}
-                                          </div>
-                                          <div className="mt-1 space-y-1 text-[#52627b] dark:text-[#d4e2fb]">
-                                            {(f.includedServices.length ? f.includedServices : [f.carryOn, f.baggage]
-                                              .filter(Boolean) as string[]).map((item) => (
-                                              <div key={`${f.id}-included-${item}`}>• {item}</div>
-                                            ))}
-                                          </div>
+                                        <div className={`mt-1 text-[18px] font-black leading-tight ${active ? "text-white" : "text-[#1d2430] dark:text-white"}`}>
+                                          {formatMoney(f.price, f.currency ?? bookingFlight.currency)}
                                         </div>
-
-                                        {f.chargeableServices.length > 0 && (
-                                          <div>
-                                            <div className="font-semibold text-amber-700 dark:text-[#ffd38a]">
-                                              {copy.fareChargeable}
-                                            </div>
-                                            <div className="mt-1 space-y-1 text-[#52627b] dark:text-[#d4e2fb]">
-                                              {f.chargeableServices.slice(0, 6).map((item) => (
-                                                <div key={`${f.id}-chargeable-${item}`}>• {item}</div>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        )}
-
-                                        {f.unavailableServices.length > 0 && (
-                                          <div>
-                                            <div className="font-semibold text-rose-700 dark:text-[#ffb2bf]">
-                                              {copy.fareUnavailable}
-                                            </div>
-                                            <div className="mt-1 space-y-1 text-[#52627b] dark:text-[#d4e2fb]">
-                                              {f.unavailableServices.slice(0, 4).map((item) => (
-                                                <div key={`${f.id}-na-${item}`}>• {item}</div>
-                                              ))}
-                                            </div>
+                                        {f.seatsAvailable != null && (
+                                          <div className={`mt-1.5 text-[11px] font-medium ${active ? "text-white/70" : "text-[#7b8ea8] dark:text-[#93abd0]"}`}>
+                                            {f.seatsAvailable} {copy.seatsLeft}
                                           </div>
                                         )}
                                       </div>
-                                    </button>
-                                  )
-                                })}
-                              </div>
+                                    </div>
+                                  </button>
+                                )
+                              })}
                             </div>
 
+                            {/* ── Selected fare rules: 3-column ── */}
                             {selectedFare && (
-                              <div className="rounded-[22px] border border-[#dbe3ef] bg-white p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div className="rounded-[18px] border border-[#e2e9f2] bg-white p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                  {/* Included */}
                                   <div>
-                                    <div className="text-sm font-semibold text-[#1d2430] dark:text-white">
-                                      {copy.selectedFare}: {selectedFare.name}
+                                    <div className="mb-2.5 text-[13px] font-bold text-[#1d2430] dark:text-white">
+                                      {copy.fareIncluded}
                                     </div>
-                                    <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
-                                      {copy.selectedFareReady}
+                                    <div className="space-y-2">
+                                      {(selectedFare.includedServices.length
+                                        ? selectedFare.includedServices
+                                        : [selectedFare.carryOn, selectedFare.baggage].filter(Boolean) as string[]
+                                      ).map((item) => (
+                                        <div key={`inc-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
+                                            <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                          </span>
+                                          <span>{item}</span>
+                                        </div>
+                                      ))}
                                     </div>
                                   </div>
+
+                                  {/* Chargeable / Allowed */}
+                                  <div>
+                                    <div className="mb-2.5 text-[13px] font-bold text-[#1d2430] dark:text-white">
+                                      {copy.fareChargeable}
+                                    </div>
+                                    <div className="space-y-2">
+                                      {selectedFare.chargeableServices.length === 0 ? (
+                                        <div className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
+                                            <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                          </span>
+                                          <span>—</span>
+                                        </div>
+                                      ) : selectedFare.chargeableServices.map((item) => (
+                                        <div key={`chg-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
+                                            <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                          </span>
+                                          <span>{item}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Unavailable */}
+                                  <div>
+                                    <div className="mb-2.5 text-[13px] font-bold text-[#1d2430] dark:text-white">
+                                      {copy.fareUnavailable}
+                                    </div>
+                                    <div className="space-y-2">
+                                      {selectedFare.unavailableServices.length === 0 ? (
+                                        <div className="text-[12px] text-[#9aacbf] dark:text-[#6a8ab0]">—</div>
+                                      ) : selectedFare.unavailableServices.map((item) => (
+                                        <div key={`na-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ef4444] text-white">
+                                            <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M2 2l4 4M6 2L2 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                                          </span>
+                                          <span>{item}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Total footer */}
+                                <div className="mt-4 flex items-center justify-between border-t border-[#eef2f7] pt-3 dark:border-[#2a4070]">
+                                  <div className="text-[12px] text-[#7b889c] dark:text-[#93abd0]">
+                                    {copy.selectedFare}: <span className="font-semibold text-[#1d2430] dark:text-white">{selectedFare.name}</span>
+                                  </div>
                                   <div className="text-right">
-                                    <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.total}</div>
-                                    <div className="text-lg font-bold text-[#1d2430] dark:text-white">
+                                    <div className="text-[11px] text-[#7b889c] dark:text-[#93abd0]">{copy.total}</div>
+                                    <div className="text-[16px] font-black text-[#1d2430] dark:text-white">
                                       {formatMoney(total, bookingFlight.currency)}
                                     </div>
                                   </div>
@@ -1543,28 +1630,6 @@ export default function FlightDetailsModal({
                       </div>
                     </div>
 
-                    <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                      <div className="text-[#1d2430] font-semibold dark:text-white">{copy.services}</div>
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {services.includes("wifi") && <Mini icon={Wifi} text="Wi-Fi" />}
-                        {services.includes("meal") && <Mini icon={Coffee} text={copy.meal} />}
-                        {services.includes("priority") && <Mini icon={BadgeCheck} text="Priority" />}
-                        {services.includes("support") && (
-                          <Mini icon={ShieldCheck} text={copy.support} />
-                        )}
-                      </div>
-
-                      {backendServiceDescriptions.length > 0 && (
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {backendServiceDescriptions.slice(0, 12).map((text, i) => (
-                            <div key={`${text}-${i}`} className="rounded-[16px] border border-[#e2e9f2] bg-white px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
-                              {text}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -1949,15 +2014,6 @@ function Pill({ icon: Icon, label, value }: { icon: any; label: string; value: s
         </div>
       </div>
     </div>
-  )
-}
-
-function Mini({ icon: Icon, text }: { icon: any; text: string }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]">
-      <Icon size={14} className="text-[#627188] dark:text-[#9fb4d7]" />
-      {text}
-    </span>
   )
 }
 

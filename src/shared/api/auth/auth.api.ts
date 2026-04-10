@@ -10,6 +10,6 @@ export const login = (data: LoginPayload) =>
   client.post<AuthResponse>("/auth/login", data)
 
 export const register = (data: RegisterPayload) =>
-  client.post<RegisterResponse>("/auth/register/", data)
+  client.post<RegisterResponse>("/auth/register", data)
 
 export const logout = () => client.post("/auth/logout")

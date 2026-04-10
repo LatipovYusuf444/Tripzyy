@@ -1,0 +1,1822 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "UIS Agency API documentation",
+        "description": "UIS Agency API documentation.",
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "https://b2b.skyup.uz/api"
+        }
+    ],
+    "paths": {
+        "/air/search": {
+            "post": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Search flights",
+                "description": "Method searches for flights for a specified route and date",
+                "operationId": "search",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AirSearchRQ"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AirSearchRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/air/options/{optionID}/rules": {
+            "get": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Get Option Fare Rules",
+                "description": "Method retrieves all fare rules available for a selected option",
+                "operationId": "fare-rules",
+                "parameters": [
+                    {
+                        "name": "optionID",
+                        "in": "path",
+                        "description": "Selected option ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "7Q5RL9vgZ6JUVxVQUCeUXCGSMuTxXEYkW9M59wr3UQjPUCP2aQcq2J42yYCFDGVADjtrgvD2X2RJmazoNR9YJzRkrEAkJzRacRjC"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fare rules list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FareRulesRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/air/options/{optionID}/fare-families": {
+            "get": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Get Option Fare Families",
+                "description": "Method retrieves all fare families available for a selected option",
+                "operationId": "fare-families",
+                "parameters": [
+                    {
+                        "name": "optionID",
+                        "in": "path",
+                        "description": "Selected option ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "7Q5RL9vgZ6JUVxVQUCeUXCGSMuTxXEYkW9M59wr3UQjPUCP2aQcq2J42yYCFDGVADjtrgvD2X2RJmazoNR9YJzRkrEAkJzRacRjC"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Options with fare families list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FareFamiliesRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/air/branded-fares": {
+            "post": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Get Fare Families (Internal use only)",
+                "description": "Get Fare Families(Internal use only)",
+                "operationId": "branded-fares",
+                "parameters": [
+                    {
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "description": "API Key. Example: Bearer bWMPeJ3t1ymrdhJxaZwBAZoNzbYvQXP7ksjbdasd",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BrandsRQ"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BrandsRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/air/book": {
+            "post": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Create new reservation",
+                "description": "Create new reservation",
+                "operationId": "book",
+                "parameters": [
+                    {
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "description": "API Key. Example: Bearer bWMPeJ3t1ymrdhJxaZwBAZoNzbYvQXP7ksjbdasd",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BookRequestType"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BookRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/air/options/{optionID}": {
+            "get": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Get Option Details by ID",
+                "description": "Get Details for a single Option",
+                "operationId": "getOption",
+                "parameters": [
+                    {
+                        "name": "optionID",
+                        "in": "path",
+                        "description": "Option ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "7fu9ZukHESQnSmoCxsQkoYy75bvXCz65DHdHfKBMZ3uPdwd6RG4WQKgqoriL9ULG9gSNKy7oP8undS2gBEaUaRHNXGoYZyGwKbbj"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Option details response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OptionDetailsRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/air/get-pnr": {
+            "get": {
+                "tags": [
+                    "Air"
+                ],
+                "summary": "Retrieve PNR details",
+                "description": "Retrieve PNR details by PNR locator",
+                "operationId": "6a58e86988ea0f85b2150c527b16eff2",
+                "parameters": [
+                    {
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "description": "API Key. Example: Bearer bWMPeJ3t1ymrdhJxaZwBAZoNzbYvQXP7ksjbdasd",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "locator",
+                        "in": "query",
+                        "description": "PNR locator",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "ABC123"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PNRDetailsRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Authenticate user and get token",
+                "description": "Authenticate user with email and password. Returns token if authentication is successful.",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRQ"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Order details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginRS"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Retrieve an order by ID",
+                "description": "Returns details for a single Order",
+                "operationId": "getOrder",
+                "parameters": [
+                    {
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "description": "API key",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Bearer 1234567890"
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Order ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "123456"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Get order response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GetOrderRS"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "securityScheme": "bearerAuth"
+                    }
+                ]
+            }
+        },
+        "/orders/cancel-service": {
+            "post": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Cancel a PNR by ID",
+                "description": "    Cancel a PNR in the service.  Can only be used if service status is `new`",
+                "operationId": "cancelService",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ServiceCancelRQ"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cancel operation result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BaseApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "securityScheme": "bearerAuth"
+                    }
+                ]
+            }
+        },
+        "/orders/issue": {
+            "post": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Issues an order by ID",
+                "description": "Issue all PNRs in Order",
+                "operationId": "issueOrder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OrderIssueRQ"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Issuance operation result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BaseApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "securityScheme": "bearerAuth"
+                    }
+                ]
+            }
+        },
+        "/orders/void-service": {
+            "post": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "VOID a PNR by ID",
+                "description": "VOID a PNR in the service. Depends on the airline policy.\nBy default tickets can be VOIDed on the same day of issuance. \nSome airlines may have a limitations on VOID policy. \nI.e. 1 hour after issuance, 3 hours after issuance, etc.\nSome airlines prohibit VOID if the flight is on the current or the next day",
+                "operationId": "voidService",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json; charset=utf-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ServiceVoidRQ"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "VOID operation result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BaseApiResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "securityScheme": "bearerAuth"
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BaseReservation": {
+                "description": "Base reservation",
+                "properties": {
+                    "id": {
+                        "description": "Reservation ID",
+                        "type": "string",
+                        "example": "ABC123"
+                    }
+                },
+                "type": "object"
+            },
+            "AirPassenger": {
+                "description": "Passenger type for reservation create request",
+                "required": [
+                    "type",
+                    "firstName",
+                    "lastName",
+                    "gender",
+                    "dob",
+                    "countryCode",
+                    "documentType",
+                    "documentNumber",
+                    "documentExpires"
+                ],
+                "properties": {
+                    "type": {
+                        "description": "Passenger type",
+                        "type": "string",
+                        "enum": [
+                            "ADT",
+                            "CHD",
+                            "INF"
+                        ],
+                        "example": "ADT"
+                    },
+                    "firstName": {
+                        "description": "Passenger's first name",
+                        "type": "string",
+                        "example": "Ivan"
+                    },
+                    "lastName": {
+                        "description": "Passenger's last name",
+                        "type": "string",
+                        "example": "Pupkin"
+                    },
+                    "gender": {
+                        "description": "Passenger's gender",
+                        "type": "string",
+                        "enum": [
+                            "M",
+                            "F"
+                        ],
+                        "example": "M"
+                    },
+                    "dob": {
+                        "description": "Passenger's date of birth, Format: `YYYY-MM-DD`",
+                        "type": "string",
+                        "format": "date",
+                        "example": "1990-10-25"
+                    },
+                    "countryCode": {
+                        "description": "2-letter ISO Document issuing country code",
+                        "type": "string",
+                        "example": "US"
+                    },
+                    "documentType": {
+                        "description": "Passenger's document type. Possible values:\n  * __1__ - Local identity card\n  * __2__ - International passport\n  * __3__ - Birth certificate\n  * __4__ - Internal passport\n  * __5__ - Diplomatic passport\n  * __6__ - Resident card",
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "documentNumber": {
+                        "description": "Passenger's document number",
+                        "type": "string",
+                        "example": "N12345678"
+                    },
+                    "documentIssued": {
+                        "description": "Passenger's document issue date",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2022-03-25"
+                    },
+                    "documentExpires": {
+                        "description": "Passenger's document expiration date",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2032-03-24"
+                    }
+                },
+                "type": "object"
+            },
+            "AviaReservation": {
+                "description": "Air reservation",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseReservation"
+                    },
+                    {
+                        "properties": {
+                            "passengerInfos": {
+                                "description": "Fare details for each passenger",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PassengerInfo"
+                                }
+                            },
+                            "segments": {
+                                "description": "Flight segments",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/AirSegment"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "AirSearchRQ": {
+                "required": [
+                    "class",
+                    "adults",
+                    "children",
+                    "infants",
+                    "trips"
+                ],
+                "properties": {
+                    "adults": {
+                        "description": "Number of adults",
+                        "type": "integer",
+                        "minimum": 1,
+                        "example": 1
+                    },
+                    "children": {
+                        "description": "Number of children",
+                        "type": "integer",
+                        "minimum": 0,
+                        "example": 0
+                    },
+                    "infants": {
+                        "description": "Number of infants",
+                        "type": "integer",
+                        "minimum": 0,
+                        "example": 0
+                    },
+                    "class": {
+                        "description": "Class of the flight: `Y` - Economy, `B` - Business, `F` - First Class",
+                        "type": "string",
+                        "enum": [
+                            "Y",
+                            "B",
+                            "F"
+                        ],
+                        "example": "Y"
+                    },
+                    "trips": {
+                        "description": "Search Route parameters",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AirSearchTrip"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AirSearchTrip": {
+                "required": [
+                    "origin",
+                    "destination",
+                    "date"
+                ],
+                "properties": {
+                    "origin": {
+                        "description": "Origin IATA Code",
+                        "type": "string",
+                        "example": "LON"
+                    },
+                    "destination": {
+                        "description": "Destination IATA Code",
+                        "type": "string",
+                        "example": "FRA"
+                    },
+                    "departure": {
+                        "description": "Departure date. YYYY-MM-DD format",
+                        "type": "string",
+                        "example": "2025-08-30"
+                    }
+                },
+                "type": "object"
+            },
+            "AirTrip": {
+                "required": [
+                    "id",
+                    "origin",
+                    "destination"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Trip ID",
+                        "type": "string",
+                        "example": "ABC123"
+                    },
+                    "origin": {
+                        "description": "Origin IATA code",
+                        "type": "string",
+                        "example": "FRA"
+                    },
+                    "destination": {
+                        "description": "Destination IATA code",
+                        "type": "string",
+                        "example": "LON"
+                    },
+                    "duration": {
+                        "description": "Trip duration, in minutes",
+                        "type": "integer",
+                        "example": "100"
+                    },
+                    "segments": {
+                        "description": "Trip segments",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AirSegment"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BaseAirOption": {
+                "description": "Air offer",
+                "required": [
+                    "id",
+                    "price",
+                    "currency"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Unique option ID",
+                        "type": "string",
+                        "example": "1234567890"
+                    },
+                    "currency": {
+                        "description": "Currency code of the current option",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "price": {
+                        "description": "Total option price for all passengers",
+                        "type": "number",
+                        "format": "float",
+                        "example": 150.15
+                    },
+                    "trips": {
+                        "description": "Option flight legs",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AirTrip"
+                        }
+                    },
+                    "carrier": {
+                        "description": "Validating carrier code",
+                        "type": "string",
+                        "example": "LH"
+                    },
+                    "packages": {
+                        "$ref": "#/components/schemas/BrandsData"
+                    }
+                },
+                "type": "object"
+            },
+            "BrandsData": {
+                "description": "Brands for the current option",
+                "required": [
+                    "currency",
+                    "baseFare"
+                ],
+                "properties": {
+                    "currency": {
+                        "description": "Currency code.",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "baseFare": {
+                        "description": "Base price of the option. All brands are prices should be added to this value.",
+                        "type": "number",
+                        "format": "double",
+                        "example": 150.15
+                    },
+                    "combinations": {
+                        "description": "Brand combinations with their prices.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BrandsCombination"
+                        }
+                    },
+                    "families": {
+                        "description": "Brands for the current option. Each trip has its own array of brands.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BrandData"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BrandData": {
+                "description": "Brand details",
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Brand ID returned by the provider.",
+                        "type": "string",
+                        "example": "LIGHT"
+                    },
+                    "name": {
+                        "description": "Brand name returned by the provider.",
+                        "type": "string",
+                        "example": "Economy Light"
+                    },
+                    "services": {
+                        "description": "Services details in current brand.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BrandServiceData"
+                        }
+                    },
+                    "baggageInfos": {
+                        "description": "Baggage information in this fare family.",
+                        "type": "array",
+                        "items": {
+                            "description": "Baggage allowance per segments",
+                            "type": "string",
+                            "example": "1PC"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BrandsCombination": {
+                "required": [
+                    "price",
+                    "familyIDs"
+                ],
+                "properties": {
+                    "price": {
+                        "description": "Price of the combination, in addition to base fare.",
+                        "type": "number",
+                        "example": 10.75
+                    },
+                    "familyIDs": {
+                        "description": "Fare families IDs in this combination.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "LIGHT"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BrandServiceData": {
+                "description": "Brand details",
+                "required": [
+                    "id",
+                    "name"
+                ],
+                "properties": {
+                    "type": {
+                        "description": "Service type code",
+                        "type": "string"
+                    },
+                    "description": {
+                        "description": "Service description returned by the provider.",
+                        "type": "string",
+                        "example": "BASIC SEAT"
+                    },
+                    "paymentType": {
+                        "description": "Payment type for this service. Possible values:\n  * __included__ - Free service\n  * __chargeable__ - Paid service\n  * __na__ - Not available in this package",
+                        "type": "string",
+                        "example": "included"
+                    }
+                },
+                "type": "object"
+            },
+            "PassengerInfo": {
+                "description": "Fare details for a passenger",
+                "properties": {
+                    "passengerType": {
+                        "description": "Passenger type",
+                        "type": "string",
+                        "enum": [
+                            "ADT",
+                            "CHD",
+                            "INF"
+                        ],
+                        "example": "ADT"
+                    },
+                    "passengerQty": {
+                        "description": "Number of passengers of the given type.",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "fare": {
+                        "description": "Base fare amount",
+                        "type": "number",
+                        "format": "double",
+                        "example": 150
+                    },
+                    "currency": {
+                        "description": "ISO currency code",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "discount": {
+                        "description": "Discount amount",
+                        "type": "number",
+                        "format": "double",
+                        "example": 5
+                    },
+                    "totalTaxes": {
+                        "description": "Total taxes amount",
+                        "type": "number",
+                        "format": "double",
+                        "example": 20
+                    },
+                    "serviceFee": {
+                        "description": "Service fee amount",
+                        "type": "number",
+                        "format": "double",
+                        "example": 10
+                    },
+                    "total": {
+                        "description": "Total amount for the passenger, including taxes and service fee.",
+                        "type": "number",
+                        "format": "double",
+                        "example": 180
+                    },
+                    "taxes": {
+                        "description": "Tax details",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Tax"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AirSegment": {
+                "description": "Air flight segment",
+                "required": [
+                    "origin",
+                    "destination",
+                    "carrier",
+                    "flightNumber",
+                    "bookingClass",
+                    "departure",
+                    "arrival"
+                ],
+                "properties": {
+                    "arrival": {
+                        "description": "Arrival date and time. Format: `YYYY-MM-DD HH:MM:SS`",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-30 16:25:00"
+                    },
+                    "arrivalTerminal": {
+                        "description": "Arrival airport terminal code",
+                        "type": "string",
+                        "example": "1",
+                        "nullable": true
+                    },
+                    "baggage": {
+                        "description": "Baggage allowance",
+                        "type": "string",
+                        "example": "20KG",
+                        "nullable": true
+                    },
+                    "carryOn": {
+                        "description": "Carry on allowance",
+                        "type": "string",
+                        "example": "8KG",
+                        "nullable": true
+                    },
+                    "bookingClass": {
+                        "description": "Booking class code",
+                        "type": "string",
+                        "example": "S"
+                    },
+                    "serviceClass": {
+                        "description": "Service class code. `Y` - Economy, `B` - Business, `F` - First Class",
+                        "type": "string",
+                        "enum": [
+                            "Y",
+                            "B",
+                            "F"
+                        ],
+                        "example": "Y"
+                    },
+                    "carrier": {
+                        "description": "Marketing carrier IATA code",
+                        "type": "string",
+                        "example": "LH"
+                    },
+                    "departure": {
+                        "description": "Departure date and time. Format: `YYYY-MM-DD HH:MM:SS`",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-11-30 20:05:00"
+                    },
+                    "departureTerminal": {
+                        "description": "Departure airport terminal code",
+                        "type": "string",
+                        "example": "E",
+                        "nullable": true
+                    },
+                    "destination": {
+                        "description": "Arrival airport IATA code",
+                        "type": "string",
+                        "example": "LON"
+                    },
+                    "layover": {
+                        "description": "Layover time before the next flight, in minutes",
+                        "type": "integer",
+                        "example": 90
+                    },
+                    "duration": {
+                        "description": "Flight duration, in minutes",
+                        "type": "integer",
+                        "example": 180
+                    },
+                    "equipment": {
+                        "description": "Equipment IATA code",
+                        "type": "string",
+                        "example": "333",
+                        "nullable": true
+                    },
+                    "fareBasis": {
+                        "description": "Fare basis",
+                        "type": "string",
+                        "example": "SOWEU",
+                        "nullable": true
+                    },
+                    "flightNumber": {
+                        "description": "Flight number",
+                        "type": "string",
+                        "example": "370"
+                    },
+                    "notValidBefore": {
+                        "description": "Validity start date",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-11-30",
+                        "nullable": true
+                    },
+                    "notValidAfter": {
+                        "description": "Validity end date",
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-11-30",
+                        "nullable": true
+                    },
+                    "origin": {
+                        "description": "Departure airport IATA code",
+                        "type": "string",
+                        "example": "LON"
+                    },
+                    "operatingCarrier": {
+                        "description": "Operation carrier IATA code",
+                        "type": "string",
+                        "example": "BA",
+                        "nullable": true
+                    },
+                    "seatsAvailable": {
+                        "description": "Available seats in class",
+                        "type": "integer",
+                        "example": "9",
+                        "nullable": true
+                    },
+                    "status": {
+                        "description": "Segment status",
+                        "type": "string",
+                        "example": "HK",
+                        "nullable": true
+                    },
+                    "legNumber": {
+                        "description": "Leg number",
+                        "type": "integer",
+                        "example": "1",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Tax": {
+                "description": "Tax details",
+                "properties": {
+                    "code": {
+                        "description": "Tax code",
+                        "type": "string",
+                        "example": "UJ"
+                    },
+                    "currency": {
+                        "description": "ISO currency code",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "amount": {
+                        "description": "Tax amount amount",
+                        "type": "number",
+                        "format": "double",
+                        "example": 20
+                    }
+                },
+                "type": "object"
+            },
+            "UserData": {
+                "description": "System user data",
+                "properties": {
+                    "id": {
+                        "description": "User ID",
+                        "type": "integer",
+                        "example": "123"
+                    },
+                    "name": {
+                        "description": "User name",
+                        "type": "string",
+                        "example": "John Doe"
+                    }
+                },
+                "type": "object"
+            },
+            "Order": {
+                "description": "Order object used for storing and controlling services",
+                "properties": {
+                    "id": {
+                        "description": "Order number",
+                        "type": "integer",
+                        "example": "123"
+                    },
+                    "clientId": {
+                        "description": "ID of a client",
+                        "type": "integer",
+                        "example": "1"
+                    },
+                    "client": {
+                        "description": "Client name",
+                        "type": "string",
+                        "example": "ABC Travel"
+                    },
+                    "currency": {
+                        "description": "Currency 3-letter ISO code",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "price": {
+                        "description": "Currency 3-letter ISO code",
+                        "type": "number",
+                        "format": "float",
+                        "example": "1100.00"
+                    },
+                    "status": {
+                        "description": "Order status. Possible statuses:\n- `draft` - order is created but not issued yet\n- `issued` - order is issued\n- `cancelled` - order is cancelled by the client\n- `refunded` - order is refunded by the client\n- `void` - order is voided by the client\n- `expired` - order was not issued before the time-limit\n- `pending-issue` - order being issued by the system\n- `partially-refunded` - order is partially refunded",
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "issued"
+                        ],
+                        "example": "draft"
+                    },
+                    "createdBy": {
+                        "$ref": "#/components/schemas/UserData"
+                    },
+                    "createdAt": {
+                        "description": "Order creation date.  Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-11-10 13:10:00"
+                    },
+                    "updatedAt": {
+                        "description": "Order last updated date.  Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-11-11 16:30:00"
+                    },
+                    "issuedAt": {
+                        "description": "Order issue date date.  Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-11-11 16:30:00",
+                        "nullable": true
+                    },
+                    "services": {
+                        "description": "Services details",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderService"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "OrderService": {
+                "description": "Order service object",
+                "properties": {
+                    "serviceId": {
+                        "description": "Service ID",
+                        "type": "integer",
+                        "example": "123"
+                    },
+                    "type": {
+                        "description": "Service Type",
+                        "type": "string",
+                        "enum": [
+                            "avia",
+                            "rail",
+                            "hotel"
+                        ],
+                        "example": "avia"
+                    },
+                    "currency": {
+                        "description": "Currency 3-letter ISO code",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "price": {
+                        "description": "Currency 3-letter ISO code",
+                        "type": "number",
+                        "format": "float",
+                        "example": "1100.00"
+                    },
+                    "status": {
+                        "description": "Service Status. . Possible statuses:\n- `new` - service is created but not issued yet\n- `issued` - service is issued\n- `cancelled` - service is cancelled by the client\n- `refunded` - service is refunded by the client\n- `void` - service is voided by the client\n- `expired` - service was not issued before the time-limit\n- `partially-refunded` - service is partially refunded",
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "issued",
+                            "expired",
+                            "cancelled",
+                            "void",
+                            "refunded",
+                            "partially-refunded",
+                            "pre-booking",
+                            "rejected"
+                        ],
+                        "example": "new"
+                    },
+                    "reservation": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AviaReservation"
+                            }
+                        ]
+                    },
+                    "createdAt": {
+                        "description": "Order creation date.  Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-11-10 13:10:00"
+                    },
+                    "updatedAt": {
+                        "description": "Order last updated date.  Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-11-11 16:30:00"
+                    }
+                },
+                "type": "object"
+            },
+            "AirSearchData": {
+                "required": [
+                    "currency"
+                ],
+                "properties": {
+                    "currency": {
+                        "description": "Currency code",
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "options": {
+                        "description": "Options",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/BaseAirOption"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "BaseApiResponse": {
+                "required": [
+                    "status",
+                    "message"
+                ],
+                "properties": {
+                    "status": {
+                        "description": "Response status",
+                        "type": "string",
+                        "enum": [
+                            "success",
+                            "error"
+                        ],
+                        "example": "success"
+                    },
+                    "message": {
+                        "description": "Response message. Contains error message if error occurred",
+                        "type": "string",
+                        "example": "Success"
+                    }
+                },
+                "type": "object"
+            },
+            "AirSearchRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/AirSearchData"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "RuleCategory": {
+                "description": "Rules for a single category",
+                "properties": {
+                    "id": {
+                        "description": "Category number",
+                        "type": "integer",
+                        "example": "50"
+                    },
+                    "category": {
+                        "description": "Category name",
+                        "type": "string",
+                        "example": "RULE APPLICATION AND OTHER CONDITIONS"
+                    },
+                    "text": {
+                        "description": "Category text description",
+                        "type": "string",
+                        "example": "NOTE - THE FOLLOWING TEXT IS INFORMATIONAL AND NOT\n|VALIDATED FOR AUTOPRICING.\nECONOMY SPECIAL FARES\nAPPLICATION\nAREA\nTHESE FARES APPLY WITHIN KAZAKHSTAN.\nCLASS OF SERVICE\nTHESE FARES APPLY FOR ECONOMY CLASS SERVICE.\nTYPES OF TRANSPORTATION\nTHIS RULE GOVERNS ONE-WAY AND ROUND-TRIP FARES.\nFARES GOVERNED BY THIS RULE CAN BE USED TO CREATE\nONE-WAY/ROUND-TRIP/OPEN-JAW JOURNEYS.\nOTHER CONDITIONS\nLIGHT BRAND GROUP. PREFIX\n-SO\nOFFERED FOR FREE-\n1.CARRY ON HAND BAGGAGE -MAX\nWEIGHT 5 KG\nSIZE 55/40/25\nCM\nEFFECTIVE 06OCT2025 CARRY ON HAND\nBAGGAGE ALLOWANCE 10 KG.\n2. PREFERABLE SEAT\nSELECTION   1/2/3/EXIT ROW/\nMIDDLE AND AISLE SEAT OFFERED\nFOR A CHARGE\n3. NONREFUNDABLE\nTICKET\n4. REBOOKING WITH\nPENALTY\n6. BAGGAGE OFFERED FOR A\nCHARGE\n7. PIECE OF EXTRA CARRY ON HAND\nBAGGAGE\nOFFERED FOR A CHARGE\n8.FOR SPECIAL PROMOTIONAL FARES\nWITH BOOKING CODE\nAIOQSPRXEL-  CHILD DISCOUNTS NOT\nOFFERED."
+                    }
+                },
+                "type": "object"
+            },
+            "FareRule": {
+                "description": "Fare rule for a flight",
+                "properties": {
+                    "flight": {
+                        "description": "Flight Origin-Destination, Carrier and Flight Number",
+                        "type": "string",
+                        "example": "LHR-CDG QR-100"
+                    },
+                    "fareBasis": {
+                        "description": "Fare basis code",
+                        "type": "string",
+                        "example": "YSO"
+                    },
+                    "categories": {
+                        "description": "Rule categories",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RuleCategory"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "FareRulesRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "description": "Fare rules",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/FareRule"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "FareFamiliesRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "description": "Options with fare family",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/BaseAirOption"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "BrandsRQ": {
+                "required": [
+                    "searchID",
+                    "optionID"
+                ],
+                "properties": {
+                    "optionID": {
+                        "description": "Option ID.",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "2ef37c5a-336f-4202-a6c4-962191749f55"
+                    }
+                },
+                "type": "object"
+            },
+            "BrandsRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/BrandsData"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "BookRequestType": {
+                "required": [
+                    "optionID",
+                    "email",
+                    "countryCode",
+                    "phoneNumber"
+                ],
+                "properties": {
+                    "optionID": {
+                        "description": "Option ID.",
+                        "type": "string",
+                        "example": "4jCa8CMQTyhmLn2rucMAfCVWKMgZVxuJTodmRhjYrs7T7YtNnBkigfH3TggwTt31NJTcJUDviUqmkDX1pWd3tbzgDUUp2qbWt7Sp"
+                    },
+                    "email": {
+                        "description": "Primary contact email address",
+                        "type": "string",
+                        "format": "email",
+                        "example": "ivan.pupkin@example.com"
+                    },
+                    "countryCode": {
+                        "description": "Phone country code. No leading `+`",
+                        "type": "string",
+                        "format": "integer",
+                        "example": "7, 998, 996"
+                    },
+                    "phoneNumber": {
+                        "description": "Phone number",
+                        "type": "string",
+                        "format": "integer",
+                        "example": "7011234567"
+                    },
+                    "passengers": {
+                        "description": "Passengers for the reservation",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AirPassenger"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "OrderInfo": {
+                "properties": {
+                    "orderID": {
+                        "description": "Order ID",
+                        "type": "integer",
+                        "example": 123456789
+                    }
+                },
+                "type": "object"
+            },
+            "BookRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/OrderInfo"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "OptionDetailsRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/BaseAirOption"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "PNRPassenger": {
+                "properties": {
+                    "lastName": {
+                        "description": "Passenger's last name",
+                        "type": "string",
+                        "example": "PUPKIN"
+                    },
+                    "firstName": {
+                        "description": "Passenger's first name",
+                        "type": "string",
+                        "example": "IVAN"
+                    },
+                    "title": {
+                        "description": "Passenger's title",
+                        "type": "string",
+                        "enum": [
+                            "MR",
+                            "MRS",
+                            "MS"
+                        ],
+                        "example": "MR",
+                        "nullable": true
+                    },
+                    "type": {
+                        "description": "Passenger type",
+                        "type": "string",
+                        "enum": [
+                            "ADT",
+                            "CHD",
+                            "INF"
+                        ],
+                        "example": "ADT",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PNRSegment": {
+                "properties": {
+                    "origin": {
+                        "description": "Origin location IATA code",
+                        "type": "string",
+                        "example": "LHR"
+                    },
+                    "destination": {
+                        "description": "Destination location IATA code",
+                        "type": "string",
+                        "example": "PAR"
+                    },
+                    "carrier": {
+                        "description": "Marketing Airline code",
+                        "type": "string",
+                        "example": "LH"
+                    },
+                    "operatingCarrier": {
+                        "description": "Operating Airline code",
+                        "type": "string",
+                        "example": "LH"
+                    },
+                    "flightNumber": {
+                        "description": "Flight number",
+                        "type": "string",
+                        "example": "1234"
+                    },
+                    "bookingClass": {
+                        "description": "Booking class",
+                        "type": "string",
+                        "example": "Y"
+                    },
+                    "departure": {
+                        "description": "Departure date and time; Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-08-30 15:40:00"
+                    },
+                    "arrival": {
+                        "description": "Departure date and time; Format: `yyyy-MM-dd HH:mm:ss`",
+                        "type": "string",
+                        "example": "2025-08-30 17:20:00"
+                    },
+                    "fareBasis": {
+                        "description": "Fare basis code",
+                        "type": "string",
+                        "example": "YOW",
+                        "nullable": true
+                    },
+                    "baggage": {
+                        "description": "Baggage information",
+                        "type": "string",
+                        "example": "2PC",
+                        "nullable": true
+                    },
+                    "departureTerminal": {
+                        "description": "Departure terminal",
+                        "type": "string",
+                        "example": "1",
+                        "nullable": true
+                    },
+                    "arrivalTerminal": {
+                        "description": "Arrival terminal",
+                        "type": "string",
+                        "example": "2",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PNRDetailsRS": {
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "success",
+                            "error"
+                        ],
+                        "example": "success"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Success"
+                    },
+                    "data": {
+                        "properties": {
+                            "price": {
+                                "type": "number",
+                                "example": 10000
+                            },
+                            "segments": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PNRSegment"
+                                }
+                            },
+                            "passengers": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PNRPassenger"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginData": {
+                "description": "Login response data",
+                "required": [
+                    "token",
+                    "currency"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Auth token",
+                        "type": "string",
+                        "example": "bWMPeJ3t1ymrdhJxaZwBAZoNzbYvQXP7"
+                    },
+                    "currency": {
+                        "description": "Customer default currency",
+                        "type": "string",
+                        "example": "USD"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginRS": {
+                "description": "Login response",
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/LoginData"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "LoginRQ": {
+                "description": "Login request used for authentication",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "description": "User's email",
+                        "type": "string",
+                        "format": "email",
+                        "example": "test@example.com"
+                    },
+                    "password": {
+                        "description": "User's password",
+                        "type": "string",
+                        "example": "abc123"
+                    }
+                },
+                "type": "object"
+            },
+            "GetOrderRS": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BaseApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "description": "Order data",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "ServiceCancelRQ": {
+                "description": "    Service Cancel request used for Cancelling a PNR.",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Service ID",
+                        "type": "integer",
+                        "example": "123"
+                    }
+                },
+                "type": "object"
+            },
+            "OrderIssueRQ": {
+                "description": "Order Issue request used for issuing PNRs in an order",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Order ID",
+                        "type": "integer",
+                        "example": "123"
+                    }
+                },
+                "type": "object"
+            },
+            "ServiceVoidRQ": {
+                "description": "    Service VOID request used for VOIDing a service.',",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Service ID",
+                        "type": "integer",
+                        "example": "123"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "apiKey",
+                "description": "API key for authentication. Example: `Bearer bWMPeJ3t1ymrdhJxaZwBAZoNzbYvQXP7ksjbdasd`",
+                "name": "X-API-KEY",
+                "in": "header"
+            }
+        }
+    },
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Air",
+            "description": "Air content search & book features"
+        },
+        {
+            "name": "Auth",
+            "description": "Authentication related features"
+        },
+        {
+            "name": "Order",
+            "description": "Order-related features"
+        }
+    ]
+}

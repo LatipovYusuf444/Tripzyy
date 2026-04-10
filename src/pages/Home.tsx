@@ -13,19 +13,14 @@ import {
   Send,
   Ticket,
   UsersRound,
+  X,
 } from "lucide-react"
 import type { ReactNode } from "react"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
-import amsterdamImage from "@/assets/SHaharlar/amsterdam.webp"
-import dubaiImage from "@/assets/SHaharlar/dubai-marina-cityscape-skyline-skyscrapers-buildings-city-2560x1440-4870.jpg"
-import spainImage from "@/assets/SHaharlar/Espania.webp"
-import germanyImage from "@/assets/SHaharlar/germany.webp"
-import parisImage from "@/assets/SHaharlar/parij.webp"
-import sharmImage from "@/assets/SHaharlar/sharm el sheikh.webp"
-import turkeyImage from "@/assets/SHaharlar/turkey.jpg"
+import heroBackdropImage from "@/assets/images/foto.jpg"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
@@ -58,16 +53,6 @@ const HOME_PRIORITY_AIRPORT_CODES = [
   "BKK",
   "SSH",
   "CDG",
-] as const
-
-const cityCarouselSlides = [
-  { image: amsterdamImage, name: "Amsterdam" },
-  { image: dubaiImage, name: "Dubai" },
-  { image: spainImage, name: "Spain" },
-  { image: germanyImage, name: "Germany" },
-  { image: parisImage, name: "Paris" },
-  { image: sharmImage, name: "Sharm El Sheikh" },
-  { image: turkeyImage, name: "Istanbul" },
 ] as const
 
 const getDefaultHomeDate = () => {
@@ -140,7 +125,6 @@ export default function Home() {
     { from: "", to: "", date: "" },
   ])
   const [openMultiDateIndex, setOpenMultiDateIndex] = useState<number | null>(null)
-  const [activeCitySlide, setActiveCitySlide] = useState(0)
   const copy = {
     uz: {
       titleLines: ["Xalqaro avia qatnovlar", "va tezkor reyslar"],
@@ -461,8 +445,8 @@ export default function Home() {
       subtitle: "Xalqaro reyslar, tezkor bron va bir joyda jamlangan aeroport yo'nalishlari",
       learnMore: "Batafsil",
       tripModes: [
-        { key: "round" as const, label: "Borib-kelish" },
         { key: "oneway" as const, label: "Bir tomonga" },
+        { key: "round" as const, label: "Borib-kelish" },
         { key: "multi" as const, label: "Ko'p shahar" },
       ],
       guestCabin: "Yo'lovchi va klass",
@@ -495,8 +479,8 @@ export default function Home() {
       subtitle: "РњРµР¶РґСѓРЅР°СЂРѕРґРЅС‹Рµ СЂРµР№СЃС‹, Р±С‹СЃС‚СЂРѕРµ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёРµ Рё РІСЃРµ Р°СЌСЂРѕРїРѕСЂС‚РЅС‹Рµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РІ РѕРґРЅРѕРј РјРµСЃС‚Рµ",
       learnMore: "РџРѕРґСЂРѕР±РЅРµРµ",
       tripModes: [
-        { key: "round" as const, label: "РўСѓРґР°-РѕР±СЂР°С‚РЅРѕ" },
         { key: "oneway" as const, label: "Р’ РѕРґРЅСѓ СЃС‚РѕСЂРѕРЅСѓ" },
+        { key: "round" as const, label: "РўСѓРґР°-РѕР±СЂР°С‚РЅРѕ" },
         { key: "multi" as const, label: "РњСѓР»СЊС‚Рё-РіРѕСЂРѕРґ" },
       ],
       guestCabin: "РџР°СЃСЃР°Р¶РёСЂС‹ Рё РєР»Р°СЃСЃ",
@@ -527,8 +511,8 @@ export default function Home() {
       subtitle: "International flights, fast booking, and airport routes gathered in one place",
       learnMore: "Learn more",
       tripModes: [
-        { key: "round" as const, label: "Round trip" },
         { key: "oneway" as const, label: "One-way" },
+        { key: "round" as const, label: "Round trip" },
         { key: "multi" as const, label: "Multi-city" },
       ],
       guestCabin: "Passengers and Class",
@@ -619,14 +603,6 @@ export default function Home() {
         ? heroCopy.toPanelTitle
         : heroCopy.allAirports
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setActiveCitySlide((prev) => (prev + 1) % cityCarouselSlides.length)
-    }, 3200)
-
-    return () => window.clearInterval(timer)
-  }, [])
-
   const onSearch = () => {
     if (tripMode === "multi") {
       const trips = multiTrips
@@ -701,50 +677,42 @@ export default function Home() {
   return (
     <div className="overflow-x-hidden bg-[linear-gradient(180deg,#fffdf8_0%,#f7f3ea_22%,#f4efe5_100%)] text-[#1d2430] dark:bg-[linear-gradient(180deg,#0b1529_0%,#101d36_26%,#14253f_26%,#14253f_100%)] dark:text-white">
       <section className="relative overflow-visible">
-        <div className="relative min-h-[600px] overflow-visible pt-20 sm:min-h-[650px] md:pt-24 lg:min-h-[720px]">
+        <div className="relative min-h-[calc(100svh-88px)] overflow-visible pt-20 sm:min-h-[calc(100svh-92px)] md:pt-24 lg:min-h-[820px]">
           <div className="absolute inset-0 overflow-hidden">
-            {cityCarouselSlides.map((slide, index) => (
-              <div
-                key={slide.name}
-                className={[
-                  "absolute inset-0 transition-all duration-1000 ease-out",
-                  index === activeCitySlide ? "opacity-100 scale-100" : "opacity-0 scale-105",
-                ].join(" ")}
-              >
-                <img
-                  src={slide.image}
-                  alt={slide.name}
-                  className="h-full w-full object-cover object-center"
-                />
-              </div>
-            ))}
+            <img
+              src={heroBackdropImage}
+              alt="Tripzy travel background"
+              className="h-full w-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(7,20,41,0.10)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(243,247,252,0.18)_0%,rgba(243,247,252,0.05)_18%,rgba(13,41,74,0.08)_55%,rgba(9,24,43,0.16)_100%)]" />
           </div>
           <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-3 sm:px-6 lg:px-8">
-            <div className="flex min-h-[500px] w-full items-center justify-center pt-14 sm:min-h-[500px] sm:pt-12 md:min-h-[560px] md:pt-14">
+            <div className="flex min-h-[560px] w-full items-center justify-center pt-14 sm:min-h-[620px] sm:pt-12 md:min-h-[680px] md:pt-14">
             <motion.div
               initial={{ opacity: 0, y: 38 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.62, delay: 0.36, ease: "easeOut" }}
               className="relative w-full max-w-[1780px] md:-translate-y-12"
             >
-              <div className="absolute left-1/2 top-[-30px] z-10 flex w-[calc(100%-20px)] max-w-[560px] -translate-x-1/2 items-center justify-between rounded-full border border-[#d5d8de] bg-white p-1 shadow-[0_10px_24px_rgba(17,24,39,0.08)] sm:top-[-34px] sm:inline-flex sm:w-auto sm:justify-start sm:p-1.5">
+              <div className="absolute left-1/2 top-[-38px] z-10 flex w-[calc(100%-32px)] max-w-[440px] -translate-x-1/2 items-center justify-between gap-0.5 rounded-full border border-[#e2e8f2] bg-white p-1 shadow-[0_4px_16px_rgba(15,23,42,0.10)] sm:top-[-40px] sm:inline-flex sm:w-auto sm:justify-start">
                 {heroCopy.tripModes.map((mode) => (
                   <button
                     key={mode.key}
                     type="button"
                     onClick={() => setTripMode(mode.key)}
                     className={[
-                      "rounded-full px-3 py-2.5 text-[12px] font-semibold transition sm:px-7 sm:py-3 sm:text-[14px]",
+                      "rounded-full px-4 py-2 text-[11px] font-semibold transition sm:px-6 sm:py-2.5 sm:text-[13px]",
                       tripMode === mode.key
-                        ? "bg-[#334e5e] text-white shadow-[0_10px_24px_rgba(51,78,94,0.24)]"
-                        : "text-[#697386] hover:text-[#263442]",
+                        ? "bg-[linear-gradient(135deg,#1ea8ef_0%,#0a8fd4_100%)] text-white shadow-[0_6px_18px_rgba(10,147,222,0.32)]"
+                        : "text-[#7a8fa8] hover:text-[#1d2430]",
                     ].join(" ")}
                   >
                     {searchUiCopy.tripModes[mode.key]}
                   </button>
                 ))}
               </div>
-              <div className="rounded-[24px] bg-white p-2 shadow-[0_24px_70px_rgba(9,15,23,0.18)] sm:rounded-[22px] sm:p-3 md:rounded-[24px] md:p-3.5">
+              <div className="rounded-[20px] border border-[#dde4ef] bg-white p-1.5 shadow-[0_8px_32px_rgba(15,23,42,0.12)]">
               {tripMode === "multi" ? (
                 <div className="space-y-5">
                   {multiTrips.map((trip, index) => (
@@ -780,7 +748,6 @@ export default function Home() {
                             setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, to: value } : item))
                           }
                           icon={<PlaneLanding size={18} />}
-                          swapIcon
                           onActivate={() => {
                             setCalendarOpen(false)
                             setOpenMultiDateIndex(null)
@@ -790,7 +757,7 @@ export default function Home() {
                           useInlinePanel
                           active={activeAirportField === `multi-${index}-to`}
                         />
-                        <div className="relative flex min-h-[72px] flex-col justify-center rounded-[18px] border border-[#e2e7ef] bg-[#f8fafc] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] xl:min-h-[76px]">
+                        <div className="relative flex min-h-[82px] flex-col justify-center rounded-[22px] border border-[#e3eaf3] bg-[linear-gradient(180deg,#fbfdff_0%,#f3f8ff_100%)] px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] xl:min-h-[84px]">
                           <button
                             type="button"
                             onClick={() => {
@@ -800,13 +767,13 @@ export default function Home() {
                             }}
                             className="text-left"
                           >
-                            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#334e6a]">
-                              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#efe3c7] text-[#b28743]">
+                            <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#5a6f8d]">
+                              <span className="grid h-9 w-9 place-items-center rounded-full bg-[linear-gradient(180deg,#eef6ff_0%,#e7f0fb_100%)] text-[#4593d8]">
                                 <CalendarDays size={16} />
                               </span>
                               <span>{copy.date}</span>
                             </div>
-                            <div className="mt-1 text-[16px] font-medium text-[#66758a]">
+                            <div className="mt-2 text-[16px] font-semibold text-[#41546c]">
                               {trip.date ? formatDisplayDate(trip.date) : heroCopy.addDates}
                             </div>
                           </button>
@@ -868,13 +835,13 @@ export default function Home() {
               ) : (
                 <div
                   className={[
-                    "relative overflow-visible rounded-[20px] border border-[#d9e1ec] bg-white shadow-[0_18px_46px_rgba(15,23,42,0.12)] grid items-stretch divide-y divide-[#e4eaf2] sm:rounded-[22px] xl:divide-y-0 xl:divide-x",
+                    "relative overflow-visible rounded-[14px] border border-[#e8edf4] bg-white grid items-stretch divide-y divide-[#e8edf4] xl:divide-y-0 xl:divide-x",
                     tripMode === "round"
-                      ? "xl:grid-cols-[2.3fr_0.9fr_0.9fr_0.85fr_220px]"
-                      : "xl:grid-cols-[2.4fr_0.9fr_0.85fr_220px]",
+                      ? "xl:grid-cols-[2.15fr_0.72fr_0.72fr_0.72fr_200px]"
+                      : "xl:grid-cols-[2.2fr_0.72fr_0.72fr_200px]",
                   ].join(" ")}
                 >
-                  <div className="relative grid items-stretch divide-y divide-[#e4eaf2] xl:grid-cols-2 xl:divide-x xl:divide-y-0">
+                  <div className="relative grid items-stretch divide-y divide-[#e8edf4] xl:grid-cols-2 xl:divide-x xl:divide-y-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -884,7 +851,7 @@ export default function Home() {
                         setTo(nextTo)
                         setActiveAirportField(null)
                       }}
-                      className="absolute left-1/2 top-1/2 z-10 hidden h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d8dee8] bg-white text-[#9da8b8] shadow-[0_10px_24px_rgba(15,23,42,0.14)] xl:flex"
+                      className="absolute left-1/2 top-1/2 z-10 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#dde8f4] bg-white text-[#18a0ea] shadow-[0_4px_12px_rgba(15,23,42,0.10)] transition hover:bg-[#f0f7ff] xl:flex"
                     >
                       <ArrowRightLeft size={18} />
                     </button>
@@ -935,23 +902,16 @@ export default function Home() {
                     icon={<UsersRound size={20} className="text-[#18a0ea]" />}
                     compact
                   />
-                  <div className="relative flex min-h-[74px] flex-col justify-center bg-transparent px-6 py-3">
+                  <div className="relative flex min-h-[58px] items-center bg-transparent px-4 sm:px-5">
                     <button type="button" onClick={() => {
                       setActiveAirportField(null)
                       setOpenMultiDateIndex(null)
                       setCalendarOpen((prev) => !prev)
-                    }} className="text-left">
-                      <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#97a3b5]">
-                        <span className="inline-flex items-center gap-2.5">
-                          <span className="grid h-8 w-8 place-items-center text-[#18a0ea]">
-                            <CalendarDays size={20} />
-                          </span>
-                          <span>{searchUiCopy.depart}</span>
-                        </span>
-                      </div>
-                      <div className="mt-1 text-[15px] font-semibold text-[#111827] xl:text-[16px]">
-                        {date ? formatDisplayDate(date) : heroCopy.addDates}
-                      </div>
+                    }} className="flex w-full items-center justify-between gap-2">
+                      <span className={`text-[14px] font-medium ${date ? "text-[#1d2430]" : "text-[#9aacbf]"}`}>
+                        {date ? formatDisplayDate(date) : searchUiCopy.depart}
+                      </span>
+                      <CalendarDays size={17} className="shrink-0 text-[#18a0ea]" />
                     </button>
                     {calendarOpen ? (
                       <FareCalendarPicker
@@ -968,7 +928,7 @@ export default function Home() {
                     ) : null}
                   </div>
                   {tripMode === "round" ? (
-                    <div className="relative flex min-h-[74px] flex-col justify-center bg-transparent px-6 py-3">
+                    <div className="relative flex min-h-[58px] items-center bg-transparent px-4 sm:px-5">
                       <button
                         type="button"
                         onClick={() => {
@@ -977,19 +937,12 @@ export default function Home() {
                           setCalendarOpen(false)
                           setOpenMultiDateIndex(-2)
                         }}
-                        className="text-left"
+                        className="flex w-full items-center justify-between gap-2"
                       >
-                        <div className="flex items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#97a3b5]">
-                          <span className="inline-flex items-center gap-2.5">
-                            <span className="grid h-8 w-8 place-items-center text-[#18a0ea]">
-                              <CalendarDays size={20} />
-                            </span>
-                            <span>{searchUiCopy.return}</span>
-                          </span>
-                        </div>
-                        <div className="mt-1 text-[15px] font-semibold text-[#111827] xl:text-[16px]">
-                          {returnDate ? formatDisplayDate(returnDate) : heroCopy.addDates}
-                        </div>
+                        <span className={`text-[14px] font-medium ${returnDate ? "text-[#1d2430]" : "text-[#9aacbf]"}`}>
+                          {returnDate ? formatDisplayDate(returnDate) : searchUiCopy.return}
+                        </span>
+                        <CalendarDays size={17} className="shrink-0 text-[#18a0ea]" />
                       </button>
                       {openMultiDateIndex === -2 ? (
                         <FareCalendarPicker
@@ -1012,7 +965,7 @@ export default function Home() {
                       setActiveAirportField(null)
                       onSearch()
                     }}
-                    className="inline-flex min-h-[64px] items-center justify-center rounded-b-[18px] bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-6 text-[16px] font-bold text-white shadow-[0_16px_34px_rgba(15,154,231,0.24)] transition hover:brightness-105 sm:min-h-[70px] sm:text-[17px] xl:min-h-full xl:rounded-none xl:rounded-r-[20px]"
+                    className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-b-[12px] bg-[linear-gradient(135deg,#1ea8ef_0%,#0a93de_42%,#0b7fc8_100%)] px-8 text-[14px] font-bold tracking-wide text-white shadow-[0_8px_22px_rgba(10,147,222,0.32)] transition hover:brightness-110 sm:text-[15px] xl:min-h-full xl:rounded-none xl:rounded-r-[12px]"
                     whileHover={{ y: -1, scale: 1.01 }}
                     whileTap={{ scale: 0.985 }}
                   >
@@ -1022,18 +975,18 @@ export default function Home() {
               )}
 
               {activeAirportField ? (
-                <div className="mt-3 overflow-hidden rounded-[24px] border border-[#dfe5ec] bg-white shadow-[0_20px_40px_rgba(17,24,39,0.10)]">
-                  <div className="flex items-center justify-between border-b border-[#edf1f5] px-6 py-4">
-                    <div className="text-[18px] font-medium text-[#243042]">{airportPanelTitle}</div>
+                <div className="mt-2 overflow-hidden rounded-[16px] border border-[#e2e8f2] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.10)]">
+                  <div className="flex items-center justify-between border-b border-[#eef2f7] px-4 py-2.5">
+                    <div className="text-[13px] font-semibold text-[#243042]">{airportPanelTitle}</div>
                     <button
                       type="button"
                       onClick={() => setActiveAirportField(null)}
-                      className="inline-flex items-center rounded-full border border-[#d8e0ea] px-3 py-1.5 text-sm font-semibold text-[#516276] transition hover:bg-[#f8fafc]"
+                      className="grid h-7 w-7 place-items-center rounded-full border border-[#e2e8f0] text-[#8090a8] transition hover:bg-[#f5f8fc] hover:text-[#1d2430]"
                     >
-                      {searchUiCopy.close}
+                      <X size={14} />
                     </button>
                   </div>
-                  <div className="max-h-[540px] overflow-y-auto px-6 py-2">
+                  <div className="max-h-[260px] overflow-y-auto px-2 py-1">
                     {airportPanelOptions.map((option) => (
                       <button
                         key={option.code}
@@ -1056,28 +1009,28 @@ export default function Home() {
                           }
                           setActiveAirportField(null)
                         }}
-                        className="flex w-full items-center justify-between gap-4 border-b border-[#eef2f6] py-4 text-left last:border-b-0 hover:bg-[#f8fafc]"
+                        className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-2.5 text-left transition hover:bg-[#f5f8fc]"
                       >
-                        <span className="flex min-w-0 items-center gap-4">
-                          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-[#f7f3ea] text-[#b28743]">
-                            <MapPinned size={20} />
+                        <span className="flex min-w-0 items-center gap-3">
+                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-[#eef4ff] text-[#18a0ea]">
+                            <MapPinned size={15} />
                           </span>
                           <span className="min-w-0">
-                            <span className="block truncate text-[18px] font-semibold text-[#162235]">
+                            <span className="block truncate text-[13px] font-semibold text-[#162235]">
                               {option.name}
                             </span>
-                            <span className="mt-1 block text-[15px] text-[#65748b]">
+                            <span className="block text-[11px] text-[#8090a8]">
                               {option.code}
                             </span>
                           </span>
                         </span>
-                        <span className="rounded-[8px] bg-[#edf2f7] px-4 py-2 text-sm font-semibold text-[#46627f]">
+                        <span className="shrink-0 rounded-[6px] bg-[#f0f4f9] px-2.5 py-1 text-[11px] font-semibold text-[#4a6080]">
                           {option.code}
                         </span>
                       </button>
                     ))}
                     {!airportPanelOptions.length ? (
-                      <div className="py-8 text-center text-[15px] text-[#66758a]">
+                      <div className="py-5 text-center text-[13px] text-[#8090a8]">
                         {searchUiCopy.airportNotFound}
                       </div>
                     ) : null}
@@ -1255,7 +1208,6 @@ function HomeAutocompleteField({
   options,
   onChange,
   icon,
-  swapIcon = false,
   onActivate,
   onDismiss,
   useInlinePanel = false,
@@ -1268,7 +1220,6 @@ function HomeAutocompleteField({
   options: LocationOption[]
   onChange: (value: string) => void
   icon?: ReactNode
-  swapIcon?: boolean
   onActivate?: () => void
   onDismiss?: () => void
   useInlinePanel?: boolean
@@ -1352,72 +1303,66 @@ function HomeAutocompleteField({
     <label
       className={[
         compact
-          ? "relative flex min-h-[68px] flex-col justify-center bg-transparent px-4 py-3 sm:min-h-[74px] sm:px-6"
-          : "relative flex min-h-[72px] flex-col justify-center rounded-[18px] border bg-[#f8fafc] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] xl:min-h-[76px]",
+          ? "relative flex min-h-[58px] items-center gap-3 bg-transparent px-4 sm:px-5"
+          : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
         compact
           ? active
-            ? "bg-[#f9fbfe]"
+            ? "bg-[#f5f9ff]"
             : ""
           : active
-            ? "border-[#243a52] shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_0_0_1px_rgba(36,58,82,0.04)]"
-            : "border-[#e2e7ef]",
+            ? "border-[#18a0ea]/50 shadow-[0_0_0_3px_rgba(24,160,234,0.08)]"
+            : "",
       ].join(" ")}
     >
-      {swapIcon && !compact ? (
-        <span className="pointer-events-none absolute -left-4 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-[#e2e7ef] bg-white text-[#9ca4b2] shadow-[0_8px_18px_rgba(17,24,39,0.10)] xl:grid">
-          <ArrowRightLeft size={15} />
-        </span>
-      ) : null}
-      <div className={`flex items-center gap-2.5 ${compact ? "text-[10px] font-semibold uppercase tracking-[0.04em] text-[#97a3b5] sm:tracking-[0.06em]" : "text-[10px] font-semibold uppercase tracking-[0.08em] text-[#334e6a]"}`}>
-        <span className={`grid ${compact ? "h-7 w-7 bg-transparent text-[#18a0ea] sm:h-8 sm:w-8" : "h-7 w-7 rounded-full bg-[#eef2f6] text-[#98a3b5]"} place-items-center`}>
-          {icon ?? <Search size={16} />}
-        </span>
-        <span>{label}</span>
+      <span className="shrink-0 text-[#18a0ea]">
+        {icon ?? <Search size={18} />}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <input
+          className="w-full bg-transparent text-[14px] font-medium text-[#1d2430] outline-none placeholder:text-[#9aacbf]"
+          placeholder={placeholder}
+          value={value}
+          onFocus={() => {
+            setOpen(true)
+            onActivate?.()
+          }}
+          onBlur={() =>
+            window.setTimeout(() => {
+              setOpen(false)
+              if (!useInlinePanel) onDismiss?.()
+            }, 120)
+          }
+          onKeyDown={(e) => {
+            if (!filteredOptions.length) return
+            if (e.key === "ArrowDown") {
+              e.preventDefault()
+              setOpen(true)
+              setActiveIndex((prev) => (prev + 1) % filteredOptions.length)
+            }
+            if (e.key === "ArrowUp") {
+              e.preventDefault()
+              setOpen(true)
+              setActiveIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length)
+            }
+            if (e.key === "Enter" && open) {
+              e.preventDefault()
+              pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
+            }
+            if (e.key === "Escape") {
+              setOpen(false)
+              onDismiss?.()
+            }
+          }}
+          onChange={(e) => {
+            onChange(e.target.value)
+            setOpen(true)
+            onActivate?.()
+          }}
+        />
+        {filteredOptions[0] && value.trim() ? (
+          <div className="text-[10px] font-semibold text-[#18a0ea]">{filteredOptions[0].code}</div>
+        ) : null}
       </div>
-      <input
-        className={`mt-1 w-full bg-transparent outline-none placeholder:text-[#8a95a8] ${compact ? "text-[14px] font-semibold text-[#111827] sm:text-[15px] xl:text-[16px]" : "text-[15px] font-medium text-[#66758a] xl:text-[16px]"}`}
-        placeholder={placeholder}
-        value={value}
-        onFocus={() => {
-          setOpen(true)
-          onActivate?.()
-        }}
-        onBlur={() =>
-          window.setTimeout(() => {
-            setOpen(false)
-            if (!useInlinePanel) onDismiss?.()
-          }, 120)
-        }
-        onKeyDown={(e) => {
-          if (!filteredOptions.length) return
-          if (e.key === "ArrowDown") {
-            e.preventDefault()
-            setOpen(true)
-            setActiveIndex((prev) => (prev + 1) % filteredOptions.length)
-          }
-          if (e.key === "ArrowUp") {
-            e.preventDefault()
-            setOpen(true)
-            setActiveIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length)
-          }
-          if (e.key === "Enter" && open) {
-            e.preventDefault()
-            pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
-          }
-          if (e.key === "Escape") {
-            setOpen(false)
-            onDismiss?.()
-          }
-        }}
-        onChange={(e) => {
-          onChange(e.target.value)
-          setOpen(true)
-          onActivate?.()
-        }}
-      />
-      {filteredOptions[0] && value.trim() ? (
-        <div className={`mt-0.5 font-semibold text-[#8d98aa] ${compact ? "text-[10px] sm:text-[11px]" : "text-[12px]"}`}>{filteredOptions[0].code}</div>
-      ) : null}
       {open && !useInlinePanel ? (
         <>
           <button
@@ -1462,6 +1407,7 @@ function PassengerField({
   icon?: ReactNode
   compact?: boolean
 }) {
+  void label
   const { language } = useI18n()
   const [open, setOpen] = useState(false)
   const copy = {
@@ -1488,23 +1434,22 @@ function PassengerField({
   }, [open])
 
   return (
-    <div className={compact ? "relative flex min-h-[68px] flex-col justify-center bg-transparent px-4 py-3 sm:min-h-[74px] sm:px-6" : "relative flex min-h-[72px] flex-col justify-center rounded-[18px] border border-[#e2e7ef] bg-[#f8fafc] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] xl:min-h-[76px]"}>
+    <div className={compact ? "relative flex min-h-[58px] items-center bg-transparent px-4 sm:px-5" : "relative flex min-h-[58px] items-center rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5"}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="text-left"
+        className="flex w-full items-center justify-between gap-2"
       >
-        <div className={`flex items-center justify-between ${compact ? "text-[10px] font-semibold uppercase tracking-[0.04em] text-[#97a3b5] sm:tracking-[0.06em]" : "text-[10px] font-semibold uppercase tracking-[0.08em] text-[#334e6a]"}`}>
-          <span className="inline-flex items-center gap-2.5">
-            <span className={`grid place-items-center ${compact ? "h-7 w-7 text-[#18a0ea] sm:h-8 sm:w-8" : "h-7 w-7 rounded-full bg-[#eef2f6] text-[#b28743]"}`}>
-              {icon ?? <UsersRound size={16} />}
-            </span>
-            <span>{label ?? safeCopy.passenger}</span>
+        <div className="flex items-center gap-3">
+          <span className="shrink-0 text-[#18a0ea]">
+            {icon ?? <UsersRound size={18} />}
           </span>
-          <ChevronDown size={16} className={`text-[#8d98aa] transition ${open ? "rotate-180" : ""}`} />
+          <div>
+            <div className="text-[14px] font-medium text-[#1d2430]">{valueLabel ?? `${pax} ${safeCopy.people}`}</div>
+            <div className="text-[11px] text-[#9aacbf]">{safeCopy.cabin}</div>
+          </div>
         </div>
-        <div className={`mt-1 ${compact ? "text-[14px] font-semibold text-[#111827] sm:text-[15px] xl:text-[16px]" : "text-[15px] font-semibold text-[#0f1b2e] xl:text-[16px]"}`}>{valueLabel ?? `${pax} ${safeCopy.people}`}</div>
-        <div className="text-[11px] text-[#8d98aa] sm:text-[12px]">{safeCopy.cabin}</div>
+        <ChevronDown size={15} className={`shrink-0 text-[#9aacbf] transition ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open ? (

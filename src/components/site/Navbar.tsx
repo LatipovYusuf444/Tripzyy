@@ -14,7 +14,12 @@ import {
 
 import { Button } from "@/components/ui/button"
 import logoImage from "@/assets/images/logo.png"
-import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
+import {
+  clearAccessToken,
+  getAccessToken,
+  getAuthUser,
+  type StoredAuthUser,
+} from "@/shared/auth/token"
 import { bookingCart } from "@/shared/store/bookingCart"
 import {
   getStoredTheme,
@@ -48,24 +53,26 @@ export default function Navbar() {
 
   const [open, setOpen] = useState(false)
   const [token, setToken] = useState<string | null>(() => getAccessToken())
+  const [user, setUser] = useState<StoredAuthUser | null>(() => getAuthUser())
   const [theme, setTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [paxCount, setPaxCount] = useState<number>(
     () => bookingCart.get().passengers.length
   )
-  const [isScrolled, setIsScrolled] = useState(false)
 
   const authed = useMemo(() => !!token, [token])
 
   useEffect(() => {
-    const onStorage = () => setToken(getAccessToken())
-    const onAuth = () => setToken(getAccessToken())
+    const syncAuthState = () => {
+      setToken(getAccessToken())
+      setUser(getAuthUser())
+    }
 
-    window.addEventListener("storage", onStorage)
-    window.addEventListener("tripzy-auth", onAuth as EventListener)
+    window.addEventListener("storage", syncAuthState)
+    window.addEventListener("tripzy-auth", syncAuthState as EventListener)
 
     return () => {
-      window.removeEventListener("storage", onStorage)
-      window.removeEventListener("tripzy-auth", onAuth as EventListener)
+      window.removeEventListener("storage", syncAuthState)
+      window.removeEventListener("tripzy-auth", syncAuthState as EventListener)
     }
   }, [])
 
@@ -105,15 +112,6 @@ export default function Navbar() {
     }
   }, [])
 
-  useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 28)
-
-    onScroll()
-    window.addEventListener("scroll", onScroll, { passive: true })
-
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
-
   const goAuth = () => {
     setOpen(false)
     navigate("/login")
@@ -127,10 +125,32 @@ export default function Navbar() {
   const logout = () => {
     clearAccessToken()
     setToken(null)
+    setUser(null)
     setOpen(false)
     window.dispatchEvent(new Event("tripzy-auth"))
     navigate("/login")
   }
+
+  const userInitials = useMemo(() => {
+    if (!user?.fullName) return "TZ"
+
+    return user.fullName
+      .split(" ")
+      .map((part) => part.trim()[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase()
+  }, [user])
+
+  const userAccountLabel =
+    language === "uz" ? "Akkaunt" : language === "ru" ? "Аккаунт" : "Account"
+  const userMemberLabel =
+    language === "uz"
+      ? "Tripzy a'zosi"
+      : language === "ru"
+        ? "Tripzy user"
+        : "Tripzy member"
 
   const onToggleTheme = () => {
     const nextTheme: SiteTheme = theme === "dark" ? "light" : "dark"
@@ -221,12 +241,9 @@ export default function Navbar() {
         initial={{ opacity: 0, y: -14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className={[
-          "w-full border-b border-[#d9dde4] bg-[rgba(240,243,247,0.92)] px-4 shadow-[0_8px_24px_rgba(37,55,89,0.04)] backdrop-blur-sm transition-[padding,background-color,box-shadow] duration-300 dark:border-[#38517f]/70 dark:bg-[rgba(8,18,38,0.50)] dark:shadow-[0_12px_32px_rgba(3,8,24,0.34)] md:px-5",
-          isScrolled ? "py-1.5 md:py-1" : "py-2.5 md:py-2",
-        ].join(" ")}
+        className="w-full border-b border-[#d9dde4] bg-[rgba(240,243,247,0.92)] px-4 py-1.5 shadow-[0_8px_24px_rgba(37,55,89,0.04)] backdrop-blur-sm transition-[background-color,box-shadow] duration-300 dark:border-[#38517f]/70 dark:bg-[rgba(8,18,38,0.50)] dark:shadow-[0_12px_32px_rgba(3,8,24,0.34)] md:px-5 md:py-1"
       >
-        <div className="mx-auto flex max-w-[1680px] items-center justify-between gap-3 lg:gap-4 2xl:max-w-[1820px]">
+        <div className="mx-auto flex !max-w-[1680px] items-center justify-between gap-4 lg:gap-8 2xl:max-w-[1820px]">
           <Link
             to="/"
             className="hidden shrink-0 items-center justify-center lg:flex"
@@ -236,15 +253,12 @@ export default function Navbar() {
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className={[
-                "block h-auto object-contain drop-shadow-[0_10px_24px_rgba(17,24,39,0.10)] transition-[width,filter] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)]",
-                isScrolled ? "w-[200px] xl:w-[258px]" : "w-[182px] xl:w-[194px]",
-              ].join(" ")}
+              className="block h-auto !w-[445px] origin-left scale-[1.8] object-contain drop-shadow-[0_10px_24px_rgba(17,24,39,0.10)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] xl:!w-[162px]"
             />
           </Link>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-between lg:flex">
-            <div className="flex min-w-0 items-center gap-5 xl:gap-6">
+          <div className="hidden min-w-0 flex-1 items-center lg:flex">
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-5 pl-20 xl:gap-6 xl:pl-24">
               {desktopLinks.map((link) => (
                 <NavItem
                   key={link.to}
@@ -252,12 +266,11 @@ export default function Navbar() {
                   label={link.label}
                   icon={link.icon}
                   badge={link.to === "/checkout" ? paxCount : 0}
-                  compact={isScrolled}
                 />
               ))}
             </div>
 
-            <div className="ml-4 flex shrink-0 items-center gap-2 xl:gap-2.5">
+            <div className="ml-6 flex shrink-0 items-center gap-2 xl:gap-2.5">
               <div className="flex items-center gap-1 rounded-full border border-[#dde4ee] bg-white/85 p-1 shadow-[0_8px_20px_rgba(17,24,39,0.06)] dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)]">
                 {(["uz", "ru", "en"] as const).map((lang) => (
                   <button
@@ -265,8 +278,7 @@ export default function Navbar() {
                     type="button"
                     onClick={() => setLanguage(lang)}
                     className={[
-                      "rounded-full px-2.5 text-[9px] font-semibold uppercase tracking-[0.08em] transition",
-                      isScrolled ? "py-0.5" : "py-1",
+                      "rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] transition",
                       language === lang
                         ? "bg-[#1c2433] text-white dark:bg-[#4b79ff]"
                         : "text-[#2a3140] hover:bg-[#f3f7fc] dark:text-white/80 dark:hover:bg-white/10",
@@ -281,10 +293,7 @@ export default function Navbar() {
                 type="button"
                 aria-label={copy.switchTheme}
                 onClick={onToggleTheme}
-                className={[
-                  "inline-flex items-center gap-1.5 rounded-full border border-[#dde4ee] bg-white/85 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#243042] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)] dark:hover:bg-[rgba(28,46,84,0.94)]",
-                  isScrolled ? "h-8" : "h-9",
-                ].join(" ")}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#dde4ee] bg-white/85 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#243042] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)] dark:hover:bg-[rgba(28,46,84,0.94)]"
               >
                 {theme === "dark" ? <SunMedium size={14} /> : <MoonStar size={14} />}
                 {theme === "dark" ? copy.themeLight : copy.themeDark}
@@ -296,10 +305,23 @@ export default function Navbar() {
                 </Button>
               ) : (
                 <div className="flex items-center gap-2.5">
-                  <Button onClick={goProfile} className={actionBtnClass}>
-                    <UserCircle2 className="mr-1.5" size={14} />
-                    {copy.profile}
-                  </Button>
+                  <button
+                    type="button"
+                    onClick={goProfile}
+                    className="group flex h-11 items-center gap-3 rounded-full border border-[#dde4ee] bg-white/88 px-3 pr-4 text-left shadow-[0_10px_24px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:hover:bg-[rgba(28,46,84,0.94)]"
+                  >
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#20304a_0%,#111827_100%)] text-[11px] font-bold uppercase tracking-[0.12em] text-white dark:bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)]">
+                      {userInitials}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a879a] dark:text-[#9fb4d7]">
+                        {userAccountLabel}
+                      </span>
+                      <span className="block max-w-[148px] truncate text-[13px] font-bold text-[#1d2430] dark:text-white">
+                        {user?.fullName || copy.profile}
+                      </span>
+                    </span>
+                  </button>
                   <Button onClick={logout} className={actionBtnClass}>
                     <LogOut className="mr-1.5" size={14} />
                     {copy.logout}
@@ -374,6 +396,29 @@ export default function Navbar() {
 
                 <div className="max-h-[calc(100svh-220px)] overflow-y-auto pr-1">
                   <div className="flex flex-col gap-2">
+                    {authed ? (
+                      <button
+                        type="button"
+                        onClick={goProfile}
+                        className="flex items-center gap-3 rounded-[20px] border border-[#e7edf6] bg-white/85 p-3 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)]"
+                      >
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#20304a_0%,#111827_100%)] text-sm font-bold uppercase tracking-[0.12em] text-white dark:bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)]">
+                          {userInitials}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a879c] dark:text-[#93abd0]">
+                            {userMemberLabel}
+                          </span>
+                          <span className="mt-1 block truncate text-[15px] font-bold text-[#1d2430] dark:text-white">
+                            {user?.fullName || copy.profile}
+                          </span>
+                          <span className="block truncate text-xs text-[#627188] dark:text-[#a9bddb]">
+                            {user?.email}
+                          </span>
+                        </span>
+                      </button>
+                    ) : null}
+
                     <div className="flex items-center gap-2 rounded-[18px] border border-[#e7edf6] bg-white/85 p-2 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)]">
                       {(["uz", "ru", "en"] as const).map((lang) => (
                         <button
@@ -459,6 +504,7 @@ export default function Navbar() {
                         onClick={goProfile}
                         className="h-12 rounded-[18px] border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_14px_32px_rgba(17,24,39,0.22)] hover:brightness-110"
                       >
+                        <UserCircle2 className="mr-1.5" size={15} />
                         {copy.profile}
                       </Button>
                       <Button
@@ -484,13 +530,11 @@ function NavItem({
   label,
   icon: Icon,
   badge = 0,
-  compact = false,
 }: {
   to: string
   label: string
   icon?: LucideIcon
   badge?: number
-  compact?: boolean
 }) {
   return (
     <NavLink
@@ -498,7 +542,7 @@ function NavItem({
       className={({ isActive }) =>
         [
           "group relative inline-flex items-center gap-1.5 whitespace-nowrap pb-1.5 font-semibold uppercase tracking-[0.12em] transition",
-          compact ? "text-[10px] xl:text-[11px]" : "text-[11px] xl:text-[12px]",
+          "text-[11px] xl:text-[12px]",
           isActive
             ? "text-[#111827] after:scale-x-100 after:opacity-100 dark:text-white"
             : "text-[#2d3544] hover:text-[#111827] after:scale-x-70 after:opacity-70 dark:text-white/78 dark:hover:text-white",

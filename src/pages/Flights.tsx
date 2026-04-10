@@ -16,6 +16,7 @@ import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetails
 import { formatMoney } from "@/lib/money"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
+import { getAccessToken } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 
 const luxuryBtn =
@@ -350,6 +351,7 @@ export default function Flights() {
       toPlaceholder: "Masalan: FRA yoki Frankfurt",
       openCalendar: "Narxli kalendarni ochish",
       classLabel: "Klass",
+      classNames: { Y: "Ekonom", C: "Biznes", F: "First" } as Record<string, string>,
       search: "Qidirish",
       searching: "Qidirilmoqda...",
       searchHint: "* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida minimal narxli kalendar ochiladi.",
@@ -439,6 +441,7 @@ export default function Flights() {
       toPlaceholder: "Например: IST или Frankfurt",
       openCalendar: "Открыть календарь цен",
       classLabel: "Класс",
+      classNames: { Y: "Эконом", C: "Бизнес", F: "Первый" } as Record<string, string>,
       search: "Поиск",
       searching: "Поиск...",
       searchHint: "* Можно вводить название города или IATA код, autocomplete сработает. В блоке даты открывается календарь минимальных цен из backend.",
@@ -528,6 +531,7 @@ export default function Flights() {
       toPlaceholder: "For example: FRA or Frankfurt",
       openCalendar: "Open price calendar",
       classLabel: "Class",
+      classNames: { Y: "Economy", C: "Business", F: "First" } as Record<string, string>,
       search: "Search",
       searching: "Searching...",
       searchHint: "* Enter a city name or IATA code to use autocomplete. The date block opens the minimum-price calendar from the backend.",
@@ -841,8 +845,7 @@ export default function Flights() {
   }, [])
 
   const runSearch = useCallback(async (criteria: SearchCriteria, showAlert: boolean) => {
-    const token =
-      localStorage.getItem("access_token") || sessionStorage.getItem("access_token")
+    const token = getAccessToken()
     const { from, to, date, pax, travelClass, trips } = criteria
     const payloadTrips = trips?.length
       ? trips
@@ -1215,7 +1218,7 @@ export default function Flights() {
                       <Ticket size={14} />
                       {copy.classLabel}
                     </div>
-                    <div className="mt-3 text-[24px] font-black">{travelClass}</div>
+                    <div className="mt-3 text-[24px] font-black">{copy.classNames[travelClass]}</div>
                   </div>
                 </div>
               </div>
@@ -1332,13 +1335,13 @@ export default function Flights() {
                       type="button"
                       onClick={() => setTravelClass(item)}
                       className={[
-                        "h-10 rounded-2xl border text-sm font-semibold transition",
+                        "h-10 rounded-2xl border text-[13px] font-semibold transition",
                         travelClass === item
                           ? `${luxuryBtn} border-[#1a2231]/10`
                           : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]",
                       ].join(" ")}
                     >
-                      {item}
+                      {copy.classNames[item]}
                     </button>
                   ))}
                 </div>
@@ -1598,6 +1601,8 @@ function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { 
   )
 }
 
+type FlightsCopy = any
+
 function AirlineGroupCard({
   group,
   expanded,
@@ -1611,7 +1616,7 @@ function AirlineGroupCard({
   expanded: boolean
   onToggle: () => void
   onPick: (flight: Flight) => void
-  copy: Record<string, string>
+  copy: FlightsCopy
   language: "uz" | "ru" | "en"
   formatRoute: (origin?: string, destination?: string) => string
 }) {
@@ -1677,7 +1682,7 @@ function AirlineOptionRow({
 }: {
   flight: Flight
   onPick: (flight: Flight) => void
-  copy: Record<string, string>
+  copy: FlightsCopy
   language: "uz" | "ru" | "en"
   formatRoute: (origin?: string, destination?: string) => string
 }) {
@@ -1731,7 +1736,7 @@ function AirlineOptionRow({
   )
 }
 
-function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: { flight: Flight; index: number; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; copy: Record<string, string> }) {
+function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: { flight: Flight; index: number; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; copy: FlightsCopy }) {
   const badge = getFlightBadge(flight, index, language)
   const firstSegment = flight.segments?.[0]
   const lastSegment = flight.segments?.[flight.segments.length - 1]
@@ -1946,4 +1951,3 @@ function SkeletonLine({ className = "" }: { className?: string }) {
     </motion.div>
   )
 }
-

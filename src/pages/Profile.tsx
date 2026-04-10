@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 import { formatUzPhoneInput } from "@/lib/phone"
-import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
+import { clearAccessToken, getAccessToken, getAuthUser } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 
 const primaryButtonClass =
@@ -40,7 +40,6 @@ export default function Profile() {
       missing: "Missing",
       support: "Support",
       premiumSupport: "24/7 Premium",
-      backendInfo: "Backend ulanganda bu yerga booking history, payment status va real user data chiqadi.",
       title: "Profil ma'lumotlari",
       desc: "Ma'lumotlaringizni yangilang va profilingizni tartibga keltiring.",
       cancel: "Cancel",
@@ -58,10 +57,6 @@ export default function Profile() {
       actions: "Tez amallar",
       actionsDesc: "Tahrirlashni yoqing, ism va telefonni yangilang, so'ng saqlang.",
       saveChanges: "Save changes",
-      backendConnected: "Backend ulanganda:",
-      meFetch: "user ma'lumotlarini olish",
-      mePatch: "name va phone update",
-      bookings: "bronlar tarixi",
     },
     ru: {
       saved: "Данные профиля сохранены",
@@ -74,7 +69,6 @@ export default function Profile() {
       missing: "Нет",
       support: "Поддержка",
       premiumSupport: "24/7 Premium",
-      backendInfo: "Когда backend подключится, здесь появятся история бронирований, статус оплаты и реальные данные пользователя.",
       title: "Данные профиля",
       desc: "Обновите информацию и приведите профиль в порядок.",
       cancel: "Отмена",
@@ -92,10 +86,6 @@ export default function Profile() {
       actions: "Быстрые действия",
       actionsDesc: "Включите редактирование, обновите имя и телефон, затем сохраните.",
       saveChanges: "Сохранить изменения",
-      backendConnected: "Когда backend подключится:",
-      meFetch: "получение данных пользователя",
-      mePatch: "обновление name и phone",
-      bookings: "история бронирований",
     },
     en: {
       saved: "Profile details saved",
@@ -108,7 +98,6 @@ export default function Profile() {
       missing: "Missing",
       support: "Support",
       premiumSupport: "24/7 Premium",
-      backendInfo: "When the backend is connected, booking history, payment status, and real user data will appear here.",
       title: "Profile details",
       desc: "Update your information and keep your profile organized.",
       cancel: "Cancel",
@@ -126,15 +115,12 @@ export default function Profile() {
       actions: "Quick actions",
       actionsDesc: "Enable editing, update your name and phone, then save.",
       saveChanges: "Save changes",
-      backendConnected: "When the backend is connected:",
-      meFetch: "fetch user data",
-      mePatch: "update name and phone",
-      bookings: "booking history",
     },
   }[language]
 
-  const [name, setName] = useState("Tripzy User")
-  const [email] = useState("user@tripzy.uz")
+  const storedUser = getAuthUser()
+  const [name, setName] = useState(storedUser?.fullName || "Tripzy User")
+  const [email] = useState(storedUser?.email || "user@tripzy.uz")
   const [phone, setPhone] = useState("+998")
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -203,10 +189,6 @@ export default function Profile() {
                 <InfoPill title={copy.token} value={token ? copy.available : copy.missing} accent="rose" icon={<ShieldCheck size={18} />} />
                 <InfoPill title={copy.support} value={copy.premiumSupport} accent="gold" icon={<Sparkles size={18} />} />
               </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-sm text-[#627188] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-[#a9bddb]">
-              {copy.backendInfo}
             </div>
           </motion.div>
 
@@ -278,17 +260,6 @@ export default function Profile() {
                     {loading ? "..." : copy.saveChanges}
                   </button>
                 </div>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-2xl border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-sm text-[#627188] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-[#a9bddb]">
-              {copy.backendConnected}
-              <div className="mt-2 text-xs leading-relaxed text-[#7b8aa0] dark:text-[#93abd0]">
-                - GET <span className="font-semibold text-[#1d2430]">/me</span> → {copy.meFetch}
-                <br />
-                - PATCH <span className="font-semibold text-[#1d2430]">/me</span> → {copy.mePatch}
-                <br />
-                - GET <span className="font-semibold text-[#1d2430]">/bookings</span> → {copy.bookings}
               </div>
             </div>
           </motion.div>
