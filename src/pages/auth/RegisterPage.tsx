@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Lock,
   Mail,
   User,
 } from "lucide-react"
@@ -20,7 +19,7 @@ import { useI18n } from "@/shared/i18n/i18n"
 type Mode = "login" | "register"
 
 const primaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-full border border-[#9c5cff]/40 bg-[linear-gradient(135deg,#8b4dff_0%,#6a26d9_52%,#4f0fb4_100%)] px-6 text-sm font-semibold text-white shadow-[0_18px_44px_rgba(103,42,214,0.44)] transition hover:scale-[1.01] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+  "inline-flex items-center justify-center gap-2 rounded-full border border-[#e0c48f]/30 bg-[linear-gradient(135deg,#d0a04d_0%,#bc8e43_52%,#8c6322_100%)] px-6 text-sm font-semibold text-white shadow-[0_18px_44px_rgba(140,99,34,0.40)] transition hover:scale-[1.01] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
 
 const copyByLanguage = {
   uz: {
@@ -49,7 +48,7 @@ const copyByLanguage = {
     goLogin: "Kirish",
     welcomeBack: "Xush kelibsiz!",
     welcomeJoin: "Yangi akkaunt",
-    rightCopyLogin: "Tripzy akkauntingiz orqali bronlaringizni boshqaring.",
+    rightCopyLogin: "Akkauntingiz orqali bronlaringizni boshqaring.",
     rightCopyRegister: "Profil ochib, bron qilishni boshlang.",
     overlayTitleLogin: "Kirish",
     overlayTitleRegister: "Ro'yxatdan o'tish",
@@ -220,20 +219,20 @@ export default function RegisterPage({
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#f7f8fc] text-white">
+    <section className="relative min-h-screen overflow-hidden bg-[#060d1c] text-white">
       <div className="absolute inset-0">
         <img
           src={dubaiImage}
           alt="Tripzy background"
-          className="h-full w-full object-cover opacity-[0.05]"
+          className="h-full w-full object-cover opacity-[0.07]"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(117,87,199,0.10),transparent_22%),radial-gradient(circle_at_85%_14%,rgba(117,87,199,0.08),transparent_24%),linear-gradient(180deg,#ffffff_0%,#f6f7fb_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(208,160,77,0.07),transparent_28%),radial-gradient(circle_at_85%_80%,rgba(208,160,77,0.05),transparent_24%),linear-gradient(180deg,#060d1c_0%,#080f20_100%)]" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-[1320px] items-center px-4 py-10 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-screen max-w-[1320px] items-center px-4 py-10 sm:px-6 lg:px-7 xl:px-8">
         <div className="w-full">
-          <div className="mb-6 flex justify-center lg:hidden">
-              <div className="inline-flex rounded-full border border-white/12 bg-white/6 p-1 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+          <div className="mb-6 flex justify-center xl:hidden">
+            <div className="inline-flex rounded-full border border-white/12 bg-white/6 p-1 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
               <TogglePill active={isRegister} onClick={() => switchMode("register")}>
                 {copy.register}
               </TogglePill>
@@ -243,16 +242,16 @@ export default function RegisterPage({
             </div>
           </div>
 
-          <div className="grid gap-6 lg:hidden">
+          <div className="grid gap-6 xl:hidden lg:mx-auto lg:max-w-[980px]">
             <motion.div
               key={mode}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
-              className="overflow-hidden rounded-[30px] border border-[#8f52ff]/45 bg-[linear-gradient(180deg,rgba(27,9,52,0.94)_0%,rgba(14,4,28,0.98)_100%)] shadow-[0_24px_70px_rgba(0,0,0,0.45)]"
+              className="overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,#0d1830_0%,#091424_100%)] shadow-[0_24px_70px_rgba(0,0,0,0.50)] lg:grid lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch"
             >
               <AuthPromoPanel mode={mode} title={isRegister ? copy.welcomeJoin : copy.welcomeBack} body={isRegister ? copy.rightCopyRegister : copy.rightCopyLogin} mobile />
-              <div className="border-t border-white/10 p-5 sm:p-7">
+              <div className="border-t border-white/8 p-5 sm:p-7 lg:border-t-0 lg:border-l lg:border-white/8 lg:p-8">
                 <AuthFormCard
                   mode={mode}
                   copy={copy}
@@ -273,9 +272,9 @@ export default function RegisterPage({
             </motion.div>
           </div>
 
-          <div className="relative hidden min-h-[650px] overflow-hidden rounded-[34px] border border-[#d9ddea] bg-[linear-gradient(180deg,#ffffff_0%,#f8f9fd_100%)] shadow-[0_30px_90px_rgba(86,95,126,0.16)] lg:block">
-            <div className="absolute inset-0 border border-white/70" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(117,87,199,0.08),transparent_24%),radial-gradient(circle_at_82%_24%,rgba(117,87,199,0.12),transparent_30%),linear-gradient(180deg,rgba(255,255,255,0.7)_0%,rgba(255,255,255,0)_100%)]" />
+          <div className="relative hidden min-h-[650px] overflow-hidden rounded-[34px] border border-white/8 bg-[#0b1628] shadow-[0_30px_90px_rgba(0,0,0,0.55)] xl:block">
+            <div className="absolute inset-0 border border-white/5" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(208,160,77,0.07),transparent_28%),radial-gradient(circle_at_82%_82%,rgba(208,160,77,0.05),transparent_26%)]" />
 
             <motion.div
               className="absolute inset-y-0 z-20 w-1/2 p-8 xl:p-10"
@@ -336,9 +335,9 @@ function AuthFormShell({
   children: ReactNode
 }) {
   return (
-    <div className="relative flex h-full flex-col rounded-[28px] border border-[#dfe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#fbfbfe_100%)] p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_40px_rgba(86,95,126,0.10)] xl:p-8">
+    <div className="relative flex h-full flex-col rounded-[28px] border border-white/7 bg-[linear-gradient(180deg,#0d1b32_0%,#091320_100%)] p-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] xl:p-8">
         <div className="mb-8 flex items-center justify-between gap-4">
-        <div className="inline-flex rounded-full border border-[#d7dced] bg-[#f4f6fb] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1">
           <TogglePill active={mode === "register"} onClick={() => onSwitchMode("register")}>
             {copy.register}
           </TogglePill>
@@ -350,7 +349,7 @@ function AuthFormShell({
         <button
           type="button"
           onClick={onBackHome}
-          className="rounded-full border border-[#d7dced] bg-[#f6f7fb] px-4 py-2 text-xs font-medium text-[#4e5870] transition hover:bg-white hover:text-[#1b2333]"
+          className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/55 transition hover:bg-white/10 hover:text-white"
         >
           {copy.home}
         </button>
@@ -405,10 +404,10 @@ function AuthFormCard({
       className="w-full"
     >
       <div className="mb-7">
-        <h1 className="max-w-[360px] text-[42px] font-black leading-[0.95] tracking-[-0.06em] text-[#171c2b]">
+        <h1 className="max-w-[360px] text-[42px] font-black leading-[0.95] tracking-[-0.06em] text-white">
           {isRegister ? copy.overlayTitleRegister : copy.overlayTitleLogin}
         </h1>
-        <p className="mt-3 max-w-[360px] text-sm leading-6 text-[#6d768d]">
+        <p className="mt-3 max-w-[360px] text-sm leading-6 text-white/55">
           {isRegister ? copy.registerDesc : copy.loginDesc}
         </p>
       </div>
@@ -417,7 +416,7 @@ function AuthFormCard({
         {isRegister ? (
           <Field
             label={copy.fullNameLabel}
-            icon={<User size={16} className="text-[#7060a8]" />}
+            icon={<User size={16} className="text-[#6b5aa1]" />}
             placeholder={copy.fullNameLabel}
             type="text"
             value={fullName}
@@ -429,7 +428,7 @@ function AuthFormCard({
 
         <Field
           label={copy.emailLabel}
-          icon={<Mail size={16} className="text-[#7060a8]" />}
+          icon={<Mail size={16} className="text-[#6b5aa1]" />}
           placeholder="name@example.com"
           type="email"
           value={email}
@@ -441,7 +440,7 @@ function AuthFormCard({
         <div className="relative">
           <Field
             label={copy.passwordLabel}
-            icon={<Lock size={16} className="text-[#7060a8]" />}
+            icon={null}
             placeholder={copy.passwordLabel}
             type={showPass ? "text" : "password"}
             value={password}
@@ -454,7 +453,7 @@ function AuthFormCard({
             type="button"
             aria-label={showPass ? copy.hidePassword : copy.showPassword}
             onClick={() => setShowPass((prev) => !prev)}
-            className="absolute right-0 top-[34px] grid h-12 w-12 place-items-center text-[#7c6ea8] transition hover:text-[#4a3a7d]"
+            className="absolute right-0 top-[34px] grid h-12 w-12 place-items-center text-white/40 transition hover:text-white/80"
           >
             {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
@@ -464,7 +463,7 @@ function AuthFormCard({
           <div className="flex justify-start">
             <button
               type="button"
-              className="text-xs text-[#7b8499] transition hover:text-[#3d4761]"
+              className="text-xs text-white/40 transition hover:text-white/75"
               onClick={() => toast.info(copy.forgotSoon)}
             >
               {copy.forgot}
@@ -478,12 +477,12 @@ function AuthFormCard({
         </button>
       </form>
 
-      <div className="mt-5 text-center text-sm text-[#707a91]">
+      <div className="mt-5 text-center text-sm text-white/45">
         {isRegister ? copy.haveAccount : copy.newUser}{" "}
         <button
           type="button"
           onClick={() => switchMode(isRegister ? "login" : "register")}
-          className="font-semibold text-[#6f4cc6] transition hover:text-[#5133a6]"
+          className="font-semibold text-[#d0a04d] transition hover:text-[#e8b55c]"
         >
           {isRegister ? copy.goLogin : copy.goRegister}
         </button>
@@ -494,7 +493,7 @@ function AuthFormCard({
           <button
             type="button"
             onClick={onBackHome}
-            className="rounded-full border border-[#dce0ec] bg-[#f7f8fc] px-5 py-2.5 text-sm text-[#56607a] transition hover:bg-white hover:text-[#171c2b]"
+            className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-white/50 transition hover:bg-white/10 hover:text-white"
           >
             {copy.backHome}
           </button>
@@ -524,14 +523,14 @@ function AuthPromoPanel({
     <motion.div
       animate={{ clipPath }}
       transition={{ duration: 0.45, ease: "easeInOut" }}
-      className={`relative h-full overflow-hidden border-[#9b5cff]/50 ${
-        mobile ? "min-h-[270px] border-b" : "border-l"
+      className={`relative h-full overflow-hidden border-[#d0a04d]/12 ${
+        mobile ? "min-h-[250px] border-b lg:min-h-full lg:border-b-0" : "border-l"
       }`}
       style={mobile ? undefined : { clipPath }}
     >
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,#7d56d8_0%,#6f45cf_42%,#4f2ea9_100%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(255,255,255,0.18),transparent_18%),radial-gradient(circle_at_76%_35%,rgba(255,255,255,0.10),transparent_22%)]" />
-      <div className="absolute inset-0 border border-[#8d6de0]/40" />
+      <div className="absolute inset-0 bg-[linear-gradient(135deg,#1c2d4f_0%,#0e1c38_52%,#172b4a_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(208,160,77,0.22),transparent_30%),radial-gradient(circle_at_76%_75%,rgba(208,160,77,0.10),transparent_28%)]" />
+      <div className="absolute inset-0 border border-[#d0a04d]/8" />
 
       <motion.div
         key={`${mode}-${mobile ? "mobile" : "desktop"}`}
@@ -543,15 +542,15 @@ function AuthPromoPanel({
         }`}
       >
         <div
-          className={`flex h-full w-full max-w-[420px] flex-col justify-center p-8 sm:p-10 ${
+          className={`flex h-full w-full max-w-[420px] flex-col justify-center p-8 sm:p-10 lg:p-7 ${
             isRegister ? "items-start text-left" : "items-end text-right"
           } ${mobile ? "!items-start !text-left" : ""}`}
         >
-          <h2 className="max-w-[250px] text-4xl font-black leading-[0.94] tracking-[-0.06em] text-white sm:text-[52px]">
+          <h2 className="max-w-[250px] text-4xl font-black leading-[0.94] tracking-[-0.06em] text-white sm:text-[52px] lg:text-[44px]">
             {title}
           </h2>
 
-          <p className="mt-4 max-w-[270px] text-sm leading-6 text-white/78 sm:text-[15px]">
+          <p className="mt-4 max-w-[270px] text-sm leading-6 text-white/78 sm:text-[15px] lg:text-sm">
             {body}
           </p>
         </div>
@@ -581,12 +580,12 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="mb-2 text-[11px] font-medium tracking-[0.08em] text-[#7a8399]">
+      <div className="mb-2 text-[11px] font-medium tracking-[0.08em] text-white/45">
         {label}
       </div>
-      <div className="flex h-13 w-full items-center gap-3 rounded-[16px] border border-[#dbe0ec] bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fc_100%)] px-3 transition focus-within:border-[#8d6fe1] focus-within:bg-white">
+      <div className="flex h-13 w-full items-center gap-3 rounded-[16px] border border-white/10 bg-[#0c1a30] px-3 transition focus-within:border-[#d0a04d]/45 focus-within:bg-[#0e1e38]">
         <input
-          className="h-full w-full bg-transparent text-[15px] font-medium text-[#171c2b] outline-none placeholder:text-[#97a0b4] [-webkit-text-fill-color:#171c2b] autofill:[-webkit-text-fill-color:#171c2b]"
+          className="auth-form-input h-full w-full bg-transparent text-[15px] font-medium outline-none"
           placeholder={placeholder}
           value={value}
           type={type}
@@ -594,9 +593,11 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           required={required}
         />
-        <span className="grid h-8 w-8 shrink-0 place-items-center text-[#7259c4]">
-          {icon}
-        </span>
+        {icon ? (
+          <span className="grid h-8 w-8 shrink-0 place-items-center text-[#d0a04d]/70">
+            {icon}
+          </span>
+        ) : null}
       </div>
     </label>
   )
@@ -617,8 +618,8 @@ function TogglePill({
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-sm font-medium transition ${
         active
-          ? "bg-[linear-gradient(135deg,#8a67e2_0%,#6b49c7_100%)] text-white shadow-[0_10px_24px_rgba(103,42,214,0.18)]"
-          : "text-[#697389] hover:text-[#1c2434]"
+          ? "bg-[linear-gradient(135deg,#d0a04d_0%,#bc8e43_52%,#8c6322_100%)] text-white shadow-[0_10px_24px_rgba(140,99,34,0.30)]"
+          : "text-white/45 hover:text-white/80"
       }`}
     >
       {children}

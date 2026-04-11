@@ -204,7 +204,7 @@ export default function FareCalendarPicker({
         className="fixed inset-0 z-[118] bg-[rgba(15,23,42,0.22)] backdrop-blur-[2px] lg:hidden"
       />
 
-      <div className="fixed inset-x-3 bottom-3 z-[120] max-h-[calc(100svh-24px)] overflow-hidden rounded-[24px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-[calc(100%+10px)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:w-[min(720px,calc(100vw-72px))] lg:-translate-x-1/2 lg:p-3">
+      <div className="pointer-events-auto fixed inset-x-3 bottom-3 z-[120] max-h-[calc(100svh-24px)] overflow-hidden rounded-[24px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-[calc(100%+10px)] lg:z-[160] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:w-[min(720px,calc(100vw-72px))] lg:-translate-x-1/2 lg:p-3">
         <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] lg:hidden" />
 
         <div className="flex max-h-[calc(100svh-72px)] flex-col overflow-hidden lg:max-h-none">

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Link, NavLink, useNavigate } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
 import {
+  ChevronDown,
   LogOut,
   Menu,
   MoonStar,
@@ -41,6 +42,9 @@ const menuVariants = {
 const actionBtnClass =
   "h-10 rounded-full border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_10px_24px_rgba(17,24,39,0.18)] transition hover:brightness-110 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(4,10,28,0.42)]"
 
+const desktopGlassClass =
+  "border border-white/16 bg-[linear-gradient(180deg,rgba(10,18,32,0.62)_0%,rgba(10,18,32,0.48)_100%)] text-white shadow-[0_16px_36px_rgba(3,8,24,0.24)] backdrop-blur-[16px] supports-[backdrop-filter]:bg-[linear-gradient(180deg,rgba(10,18,32,0.58)_0%,rgba(10,18,32,0.44)_100%)] dark:border-white/10 dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)]"
+
 type NavLinkItem = {
   to: string
   label: string
@@ -50,8 +54,10 @@ type NavLinkItem = {
 export default function Navbar() {
   const navigate = useNavigate()
   const { language, setLanguage } = useI18n()
+  const languageMenuRef = useRef<HTMLDivElement | null>(null)
 
   const [open, setOpen] = useState(false)
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [token, setToken] = useState<string | null>(() => getAccessToken())
   const [user, setUser] = useState<StoredAuthUser | null>(() => getAuthUser())
   const [theme, setTheme] = useState<SiteTheme>(() => getStoredTheme())
@@ -95,6 +101,27 @@ export default function Navbar() {
       document.body.style.overflow = ""
     }
   }, [open])
+
+  useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      if (!languageMenuRef.current) return
+      if (!languageMenuRef.current.contains(event.target as Node)) {
+        setLanguageMenuOpen(false)
+      }
+    }
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setLanguageMenuOpen(false)
+    }
+
+    window.addEventListener("mousedown", onPointerDown)
+    window.addEventListener("keydown", onEscape)
+
+    return () => {
+      window.removeEventListener("mousedown", onPointerDown)
+      window.removeEventListener("keydown", onEscape)
+    }
+  }, [])
 
   useEffect(() => {
     const syncTheme = () => setTheme(getStoredTheme())
@@ -234,6 +261,9 @@ export default function Navbar() {
 
   const desktopLinks = [...copy.leftLinks, ...copy.rightLinks]
   const mobileLinks = [...copy.leftLinks, ...copy.rightLinks]
+  const otherLanguages = (["uz", "ru", "en"] as const).filter(
+    (lang) => lang !== language
+  )
 
   return (
     <header className="fixed inset-x-0 top-0 z-[100]">
@@ -241,9 +271,12 @@ export default function Navbar() {
         initial={{ opacity: 0, y: -14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="w-full border-b border-[#d9dde4] bg-[rgba(240,243,247,0.92)] px-4 py-1.5 shadow-[0_8px_24px_rgba(37,55,89,0.04)] backdrop-blur-sm transition-[background-color,box-shadow] duration-300 dark:border-[#38517f]/70 dark:bg-[rgba(8,18,38,0.50)] dark:shadow-[0_12px_32px_rgba(3,8,24,0.34)] md:px-5 md:py-1"
+        className={[
+          "w-full px-4 py-2 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2.5",
+          "border-b border-transparent bg-transparent shadow-none backdrop-blur-0 supports-[backdrop-filter]:bg-transparent dark:border-transparent dark:bg-transparent",
+        ].join(" ")}
       >
-        <div className="mx-auto flex !max-w-[1680px] items-center justify-between gap-4 lg:gap-8 2xl:max-w-[1820px]">
+        <div className="mx-auto flex !max-w-[1640px] items-center justify-between gap-4 lg:gap-10">
           <Link
             to="/"
             className="hidden shrink-0 items-center justify-center lg:flex"
@@ -253,12 +286,12 @@ export default function Navbar() {
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className="block h-auto !w-[445px] origin-left scale-[1.8] object-contain drop-shadow-[0_10px_24px_rgba(17,24,39,0.10)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] xl:!w-[162px]"
+              className="block h-auto !w-[310px] object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)]"
             />
           </Link>
 
           <div className="hidden min-w-0 flex-1 items-center lg:flex">
-            <div className="flex min-w-0 flex-1 items-center justify-center gap-5 pl-20 xl:gap-6 xl:pl-24">
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-7 px-10 xl:gap-9 xl:px-14">
               {desktopLinks.map((link) => (
                 <NavItem
                   key={link.to}
@@ -270,30 +303,59 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className="ml-6 flex shrink-0 items-center gap-2 xl:gap-2.5">
-              <div className="flex items-center gap-1 rounded-full border border-[#dde4ee] bg-white/85 p-1 shadow-[0_8px_20px_rgba(17,24,39,0.06)] dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)]">
-                {(["uz", "ru", "en"] as const).map((lang) => (
+            <div className="ml-6 flex shrink-0 items-center gap-3">
+              <div
+                ref={languageMenuRef}
+                className="relative"
+              >
+                <div className="flex items-center gap-1 rounded-full border border-white/14 bg-[linear-gradient(180deg,rgba(29,36,49,0.92)_0%,rgba(22,28,39,0.88)_100%)] p-1 shadow-[0_14px_34px_rgba(3,8,24,0.24)] backdrop-blur-[14px]">
                   <button
-                    key={lang}
                     type="button"
-                    onClick={() => setLanguage(lang)}
-                    className={[
-                      "rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] transition",
-                      language === lang
-                        ? "bg-[#1c2433] text-white dark:bg-[#4b79ff]"
-                        : "text-[#2a3140] hover:bg-[#f3f7fc] dark:text-white/80 dark:hover:bg-white/10",
-                    ].join(" ")}
+                    onClick={() => setLanguageMenuOpen((value) => !value)}
+                    aria-haspopup="menu"
+                    aria-expanded={languageMenuOpen}
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#111827] ring-1 ring-black/6 shadow-[0_10px_22px_rgba(255,255,255,0.24)] transition-all duration-200"
                   >
-                    {lang}
+                    <span>{language}</span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-[#475569] transition ${languageMenuOpen ? "rotate-180" : ""}`}
+                    />
                   </button>
-                ))}
+                </div>
+
+                <AnimatePresence>
+                  {languageMenuOpen ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      transition={{ duration: 0.16, ease: "easeOut" }}
+                      className="absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] border border-white/18 bg-[linear-gradient(180deg,rgba(29,36,49,0.96)_0%,rgba(22,28,39,0.94)_100%)] p-2 shadow-[0_22px_50px_rgba(3,8,24,0.34)] backdrop-blur-[18px]"
+                    >
+                      {otherLanguages.map((lang) => (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => {
+                            setLanguage(lang)
+                            setLanguageMenuOpen(false)
+                          }}
+                          className="flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white/82 transition hover:bg-white/8 hover:text-white"
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
 
               <button
                 type="button"
                 aria-label={copy.switchTheme}
                 onClick={onToggleTheme}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#dde4ee] bg-white/85 px-3.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#243042] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)] dark:hover:bg-[rgba(28,46,84,0.94)]"
+                className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.08em] transition hover:bg-white/10 ${desktopGlassClass}`}
               >
                 {theme === "dark" ? <SunMedium size={14} /> : <MoonStar size={14} />}
                 {theme === "dark" ? copy.themeLight : copy.themeDark}
@@ -308,16 +370,16 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={goProfile}
-                    className="group flex h-11 items-center gap-3 rounded-full border border-[#dde4ee] bg-white/88 px-3 pr-4 text-left shadow-[0_10px_24px_rgba(17,24,39,0.06)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(20,35,66,0.82)] dark:hover:bg-[rgba(28,46,84,0.94)]"
+                    className={`group flex h-12 items-center gap-3 rounded-full px-3 pr-4 text-left transition hover:bg-white/10 ${desktopGlassClass}`}
                   >
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#20304a_0%,#111827_100%)] text-[11px] font-bold uppercase tracking-[0.12em] text-white dark:bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)]">
                       {userInitials}
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7a879a] dark:text-[#9fb4d7]">
+                      <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-white/68 dark:text-[#9fb4d7]">
                         {userAccountLabel}
                       </span>
-                      <span className="block max-w-[148px] truncate text-[13px] font-bold text-[#1d2430] dark:text-white">
+                      <span className="block max-w-[168px] truncate text-[15px] font-bold text-white dark:text-white">
                         {user?.fullName || copy.profile}
                       </span>
                     </span>
@@ -340,7 +402,7 @@ export default function Navbar() {
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className="block h-auto w-[168px] object-contain sm:w-[178px]"
+              className="block h-auto w-[188px] object-contain sm:w-[204px]"
             />
           </Link>
 
@@ -541,19 +603,19 @@ function NavItem({
       to={to}
       className={({ isActive }) =>
         [
-          "group relative inline-flex items-center gap-1.5 whitespace-nowrap pb-1.5 font-semibold uppercase tracking-[0.12em] transition",
-          "text-[11px] xl:text-[12px]",
+          "group relative inline-flex items-center gap-1.5 whitespace-nowrap pb-2 font-semibold uppercase tracking-[0.14em] transition",
+          "text-[13px] xl:text-[14px]",
           isActive
-            ? "text-[#111827] after:scale-x-100 after:opacity-100 dark:text-white"
-            : "text-[#2d3544] hover:text-[#111827] after:scale-x-70 after:opacity-70 dark:text-white/78 dark:hover:text-white",
-          "after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:rounded-full after:bg-[linear-gradient(90deg,#86a8df_0%,#416fcb_55%,#9bc6ff_100%)] after:opacity-0 after:transition after:duration-300 hover:after:scale-x-100 hover:after:opacity-100 dark:after:bg-[linear-gradient(90deg,#8fb2ff_0%,#4b79ff_55%,#c1daff_100%)]",
+            ? "text-white after:scale-x-100 after:opacity-100 dark:text-white"
+            : "text-white/84 hover:text-white after:scale-x-70 after:opacity-70 dark:text-white/78 dark:hover:text-white",
+          "drop-shadow-[0_2px_10px_rgba(3,8,24,0.34)] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:rounded-full after:bg-[linear-gradient(90deg,#d8e6ff_0%,#63a3ff_55%,#eef5ff_100%)] after:opacity-0 after:transition after:duration-300 hover:after:scale-x-100 hover:after:opacity-100 dark:after:bg-[linear-gradient(90deg,#8fb2ff_0%,#4b79ff_55%,#c1daff_100%)]",
         ].join(" ")
       }
     >
       {Icon ? <Icon size={14} strokeWidth={2.1} /> : null}
       <span>{label}</span>
       {badge > 0 ? (
-        <span className="rounded-full bg-[#e8eef8] px-1.5 py-0.5 text-[9px] tracking-normal text-[#173260] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
+        <span className="rounded-full bg-white/18 px-2 py-0.5 text-[10px] tracking-normal text-white dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
           {badge}
         </span>
       ) : null}

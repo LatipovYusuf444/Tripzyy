@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://b2b.skyup.uz",
+        target: "https://b2b.onlinetrip.uz",
         changeOrigin: true,
         secure: true,
         timeout: 15000,

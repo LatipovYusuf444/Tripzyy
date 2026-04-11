@@ -16,16 +16,31 @@ import {
   X,
 } from "lucide-react"
 import type { ReactNode } from "react"
-import { useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
-import heroBackdropImage from "@/assets/images/foto.jpg"
+import heroBackgroundImage from "@/assets/images/cheerful-woman-looking-out-window-airplane.jpg"
+import heroMobileBackgroundImage from "@/assets/images/mobilebg.jpg"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
 
 type LocationOption = { code: string; name: string; searchText: string }
+type TripMode = "round" | "oneway" | "multi"
+type MultiTrip = { from: string; to: string; date: string }
+type HeroModeOption = { key: TripMode; label: string }
+type SearchUiCopyShape = {
+  tripModes: Record<TripMode, string>
+  from: string
+  to: string
+  depart: string
+  return: string
+  passengers: string
+  search: string
+  airportNotFound: string
+}
 const DEFAULT_HOME_SEARCH = {
   from: "",
   to: "",
@@ -40,20 +55,6 @@ const LIVE_DIRECTORY_BOOTSTRAPS = [
   { from: "AUH", to: "TAS" },
 ] as const
 
-const HOME_PRIORITY_AIRPORT_CODES = [
-  "TAS",
-  "DXB",
-  "IST",
-  "SAW",
-  "SKD",
-  "TBS",
-  "HAN",
-  "LIS",
-  "FCO",
-  "BKK",
-  "SSH",
-  "CDG",
-] as const
 
 const getDefaultHomeDate = () => {
   const base = new Date()
@@ -105,6 +106,89 @@ const formatDisplayDate = (value: string) => {
   })
 }
 
+function HeroSection({
+  heroBackgroundImage,
+  heroMobileBackgroundImage,
+  children,
+}: {
+  heroBackgroundImage: string
+  heroMobileBackgroundImage: string
+  children: ReactNode
+}) {
+  return (
+    <section className="relative overflow-visible">
+      <div className="relative min-h-[calc(100svh-88px)] overflow-visible pt-20 sm:min-h-[calc(100svh-92px)] sm:pt-24 lg:min-h-[860px]">
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+          <img
+            src={heroMobileBackgroundImage}
+            alt="Tripzy travel background"
+            className="h-full w-full object-cover object-center sm:hidden"
+          />
+          <img
+            src={heroBackgroundImage}
+            alt="Tripzy travel background"
+            className="hidden h-full w-full object-cover object-[center_44%] sm:block xl:object-center"
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_32%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_24%,rgba(7,18,35,0)_48%)]" />
+          <div className="absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,rgba(5,13,26,0.86)_0%,rgba(6,17,31,0.68)_28%,rgba(8,22,42,0.26)_56%,rgba(8,22,42,0)_82%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,31,0.12)_0%,rgba(7,18,35,0.10)_42%,rgba(7,18,35,0.34)_100%)]" />
+        </div>
+        <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-4 sm:px-6 lg:px-8">
+          {children}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function TripModeTabs({
+  tripModes,
+  tripMode,
+  searchUiCopy,
+  setTripMode,
+  className,
+}: {
+  tripModes: HeroModeOption[]
+  tripMode: TripMode
+  searchUiCopy: SearchUiCopyShape
+  setTripMode: (mode: TripMode) => void
+  className?: string
+}) {
+  return (
+    <div className={["luxury-search-tabs pointer-events-auto relative z-10 mt-6 flex w-full max-w-[490px] items-center justify-between gap-1 rounded-[999px] p-1.5 sm:p-2", className ?? ""].join(" ")}>
+      {tripModes.map((mode) => (
+        <button
+          key={mode.key}
+          type="button"
+          onClick={() => setTripMode(mode.key)}
+          className={[
+            "luxury-search-tab flex-1 rounded-full px-4 py-3 text-[12px] font-semibold transition-all duration-200 sm:flex-none sm:px-8 sm:py-3.5 sm:text-[14px]",
+            tripMode === mode.key
+              ? "luxury-search-tab-active"
+              : "",
+          ].join(" ")}
+        >
+          {searchUiCopy.tripModes[mode.key]}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function BookingGlassBar({
+  className,
+  children,
+}: {
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <div className={["luxury-search-shell pointer-events-auto relative isolate", className ?? ""].join(" ")}>
+      {children}
+    </div>
+  )
+}
+
 export default function Home() {
   const navigate = useNavigate()
   const { language } = useI18n()
@@ -117,10 +201,10 @@ export default function Home() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState(-1)
   const [faqQuestion, setFaqQuestion] = useState("")
-  const [tripMode, setTripMode] = useState<"round" | "oneway" | "multi">("round")
+  const [tripMode, setTripMode] = useState<TripMode>("round")
   const [passengerTouched, setPassengerTouched] = useState(false)
   const [activeAirportField, setActiveAirportField] = useState<string | null>(null)
-  const [multiTrips, setMultiTrips] = useState<Array<{ from: string; to: string; date: string }>>([
+  const [multiTrips, setMultiTrips] = useState<MultiTrip[]>([
     { from: "", to: "", date: "" },
     { from: "", to: "", date: "" },
   ])
@@ -412,33 +496,6 @@ export default function Home() {
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [airportLabels])
 
-  const activeAirportValue = useMemo(() => {
-    if (activeAirportField === "from") return from
-    if (activeAirportField === "to") return to
-    if (activeAirportField?.startsWith("multi-")) {
-      const [, indexRaw, field] = activeAirportField.split("-")
-      const index = Number(indexRaw)
-      const item = multiTrips[index]
-      if (!item) return ""
-      return field === "from" ? item.from : item.to
-    }
-    return ""
-  }, [activeAirportField, from, to, multiTrips])
-
-  const airportPanelOptions = useMemo(() => {
-    const query = normalizeText(activeAirportValue)
-    if (!query) {
-      const priority = HOME_PRIORITY_AIRPORT_CODES
-        .map((code) => locationOptions.find((option) => option.code === code))
-        .filter((option): option is LocationOption => Boolean(option))
-
-      const priorityCodes = new Set(priority.map((option) => option.code))
-      const rest = locationOptions.filter((option) => !priorityCodes.has(option.code))
-      return [...priority, ...rest].slice(0, 24)
-    }
-    return locationOptions.filter((option) => option.searchText.includes(query)).slice(0, 24)
-  }, [activeAirportValue, locationOptions])
-
   const heroCopy = {
     uz: {
       title: "Aviation Tour bilan qulay va ishonchli avia sayohat",
@@ -596,13 +653,6 @@ export default function Home() {
     },
   }[language]
 
-  const airportPanelTitle =
-    activeAirportField === "from" || activeAirportField?.endsWith("-from")
-      ? heroCopy.fromPanelTitle
-      : activeAirportField === "to" || activeAirportField?.endsWith("-to")
-        ? heroCopy.toPanelTitle
-        : heroCopy.allAirports
-
   const onSearch = () => {
     if (tripMode === "multi") {
       const trips = multiTrips
@@ -675,52 +725,34 @@ export default function Home() {
   }
 
   return (
-    <div className="overflow-x-hidden bg-[linear-gradient(180deg,#fffdf8_0%,#f7f3ea_22%,#f4efe5_100%)] text-[#1d2430] dark:bg-[linear-gradient(180deg,#0b1529_0%,#101d36_26%,#14253f_26%,#14253f_100%)] dark:text-white">
-      <section className="relative overflow-visible">
-        <div className="relative min-h-[calc(100svh-88px)] overflow-visible pt-20 sm:min-h-[calc(100svh-92px)] md:pt-24 lg:min-h-[820px]">
-          <div className="absolute inset-0 overflow-hidden">
-            <img
-              src={heroBackdropImage}
-              alt="Tripzy travel background"
-              className="h-full w-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(7,20,41,0.10)_100%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(243,247,252,0.18)_0%,rgba(243,247,252,0.05)_18%,rgba(13,41,74,0.08)_55%,rgba(9,24,43,0.16)_100%)]" />
-          </div>
-          <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-3 sm:px-6 lg:px-8">
-            <div className="flex min-h-[560px] w-full items-center justify-center pt-14 sm:min-h-[620px] sm:pt-12 md:min-h-[680px] md:pt-14">
+    <div className="-mt-[86px] relative overflow-x-hidden bg-transparent text-[#1d2430] md:-mt-[94px] xl:-mt-[102px] dark:text-white">
+      <HeroSection
+        heroBackgroundImage={heroBackgroundImage}
+        heroMobileBackgroundImage={heroMobileBackgroundImage}
+      >
+            <div className="flex min-h-[560px] w-full items-start justify-center pt-28 sm:min-h-[680px] sm:items-start sm:pt-32 lg:min-h-[760px] lg:pt-36">
             <motion.div
               initial={{ opacity: 0, y: 38 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.62, delay: 0.36, ease: "easeOut" }}
-              className="relative w-full max-w-[1780px] md:-translate-y-12"
+              className="relative w-full max-w-[1360px]"
             >
-              <div className="absolute left-1/2 top-[-38px] z-10 flex w-[calc(100%-32px)] max-w-[440px] -translate-x-1/2 items-center justify-between gap-0.5 rounded-full border border-[#e2e8f2] bg-white p-1 shadow-[0_4px_16px_rgba(15,23,42,0.10)] sm:top-[-40px] sm:inline-flex sm:w-auto sm:justify-start">
-                {heroCopy.tripModes.map((mode) => (
-                  <button
-                    key={mode.key}
-                    type="button"
-                    onClick={() => setTripMode(mode.key)}
-                    className={[
-                      "rounded-full px-4 py-2 text-[11px] font-semibold transition sm:px-6 sm:py-2.5 sm:text-[13px]",
-                      tripMode === mode.key
-                        ? "bg-[linear-gradient(135deg,#1ea8ef_0%,#0a8fd4_100%)] text-white shadow-[0_6px_18px_rgba(10,147,222,0.32)]"
-                        : "text-[#7a8fa8] hover:text-[#1d2430]",
-                    ].join(" ")}
-                  >
-                    {searchUiCopy.tripModes[mode.key]}
-                  </button>
-                ))}
-              </div>
-              <div className="rounded-[20px] border border-[#dde4ef] bg-white p-1.5 shadow-[0_8px_32px_rgba(15,23,42,0.12)]">
+              <TripModeTabs
+                tripModes={heroCopy.tripModes}
+                tripMode={tripMode}
+                searchUiCopy={searchUiCopy}
+                setTripMode={setTripMode}
+                className="mx-auto max-w-[460px] lg:absolute lg:left-1/2 lg:top-24 lg:mt-0 lg:-translate-x-1/2"
+              />
+              <BookingGlassBar className="relative z-20 mt-6 rounded-[22px] p-2 pt-2 sm:rounded-[26px] sm:p-2.5 lg:mt-28 lg:rounded-[28px] lg:p-3">
               {tripMode === "multi" ? (
-                <div className="space-y-5">
+                <div className="space-y-2.5">
                   {multiTrips.map((trip, index) => (
                     <div key={`trip-${index}`}>
-                      <div className="mb-3 text-[16px] font-semibold text-[#1d2430]">
+                      <div className="mb-1.5 text-[12px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)]">
                         {heroCopy.flightLabel} {index + 1}
                       </div>
-                      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                      <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                         <HomeAutocompleteField
                           label={heroCopy.fromTitle}
                           value={trip.from}
@@ -757,7 +789,14 @@ export default function Home() {
                           useInlinePanel
                           active={activeAirportField === `multi-${index}-to`}
                         />
-                        <div className="relative flex min-h-[82px] flex-col justify-center rounded-[22px] border border-[#e3eaf3] bg-[linear-gradient(180deg,#fbfdff_0%,#f3f8ff_100%)] px-5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] xl:min-h-[84px]">
+                        <div
+                          className={[
+                            "luxury-search-segment pointer-events-auto relative flex min-h-[58px] flex-col justify-center overflow-visible rounded-[20px] px-4 py-2 xl:min-h-[62px]",
+                            openMultiDateIndex === index
+                              ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+                              : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+                          ].join(" ")}
+                        >
                           <button
                             type="button"
                             onClick={() => {
@@ -767,13 +806,13 @@ export default function Home() {
                             }}
                             className="text-left"
                           >
-                            <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#5a6f8d]">
-                              <span className="grid h-9 w-9 place-items-center rounded-full bg-[linear-gradient(180deg,#eef6ff_0%,#e7f0fb_100%)] text-[#4593d8]">
-                                <CalendarDays size={16} />
+                            <div className="luxury-search-label flex items-center gap-2 text-[9px] font-semibold uppercase">
+                              <span className="luxury-search-icon h-7 w-7">
+                                <CalendarDays size={13} />
                               </span>
                               <span>{copy.date}</span>
                             </div>
-                            <div className="mt-2 text-[16px] font-semibold text-[#41546c]">
+                            <div className="luxury-search-value mt-1.5 text-[13px] font-semibold">
                               {trip.date ? formatDisplayDate(trip.date) : heroCopy.addDates}
                             </div>
                           </button>
@@ -795,7 +834,7 @@ export default function Home() {
                     </div>
                   ))}
 
-                  <div className="flex flex-wrap items-end justify-between gap-4 border-t border-[#e8edf3] pt-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-3">
                     <PassengerField
                       pax={pax}
                       onChange={(value) => {
@@ -803,17 +842,22 @@ export default function Home() {
                         setPassengerTouched(true)
                         setActiveAirportField(null)
                       }}
+                      onActivate={() => {
+                        setActiveAirportField(null)
+                        setCalendarOpen(false)
+                        setOpenMultiDateIndex(null)
+                      }}
                       label={heroCopy.guestCabin}
                       valueLabel={heroCopy.guestValue}
-                      icon={<UsersRound size={18} />}
+                      icon={<UsersRound size={16} />}
                     />
-                    <div className="flex items-center gap-5">
+                    <div className="flex items-center gap-4">
                       <button
                         type="button"
                         onClick={() =>
                           setMultiTrips((prev) => [...prev, { from: "", to: "", date: "" }])
                         }
-                        className="border-b border-[#bc8e43] pb-1 text-[18px] font-medium text-[#2f3747]"
+                        className="border-b border-white/24 pb-0.5 text-[13px] font-medium text-white/80 transition hover:text-white"
                       >
                         {heroCopy.addSegment}
                       </button>
@@ -823,7 +867,7 @@ export default function Home() {
                           setActiveAirportField(null)
                           onSearch()
                         }}
-                        className="inline-flex h-[56px] items-center justify-center rounded-[18px] bg-[#0f9ae7] px-7 text-[17px] font-bold text-white shadow-[0_16px_34px_rgba(15,154,231,0.24)] transition hover:brightness-105"
+                        className="luxury-search-cta inline-flex h-10 items-center justify-center rounded-[14px] px-5 text-[13px] font-bold text-white transition-all duration-300"
                         whileHover={{ y: -1, scale: 1.01 }}
                         whileTap={{ scale: 0.985 }}
                       >
@@ -835,13 +879,13 @@ export default function Home() {
               ) : (
                 <div
                   className={[
-                    "relative overflow-visible rounded-[14px] border border-[#e8edf4] bg-white grid items-stretch divide-y divide-[#e8edf4] xl:divide-y-0 xl:divide-x",
+                    "luxury-search-grid relative overflow-visible rounded-[20px] grid items-stretch divide-y divide-white/10 sm:rounded-[22px] xl:divide-y-0 xl:divide-x xl:divide-white/10",
                     tripMode === "round"
-                      ? "xl:grid-cols-[2.15fr_0.72fr_0.72fr_0.72fr_200px]"
-                      : "xl:grid-cols-[2.2fr_0.72fr_0.72fr_200px]",
+                      ? "xl:grid-cols-[2.15fr_0.8fr_0.82fr_0.82fr_210px]"
+                      : "xl:grid-cols-[2.15fr_0.82fr_0.82fr_210px]",
                   ].join(" ")}
                 >
-                  <div className="relative grid items-stretch divide-y divide-[#e8edf4] xl:grid-cols-2 xl:divide-x xl:divide-y-0">
+                  <div className="relative grid items-stretch divide-y divide-[#d8e2ee] xl:grid-cols-2 xl:divide-x xl:divide-[#d8e2ee] xl:divide-y-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -851,7 +895,7 @@ export default function Home() {
                         setTo(nextTo)
                         setActiveAirportField(null)
                       }}
-                      className="absolute left-1/2 top-1/2 z-10 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#dde8f4] bg-white text-[#18a0ea] shadow-[0_4px_12px_rgba(15,23,42,0.10)] transition hover:bg-[#f0f7ff] xl:flex"
+                      className="luxury-search-icon absolute left-1/2 top-1/2 z-10 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_10px_24px_rgba(37,99,235,0.10)] transition-all duration-200 hover:scale-[1.04] hover:brightness-110 xl:flex"
                     >
                       <ArrowRightLeft size={18} />
                     </button>
@@ -897,21 +941,40 @@ export default function Home() {
                       setPassengerTouched(true)
                       setActiveAirportField(null)
                     }}
+                    onActivate={() => {
+                      setActiveAirportField(null)
+                      setCalendarOpen(false)
+                      setOpenMultiDateIndex(null)
+                    }}
                     label={searchUiCopy.passengers}
                     valueLabel={language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`}
                     icon={<UsersRound size={20} className="text-[#18a0ea]" />}
                     compact
                   />
-                  <div className="relative flex min-h-[58px] items-center bg-transparent px-4 sm:px-5">
+                  <div
+                    className={[
+                      "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[60px] items-center overflow-visible rounded-[18px] bg-transparent px-4 sm:min-h-[66px] sm:px-5 xl:after:block after:hidden",
+                      calendarOpen
+                        ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+                        : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+                    ].join(" ")}
+                  >
                     <button type="button" onClick={() => {
                       setActiveAirportField(null)
                       setOpenMultiDateIndex(null)
                       setCalendarOpen((prev) => !prev)
-                    }} className="flex w-full items-center justify-between gap-2">
-                      <span className={`text-[14px] font-medium ${date ? "text-[#1d2430]" : "text-[#9aacbf]"}`}>
-                        {date ? formatDisplayDate(date) : searchUiCopy.depart}
+                    }} className="flex w-full items-center justify-between gap-3">
+                      <div className="min-w-0 text-left">
+                        <div className="luxury-search-label text-[10px] font-semibold uppercase">
+                          {searchUiCopy.depart}
+                        </div>
+                        <span className={`luxury-search-value mt-1 block truncate text-[14px] font-semibold sm:text-[15px] ${date ? "" : "luxury-search-placeholder"}`}>
+                          {date ? formatDisplayDate(date) : heroCopy.addDates}
+                        </span>
+                      </div>
+                      <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
+                        <CalendarDays size={15} />
                       </span>
-                      <CalendarDays size={17} className="shrink-0 text-[#18a0ea]" />
                     </button>
                     {calendarOpen ? (
                       <FareCalendarPicker
@@ -928,7 +991,14 @@ export default function Home() {
                     ) : null}
                   </div>
                   {tripMode === "round" ? (
-                    <div className="relative flex min-h-[58px] items-center bg-transparent px-4 sm:px-5">
+                    <div
+                      className={[
+                        "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[60px] items-center overflow-visible rounded-[18px] bg-transparent px-4 sm:min-h-[66px] sm:px-5 xl:after:block after:hidden",
+                        openMultiDateIndex === -2
+                          ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+                          : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+                      ].join(" ")}
+                    >
                       <button
                         type="button"
                         onClick={() => {
@@ -937,12 +1007,19 @@ export default function Home() {
                           setCalendarOpen(false)
                           setOpenMultiDateIndex(-2)
                         }}
-                        className="flex w-full items-center justify-between gap-2"
+                        className="flex w-full items-center justify-between gap-3"
                       >
-                        <span className={`text-[14px] font-medium ${returnDate ? "text-[#1d2430]" : "text-[#9aacbf]"}`}>
-                          {returnDate ? formatDisplayDate(returnDate) : searchUiCopy.return}
+                        <div className="min-w-0 text-left">
+                          <div className="luxury-search-label text-[10px] font-semibold uppercase">
+                            {searchUiCopy.return}
+                          </div>
+                          <span className={`luxury-search-value mt-1 block truncate text-[14px] font-semibold sm:text-[15px] ${returnDate ? "" : "luxury-search-placeholder"}`}>
+                            {returnDate ? formatDisplayDate(returnDate) : heroCopy.addDates}
+                          </span>
+                        </div>
+                        <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
+                          <CalendarDays size={15} />
                         </span>
-                        <CalendarDays size={17} className="shrink-0 text-[#18a0ea]" />
                       </button>
                       {openMultiDateIndex === -2 ? (
                         <FareCalendarPicker
@@ -965,8 +1042,8 @@ export default function Home() {
                       setActiveAirportField(null)
                       onSearch()
                     }}
-                    className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-b-[12px] bg-[linear-gradient(135deg,#1ea8ef_0%,#0a93de_42%,#0b7fc8_100%)] px-8 text-[14px] font-bold tracking-wide text-white shadow-[0_8px_22px_rgba(10,147,222,0.32)] transition hover:brightness-110 sm:text-[15px] xl:min-h-full xl:rounded-none xl:rounded-r-[12px]"
-                    whileHover={{ y: -1, scale: 1.01 }}
+                    className="luxury-search-cta inline-flex min-h-[54px] items-center justify-center gap-2 rounded-[16px] px-5 text-[14px] font-bold tracking-[0.02em] text-white transition-all duration-300 sm:min-h-[60px] sm:px-6 sm:text-[15px] xl:min-h-full xl:rounded-none xl:rounded-r-[20px]"
+                    whileHover={{ y: -2, scale: 1.01 }}
                     whileTap={{ scale: 0.985 }}
                   >
                     {searchUiCopy.search}
@@ -974,107 +1051,42 @@ export default function Home() {
                 </div>
               )}
 
-              {activeAirportField ? (
-                <div className="mt-2 overflow-hidden rounded-[16px] border border-[#e2e8f2] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.10)]">
-                  <div className="flex items-center justify-between border-b border-[#eef2f7] px-4 py-2.5">
-                    <div className="text-[13px] font-semibold text-[#243042]">{airportPanelTitle}</div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveAirportField(null)}
-                      className="grid h-7 w-7 place-items-center rounded-full border border-[#e2e8f0] text-[#8090a8] transition hover:bg-[#f5f8fc] hover:text-[#1d2430]"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                  <div className="max-h-[260px] overflow-y-auto px-2 py-1">
-                    {airportPanelOptions.map((option) => (
-                      <button
-                        key={option.code}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => {
-                          const value = `${option.code} - ${option.name}`
-                          if (activeAirportField === "from") setFrom(value)
-                          if (activeAirportField === "to") setTo(value)
-                          if (activeAirportField?.startsWith("multi-")) {
-                            const [, indexRaw, field] = activeAirportField.split("-")
-                            const index = Number(indexRaw)
-                            setMultiTrips((prev) =>
-                              prev.map((item, itemIndex) =>
-                                itemIndex === index
-                                  ? { ...item, [field]: value }
-                                  : item
-                              )
-                            )
-                          }
-                          setActiveAirportField(null)
-                        }}
-                        className="flex w-full items-center justify-between gap-3 rounded-[10px] px-3 py-2.5 text-left transition hover:bg-[#f5f8fc]"
-                      >
-                        <span className="flex min-w-0 items-center gap-3">
-                          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[10px] bg-[#eef4ff] text-[#18a0ea]">
-                            <MapPinned size={15} />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block truncate text-[13px] font-semibold text-[#162235]">
-                              {option.name}
-                            </span>
-                            <span className="block text-[11px] text-[#8090a8]">
-                              {option.code}
-                            </span>
-                          </span>
-                        </span>
-                        <span className="shrink-0 rounded-[6px] bg-[#f0f4f9] px-2.5 py-1 text-[11px] font-semibold text-[#4a6080]">
-                          {option.code}
-                        </span>
-                      </button>
-                    ))}
-                    {!airportPanelOptions.length ? (
-                      <div className="py-5 text-center text-[13px] text-[#8090a8]">
-                        {searchUiCopy.airportNotFound}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
-              </div>
+              </BookingGlassBar>
             </motion.div>
             </div>
-          </div>
-        </div>
-      </section>
+      </HeroSection>
 
-      <section className="relative px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14">
+      <section className="relative z-10 px-4 pb-18 pt-14 bg-transparent sm:px-6 md:px-10 lg:px-14">
         <div className="pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.12)_0%,rgba(92,134,211,0)_72%)] blur-3xl" />
         <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/65 bg-white/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#334155] shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[12px] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
               <CircleHelp size={14} />
               {copy.faqBadge}
             </div>
-            <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#1d2430] dark:text-white sm:text-4xl md:text-5xl">
+            <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#0f172a] drop-shadow-[0_3px_18px_rgba(255,255,255,0.72)] dark:text-white sm:text-4xl md:text-5xl">
               {copy.faqTitleA}
-              <span className="block bg-[linear-gradient(135deg,#3a6db8_0%,#7a5a98_48%,#d97753_100%)] bg-clip-text text-transparent">
+              <span className="block bg-[linear-gradient(135deg,#345f9f_0%,#6d4ea0_48%,#bf5d3e_100%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_rgba(255,255,255,0.55)]">
                 {copy.faqTitleB}
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[720px] text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-base">
+            <p className="mx-auto mt-4 max-w-[720px] text-sm leading-7 text-[#475569] drop-shadow-[0_2px_12px_rgba(255,255,255,0.58)] dark:text-[#d2e0f8] sm:text-base">
               {copy.faqDesc}
             </p>
           </div>
 
-          <div className="mt-10 rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_26px_70px_rgba(17,24,39,0.08)] backdrop-blur-xl dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.42)] sm:p-6 md:p-7">
+          <div className="mt-10 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(245,249,255,0.42)_100%)] p-5 shadow-[0_26px_70px_rgba(17,24,39,0.10)] backdrop-blur-[18px] dark:border-[#35507f]/70 dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.62)_0%,rgba(19,35,67,0.48)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.42)] sm:p-6 md:p-7">
             <div className="grid gap-4 md:grid-cols-[1fr_170px]">
               <label className="block">
-                <div className="mb-2 text-sm font-semibold text-[#52627b] dark:text-[#d4e2fb]">
+                <div className="mb-2 text-sm font-semibold text-[#334155] dark:text-[#d4e2fb]">
                   {copy.ask}
                 </div>
-                <div className="flex h-14 items-center gap-3 rounded-2xl border border-[#dbe3ef] bg-white px-4 shadow-[0_8px_20px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.3)]">
+                <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/55 bg-white/34 px-4 shadow-[0_8px_20px_rgba(17,24,39,0.05)] backdrop-blur-[14px] dark:border-[#30476f]/70 dark:bg-[rgba(20,35,66,0.58)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.3)]">
                   <CircleHelp size={18} className="text-[#8da0ba] dark:text-[#9eb5db]" />
                   <input
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
-                    className="h-full w-full bg-transparent text-[15px] font-medium text-[#1d2430] outline-none placeholder:text-[#9aa8bb] dark:text-white dark:placeholder:text-[#8ea5cb]"
+                    className="h-full w-full bg-transparent text-[15px] font-medium text-[#0f172a] outline-none placeholder:text-[#64748b] dark:text-white dark:placeholder:text-[#8ea5cb]"
                     placeholder={copy.askPlaceholder}
                   />
                 </div>
@@ -1096,7 +1108,7 @@ export default function Home() {
                 return (
                   <div
                     key={item.question}
-                    className="overflow-hidden rounded-[22px] border border-[#dde5f0] bg-white/80 shadow-[0_10px_24px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_14px_32px_rgba(4,10,28,0.26)]"
+                    className="overflow-hidden rounded-[22px] border border-white/50 bg-white/34 shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[14px] dark:border-[#30476f]/70 dark:bg-[rgba(20,35,66,0.58)] dark:shadow-[0_14px_32px_rgba(4,10,28,0.26)]"
                   >
                     <button
                       type="button"
@@ -1106,7 +1118,7 @@ export default function Home() {
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#4790d8] dark:bg-[linear-gradient(135deg,rgba(57,95,170,0.34)_0%,rgba(43,72,128,0.38)_100%)] dark:text-[#9dc1ff]">
                         <CircleHelp size={16} />
                       </span>
-                      <span className="flex-1 text-sm font-semibold text-[#314055] dark:text-white sm:text-base">
+                      <span className="flex-1 text-sm font-semibold text-[#1e293b] dark:text-white sm:text-base">
                         {item.question}
                       </span>
                       <ChevronDown
@@ -1124,7 +1136,7 @@ export default function Home() {
                       transition={{ duration: 0.24, ease: "easeOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-[#eef3f8] bg-[linear-gradient(180deg,#f8fbff_0%,#f3f7fc_100%)] px-5 py-4 text-sm leading-7 text-[#627188] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(27,46,84,0.9)_0%,rgba(21,37,69,0.96)_100%)] dark:text-[#d2e0f8]">
+                      <div className="border-t border-white/35 bg-[linear-gradient(180deg,rgba(248,251,255,0.28)_0%,rgba(243,247,252,0.12)_100%)] px-5 py-4 text-sm leading-7 text-[#475569] dark:border-[#30476f]/70 dark:bg-[linear-gradient(180deg,rgba(27,46,84,0.44)_0%,rgba(21,37,69,0.58)_100%)] dark:text-[#d2e0f8]">
                         {item.answer}
                       </div>
                     </motion.div>
@@ -1136,20 +1148,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative px-4 pb-20 sm:px-6 md:px-10 lg:px-14">
+      <section className="relative z-10 px-4 pb-20 bg-transparent sm:px-6 md:px-10 lg:px-14">
         <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6b7b92] shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/65 bg-white/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#334155] shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[12px] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
               <CreditCard size={14} />
               {copy.helpBadge}
             </div>
-            <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#1d2430] dark:text-white sm:text-4xl md:text-5xl">
+            <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#0f172a] drop-shadow-[0_3px_18px_rgba(255,255,255,0.72)] dark:text-white sm:text-4xl md:text-5xl">
               {copy.helpTitleA}
-              <span className="block bg-[linear-gradient(135deg,#3a6db8_0%,#7a5a98_48%,#d97753_100%)] bg-clip-text text-transparent">
+              <span className="block bg-[linear-gradient(135deg,#345f9f_0%,#6d4ea0_48%,#bf5d3e_100%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_rgba(255,255,255,0.55)]">
                 {copy.helpTitleB}
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-base">
+            <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#475569] drop-shadow-[0_2px_12px_rgba(255,255,255,0.58)] dark:text-[#d2e0f8] sm:text-base">
               {copy.helpDesc}
             </p>
           </div>
@@ -1179,7 +1191,7 @@ export default function Home() {
               title={copy.helpCards[1].title}
               text={copy.helpCards[1].text}
             >
-              <p className="mt-4 text-sm leading-6 text-[#627188] dark:text-[#d2e0f8]">
+              <p className="mt-4 text-sm leading-6 text-[#475569] dark:text-[#d2e0f8]">
                 {copy.helpCards[1].extra}
               </p>
             </HelpCard>
@@ -1190,7 +1202,7 @@ export default function Home() {
               title={copy.helpCards[2].title}
               text={copy.helpCards[2].text}
             >
-              <p className="mt-4 text-sm leading-6 text-[#627188] dark:text-[#d2e0f8]">
+              <p className="mt-4 text-sm leading-6 text-[#475569] dark:text-[#d2e0f8]">
                 {copy.helpCards[2].extra}
               </p>
             </HelpCard>
@@ -1241,6 +1253,14 @@ function HomeAutocompleteField({
     en: { select: "select", noResult: "No matching airport or city found.", chooseOption: "Choose an option", close: "Close list" },
   }[language]
 
+  const fieldRef = useRef<HTMLLabelElement | null>(null)
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number
+    left: number
+    width: number
+    maxHeight: number
+  } | null>(null)
+
   const filteredOptions = useMemo(() => {
     const query = normalizeText(value)
     if (!query) return options
@@ -1252,7 +1272,8 @@ function HomeAutocompleteField({
   }, [value])
 
   useEffect(() => {
-    if (!open || typeof window === "undefined" || window.innerWidth >= 1280) return undefined
+    if (!open || typeof window === "undefined") return undefined
+    if (useInlinePanel || window.innerWidth >= 1280) return undefined
 
     const originalOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
@@ -1261,6 +1282,49 @@ function HomeAutocompleteField({
       document.body.style.overflow = originalOverflow
     }
   }, [open])
+
+  useEffect(() => {
+    if (!active || !useInlinePanel || !fieldRef.current) {
+      setDropdownPos(null)
+      return
+    }
+
+    const computePos = () => {
+      const el = fieldRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const gap = 6
+      const margin = 8
+
+      let left = r.left
+      const width = Math.min(r.width, window.innerWidth - margin * 2)
+      if (left + width > window.innerWidth - margin) left = window.innerWidth - width - margin
+      if (left < margin) left = margin
+
+      const spaceBelow = window.innerHeight - r.bottom - gap
+      const top = r.bottom + gap
+      const maxHeight = Math.max(180, Math.min(316, spaceBelow - margin))
+
+      setDropdownPos({ top, left, width, maxHeight })
+    }
+
+    computePos()
+
+    const handleViewportChange = () => {
+      computePos()
+    }
+
+    window.addEventListener("scroll", handleViewportChange, {
+      passive: true,
+      capture: true,
+    })
+    window.addEventListener("resize", handleViewportChange, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", handleViewportChange, true)
+      window.removeEventListener("resize", handleViewportChange)
+    }
+  }, [active, useInlinePanel])
 
   const pickOption = (option: LocationOption) => {
     onChange(`${option.code} - ${option.name}`)
@@ -1285,7 +1349,7 @@ function HomeAutocompleteField({
         ].join(" ")}
       >
         <span>
-          <span className="block text-sm font-semibold text-[#1d2430]">{option.name}</span>
+          <span className="block text-sm font-semibold text-[#0f172a]">{option.name}</span>
           <span className="block text-xs uppercase tracking-[0.14em] text-[#7f8ca0]">{option.code}</span>
         </span>
         <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#637791]">
@@ -1294,107 +1358,175 @@ function HomeAutocompleteField({
       </button>
     ))
   ) : (
-    <div className="px-4 py-4 text-sm text-[#627188]">
+    <div className="px-4 py-4 text-sm text-[#475569]">
       {safeCopy.noResult}
     </div>
   )
 
+  const inlinePanel =
+    active && useInlinePanel && dropdownPos
+      ? createPortal(
+          <div
+            className="overflow-hidden rounded-[20px] luxury-search-floating-panel"
+            style={{
+              position: "fixed",
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              width: dropdownPos.width,
+              zIndex: 9999,
+            }}
+          >
+            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-4 py-2.5">
+              <div className="text-[13px] font-semibold text-[#0f172a]">{label}</div>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onDismiss?.()}
+                className="grid h-8 w-8 place-items-center rounded-full border border-[#dbe3ef] text-[#64748b] transition hover:bg-[#f8fbff] hover:text-[#0f172a]"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <div
+              className="overscroll-contain overflow-y-auto px-2 py-1"
+              style={{ maxHeight: dropdownPos.maxHeight }}
+            >
+              {filteredOptions.map((option) => (
+                <button
+                  key={option.code}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { pickOption(option); onDismiss?.() }}
+                  className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left transition hover:bg-[#f8fbff]"
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="luxury-search-icon h-9 w-9 shrink-0 rounded-[12px]">
+                      <MapPinned size={15} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-[13px] font-semibold text-[#0f172a]">{option.name}</span>
+                      <span className="block text-[11px] text-[#64748b]">{option.code}</span>
+                    </span>
+                  </span>
+                  <span className="shrink-0 rounded-[999px] border border-[#dbe3ef] bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-[#475569]">
+                    {option.code}
+                  </span>
+                </button>
+              ))}
+              {!filteredOptions.length ? (
+                <div className="py-5 text-center text-[13px] text-[#64748b]">{safeCopy.noResult}</div>
+              ) : null}
+            </div>
+          </div>,
+          document.body
+        )
+      : null
+
   return (
-    <label
-      className={[
-        compact
-          ? "relative flex min-h-[58px] items-center gap-3 bg-transparent px-4 sm:px-5"
-          : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
-        compact
-          ? active
-            ? "bg-[#f5f9ff]"
-            : ""
-          : active
-            ? "border-[#18a0ea]/50 shadow-[0_0_0_3px_rgba(24,160,234,0.08)]"
-            : "",
-      ].join(" ")}
-    >
-      <span className="shrink-0 text-[#18a0ea]">
-        {icon ?? <Search size={18} />}
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <input
-          className="w-full bg-transparent text-[14px] font-medium text-[#1d2430] outline-none placeholder:text-[#9aacbf]"
-          placeholder={placeholder}
-          value={value}
-          onFocus={() => {
-            setOpen(true)
-            onActivate?.()
-          }}
-          onBlur={() =>
-            window.setTimeout(() => {
-              setOpen(false)
-              if (!useInlinePanel) onDismiss?.()
-            }, 120)
-          }
-          onKeyDown={(e) => {
-            if (!filteredOptions.length) return
-            if (e.key === "ArrowDown") {
-              e.preventDefault()
+    <>
+      <label
+        ref={fieldRef}
+        className={[
+          compact
+            ? "luxury-search-segment luxury-search-divider relative flex min-h-[66px] items-center gap-3 bg-transparent px-4 sm:min-h-[72px] sm:px-5 xl:after:block after:hidden"
+            : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
+          compact
+            ? active ? "" : ""
+            : active
+              ? "border-[#18a0ea]/50 shadow-[0_0_0_3px_rgba(24,160,234,0.08)]"
+              : "",
+        ].join(" ")}
+        data-active={compact ? (active ? "true" : "false") : undefined}
+      >
+        <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
+          {icon ?? <Search size={18} />}
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          {compact ? (
+            <div className="luxury-search-label mb-1 text-[10px] font-semibold uppercase">
+              {label}
+            </div>
+          ) : null}
+          <input
+            className="luxury-search-input w-full bg-transparent text-[14px] font-medium outline-none sm:text-[15px]"
+            placeholder={placeholder}
+            value={value}
+            onFocus={() => {
               setOpen(true)
-              setActiveIndex((prev) => (prev + 1) % filteredOptions.length)
+              onActivate?.()
+            }}
+            onBlur={() =>
+              window.setTimeout(() => {
+                setOpen(false)
+                if (!useInlinePanel) onDismiss?.()
+              }, 120)
             }
-            if (e.key === "ArrowUp") {
-              e.preventDefault()
+            onKeyDown={(e) => {
+              if (!filteredOptions.length) return
+              if (e.key === "ArrowDown") {
+                e.preventDefault()
+                setOpen(true)
+                setActiveIndex((prev) => (prev + 1) % filteredOptions.length)
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault()
+                setOpen(true)
+                setActiveIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length)
+              }
+              if (e.key === "Enter" && open) {
+                e.preventDefault()
+                pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
+              }
+              if (e.key === "Escape") {
+                setOpen(false)
+                onDismiss?.()
+              }
+            }}
+            onChange={(e) => {
+              onChange(e.target.value)
               setOpen(true)
-              setActiveIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length)
-            }
-            if (e.key === "Enter" && open) {
-              e.preventDefault()
-              pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
-            }
-            if (e.key === "Escape") {
-              setOpen(false)
-              onDismiss?.()
-            }
-          }}
-          onChange={(e) => {
-            onChange(e.target.value)
-            setOpen(true)
-            onActivate?.()
-          }}
-        />
-        {filteredOptions[0] && value.trim() ? (
-          <div className="text-[10px] font-semibold text-[#18a0ea]">{filteredOptions[0].code}</div>
-        ) : null}
-      </div>
-      {open && !useInlinePanel ? (
-        <>
-          <button
-            type="button"
-            aria-label={safeCopy.close}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setOpen(false)}
-            className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
+              onActivate?.()
+            }}
           />
-          <div className="fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] xl:bg-white">
-            <div className="mx-auto mt-2 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
-            <div className="border-b border-[#eef3f8] px-4 py-3 xl:hidden">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c]">
-                {label}
+          {!compact && filteredOptions[0] && value.trim() ? (
+            <div className="text-[10px] font-semibold text-[#18a0ea]">{filteredOptions[0].code}</div>
+          ) : null}
+        </div>
+        {open && !useInlinePanel ? (
+          <>
+            <button
+              type="button"
+              aria-label={safeCopy.close}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
+            />
+            <div className="fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] xl:bg-white">
+              <div className="mx-auto mt-2 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
+              <div className="border-b border-[#eef3f8] px-4 py-3 xl:hidden">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c]">
+                  {label}
+                </div>
+                <div className="mt-1 text-sm font-semibold text-[#0f172a]">
+                  {safeCopy.chooseOption}
+                </div>
               </div>
-              <div className="mt-1 text-sm font-semibold text-[#1d2430]">
-                {safeCopy.chooseOption}
+              <div className="max-h-[calc(62svh-70px)] overflow-y-auto xl:max-h-[320px]">
+                {optionList}
               </div>
             </div>
-            <div className="max-h-[calc(62svh-70px)] overflow-y-auto xl:max-h-[320px]">
-              {optionList}
-            </div>
-          </div>
-        </>
-      ) : null}
-    </label>
+          </>
+        ) : null}
+      </label>
+      {inlinePanel}
+    </>
   )
 }
 
 function PassengerField({
   pax,
   onChange,
+  onActivate,
   label,
   valueLabel,
   icon,
@@ -1402,6 +1534,7 @@ function PassengerField({
 }: {
   pax: number
   onChange: (value: number) => void
+  onActivate?: () => void
   label?: string
   valueLabel?: string
   icon?: ReactNode
@@ -1410,20 +1543,70 @@ function PassengerField({
   void label
   const { language } = useI18n()
   const [open, setOpen] = useState(false)
-  const copy = {
-    uz: { passenger: "Yo'lovchi", passengersCount: "Yo'lovchilar soni", people: "yo'lovchi", count: "ta", done: "Tayyor", close: "Yo'lovchi oynasini yopish" },
-    ru: { passenger: "Р В РЎСџР В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљ", passengersCount: "Р В РЎв„ўР В РЎвЂўР В Р’В»Р В РЎвЂР РЋРІР‚РЋР В Р’ВµР РЋР С“Р РЋРІР‚С™Р В Р вЂ Р В РЎвЂў Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ ", people: "Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљ", count: "", done: "Р В РІР‚СљР В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В Р вЂ Р В РЎвЂў", close: "Р В РІР‚вЂќР В Р’В°Р В РЎвЂќР РЋР вЂљР РЋРІР‚в„–Р РЋРІР‚С™Р РЋР Р‰ Р В РЎвЂўР В РЎвЂќР В Р вЂ¦Р В РЎвЂў Р В РЎвЂ”Р В Р’В°Р РЋР С“Р РЋР С“Р В Р’В°Р В Р’В¶Р В РЎвЂР РЋР вЂљР В РЎвЂўР В Р вЂ " },
-    en: { passenger: "Passenger", passengersCount: "Passenger count", people: "passenger", count: "", done: "Done", close: "Close passenger panel" },
-  }[language]
-  void copy
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const [adults, setAdults] = useState(() => Math.max(1, pax))
+  const [children, setChildren] = useState(0)
+  const [infants, setInfants] = useState(0)
   const safeCopy = {
-    uz: { passenger: "Yo'lovchi", passengersCount: "Yo'lovchilar soni", people: "yo'lovchi", count: "ta", done: "Tayyor", close: "Yo'lovchi oynasini yopish", cabin: "Ekonom" },
-    ru: { passenger: "Р СџР В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚", passengersCount: "Р С™Р С•Р В»Р С‘РЎвЂЎР ВµРЎРѓРЎвЂљР Р†Р С• Р С—Р В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚Р С•Р Р†", people: "Р С—Р В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚", count: "", done: "Р вЂњР С•РЎвЂљР С•Р Р†Р С•", close: "Р вЂ”Р В°Р С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ Р С•Р С”Р Р…Р С• Р С—Р В°РЎРѓРЎРѓР В°Р В¶Р С‘РЎР‚Р С•Р Р†", cabin: "Р В­Р С”Р С•Р Р…Р С•Р С" },
-    en: { passenger: "Passenger", passengersCount: "Passenger count", people: "passenger", count: "", done: "Done", close: "Close passenger panel", cabin: "Economy" },
+    uz: {
+      passenger: "Yo'lovchi",
+      passengersCount: "Yo'lovchilar soni",
+      people: "yo'lovchi",
+      count: "ta",
+      done: "Tayyor",
+      close: "Yo'lovchi oynasini yopish",
+      cabin: "Ekonom",
+      adults: "Kattalar",
+      adultsHint: "12 yoshdan katta",
+      children: "Bolalar",
+      childrenHint: "2 yoshdan 12 yoshgacha",
+      infants: "Chaqaloqlar",
+      infantsHint: "2 yoshgacha, alohida o'rindiqsiz",
+      moreThanNine: "9 tadan ko'p yo'lovchi kerakmi?",
+    },
+    ru: {
+      passenger: "????????",
+      passengersCount: "?????????? ??????????",
+      people: "????????",
+      count: "",
+      done: "??????",
+      close: "??????? ???? ??????????",
+      cabin: "??????",
+      adults: "????????",
+      adultsHint: "?????? 12 ???",
+      children: "????",
+      childrenHint: "?? 2 ?? 12 ???",
+      infants: "????????",
+      infantsHint: "?? 2 ??? ??? ?????",
+      moreThanNine: "????? ?????? 9 ????????",
+    },
+    en: {
+      passenger: "Passenger",
+      passengersCount: "Passenger count",
+      people: "passenger",
+      count: "",
+      done: "Done",
+      close: "Close passenger panel",
+      cabin: "Economy",
+      adults: "Adults",
+      adultsHint: "12 years and older",
+      children: "Children",
+      childrenHint: "from 2 to 12 years",
+      infants: "Infants",
+      infantsHint: "under 2 years, no seat",
+      moreThanNine: "Need more than 9 tickets?",
+    },
   }[language]
 
+  const totalPassengers = useMemo(
+    () => Math.max(1, adults + children + infants),
+    [adults, children, infants]
+  )
+
   useEffect(() => {
-    if (!open || typeof window === "undefined" || window.innerWidth >= 1280) return undefined
+    if (!open || typeof window === "undefined" || window.innerWidth >= 1280) {
+      return undefined
+    }
 
     const originalOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
@@ -1433,23 +1616,131 @@ function PassengerField({
     }
   }, [open])
 
+  useEffect(() => {
+    if (pax === totalPassengers) return
+    setAdults(Math.max(1, pax))
+    setChildren(0)
+    setInfants(0)
+  }, [pax, totalPassengers])
+
+  useEffect(() => {
+    if (!open) return
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!containerRef.current) return
+      if (!containerRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false)
+    }
+
+    window.addEventListener("mousedown", onPointerDown)
+    window.addEventListener("keydown", onEscape)
+
+    return () => {
+      window.removeEventListener("mousedown", onPointerDown)
+      window.removeEventListener("keydown", onEscape)
+    }
+  }, [open])
+
+  const updatePassengers = (
+    nextAdults: number,
+    nextChildren: number,
+    nextInfants: number
+  ) => {
+    const safeAdults = Math.max(1, nextAdults)
+    const safeChildren = Math.max(0, nextChildren)
+    const safeInfants = Math.max(0, Math.min(nextInfants, safeAdults))
+    const nextTotal = safeAdults + safeChildren + safeInfants
+
+    if (nextTotal > 9) return
+
+    setAdults(safeAdults)
+    setChildren(safeChildren)
+    setInfants(safeInfants)
+    onChange(nextTotal)
+  }
+
+  const passengerRows = [
+    {
+      key: "adults",
+      title: safeCopy.adults,
+      hint: safeCopy.adultsHint,
+      value: adults,
+      decrement: () => updatePassengers(adults - 1, children, infants),
+      increment: () => updatePassengers(adults + 1, children, infants),
+      disableDecrement: adults <= 1,
+      disableIncrement: totalPassengers >= 9,
+    },
+    {
+      key: "children",
+      title: safeCopy.children,
+      hint: safeCopy.childrenHint,
+      value: children,
+      decrement: () => updatePassengers(adults, children - 1, infants),
+      increment: () => updatePassengers(adults, children + 1, infants),
+      disableDecrement: children <= 0,
+      disableIncrement: totalPassengers >= 9,
+    },
+    {
+      key: "infants",
+      title: safeCopy.infants,
+      hint: safeCopy.infantsHint,
+      value: infants,
+      decrement: () => updatePassengers(adults, children, infants - 1),
+      increment: () => updatePassengers(adults, children, infants + 1),
+      disableDecrement: infants <= 0,
+      disableIncrement: totalPassengers >= 9 || infants >= adults,
+    },
+  ]
+
+  const fieldShellClass = [
+    compact
+      ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[60px] items-center overflow-visible rounded-[18px] bg-transparent px-4 sm:min-h-[66px] sm:px-5 xl:after:block after:hidden"
+      : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5",
+    open
+      ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+      : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+  ].join(" ")
+
   return (
-    <div className={compact ? "relative flex min-h-[58px] items-center bg-transparent px-4 sm:px-5" : "relative flex min-h-[58px] items-center rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5"}>
+    <div
+      ref={containerRef}
+      className={fieldShellClass}
+    >
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => {
+          onActivate?.()
+          setOpen((prev) => !prev)
+        }}
         className="flex w-full items-center justify-between gap-2"
       >
         <div className="flex items-center gap-3">
-          <span className="shrink-0 text-[#18a0ea]">
+          <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
             {icon ?? <UsersRound size={18} />}
           </span>
           <div>
-            <div className="text-[14px] font-medium text-[#1d2430]">{valueLabel ?? `${pax} ${safeCopy.people}`}</div>
-            <div className="text-[11px] text-[#9aacbf]">{safeCopy.cabin}</div>
+            {compact ? (
+              <div className="luxury-search-label mb-1 text-[10px] font-semibold uppercase">
+                {label ?? safeCopy.passenger}
+              </div>
+            ) : null}
+            <div className="luxury-search-value text-[14px] font-medium sm:text-[15px]">
+              {valueLabel ?? `${pax} ${safeCopy.people}`}
+            </div>
+            <div className="luxury-search-subvalue mt-1 text-[11px]">
+              {safeCopy.cabin}
+            </div>
           </div>
         </div>
-        <ChevronDown size={15} className={`shrink-0 text-[#9aacbf] transition ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          size={15}
+          className={`shrink-0 text-white/56 transition ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open ? (
@@ -1460,26 +1751,53 @@ function PassengerField({
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
           />
-          <div className="fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:w-[240px] xl:rounded-[22px] xl:bg-white">
+          <div className="fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[360px] xl:rounded-[22px] xl:bg-white">
             <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
-            <div className="text-sm font-semibold text-[#1d2430]">{safeCopy.passengersCount}</div>
-            <div className="mt-3 flex items-center justify-between rounded-[18px] bg-[#f6f8fb] px-3 py-3">
-              <button
-                type="button"
-                onClick={() => onChange(Math.max(1, pax - 1))}
-                className="grid h-10 w-10 place-items-center rounded-full bg-white text-xl font-semibold text-[#1d2430] shadow-[0_6px_14px_rgba(17,24,39,0.08)]"
-              >
-                -
-              </button>
-              <div className="text-base font-bold text-[#1d2430]">{pax} {safeCopy.count}</div>
-              <button
-                type="button"
-                onClick={() => onChange(Math.min(9, pax + 1))}
-                className="grid h-10 w-10 place-items-center rounded-full bg-white text-xl font-semibold text-[#1d2430] shadow-[0_6px_14px_rgba(17,24,39,0.08)]"
-              >
-                +
-              </button>
+            <div className="text-sm font-semibold text-[#0f172a]">
+              {safeCopy.passengersCount}
             </div>
+            <div className="mt-3 space-y-2.5">
+              {passengerRows.map((row) => (
+                <div
+                  key={row.key}
+                  className="flex items-center justify-between gap-3 rounded-[18px] border border-[#e7edf6] bg-white/90 px-3 py-3"
+                >
+                  <div className="min-w-0">
+                    <div className="text-[15px] font-bold text-[#0f172a]">
+                      {row.title}
+                    </div>
+                    <div className="text-[12px] text-[#64748b]">{row.hint}</div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3 rounded-[14px] border border-[#d7e6f7] bg-[#f8fbff] px-2.5 py-2">
+                    <button
+                      type="button"
+                      onClick={row.decrement}
+                      disabled={row.disableDecrement}
+                      className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#1697ea] text-xl font-semibold leading-none text-[#1697ea] transition hover:bg-[#eaf6ff] disabled:cursor-not-allowed disabled:border-[#bfd8ea] disabled:text-[#bfd8ea] disabled:hover:bg-transparent"
+                    >
+                      -
+                    </button>
+                    <div className="min-w-[18px] text-center text-lg font-bold text-[#0f172a]">
+                      {row.value}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={row.increment}
+                      disabled={row.disableIncrement}
+                      className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#1697ea] text-xl font-semibold leading-none text-[#1697ea] transition hover:bg-[#eaf6ff] disabled:cursor-not-allowed disabled:border-[#bfd8ea] disabled:text-[#bfd8ea] disabled:hover:bg-transparent"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="mt-4 text-sm font-medium text-[#1697ea] underline underline-offset-4"
+            >
+              {safeCopy.moreThanNine}
+            </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -1514,16 +1832,16 @@ function HelpCard({
   } as const
 
   return (
-    <div className="rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.92)_100%)] p-6 shadow-[0_24px_60px_rgba(17,24,39,0.08)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.10)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] dark:shadow-[0_24px_60px_rgba(4,10,28,0.36)] dark:hover:shadow-[0_28px_70px_rgba(4,10,28,0.46)]">
+    <div className="rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.56)_0%,rgba(245,249,255,0.34)_100%)] p-6 shadow-[0_24px_60px_rgba(17,24,39,0.10)] backdrop-blur-[18px] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.12)] dark:border-[#35507f]/70 dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.62)_0%,rgba(19,35,67,0.48)_100%)] dark:shadow-[0_24px_60px_rgba(4,10,28,0.36)] dark:hover:shadow-[0_28px_70px_rgba(4,10,28,0.46)]">
       <div
         className={`grid h-24 w-24 place-items-center rounded-full border shadow-[0_14px_30px_rgba(17,24,39,0.06)] ${accentStyles[accent]}`}
       >
         {icon}
       </div>
-      <h3 className="mt-6 text-2xl font-extrabold leading-tight text-[#1d2430] dark:text-white">
+      <h3 className="mt-6 text-2xl font-extrabold leading-tight text-[#0f172a] dark:text-white">
         {title}
       </h3>
-      <p className="mt-3 text-sm leading-7 text-[#627188] dark:text-[#d2e0f8] sm:text-[15px]">{text}</p>
+      <p className="mt-3 text-sm leading-7 text-[#475569] dark:text-[#d2e0f8] sm:text-[15px]">{text}</p>
       {children}
     </div>
   )
