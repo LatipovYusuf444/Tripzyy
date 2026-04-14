@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Link, NavLink, useNavigate } from "react-router-dom"
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
 import {
   ChevronDown,
@@ -40,10 +40,13 @@ const menuVariants = {
 }
 
 const actionBtnClass =
-  "h-10 rounded-full border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_10px_24px_rgba(17,24,39,0.18)] transition hover:brightness-110 dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(4,10,28,0.42)]"
+  "h-10 rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:brightness-110 " +
+  "border-[#d7e4f4] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.12)] " +
+  "dark:border-white/15 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.08)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(2,8,24,0.28)]"
 
 const desktopGlassClass =
-  "border border-white/16 bg-[linear-gradient(180deg,rgba(10,18,32,0.62)_0%,rgba(10,18,32,0.48)_100%)] text-white shadow-[0_16px_36px_rgba(3,8,24,0.24)] backdrop-blur-[16px] supports-[backdrop-filter]:bg-[linear-gradient(180deg,rgba(10,18,32,0.58)_0%,rgba(10,18,32,0.44)_100%)] dark:border-white/10 dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_12px_28px_rgba(4,10,28,0.34)]"
+  "border border-[#d7e4f4] bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(49,87,143,0.10)] backdrop-blur-[18px] " +
+  "dark:border-white/15 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.08)_100%)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.28)]"
 
 type NavLinkItem = {
   to: string
@@ -53,6 +56,9 @@ type NavLinkItem = {
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isHome = location.pathname === "/"
+  const isCompactNavbar = !isHome
   const { language, setLanguage } = useI18n()
   const languageMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -170,9 +176,7 @@ export default function Navbar() {
       .toUpperCase()
   }, [user])
 
-  const userAccountLabel =
-    language === "uz" ? "Akkaunt" : language === "ru" ? "Аккаунт" : "Account"
-  const userMemberLabel =
+const userMemberLabel =
     language === "uz"
       ? "Tripzy a'zosi"
       : language === "ru"
@@ -272,11 +276,15 @@ export default function Navbar() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
         className={[
-          "w-full px-4 py-2 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2.5",
-          "border-b border-transparent bg-transparent shadow-none backdrop-blur-0 supports-[backdrop-filter]:bg-transparent dark:border-transparent dark:bg-transparent",
+          isCompactNavbar
+            ? "w-full px-4 py-1.5 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2"
+            : "w-full px-4 py-2 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2.5",
+          isHome
+            ? "border-b border-transparent bg-transparent shadow-none"
+            : "border-b border-white/55 bg-white/52 shadow-[0_4px_18px_rgba(20,40,90,0.05)] backdrop-blur-[22px] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.06)_100%)] dark:shadow-[0_4px_22px_rgba(2,8,24,0.26)] dark:backdrop-blur-[22px]",
         ].join(" ")}
       >
-        <div className="mx-auto flex !max-w-[1640px] items-center justify-between gap-4 lg:gap-10">
+        <div className={`mx-auto flex !max-w-[1640px] items-center justify-between gap-4 ${isCompactNavbar ? "lg:gap-8" : "lg:gap-10"}`}>
           <Link
             to="/"
             className="hidden shrink-0 items-center justify-center lg:flex"
@@ -286,12 +294,12 @@ export default function Navbar() {
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className="block h-auto !w-[310px] object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)]"
+              className={`block h-auto object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] ${isCompactNavbar ? "!w-[248px]" : "!w-[310px]"}`}
             />
           </Link>
 
           <div className="hidden min-w-0 flex-1 items-center lg:flex">
-            <div className="flex min-w-0 flex-1 items-center justify-center gap-7 px-10 xl:gap-9 xl:px-14">
+            <div className={`flex min-w-0 flex-1 items-center justify-center ${isCompactNavbar ? "gap-4 px-4 xl:gap-6 xl:px-6 2xl:gap-7 2xl:px-10" : "gap-5 px-6 xl:gap-8 xl:px-10 2xl:gap-9 2xl:px-14"}`}>
               {desktopLinks.map((link) => (
                 <NavItem
                   key={link.to}
@@ -299,27 +307,29 @@ export default function Navbar() {
                   label={link.label}
                   icon={link.icon}
                   badge={link.to === "/checkout" ? paxCount : 0}
+                  isHome={isHome}
+                  theme={theme}
                 />
               ))}
             </div>
 
-            <div className="ml-6 flex shrink-0 items-center gap-3">
+            <div className={`flex shrink-0 items-center ${isCompactNavbar ? "ml-6 gap-2.5 xl:ml-8" : "ml-8 gap-3.5 xl:ml-10"}`}>
               <div
                 ref={languageMenuRef}
                 className="relative"
               >
-                <div className="flex items-center gap-1 rounded-full border border-white/14 bg-[linear-gradient(180deg,rgba(29,36,49,0.92)_0%,rgba(22,28,39,0.88)_100%)] p-1 shadow-[0_14px_34px_rgba(3,8,24,0.24)] backdrop-blur-[14px]">
+                <div className={`flex items-center gap-1 rounded-full border border-[#d7e4f4] bg-white/58 shadow-[0_8px_20px_rgba(49,87,143,0.10)] backdrop-blur-[16px] dark:border-white/14 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.07)_100%)] ${isCompactNavbar ? "p-0.5" : "p-1"}`}>
                   <button
                     type="button"
                     onClick={() => setLanguageMenuOpen((value) => !value)}
                     aria-haspopup="menu"
                     aria-expanded={languageMenuOpen}
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#111827] ring-1 ring-black/6 shadow-[0_10px_22px_rgba(255,255,255,0.24)] transition-all duration-200"
+                    className={`inline-flex items-center gap-2 rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] font-bold uppercase tracking-[0.06em] text-[#111827] shadow-[0_6px_16px_rgba(49,87,143,0.10)] transition-all duration-200 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
                   >
                     <span>{language}</span>
                     <ChevronDown
-                      size={14}
-                      className={`text-[#475569] transition ${languageMenuOpen ? "rotate-180" : ""}`}
+                      size={isCompactNavbar ? 12 : 14}
+                      className={`text-current/70 transition ${languageMenuOpen ? "rotate-180" : ""}`}
                     />
                   </button>
                 </div>
@@ -331,7 +341,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
-                      className="absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] border border-white/18 bg-[linear-gradient(180deg,rgba(29,36,49,0.96)_0%,rgba(22,28,39,0.94)_100%)] p-2 shadow-[0_22px_50px_rgba(3,8,24,0.34)] backdrop-blur-[18px]"
+                    className="absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] border border-[#d7e4f4] bg-white/90 p-2 shadow-[0_18px_40px_rgba(49,87,143,0.12)] backdrop-blur-[18px] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"
                     >
                       {otherLanguages.map((lang) => (
                         <button
@@ -341,7 +351,7 @@ export default function Navbar() {
                             setLanguage(lang)
                             setLanguageMenuOpen(false)
                           }}
-                          className="flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white/82 transition hover:bg-white/8 hover:text-white"
+                          className="flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2a3a58] transition hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"
                         >
                           {lang}
                         </button>
@@ -355,14 +365,19 @@ export default function Navbar() {
                 type="button"
                 aria-label={copy.switchTheme}
                 onClick={onToggleTheme}
-                className={`inline-flex h-11 items-center gap-2 rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.08em] transition hover:bg-white/10 ${desktopGlassClass}`}
+                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition hover:bg-white/10 ${desktopGlassClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
+                style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
               >
-                {theme === "dark" ? <SunMedium size={14} /> : <MoonStar size={14} />}
+                {theme === "dark" ? <SunMedium size={isCompactNavbar ? 12 : 14} /> : <MoonStar size={isCompactNavbar ? 12 : 14} />}
                 {theme === "dark" ? copy.themeLight : copy.themeDark}
               </button>
 
               {!authed ? (
-                  <Button onClick={goAuth} className={`${actionBtnClass} px-5`}>
+                  <Button
+                    onClick={goAuth}
+                    className={`${actionBtnClass} ${isCompactNavbar ? "h-9 px-4 text-[10px]" : "px-5"}`}
+                    style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
+                  >
                   {copy.login}
                 </Button>
               ) : (
@@ -370,21 +385,16 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={goProfile}
-                    className={`group flex h-12 items-center gap-3 rounded-full px-3 pr-4 text-left transition hover:bg-white/10 ${desktopGlassClass}`}
+                    className={`grid shrink-0 place-items-center rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] font-bold uppercase tracking-[0.12em] text-[#111827] shadow-[0_6px_16px_rgba(49,87,143,0.10)] transition hover:opacity-80 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white ${isCompactNavbar ? "h-9 w-9 text-[10px]" : "h-10 w-10 text-[11px]"}`}
+                    style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
                   >
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#20304a_0%,#111827_100%)] text-[11px] font-bold uppercase tracking-[0.12em] text-white dark:bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)]">
-                      {userInitials}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[11px] font-semibold uppercase tracking-[0.12em] text-white/68 dark:text-[#9fb4d7]">
-                        {userAccountLabel}
-                      </span>
-                      <span className="block max-w-[168px] truncate text-[15px] font-bold text-white dark:text-white">
-                        {user?.fullName || copy.profile}
-                      </span>
-                    </span>
+                    {userInitials}
                   </button>
-                  <Button onClick={logout} className={actionBtnClass}>
+                  <Button
+                    onClick={logout}
+                    className={`${actionBtnClass} ${isCompactNavbar ? "h-9 px-4 text-[10px]" : ""}`}
+                    style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
+                  >
                     <LogOut className="mr-1.5" size={14} />
                     {copy.logout}
                   </Button>
@@ -402,7 +412,7 @@ export default function Navbar() {
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className="block h-auto w-[188px] object-contain sm:w-[204px]"
+              className={`block h-auto object-contain ${isCompactNavbar ? "w-[164px] sm:w-[176px]" : "w-[188px] sm:w-[204px]"}`}
             />
           </Link>
 
@@ -410,9 +420,9 @@ export default function Navbar() {
             type="button"
             aria-label={copy.openMenu}
             onClick={() => setOpen((value) => !value)}
-            className="ml-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/70 bg-white/80 text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] transition hover:bg-white dark:border-[#36507f] dark:bg-[rgba(18,33,62,0.86)] dark:text-white dark:shadow-[0_12px_28px_rgba(4,10,28,0.28)] lg:hidden"
+            className={`ml-auto inline-flex items-center justify-center rounded-2xl border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] transition hover:bg-white/80 dark:border-white/14 dark:bg-[rgba(255,255,255,0.10)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.24)] lg:hidden ${isCompactNavbar ? "h-10 w-10" : "h-12 w-12"}`}
           >
-            {open ? <X size={22} /> : <Menu size={22} />}
+            {open ? <X size={isCompactNavbar ? 20 : 22} /> : <Menu size={isCompactNavbar ? 20 : 22} />}
           </button>
         </div>
 
@@ -436,7 +446,7 @@ export default function Navbar() {
                 exit="closed"
                 variants={menuVariants}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className="fixed inset-x-3 top-[88px] z-[106] max-h-[calc(100svh-102px)] overflow-hidden rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,248,253,0.96)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.16)] dark:border-[#36507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.98)_0%,rgba(18,32,60,0.97)_100%)] dark:shadow-[0_28px_70px_rgba(4,10,28,0.56)] lg:hidden"
+                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.97)_0%,rgba(248,251,255,0.95)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.96)_0%,rgba(15,28,56,0.94)_100%)] dark:shadow-[0_28px_70px_rgba(4,10,28,0.34)] lg:hidden ${isCompactNavbar ? "top-[74px] max-h-[calc(100svh-88px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
               >
                 <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3 dark:border-[#2c416a]">
                   <div>
@@ -592,33 +602,78 @@ function NavItem({
   label,
   icon: Icon,
   badge = 0,
+  isHome,
+  theme,
 }: {
   to: string
   label: string
   icon?: LucideIcon
   badge?: number
+  isHome: boolean
+  theme: SiteTheme
 }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         [
-          "group relative inline-flex items-center gap-1.5 whitespace-nowrap pb-2 font-semibold uppercase tracking-[0.14em] transition",
-          "text-[13px] xl:text-[14px]",
-          isActive
-            ? "text-white after:scale-x-100 after:opacity-100 dark:text-white"
-            : "text-white/84 hover:text-white after:scale-x-70 after:opacity-70 dark:text-white/78 dark:hover:text-white",
-          "drop-shadow-[0_2px_10px_rgba(3,8,24,0.34)] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:rounded-full after:bg-[linear-gradient(90deg,#d8e6ff_0%,#63a3ff_55%,#eef5ff_100%)] after:opacity-0 after:transition after:duration-300 hover:after:scale-x-100 hover:after:opacity-100 dark:after:bg-[linear-gradient(90deg,#8fb2ff_0%,#4b79ff_55%,#c1daff_100%)]",
+          "group relative inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 pb-2 pt-1 font-semibold uppercase tracking-[0.12em] transition duration-300",
+          "text-[12px] xl:text-[13px] 2xl:text-[14px]",
+          isActive ? "translate-y-[-1px]" : "hover:translate-y-[-1px]",
         ].join(" ")
       }
     >
-      {Icon ? <Icon size={14} strokeWidth={2.1} /> : null}
-      <span>{label}</span>
-      {badge > 0 ? (
-        <span className="rounded-full bg-white/18 px-2 py-0.5 text-[10px] tracking-normal text-white dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
-          {badge}
-        </span>
-      ) : null}
+      {({ isActive }) => {
+        const lightText = "#111827"
+        const darkText = "#ffffff"
+        const textColor = isHome ? darkText : theme === "dark" ? darkText : lightText
+
+        const accentMap: Record<string, { line: string; glow: string }> = {
+          "/flights": { line: "linear-gradient(90deg,#2f7fe0 0%,#7fb7ff 100%)", glow: "rgba(47,127,224,0.28)" },
+          "/about": { line: "linear-gradient(90deg,#111827 0%,#4b5563 55%,#9ca3af 100%)", glow: "rgba(75,85,99,0.22)" },
+          "/checkout": { line: "linear-gradient(90deg,#0f172a 0%,#2563eb 45%,#60a5fa 100%)", glow: "rgba(37,99,235,0.24)" },
+          "/services": { line: "linear-gradient(90deg,#1d4ed8 0%,#38bdf8 50%,#93c5fd 100%)", glow: "rgba(56,189,248,0.24)" },
+          "/contact": { line: "linear-gradient(90deg,#374151 0%,#111827 55%,#2563eb 100%)", glow: "rgba(55,65,81,0.22)" },
+        }
+
+        const accent = accentMap[to] ?? accentMap["/flights"]
+
+        return (
+          <>
+            {Icon ? <Icon size={14} strokeWidth={2.1} style={{ color: textColor }} /> : null}
+            <span className="relative" style={{ color: textColor }}>
+              {label}
+              <span
+                aria-hidden
+                className={[
+                  "pointer-events-none absolute left-0 right-0 -bottom-[8px] h-[10px] rounded-full blur-[8px] transition-all duration-700 ease-out",
+                  isActive ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100",
+                ].join(" ")}
+                style={{ background: accent.glow }}
+              />
+              <span
+                aria-hidden
+                className={[
+                  "pointer-events-none absolute left-0 right-0 -bottom-[3px] h-[2.5px] origin-left rounded-full transition-transform duration-700 ease-out",
+                  isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+                ].join(" ")}
+                style={{ background: accent.line }}
+              />
+            </span>
+            {badge > 0 ? (
+              <span
+                className="rounded-full px-2 py-0.5 text-[10px] tracking-normal"
+                style={{
+                  color: textColor,
+                  background: isHome ? "rgba(255,255,255,0.14)" : theme === "dark" ? "rgba(255,255,255,0.18)" : "rgba(17,24,39,0.08)",
+                }}
+              >
+                {badge}
+              </span>
+            ) : null}
+          </>
+        )
+      }}
     </NavLink>
   )
 }

@@ -166,8 +166,8 @@ export default function Contact() {
   }[language]
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#e2e8ef_0%,#eef3f8_18%,#f8fbff_62%,#eaf0f7_100%)] pt-20 text-[#1d2430] dark:bg-[linear-gradient(180deg,#07111f_0%,#0a1730_24%,#102347_58%,#0a1730_100%)] dark:text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_360px_at_16%_0%,rgba(82,122,199,0.16),transparent_58%),radial-gradient(720px_300px_at_86%_4%,rgba(219,116,101,0.12),transparent_56%),radial-gradient(760px_280px_at_50%_24%,rgba(154,91,142,0.08),transparent_62%)] dark:bg-[radial-gradient(920px_380px_at_16%_0%,rgba(78,118,204,0.24),transparent_58%),radial-gradient(760px_320px_at_84%_6%,rgba(126,82,194,0.16),transparent_56%),radial-gradient(760px_320px_at_50%_24%,rgba(40,87,168,0.22),transparent_62%)]" />
+    <section className="secondary-page-shell relative overflow-hidden pt-20">
+      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
         <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7 dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]">

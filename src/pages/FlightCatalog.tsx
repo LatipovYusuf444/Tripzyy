@@ -166,7 +166,7 @@ export default function FlightCatalog() {
   }
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#f6faff_0%,#eef4fb_30%,#e8eef7_100%)] px-4 pb-16 pt-24 text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_30%,#15254a_100%)] dark:text-white sm:px-6 md:px-8">
+    <section className="secondary-page-shell min-h-screen px-4 pb-16 pt-24 sm:px-6 md:px-8">
       <div className="mx-auto max-w-[1560px] 2xl:max-w-[1720px]">
         <div className="rounded-[34px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,248,255,0.94)_100%)] p-6 shadow-[0_24px_70px_rgba(17,24,39,0.09)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.95)_0%,rgba(19,35,67,0.92)_100%)] dark:shadow-[0_24px_70px_rgba(4,10,28,0.4)] md:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

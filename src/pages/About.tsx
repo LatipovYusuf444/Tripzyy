@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform, type Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -72,25 +72,11 @@ const softScale: Variants = {
 };
 
 function LuxuryGlow({ className = "" }: { className?: string }) {
-  return (
-    <motion.div
-      aria-hidden
-      className={`absolute rounded-full blur-3xl ${className}`}
-      animate={{ x: [0, 22, -12, 0], y: [0, -20, 18, 0], scale: [1, 1.08, 0.96, 1] }}
-      transition={{ duration: 10, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-    />
-  );
+  return <div aria-hidden className={`absolute rounded-full blur-3xl ${className}`} />;
 }
 
 function ShineOverlay() {
-  return (
-    <motion.div
-      aria-hidden
-      className="pointer-events-none absolute inset-y-0 -left-[35%] w-[28%] rotate-12 bg-white/20 blur-md"
-      animate={{ x: ["0%", "430%"] }}
-      transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 1.8, ease: "easeInOut" }}
-    />
-  );
+  return <div aria-hidden className="pointer-events-none absolute inset-y-0 right-[-14%] w-[26%] rotate-12 bg-white/12 blur-md" />;
 }
 
 function getCopy(language: "uz" | "ru" | "en") {
@@ -273,12 +259,8 @@ export default function About() {
   const carouselTimer = useRef<number | null>(null);
   const heroRef = useRef<HTMLDivElement | null>(null);
   const [animate, setAnimate] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(true);
   const [carouselActive, setCarouselActive] = useState(false);
-
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 80]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.9], [1, reduceMotion ? 1 : 0.75]);
 
   const copy = getCopy(language);
   const stats = statMeta.map((item, index) => ({ ...item, ...copy.stats[index] }));
@@ -286,7 +268,7 @@ export default function About() {
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => setReduceMotion(!!mq.matches);
+    const apply = () => setReduceMotion(!!mq.matches || (navigator.hardwareConcurrency ?? 4) <= 6);
     apply();
     if (mq.addEventListener) mq.addEventListener("change", apply);
     else mq.addListener(apply);
@@ -335,7 +317,7 @@ export default function About() {
       el.scrollBy({ left: cardW, behavior: "smooth" });
       if (el.scrollLeft >= el.scrollWidth / 2) el.scrollTo({ left: 0, behavior: "auto" });
     };
-    carouselTimer.current = window.setInterval(step, 2400);
+    carouselTimer.current = window.setInterval(step, 5200);
     return () => {
       if (carouselTimer.current) window.clearInterval(carouselTimer.current);
     };
@@ -356,7 +338,7 @@ export default function About() {
       const cardW = card.offsetWidth + 24;
       el.scrollBy({ left: cardW, behavior: "smooth" });
       if (el.scrollLeft >= el.scrollWidth / 2) el.scrollTo({ left: 0, behavior: "auto" });
-    }, 2400);
+    }, 5200);
   };
 
   const moveCarousel = (dir: "left" | "right") => {
@@ -369,7 +351,8 @@ export default function About() {
   };
 
   return (
-    <div className="relative overflow-hidden bg-[#f7f7f8] text-[#111827] dark:bg-[linear-gradient(180deg,#07111f_0%,#0a1730_24%,#102347_58%,#0a1730_100%)] dark:text-white">
+    <div className="secondary-page-shell relative overflow-hidden bg-white text-[#111827] dark:bg-transparent" style={{ backgroundColor: "#ffffff" }}>
+      <div className="pointer-events-none absolute inset-0 hidden dark:block secondary-page-overlay" />
       {!reduceMotion && (
         <>
           <LuxuryGlow className="left-[-120px] top-[120px] h-[280px] w-[280px] bg-[#ff6a00]/20" />
@@ -377,9 +360,9 @@ export default function About() {
           <LuxuryGlow className="left-[25%] bottom-[10%] h-[240px] w-[240px] bg-[#5f7897]/20" />
         </>
       )}
-      <section ref={heroRef} className="relative bg-white dark:bg-transparent">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,106,0,0.08),transparent_35%),radial-gradient(circle_at_top_right,rgba(138,58,90,0.08),transparent_32%),linear-gradient(to_bottom,rgba(255,255,255,1),rgba(250,250,250,1))] dark:bg-[radial-gradient(circle_at_top_left,rgba(57,98,188,0.22),transparent_35%),radial-gradient(circle_at_top_right,rgba(119,72,175,0.18),transparent_32%),linear-gradient(to_bottom,rgba(8,18,38,0.78),rgba(7,17,31,0.28))]" />
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-32 md:px-8 2xl:max-w-[1680px]">
+      <section ref={heroRef} className="relative bg-white dark:bg-transparent" style={{ backgroundColor: "#ffffff" }}>
+        <div className="absolute inset-0 bg-white dark:bg-[radial-gradient(circle_at_top_left,rgba(57,98,188,0.22),transparent_35%),radial-gradient(circle_at_top_right,rgba(119,72,175,0.18),transparent_32%),linear-gradient(to_bottom,rgba(8,18,38,0.78),rgba(7,17,31,0.28))]" />
+        <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-32 md:px-8 2xl:max-w-[1680px]">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }}>
               <motion.h1 variants={fadeUp} className="mt-5 text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl xl:text-6xl">
@@ -413,7 +396,7 @@ export default function About() {
             </motion.div>
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} className="grid grid-cols-2 gap-4">
               {heroImages.map((src, i) => (
-                <motion.div key={src} variants={softScale} whileHover={{ y: -8, scale: 1.02 }} transition={{ duration: 0.4 }} className={`group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/70 shadow-[0_18px_60px_rgba(0,0,0,0.12)] backdrop-blur dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)] ${i === 1 ? "mt-10" : ""}`}>
+                <motion.div key={src} variants={softScale} whileHover={{ y: -8, scale: 1.02 }} transition={{ duration: 0.4 }} className={`group relative overflow-hidden rounded-[28px] border border-[#dbe5f2] bg-white/92 shadow-[0_18px_60px_rgba(17,24,39,0.10)] backdrop-blur dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)] ${i === 1 ? "mt-10" : ""}`}>
                   <motion.img src={src} alt="Tour" loading="lazy" className="h-[240px] w-full object-cover md:h-[280px]" whileHover={{ scale: 1.08 }} transition={{ duration: 0.8, ease: "easeOut" }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-white/10" />
                   {!reduceMotion && <ShineOverlay />}
@@ -423,8 +406,8 @@ export default function About() {
           </div>
         </motion.div>
         <div className="mt-6" ref={statsRef}>
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#dfe9f1] via-[#bfd2e3] to-[#91aac3] dark:bg-[linear-gradient(135deg,#102347_0%,#15315f_48%,#0c1d3d_100%)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.25),transparent_45%)] dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_48%)]" />
+          <div className="relative overflow-hidden rounded-[32px] border border-[#dbe5f2] bg-white shadow-[0_18px_50px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,#102347_0%,#15315f_48%,#0c1d3d_100%)] dark:shadow-[0_24px_60px_rgba(2,8,24,0.34)]">
+            <div className="absolute inset-0 bg-transparent dark:bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08),transparent_48%)]" />
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="relative mx-auto grid max-w-[1500px] grid-cols-2 gap-6 px-5 py-12 md:grid-cols-3 md:px-8 lg:grid-cols-6 2xl:max-w-[1680px]">
               {stats.map((s) => (
                 <motion.div key={s.title} variants={softScale}>
@@ -454,7 +437,7 @@ export default function About() {
                 ))}
               </ul>
             </motion.div>
-            <motion.div variants={softScale} whileHover={{ y: -6 }} className="group relative overflow-hidden rounded-[28px] border border-white/50 bg-white/80 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.12)] backdrop-blur dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.78)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
+            <motion.div variants={softScale} whileHover={{ y: -6 }} className="group relative overflow-hidden rounded-[28px] border border-[#dbe5f2] bg-white p-4 shadow-[0_22px_60px_rgba(17,24,39,0.08)] backdrop-blur dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.78)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
               <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80&fm=webp" alt="Travel" className="h-[380px] w-full rounded-2xl object-cover transition duration-700 group-hover:scale-[1.04]" loading="lazy" />
               <div className="absolute inset-4 rounded-2xl ring-1 ring-white/40" />
               {!reduceMotion && <ShineOverlay />}
@@ -462,7 +445,7 @@ export default function About() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap} className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-3">
             {copy.benefits.map((x) => (
-              <motion.div key={x.title} variants={softScale} whileHover={{ y: -8, scale: 1.01 }} className="group relative overflow-hidden rounded-[24px] border border-black/5 bg-white p-6 shadow-[0_18px_50px_rgba(0,0,0,0.08)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]">
+              <motion.div key={x.title} variants={softScale} whileHover={{ y: -8, scale: 1.01 }} className="group relative overflow-hidden rounded-[24px] border border-[#dbe5f2] bg-white p-6 shadow-[0_18px_50px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]">
                 <motion.div className="absolute inset-0 bg-gradient-to-br from-[#ff6a00]/0 via-[#ff6a00]/0 to-[#8A3A5A]/0" whileHover={{ background: "linear-gradient(135deg, rgba(255,106,0,0.06), rgba(138,58,90,0.08))" }} />
                 {!reduceMotion && <ShineOverlay />}
                 <div className="relative flex items-start gap-5">
@@ -491,7 +474,7 @@ export default function About() {
             <motion.div variants={fadeUp} className="mx-auto mt-5 h-1 w-16 bg-[#ff6a00]" />
             <div className="mt-10 grid grid-cols-1 items-center gap-6 sm:grid-cols-2 lg:grid-cols-6">
               {certImages.map((src, i) => (
-                <motion.div key={src} variants={softScale} whileHover={{ y: -8, scale: 1.03 }} className="group relative overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_14px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_70px_rgba(0,0,0,0.18)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_20px_55px_rgba(2,8,24,0.34)] dark:hover:shadow-[0_28px_80px_rgba(2,8,24,0.46)]">
+                <motion.div key={src} variants={softScale} whileHover={{ y: -8, scale: 1.03 }} className="group relative overflow-hidden rounded-2xl border border-[#dbe5f2] bg-white shadow-[0_14px_36px_rgba(17,24,39,0.08)] hover:shadow-[0_22px_70px_rgba(17,24,39,0.14)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_20px_55px_rgba(2,8,24,0.34)] dark:hover:shadow-[0_28px_80px_rgba(2,8,24,0.46)]">
                   <img src={src} alt={`${copy.certificateAlt} ${i + 1}`} className="aspect-[4/5] h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-white/10" />
                   {!reduceMotion && <ShineOverlay />}
@@ -502,7 +485,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-[#fcfcfd] py-16 dark:bg-transparent">
+      <section className="bg-white py-16 dark:bg-transparent">
         <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
@@ -513,21 +496,21 @@ export default function About() {
             </motion.h3>
             <motion.div variants={fadeUp} className="mx-auto mt-5 h-1 w-16 bg-[#ff6a00]" />
             <motion.div variants={fadeUp} className="relative mt-10">
-              <button type="button" aria-label={copy.prev} onClick={() => moveCarousel("left")} className="absolute -left-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-black/10 bg-white/90 shadow-md backdrop-blur transition hover:shadow-xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.34)]">
+              <button type="button" aria-label={copy.prev} onClick={() => moveCarousel("left")} className="absolute -left-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#dbe5f2] bg-white shadow-md backdrop-blur transition hover:shadow-xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.34)]">
                 ‹
               </button>
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-[#fcfcfd] to-transparent dark:from-[#0a1730]" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-[#fcfcfd] to-transparent dark:from-[#0a1730]" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-white to-transparent dark:from-[#0a1730]" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-white to-transparent dark:from-[#0a1730]" />
               <div ref={carouselRef} onMouseEnter={pauseCarousel} onMouseLeave={resumeCarousel} className="overflow-hidden">
                 <div className="flex w-max gap-6 pr-6">
                   {[...partnerLogos, ...partnerLogos].map((p, i) => (
-                    <motion.div key={`${p.name}-${i}`} data-partner-card whileHover={{ y: -6, scale: 1.02 }} className="group grid h-24 min-w-[210px] place-items-center rounded-2xl border border-black/5 bg-white px-5 shadow-[0_12px_28px_rgba(0,0,0,0.08)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_18px_40px_rgba(2,8,24,0.34)]">
+                    <motion.div key={`${p.name}-${i}`} data-partner-card whileHover={{ y: -6, scale: 1.02 }} className="group grid h-24 min-w-[210px] place-items-center rounded-2xl border border-[#dbe5f2] bg-white px-5 shadow-[0_12px_28px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_18px_40px_rgba(2,8,24,0.34)]">
                       <img src={p.logo} alt={p.name} className="max-h-12 w-auto object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
                     </motion.div>
                   ))}
                 </div>
               </div>
-              <button type="button" aria-label={copy.next} onClick={() => moveCarousel("right")} className="absolute -right-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-black/10 bg-white/90 shadow-md backdrop-blur transition hover:shadow-xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.34)]">
+              <button type="button" aria-label={copy.next} onClick={() => moveCarousel("right")} className="absolute -right-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#dbe5f2] bg-white shadow-md backdrop-blur transition hover:shadow-xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.34)]">
                 ›
               </button>
             </motion.div>
@@ -621,16 +604,16 @@ function StatItem({ data, animate }: { data: { icon: LucideIcon; end: number; su
   const display = useMemo(() => `${val}${data.suffix}`, [val, data.suffix]);
 
   return (
-    <motion.div whileHover={{ y: -8, scale: 1.02 }} className="group relative h-full overflow-hidden rounded-[24px] border border-white/25 bg-white/20 p-5 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(255,255,255,0.06)] dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.58)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.3)]">
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent dark:from-white/8 dark:via-white/4" />
-      <motion.div animate={{ y: [0, -5, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} className="relative flex flex-col items-center">
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/50 shadow-[0_10px_25px_rgba(0,0,0,0.08)] dark:bg-[rgba(24,43,80,0.8)] dark:shadow-[0_14px_28px_rgba(2,8,24,0.26)]">
+    <motion.div whileHover={{ y: -8, scale: 1.02 }} className="group relative h-full overflow-hidden rounded-[24px] border border-[#dbe5f2] bg-white p-5 text-center backdrop-blur-md shadow-[0_18px_40px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.58)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.3)]">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#f8fbff] via-white to-transparent dark:from-white/8 dark:via-white/4" />
+      <div className="relative flex flex-col items-center">
+        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[linear-gradient(135deg,#fff3eb_0%,#ffe6d6_100%)] shadow-[0_10px_25px_rgba(255,106,0,0.10)] dark:bg-[rgba(24,43,80,0.8)] dark:shadow-[0_14px_28px_rgba(2,8,24,0.26)]">
           <Icon size={34} className="text-[#8A3A5A] dark:text-[#d7a7bd]" />
         </div>
-        <div className="mt-4 text-4xl font-extrabold text-black dark:text-white">{display}</div>
-        <div className="mt-2 flex min-h-[40px] items-center justify-center text-center text-sm font-semibold tracking-wide text-black dark:text-white">{data.title}</div>
-        <div className="mt-4 flex min-h-[72px] items-center justify-center text-center text-sm leading-relaxed text-black/80 dark:text-[#cfe0fb] md:text-base">{data.desc}</div>
-      </motion.div>
+        <div className="mt-4 text-4xl font-extrabold text-[#111827] dark:text-white">{display}</div>
+        <div className="mt-2 flex min-h-[40px] items-center justify-center text-center text-sm font-semibold tracking-wide text-[#111827] dark:text-white">{data.title}</div>
+        <div className="mt-4 flex min-h-[72px] items-center justify-center text-center text-sm leading-relaxed text-[#4a5361] dark:text-[#cfe0fb] md:text-base">{data.desc}</div>
+      </div>
     </motion.div>
   );
 }

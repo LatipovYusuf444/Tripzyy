@@ -219,14 +219,14 @@ export default function RegisterPage({
   }
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[#060d1c] text-white">
+    <section className="secondary-page-shell relative min-h-screen overflow-hidden">
       <div className="absolute inset-0">
         <img
           src={dubaiImage}
           alt="Tripzy background"
-          className="h-full w-full object-cover opacity-[0.07]"
+          className="h-full w-full object-cover opacity-[0.05] dark:opacity-[0.07]"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(208,160,77,0.07),transparent_28%),radial-gradient(circle_at_85%_80%,rgba(208,160,77,0.05),transparent_24%),linear-gradient(180deg,#060d1c_0%,#080f20_100%)]" />
+        <div className="secondary-page-overlay absolute inset-0" />
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-[1320px] items-center px-4 py-10 sm:px-6 lg:px-7 xl:px-8">

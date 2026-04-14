@@ -133,6 +133,32 @@
   }
 }
 
+.secondary-page-shell {
+  background: #ffffff;
+  color: #1d2430;
+}
+
+.secondary-page-overlay {
+  background:
+    radial-gradient(920px 360px at 14% 0%, rgba(58, 122, 214, 0.08), transparent 60%),
+    radial-gradient(720px 300px at 86% 6%, rgba(93, 145, 221, 0.06), transparent 58%),
+    radial-gradient(760px 320px at 50% 24%, rgba(185, 208, 242, 0.12), transparent 62%);
+}
+
+html[data-theme="dark"] .secondary-page-shell,
+body[data-theme="dark"] .secondary-page-shell {
+  background: linear-gradient(180deg, #081327 0%, #0c1b37 28%, #102347 64%, #0b1730 100%);
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .secondary-page-overlay,
+body[data-theme="dark"] .secondary-page-overlay {
+  background:
+    radial-gradient(940px 380px at 14% 0%, rgba(78, 118, 204, 0.22), transparent 58%),
+    radial-gradient(760px 320px at 84% 6%, rgba(60, 104, 190, 0.18), transparent 56%),
+    radial-gradient(760px 320px at 50% 24%, rgba(31, 63, 128, 0.22), transparent 62%);
+}
+
 .text-p {
   font-family: "Work Sans", sans-serif;
   font-optical-sizing: auto;

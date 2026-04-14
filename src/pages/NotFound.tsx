@@ -25,17 +25,18 @@ export default function NotFound() {
   }[language]
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="secondary-page-shell relative overflow-hidden">
+      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <div className="relative mx-auto max-w-[900px] px-5 py-20 text-center">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
-          className="rounded-[28px] border border-white/15 bg-white/10 p-10 backdrop-blur-2xl"
+          className="rounded-[28px] border border-[#dbe3ef] bg-white/90 p-10 shadow-[0_20px_50px_rgba(17,24,39,0.08)] backdrop-blur-2xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_24px_56px_rgba(2,8,24,0.34)]"
         >
-          <div className="text-7xl font-extrabold text-white">404</div>
-          <div className="mt-2 text-2xl font-bold text-white">{copy.title}</div>
-          <div className="mt-3 text-white/70">{copy.desc}</div>
+          <div className="text-7xl font-extrabold text-[#1d2430] dark:text-white">404</div>
+          <div className="mt-2 text-2xl font-bold text-[#1d2430] dark:text-white">{copy.title}</div>
+          <div className="mt-3 text-[#627188] dark:text-[#b9cceb]">{copy.desc}</div>
 
           <div className="mt-6 flex justify-center">
             <Link

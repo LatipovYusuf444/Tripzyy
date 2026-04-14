@@ -710,8 +710,8 @@ export default function PassengersPage() {
     }
   }
   return (
-    <section className="relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_34%,#e8edf5_100%)] pt-24 text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_26%,#15254a_62%,#11203d_100%)] dark:text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(760px_320px_at_14%_0%,rgba(88,122,196,0.16),transparent_62%),radial-gradient(560px_260px_at_88%_6%,rgba(219,121,104,0.14),transparent_56%),radial-gradient(680px_320px_at_48%_36%,rgba(157,90,129,0.08),transparent_62%)] dark:bg-[radial-gradient(760px_320px_at_14%_0%,rgba(75,114,201,0.2),transparent_62%),radial-gradient(560px_260px_at_88%_6%,rgba(72,104,176,0.18),transparent_56%),radial-gradient(680px_320px_at_48%_36%,rgba(47,71,122,0.18),transparent_62%)]" />
+    <section className="secondary-page-shell relative min-h-screen overflow-hidden pt-24">
+      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <motion.div
         variants={container}
         initial="hidden"

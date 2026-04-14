@@ -47,27 +47,28 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section className="relative overflow-hidden pt-20">
+    <section className="secondary-page-shell relative overflow-hidden pt-20">
+      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <div className="relative mx-auto max-w-[900px] px-5 py-14 md:py-16">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="text-center">
-          <h1 className="text-4xl font-extrabold text-white md:text-5xl">{copy.title}</h1>
-          <p className="mt-4 text-lg text-white/70">{copy.desc}</p>
+          <h1 className="text-4xl font-extrabold text-[#1d2430] dark:text-white md:text-5xl">{copy.title}</h1>
+          <p className="mt-4 text-lg text-[#627188] dark:text-[#b9cceb]">{copy.desc}</p>
         </motion.div>
 
         <div className="mt-10 space-y-3">
           {copy.items.map((faq, idx) => {
             const isOpen = open === idx
             return (
-              <div key={faq.q} className="overflow-hidden rounded-[22px] border border-white/15 bg-white/10 backdrop-blur-2xl">
-                <button onClick={() => setOpen(isOpen ? null : idx)} className="flex w-full items-center justify-between px-5 py-4 text-left text-white">
+              <div key={faq.q} className="overflow-hidden rounded-[22px] border border-[#dbe3ef] bg-white/90 shadow-[0_16px_40px_rgba(17,24,39,0.06)] backdrop-blur-2xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_20px_44px_rgba(2,8,24,0.28)]">
+                <button onClick={() => setOpen(isOpen ? null : idx)} className="flex w-full items-center justify-between px-5 py-4 text-left text-[#1d2430] dark:text-white">
                   <span className="font-semibold">{faq.q}</span>
-                  <ChevronDown className={`transition ${isOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`transition text-[#627188] dark:text-[#cfe0fb] ${isOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}>
-                      <div className="px-5 pb-5 text-sm leading-relaxed text-white/70">{faq.a}</div>
+                      <div className="px-5 pb-5 text-sm leading-relaxed text-[#627188] dark:text-[#b9cceb]">{faq.a}</div>
                     </motion.div>
                   )}
                 </AnimatePresence>

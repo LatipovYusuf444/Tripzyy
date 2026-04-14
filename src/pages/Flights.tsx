@@ -22,7 +22,7 @@ import { useI18n } from "@/shared/i18n/i18n"
 const luxuryBtn =
   "border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_14px_28px_rgba(17,24,39,0.22)] hover:brightness-110"
 const softPanel =
-  "border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] shadow-[0_20px_50px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] dark:shadow-[0_22px_60px_rgba(4,10,28,0.38)]"
+  "border border-[#cce4ff] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,250,255,0.95)_100%)] shadow-[0_20px_60px_rgba(0,100,220,0.10)]"
 const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
@@ -1175,12 +1175,12 @@ export default function Flights() {
   const heroEta = date || copy.unselected
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_34%,#e7edf6_100%)] pt-20 text-[#1d2430] dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_26%,#15254a_62%,#11203d_100%)] dark:text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(860px_340px_at_16%_0%,rgba(81,121,197,0.18),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(219,116,101,0.16),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(156,88,129,0.08),transparent_60%)] dark:bg-[radial-gradient(860px_340px_at_16%_0%,rgba(75,114,201,0.22),transparent_62%),radial-gradient(640px_280px_at_84%_4%,rgba(72,104,176,0.18),transparent_55%),radial-gradient(720px_320px_at_50%_28%,rgba(47,71,122,0.18),transparent_60%)]" />
+    <section className="secondary-page-shell relative overflow-hidden pt-20">
+      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
         <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md dark:shadow-[0_32px_90px_rgba(4,10,28,0.42)] md:p-6 ${softPanel}`}>
-          <div className="relative overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#0f2038_0%,#162b49_46%,#20385d_100%)] p-5 text-white shadow-[0_26px_70px_rgba(9,15,23,0.18)] md:p-7">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(92,156,255,0.18)_0%,transparent_34%),radial-gradient(circle_at_88%_14%,rgba(255,179,122,0.14)_0%,transparent_26%)]" />
+          <div className="relative overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#0052a5_0%,#0070cc_46%,#1a90e8_100%)] p-5 text-white shadow-[0_26px_70px_rgba(0,80,180,0.28)] md:p-7">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18)_0%,transparent_34%),radial-gradient(circle_at_88%_14%,rgba(255,220,150,0.16)_0%,transparent_28%)]" />
             <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/78 backdrop-blur-sm">
@@ -1199,46 +1199,46 @@ export default function Flights() {
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">
+                  <div className="rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.88)] p-4 backdrop-blur-sm shadow-[0_14px_34px_rgba(18,53,110,0.14)]">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
                       <CalendarDays size={14} />
                       {copy.date}
                     </div>
-                    <div className="mt-3 text-[24px] font-black">{date || copy.unselected}</div>
+                    <div className="mt-3 text-[24px] font-black text-[#17355f]">{date || copy.unselected}</div>
                   </div>
-                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">
+                  <div className="rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.88)] p-4 backdrop-blur-sm shadow-[0_14px_34px_rgba(18,53,110,0.14)]">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
                       <Users size={14} />
                       {copy.passenger}
                     </div>
-                    <div className="mt-3 text-[24px] font-black">{`${pax} ${language === "en" ? "pax" : "ta"}`.trim()}</div>
+                    <div className="mt-3 text-[24px] font-black text-[#17355f]">{`${pax} ${language === "en" ? "pax" : "ta"}`.trim()}</div>
                   </div>
-                  <div className="rounded-[24px] border border-white/10 bg-white/8 p-4 backdrop-blur-sm">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/62">
+                  <div className="rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.88)] p-4 backdrop-blur-sm shadow-[0_14px_34px_rgba(18,53,110,0.14)]">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
                       <Ticket size={14} />
                       {copy.classLabel}
                     </div>
-                    <div className="mt-3 text-[24px] font-black">{copy.classNames[travelClass]}</div>
+                    <div className="mt-3 text-[24px] font-black text-[#17355f]">{copy.classNames[travelClass]}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[rgba(255,255,255,0.06)] backdrop-blur-sm">
+              <div className="relative overflow-hidden rounded-[30px] border border-white/70 bg-[rgba(255,255,255,0.72)] backdrop-blur-sm shadow-[0_18px_44px_rgba(18,53,110,0.16)]">
                 <img src={currentCitySlide.image} alt={currentCitySlide.city} className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,18,34,0.12)_0%,rgba(9,18,34,0.64)_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(13,50,108,0.18)_100%)]" />
                 <div className="relative flex h-full min-h-[320px] flex-col justify-between p-5">
-                  <div className="rounded-[22px] border border-white/12 bg-[rgba(8,18,34,0.56)] p-4 backdrop-blur-md">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/68">
+                  <div className="rounded-[22px] border border-white/75 bg-[rgba(255,255,255,0.9)] p-4 backdrop-blur-md shadow-[0_12px_30px_rgba(18,53,110,0.14)]">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5a7a9a]">
                       {copy.curated}
                     </div>
-                    <div className="mt-2 text-[26px] font-black leading-tight">
+                    <div className="mt-2 text-[26px] font-black leading-tight text-[#17355f]">
                       {copy.curatedTitle}
                     </div>
-                    <div className="mt-3 text-sm leading-7 text-white/80">
+                    <div className="mt-3 text-sm leading-7 text-[#37577f]">
                       {copy.curatedDesc}
                     </div>
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <div className="rounded-full border border-white/12 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white/92">
+                      <div className="rounded-full border border-[#d9e6f7] bg-white px-3 py-1.5 text-sm font-semibold text-[#17355f]">
                         {currentCitySlide.city}
                       </div>
                       <div className="flex items-center gap-2">
@@ -1249,7 +1249,7 @@ export default function Flights() {
                             onClick={() => setActiveCitySlide(index)}
                             className={[
                               "h-2.5 rounded-full transition-all",
-                              index === activeCitySlide ? "w-8 bg-white" : "w-2.5 bg-white/40 hover:bg-white/70",
+                              index === activeCitySlide ? "w-8 bg-[#1d62c9]" : "w-2.5 bg-[#aac4ea] hover:bg-[#6f9ddb]",
                             ].join(" ")}
                             aria-label={slide.city}
                           />
@@ -1258,38 +1258,38 @@ export default function Flights() {
                     </div>
                   </div>
 
-                  <div className="rounded-[24px] border border-white/12 bg-[rgba(8,18,34,0.44)] p-5 backdrop-blur-md">
+                  <div className="rounded-[24px] border border-white/75 bg-[rgba(255,255,255,0.9)] p-5 backdrop-blur-md shadow-[0_12px_30px_rgba(18,53,110,0.14)]">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/64">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5a7a9a]">
                           {copy.route}
                         </div>
-                        <div className="mt-2 text-[28px] font-black tracking-[-0.05em]">
+                        <div className="mt-2 text-[28px] font-black tracking-[-0.05em] text-[#17355f]">
                           {heroRouteText}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
                           {copy.eta}
                         </div>
-                        <div className="mt-2 text-[22px] font-black">
+                        <div className="mt-2 text-[22px] font-black text-[#17355f]">
                           {heroEta}
                         </div>
                       </div>
                     </div>
                     <div className="mt-5 flex items-center gap-3">
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/54">
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5a7a9a]">
                         {copy.from}
                       </span>
-                      <div className="relative h-[3px] flex-1 rounded-full bg-white/18">
-                        <div className="absolute inset-y-0 left-0 w-full rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0.15)_0%,rgba(146,197,255,0.95)_48%,rgba(255,215,162,0.85)_100%)]" />
-                        <Plane className="absolute -top-[11px] left-1/2 -translate-x-1/2 text-white/80" size={18} />
+                      <div className="relative h-[3px] flex-1 rounded-full bg-[#d6e4f7]">
+                        <div className="absolute inset-y-0 left-0 w-full rounded-full bg-[linear-gradient(90deg,#87b5ef_0%,#2f7fe0_48%,#f0c88f_100%)]" />
+                        <Plane className="absolute -top-[11px] left-1/2 -translate-x-1/2 text-[#2f7fe0]" size={18} />
                       </div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-white/54">
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5a7a9a]">
                         {copy.to}
                       </span>
                     </div>
-                    <div className="mt-4 text-sm text-white/78">
+                    <div className="mt-4 text-sm text-[#37577f]">
                       {currentCitySlide.city} {copy.skylinePreview}
                     </div>
                   </div>
@@ -1298,16 +1298,16 @@ export default function Flights() {
             </div>
           </div>
 
-          <div className="mt-5 overflow-visible rounded-[32px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,248,255,0.93)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.96)_0%,rgba(19,35,67,0.92)_100%)] md:p-5">
+          <div className="mt-5 overflow-visible rounded-[32px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-4 shadow-[0_24px_60px_rgba(0,100,220,0.08)] md:p-5">
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_210px_190px_220px]">
               <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
               <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
-              <div className="relative flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#dbe3ef] bg-white/92 px-4 py-3 shadow-[0_10px_24px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]">
-                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.date}</div>
+              <div className="relative flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#cce4ff] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(0,100,220,0.06)]">
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">{copy.date}</div>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
-                  className="text-left text-[16px] font-semibold text-[#1d2430] dark:text-white"
+                  className="text-left text-[16px] font-semibold text-[#1d2430]"
                 >
                   {date || copy.openCalendar}
                 </button>
@@ -1326,8 +1326,8 @@ export default function Flights() {
                   />
                 ) : null}
               </div>
-              <div className="flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#dbe3ef] bg-white/92 px-4 py-3 shadow-[0_10px_24px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]">
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{copy.classLabel}</div>
+              <div className="flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#cce4ff] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(0,100,220,0.06)]">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">{copy.classLabel}</div>
                 <div className="grid grid-cols-3 gap-2">
                   {(["Y", "C", "F"] as TravelClassCode[]).map((item) => (
                     <button
@@ -1338,7 +1338,7 @@ export default function Flights() {
                         "h-10 rounded-2xl border text-[13px] font-semibold transition",
                         travelClass === item
                           ? `${luxuryBtn} border-[#1a2231]/10`
-                          : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]",
+                          : "border-[#cce4ff] bg-white text-[#5a7a9a] hover:bg-[#f0f8ff]",
                       ].join(" ")}
                     >
                       {copy.classNames[item]}
@@ -1353,14 +1353,14 @@ export default function Flights() {
 
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#cce4ff] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#4a7aaa] transition hover:bg-[#f0f8ff] disabled:cursor-not-allowed disabled:opacity-50">
                   {copy.swap}
                 </button>
-                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#dbe3ef] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#627188] transition hover:bg-[#f8fbff] disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#cce4ff] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#4a7aaa] transition hover:bg-[#f0f8ff] disabled:cursor-not-allowed disabled:opacity-50">
                   {copy.clear}
                 </button>
                 {(["best", "cheap", "fast"] as const).map((item) => (
-                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] text-[#627188] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d4e2fb]"].join(" ")}>
+                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#cce4ff] bg-white text-[#4a7aaa] hover:bg-[#f0f8ff]"].join(" ")}>
                     {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
                   </button>
                 ))}
@@ -1388,7 +1388,7 @@ export default function Flights() {
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
           <aside className={`rounded-[30px] p-5 ${softPanel}`}>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:text-[#d4e2fb]"><Filter size={15} />{copy.filters}</div>
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4a7aaa]"><Filter size={15} />{copy.filters}</div>
             <div className="mt-5 space-y-5">
               <FilterBlock title={copy.priceRange}>
                 <input type="range" min={0} max={Math.max(maxPrice, 1)} value={maxPriceFilter ?? Math.max(maxPrice, 1)} onChange={(e) => setMaxPriceFilter(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
@@ -1423,8 +1423,8 @@ export default function Flights() {
 
           <div className="space-y-4">
             {!loading && sourceItems.length > 0 ? (
-              <div className="rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-5 py-4 text-sm text-[#51627c] shadow-[0_12px_30px_rgba(17,24,39,0.05)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d2e0f8] dark:shadow-[0_14px_32px_rgba(4,10,28,0.28)]">
-                {copy.visibleFlights} <span className="font-black text-[#1d2430] dark:text-white">{filtered.length}</span> {copy.visibleFlightsSuffix}
+              <div className="rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] px-5 py-4 text-sm text-[#4a7aaa] shadow-[0_12px_30px_rgba(0,100,220,0.07)]">
+                {copy.visibleFlights} <span className="font-black text-[#1d2430]">{filtered.length}</span> {copy.visibleFlightsSuffix}
               </div>
             ) : null}
             {loading ? <InlineLoading /> : null}
@@ -1444,7 +1444,7 @@ export default function Flights() {
                 ))}
               </div>
             ) : null}
-            {!loading && filtered.length === 0 ? <div className="rounded-[28px] border border-[#dbe3ef] bg-white px-6 py-12 text-center text-[#627188] shadow-[0_18px_40px_rgba(17,24,39,0.06)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:text-[#d2e0f8] dark:shadow-[0_18px_40px_rgba(4,10,28,0.28)]">{copy.noFlights}</div> : null}
+            {!loading && filtered.length === 0 ? <div className="rounded-[28px] border border-[#cce4ff] bg-white px-6 py-12 text-center text-[#4a7aaa] shadow-[0_18px_40px_rgba(0,100,220,0.07)]">{copy.noFlights}</div> : null}
           </div>
         </div>
       </div>
@@ -1552,21 +1552,21 @@ void InfoChip
 
 function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, chooseFareLabel }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; chooseFareLabel: string }) {
   const toneStyles = {
-    blue: "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,33,62,0.96)_0%,rgba(22,40,74,0.94)_100%)]",
-    gold: "border-[#f3e2bf] bg-[linear-gradient(135deg,#fffaf0_0%,#fff4da_100%)] dark:border-[#5c5771] dark:bg-[linear-gradient(135deg,rgba(24,38,68,0.96)_0%,rgba(46,43,74,0.94)_100%)]",
-    rose: "border-[#f0d9df] bg-[linear-gradient(135deg,#fff8fa_0%,#fff1f3_100%)] dark:border-[#5f4e73] dark:bg-[linear-gradient(135deg,rgba(25,37,68,0.96)_0%,rgba(56,40,76,0.94)_100%)]",
+    blue: "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)]",
+    gold: "border-[#f3e2bf] bg-[linear-gradient(135deg,#fffaf0_0%,#fff4da_100%)]",
+    rose: "border-[#f0d9df] bg-[linear-gradient(135deg,#fff8fa_0%,#fff1f3_100%)]",
   } as const
 
   return (
-    <div className={`rounded-[30px] border p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:shadow-[0_20px_50px_rgba(4,10,28,0.34)] ${toneStyles[tone]}`}>
+    <div className={`rounded-[30px] border p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] ${toneStyles[tone]}`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f6e84] dark:bg-[rgba(34,56,98,0.92)] dark:text-[#eef4ff]">{badge}</div>
-        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7f8ca0] dark:text-[#9fb4d7]">{flight.airline}</div>
+        <div className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f6e84]">{badge}</div>
+        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7f8ca0]">{flight.airline}</div>
       </div>
-      <div className="mt-4 text-xl font-black text-[#1d2430] dark:text-[#f4f8ff]">{formatRoute(flight.from, flight.to)}</div>
-      <div className="mt-2 text-sm text-[#627188] dark:text-[#b8cceb]">{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
-      <div className="mt-4 text-2xl font-black text-[#1d2430] dark:text-white">{formatMoney(flight.price, flight.currency)}</div>
-      <div className="mt-2 text-sm text-[#627188] dark:text-[#b8cceb]">
+      <div className="mt-4 text-xl font-black text-[#1d2430]">{formatRoute(flight.from, flight.to)}</div>
+      <div className="mt-2 text-sm text-[#627188]">{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
+      <div className="mt-4 text-2xl font-black text-[#1d2430]">{formatMoney(flight.price, flight.currency)}</div>
+      <div className="mt-2 text-sm text-[#627188]">
         {flight.departDate || "—"} → {flight.arriveDate || "—"}
       </div>
       <button type="button" onClick={() => onPick(flight)} className={`mt-4 h-11 w-full rounded-2xl text-sm font-semibold ${luxuryBtn}`}>{chooseFareLabel}</button>
@@ -1576,8 +1576,8 @@ function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, choos
 
 function FilterBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 shadow-[0_10px_24px_rgba(17,24,39,0.04)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.24)]">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:text-[#d4e2fb]">{title}</div>
+    <div className="rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-4 shadow-[0_10px_24px_rgba(0,100,220,0.06)]">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4a7aaa]">{title}</div>
       <div className="mt-4">{children}</div>
     </div>
   )
@@ -1587,15 +1587,15 @@ function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { 
   return (
     <button type="button" disabled={disabled} onClick={onClick} className={[
       "flex w-full items-center justify-between rounded-[22px] border px-4 py-3 text-left transition",
-      active ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(28,46,84,0.94)]",
-      disabled ? "cursor-not-allowed opacity-55 hover:bg-white dark:hover:bg-[rgba(20,35,66,0.84)]" : "",
+      active ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#cce4ff] bg-white text-[#4a7aaa] hover:bg-[#f0f8ff]",
+      disabled ? "cursor-not-allowed opacity-55 hover:bg-white" : "",
     ].join(" ")}>
       <div>
         <div className="text-sm font-semibold">{title}</div>
-        <div className={`mt-1 text-xs ${active ? "text-white/70" : "text-[#8a97aa] dark:text-[#9fb4d7]"}`}>{subtitle}</div>
+        <div className={`mt-1 text-xs ${active ? "text-white/70" : "text-[#7a9ab8]"}`}>{subtitle}</div>
       </div>
-      <div className={["relative h-7 w-12 rounded-full border transition", active ? "border-white/25 bg-white/15" : "border-[#d9e3ef] bg-[#f3f7fc] dark:border-[#35507f] dark:bg-[rgba(31,51,89,0.9)]"].join(" ")}>
-        <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#90a2bb] dark:bg-[#c9d8f4]"].join(" ")} />
+      <div className={["relative h-7 w-12 rounded-full border transition", active ? "border-white/25 bg-white/15" : "border-[#cce4ff] bg-[#e8f4ff]"].join(" ")}>
+        <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#7ab0d8]"].join(" ")} />
       </div>
     </button>
   )
@@ -1621,38 +1621,38 @@ function AirlineGroupCard({
   formatRoute: (origin?: string, destination?: string) => string
 }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[#dbe3ef] bg-white shadow-[0_16px_40px_rgba(17,24,39,0.06)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)]">
+    <div className="overflow-hidden rounded-[28px] border border-[#cce4ff] bg-white shadow-[0_16px_40px_rgba(0,100,220,0.08)]">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#f8fbff] dark:hover:bg-[rgba(28,46,84,0.94)]"
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#f0f8ff]"
       >
         <span className="flex min-w-0 items-center gap-3">
           {group.airlineLogo ? (
             <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#edf2f7] bg-white object-contain p-1" />
           ) : (
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#eef4ff] text-[#3269b8]">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8f4ff] text-[#0070cc]">
               <Plane size={16} />
             </span>
           )}
           <span className="min-w-0">
-            <span className="block truncate text-[17px] font-semibold text-[#1d2430] dark:text-white">
+            <span className="block truncate text-[17px] font-semibold text-[#1d2430]">
               {group.airline} ({group.airlineCode})
             </span>
-            <span className="block text-sm text-[#71819a] dark:text-[#9fb4d7]">
+            <span className="block text-sm text-[#5a7aaa]">
               {group.items.length} {copy.offers} {copy.fromPriceLabel} {formatMoney(group.minPrice, group.items[0]?.currency)}
             </span>
           </span>
         </span>
-        <ChevronDown size={18} className={`shrink-0 text-[#71819a] transition ${expanded ? "rotate-180" : ""}`} />
+        <ChevronDown size={18} className={`shrink-0 text-[#5a7aaa] transition ${expanded ? "rotate-180" : ""}`} />
       </button>
 
       {expanded ? (
-        <div className="border-t border-[#eef2f6] px-5 py-4 dark:border-[#30476f]">
-          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#7f8ca0] dark:text-[#9fb4d7]">
+        <div className="border-t border-[#deeeff] px-5 py-4">
+          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#4a7aaa]">
             {copy.airlineChoice}
           </div>
-          <div className="mb-3 text-sm text-[#627188] dark:text-[#d4e2fb]">
+          <div className="mb-3 text-sm text-[#627188]">
             {copy.airlineDataNote}
           </div>
           <div className="space-y-3">
@@ -1689,37 +1689,37 @@ function AirlineOptionRow({
   const isDirect = (flight.stopsCount ?? 0) === 0
 
   return (
-    <div className="rounded-[24px] border border-[#e4ebf4] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(23,41,76,0.9)_0%,rgba(18,33,62,0.92)_100%)]">
+    <div className="rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-4">
       <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)_220px] lg:items-center">
         <div className="min-w-0">
-          <div className="text-[15px] font-black text-[#172033] dark:text-white">{flight.flightNo || flight.airline}</div>
-          <div className="mt-1 text-sm text-[#627188] dark:text-[#d4e2fb]">{flight.airlineName || flight.airline}</div>
-          <div className="mt-2 text-sm text-[#8a95a8] dark:text-[#9fb4d7]">{formatRoute(flight.from, flight.to)}</div>
+          <div className="text-[15px] font-black text-[#1d2430]">{flight.flightNo || flight.airline}</div>
+          <div className="mt-1 text-sm text-[#5a7aaa]">{flight.airlineName || flight.airline}</div>
+          <div className="mt-2 text-sm text-[#7a9ab8]">{formatRoute(flight.from, flight.to)}</div>
         </div>
 
         <div className="min-w-0">
-          <div className="flex items-center justify-center gap-3 text-[15px] font-black text-[#172033] dark:text-white">
+          <div className="flex items-center justify-center gap-3 text-[15px] font-black text-[#1d2430]">
             <span>{flight.depart}</span>
-            <span className="text-[#9aa8bb]">→</span>
+            <span className="text-[#0070cc]">→</span>
             <span>{flight.arrive}</span>
           </div>
-          <div className="mt-2 text-center text-sm text-[#7b8aa2] dark:text-[#9fb4d7]">
+          <div className="mt-2 text-center text-sm text-[#5a7aaa]">
             {fmtDuration(flight.durationMin, language)}, {isDirect ? copy.direct : `${flight.stopsCount} ${copy.transfers}`}
           </div>
-          <div className="mt-2 text-center text-sm text-[#627188] dark:text-[#d4e2fb]">
+          <div className="mt-2 text-center text-sm text-[#7a9ab8]">
             {flight.departDate || "—"} → {flight.arriveDate || "—"}
           </div>
         </div>
 
         <div className="text-left lg:text-right">
-          <div className="text-[17px] font-black text-[#172033] dark:text-white">
+          <div className="text-[17px] font-black text-[#1d2430]">
             {formatCompactPrice(flight.price, flight.currency)}
           </div>
           <div className="mt-2 flex flex-wrap justify-start gap-2 lg:justify-end">
-            {flight.cabin ? <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">{flight.cabin}</span> : null}
-            {flight.baggage ? <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">{flight.baggage} bagaj</span> : null}
-            {flight.carryOn ? <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">{copy.carryOnLabel} {flight.carryOn}</span> : null}
-            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 text-xs text-[#627188] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">
+            {flight.cabin ? <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">{flight.cabin}</span> : null}
+            {flight.baggage ? <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">{flight.baggage} bagaj</span> : null}
+            {flight.carryOn ? <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">{copy.carryOnLabel} {flight.carryOn}</span> : null}
+            <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">
               {flight.refundable ? copy.refundableYes : copy.refundableNo}
             </span>
           </div>
@@ -1758,7 +1758,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
   const isDirect = (flight.stopsCount ?? 0) === 0
 
   return (
-    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, delay: index * 0.04 }} className="group overflow-hidden rounded-[34px] border border-[#dde4ee] bg-[linear-gradient(180deg,#ffffff_0%,#fbfdff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(17,24,39,0.10)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.92)_0%,rgba(16,31,60,0.96)_100%)] dark:shadow-[0_20px_50px_rgba(4,10,28,0.34)] dark:hover:shadow-[0_26px_58px_rgba(4,10,28,0.42)]">
+    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, delay: index * 0.04 }} className="group overflow-hidden rounded-[34px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-5 shadow-[0_18px_45px_rgba(0,100,220,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(0,100,220,0.13)]">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {badge ? (
@@ -1766,16 +1766,16 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
               {badge.label}
             </div>
           ) : null}
-          <div className="mt-3 text-[20px] font-black tracking-[-0.03em] text-[#151c28] dark:text-white">
+          <div className="mt-3 text-[20px] font-black tracking-[-0.03em] text-[#1d2430]">
             {formatCompactPrice(flight.price, flight.currency)}
           </div>
-          <div className="mt-2 flex flex-wrap gap-2 text-sm text-[#445167] dark:text-[#d4e2fb]">
-            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.baggage ? `${flight.baggage} ${copy.baggageOnly.toLowerCase()}` : copy.noBaggage}</span>
-            <span className="rounded-full bg-[#f1f4f8] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">{flight.carryOn ? `${copy.carryOnLabel} ${flight.carryOn}` : copy.noCarry}</span>
+          <div className="mt-2 flex flex-wrap gap-2 text-sm text-[#4a7aaa]">
+            <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">{flight.baggage ? `${flight.baggage} ${copy.baggageOnly.toLowerCase()}` : copy.noBaggage}</span>
+            <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">{flight.carryOn ? `${copy.carryOnLabel} ${flight.carryOn}` : copy.noCarry}</span>
             {flight.seatsAvailable ? <span className="rounded-full bg-[#fff0f3] px-2.5 py-1 text-[#d94b64]">{copy.moreSeats} {flight.seatsAvailable} {copy.seats}</span> : null}
           </div>
         </div>
-        <button type="button" onClick={() => onPick(flight)} className="shrink-0 rounded-2xl border border-[#e5ebf3] bg-[#f7f9fc] px-4 py-2 text-sm font-semibold text-[#1d2430] transition hover:bg-white dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-white dark:hover:bg-[rgba(28,46,84,0.94)]">
+        <button type="button" onClick={() => onPick(flight)} className="shrink-0 rounded-2xl border border-[#cce4ff] bg-[#e8f4ff] px-4 py-2 text-sm font-semibold text-[#0052a5] transition hover:bg-[#d4ebff]">
           {copy.view}
         </button>
       </div>
@@ -1790,18 +1790,18 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
             </div>
           )}
           <div className="min-w-0">
-            <div className="text-[18px] font-black text-[#1d2430] dark:text-white">{flight.depart}</div>
-            <div className="text-sm text-[#6a778d] dark:text-[#d4e2fb]">{flight.from}</div>
-            <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{flight.departDate || "—"}</div>
+            <div className="text-[18px] font-black text-[#1d2430]">{flight.depart}</div>
+            <div className="text-sm text-[#5a7aaa]">{flight.from}</div>
+            <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{flight.departDate || "—"}</div>
             {departureTerminal ? (
-              <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{copy.terminal} {departureTerminal}</div>
+              <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{copy.terminal} {departureTerminal}</div>
             ) : null}
-            <div className="text-sm text-[#8a95a8] dark:text-[#a9bddb]">{flight.airlineName || flight.airline}</div>
+            <div className="text-sm text-[#7a9ab8]">{flight.airlineName || flight.airline}</div>
           </div>
         </div>
 
         <div className="min-w-0">
-          <div className="flex items-center justify-center gap-3 text-sm text-[#97a2b4] dark:text-[#9fb4d7]">
+          <div className="flex items-center justify-center gap-3 text-sm text-[#5a7aaa]">
             <PlaneTakeoff size={15} />
             <span>{fmtDuration(flight.durationMin, language)}, {isDirect ? copy.direct : `${flight.stopsCount} ${copy.transfers}`}</span>
             <PlaneLanding size={15} />
@@ -1815,17 +1815,17 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
             </div>
             <span className="text-sm font-bold text-[#1d67ff]">{flight.to}</span>
           </div>
-          <div className="mt-3 text-sm text-[#627188] dark:text-[#d2e0f8]">{formatRoute(flight.from, flight.to)}</div>
+          <div className="mt-3 text-sm text-[#5a7aaa]">{formatRoute(flight.from, flight.to)}</div>
         </div>
 
         <div className="text-right">
-          <div className="text-[18px] font-black text-[#1d2430] dark:text-white">{flight.arrive}</div>
-          <div className="text-sm text-[#6a778d] dark:text-[#d4e2fb]">{flight.to}</div>
-          <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{flight.arriveDate || "—"}</div>
+          <div className="text-[18px] font-black text-[#1d2430]">{flight.arrive}</div>
+          <div className="text-sm text-[#5a7aaa]">{flight.to}</div>
+          <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{flight.arriveDate || "—"}</div>
           {arrivalTerminal ? (
-            <div className="mt-1 text-xs font-medium text-[#8a95a8] dark:text-[#9fb4d7]">{copy.terminal} {arrivalTerminal}</div>
+            <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{copy.terminal} {arrivalTerminal}</div>
           ) : null}
-          <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#f3f6fa] px-3 py-1 text-xs font-semibold text-[#5f6e84] dark:bg-[rgba(31,51,89,0.88)] dark:text-[#d4e2fb]">
+          <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#e8f4ff] px-3 py-1 text-xs font-semibold text-[#0052a5]">
             <Ticket size={13} />
             {flight.cabin || "—"}
           </div>
@@ -1833,67 +1833,67 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
       </div>
 
       {segments.length ? (
-        <div className="mt-5 rounded-[24px] border border-[#e8eef6] bg-[linear-gradient(180deg,#fbfdff_0%,#f6f9fd_100%)] p-4 dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(23,41,76,0.9)_0%,rgba(18,33,62,0.92)_100%)]">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#74839a] dark:text-[#9fb4d7]">
+        <div className="mt-5 rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#f5fbff_0%,#eef6ff_100%)] p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4a7aaa]">
             {copy.segments}
           </div>
 
           <div className="mt-3 space-y-3">
             {segments.map((segment, segmentIndex) => (
               <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`}>
-                <div className="grid gap-3 rounded-[20px] border border-[#e3ebf6] bg-white/92 p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.88)] md:grid-cols-[220px_minmax(0,1fr)_200px]">
+                <div className="grid gap-3 rounded-[20px] border border-[#cce4ff] bg-white p-4 md:grid-cols-[220px_minmax(0,1fr)_200px]">
                   <div>
-                    <div className="text-sm font-black text-[#1d2430] dark:text-white">
+                    <div className="text-sm font-black text-[#1d2430]">
                       {(segment.carrier || segment.operatingCarrier || flight.airline) + (segment.flightNumber ? `-${segment.flightNumber}` : "")}
                     </div>
-                    <div className="mt-1 text-sm text-[#627188] dark:text-[#d4e2fb]">
+                    <div className="mt-1 text-sm text-[#5a7aaa]">
                       {formatRoute(segment.origin, segment.destination)}
                     </div>
-                    <div className="mt-2 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                    <div className="mt-2 text-xs text-[#7a9ab8]">
                       {segment.equipment || "—"} • {segment.bookingClass || "—"} / {segment.serviceClass || "—"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 text-sm text-[#1d2430] dark:text-white">
+                    <div className="flex items-center gap-3 text-sm text-[#1d2430]">
                       <span className="font-black">{toTime(segment.departure)}</span>
-                      <span className="text-[#9aa8bb]">→</span>
+                      <span className="text-[#0070cc]">→</span>
                       <span className="font-black">{toTime(segment.arrival)}</span>
                     </div>
-                    <div className="mt-1 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                    <div className="mt-1 text-xs text-[#7a9ab8]">
                       {toDateOnly(segment.departure)} → {toDateOnly(segment.arrival)}
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#5f6e84] dark:text-[#d4e2fb]">
-                      <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#4a7aaa]">
+                      <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">
                         {segment.origin}
                       </span>
-                      <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">
+                      <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">
                         {segment.destination}
                       </span>
-                      <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 dark:bg-[rgba(31,51,89,0.88)]">
+                      <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">
                         {segment.duration ? fmtDuration(segment.duration, language) : "—"}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-left md:text-right">
-                    <div className="text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                    <div className="text-xs text-[#7a9ab8]">
                       {copy.terminal}
                     </div>
-                    <div className="mt-1 text-sm font-semibold text-[#1d2430] dark:text-white">
+                    <div className="mt-1 text-sm font-semibold text-[#1d2430]">
                       {(segment.departureTerminal || "—") + " → " + (segment.arrivalTerminal || "—")}
                     </div>
-                    <div className="mt-2 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                    <div className="mt-2 text-xs text-[#7a9ab8]">
                       {segment.baggage || copy.noBaggage}
                     </div>
-                    <div className="mt-1 text-xs text-[#8a95a8] dark:text-[#9fb4d7]">
+                    <div className="mt-1 text-xs text-[#7a9ab8]">
                       {segment.carryOn || copy.noCarry}
                     </div>
                   </div>
                 </div>
 
                 {segmentIndex < segments.length - 1 ? (
-                  <div className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-[#7f8ca0] dark:text-[#9fb4d7]">
+                  <div className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-[#4a7aaa]">
                     {copy.layover}: {segment.layover ? fmtDuration(segment.layover, language) : "—"} • {segment.destination}
                   </div>
                 ) : null}
@@ -1903,13 +1903,13 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
         </div>
       ) : null}
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1f6] pt-4 dark:border-[#30476f]">
-        <div className="flex flex-wrap gap-2 text-sm text-[#627188] dark:text-[#d4e2fb]">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><Clock3 size={14} /> {fmtDuration(flight.durationMin, language)}</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><Users size={14} /> {flight.refundable ? copy.refundableYes : copy.refundableNo}</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]"><ArrowRight size={14} /> {flight.flightNo ?? copy.availableFlight}</span>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#deeeff] pt-4">
+        <div className="flex flex-wrap gap-2 text-sm text-[#4a7aaa]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5"><Clock3 size={14} /> {fmtDuration(flight.durationMin, language)}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5"><Users size={14} /> {flight.refundable ? copy.refundableYes : copy.refundableNo}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5"><ArrowRight size={14} /> {flight.flightNo ?? copy.availableFlight}</span>
           {firstSegment?.origin || lastSegment?.destination ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#f6f8fb] px-3 py-1.5 dark:bg-[rgba(31,51,89,0.88)]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5">
               <Plane size={14} /> {(firstSegment?.origin || flight.from) + " → " + (lastSegment?.destination || flight.to)}
             </span>
           ) : null}
@@ -1927,7 +1927,7 @@ function InlineLoading() {
   return (
     <div className="space-y-4">
       {[0, 1, 2].map((item) => (
-        <div key={item} className="rounded-[28px] border border-[#dbe3ef] bg-white px-6 py-6 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.92)_0%,rgba(16,31,60,0.96)_100%)] dark:shadow-[0_18px_45px_rgba(4,10,28,0.34)]">
+        <div key={item} className="rounded-[28px] border border-[#cce4ff] bg-white px-6 py-6 shadow-[0_18px_45px_rgba(0,100,220,0.08)]">
           <div className="space-y-4">
             <SkeletonLine className="h-6 w-[180px]" />
             <SkeletonLine className="h-12 w-full" />
