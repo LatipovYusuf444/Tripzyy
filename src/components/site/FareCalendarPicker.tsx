@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 
 import { searchAir } from "@/shared/api/air/air.api"
 import { useI18n } from "@/shared/i18n/i18n"
@@ -12,6 +13,8 @@ type FareCalendarPickerProps = {
   value: string
   onChange: (value: string) => void
   onClose: () => void
+  anchorElement?: HTMLElement | null
+  anchorRect?: { top: number; left: number; width: number; height: number } | null
 }
 
 type PriceMap = Record<string, number | null>
@@ -98,6 +101,8 @@ export default function FareCalendarPicker({
   value,
   onChange,
   onClose,
+  anchorElement = null,
+  anchorRect = null,
 }: FareCalendarPickerProps) {
   const { language } = useI18n()
   const copy = calendarLocale[language]
@@ -107,6 +112,12 @@ export default function FareCalendarPicker({
   })
   const [prices, setPrices] = useState<PriceMap>({})
   const [loading, setLoading] = useState(false)
+  const [liveAnchorRect, setLiveAnchorRect] = useState<{
+    top: number
+    left: number
+    width: number
+    height: number
+  } | null>(anchorRect)
 
   const visibleMonths = useMemo(
     () => [startMonth, new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)],
@@ -190,26 +201,51 @@ export default function FareCalendarPicker({
     }
   }, [])
 
+  useEffect(() => {
+    if (typeof window === "undefined" || window.innerWidth < 1024) {
+      setLiveAnchorRect(anchorRect)
+      return undefined
+    }
+
+    const updateAnchorRect = () => {
+      if (anchorElement) {
+        const nextRect = anchorElement.getBoundingClientRect()
+        setLiveAnchorRect({
+          top: nextRect.top,
+          left: nextRect.left,
+          width: nextRect.width,
+          height: nextRect.height,
+        })
+        return
+      }
+
+      setLiveAnchorRect(anchorRect)
+    }
+
+    updateAnchorRect()
+    window.addEventListener("resize", updateAnchorRect)
+    window.addEventListener("scroll", updateAnchorRect, true)
+
+    return () => {
+      window.removeEventListener("resize", updateAnchorRect)
+      window.removeEventListener("scroll", updateAnchorRect, true)
+    }
+  }, [anchorElement, anchorRect])
+
   const minVisiblePrice = useMemo(() => {
     const values = Object.values(prices).filter((item): item is number => typeof item === "number")
     return values.length ? Math.min(...values) : null
   }, [prices])
 
-  return (
-    <>
-      <button
-        type="button"
-        aria-label={copy.closeAria}
-        onClick={onClose}
-        className="fixed inset-0 z-[118] bg-[rgba(15,23,42,0.22)] backdrop-blur-[2px] lg:hidden"
-      />
+  const resolvedAnchorRect = liveAnchorRect ?? anchorRect
 
-      <div className="pointer-events-auto fixed inset-x-3 bottom-3 z-[120] max-h-[calc(100svh-24px)] overflow-hidden rounded-[24px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl lg:absolute lg:left-1/2 lg:top-[calc(100%+10px)] lg:z-[160] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:w-[min(720px,calc(100vw-72px))] lg:-translate-x-1/2 lg:p-3">
-        <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] lg:hidden" />
+  const panelContent = (
+      <div className="pointer-events-auto fixed inset-x-5 bottom-3 z-[120] max-h-[min(500px,calc(100svh-24px))] overflow-hidden rounded-[20px] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(247,250,255,0.985)_100%)] p-2 shadow-[0_22px_56px_rgba(17,24,39,0.16)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:rounded-[24px] lg:p-3 lg:backdrop-blur-xl">
+        <div className="mx-auto mb-2.5 h-1.5 w-12 rounded-full bg-[#d8e1ee] lg:hidden" />
 
-        <div className="flex max-h-[calc(100svh-72px)] flex-col overflow-hidden lg:max-h-none">
-          <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-3">
-            <div className="rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-semibold text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
+        <div className="flex max-h-[min(452px,calc(100svh-72px))] flex-col overflow-hidden lg:max-h-none">
+          <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-2.5 lg:pb-3">
+            <div className="rounded-[13px] border border-[#dde6f1] bg-white/90 px-3 py-1.5 text-[12px] font-semibold text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)] lg:rounded-[14px] lg:py-2 lg:text-[13px]">
               {from && to ? `${from} → ${to}` : copy.routePlaceholder}
             </div>
             <button
@@ -222,13 +258,13 @@ export default function FareCalendarPicker({
           </div>
 
           {!from || !to ? (
-            <div className="mt-4 rounded-[20px] border border-[#e2e8f1] bg-white px-5 py-8 text-center text-sm text-[#627188]">
+            <div className="mt-3 rounded-[18px] border border-[#e2e8f1] bg-white px-4 py-6 text-center text-[13px] leading-6 text-[#627188] lg:mt-4 lg:rounded-[20px] lg:px-5 lg:py-8 lg:text-sm">
               {copy.routeHint}
             </div>
           ) : (
             <>
-              <div className="mt-4 overflow-y-auto pr-1 lg:overflow-visible lg:pr-0">
-                <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-3">
+              <div className="mt-2.5 overflow-y-auto pr-0.5 lg:mt-4 lg:overflow-visible lg:pr-0">
+                <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2 lg:gap-3">
                   {visibleMonths.map((monthDate, monthIndex) => {
                     const cells = getMonthDays(monthDate)
 
@@ -237,6 +273,199 @@ export default function FareCalendarPicker({
                         key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
                         className={monthIndex === 1 ? "hidden lg:block" : "block"}
                       >
+                        <div className="rounded-[15px] border border-[#e4ebf4] bg-white/95 p-2 shadow-[0_12px_28px_rgba(17,24,39,0.05)] lg:rounded-[18px] lg:p-3">
+                          <div className="mb-1 flex items-center justify-between lg:mb-2">
+                            {monthIndex === 0 ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setStartMonth(
+                                    new Date(startMonth.getFullYear(), startMonth.getMonth() - 1, 1)
+                                  )
+                                }
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8"
+                              >
+                                <ChevronLeft size={13} />
+                              </button>
+                            ) : (
+                              <div className="h-6 w-6 lg:h-8 lg:w-8" />
+                            )}
+
+                            <div className="text-center">
+                              <div className="text-[11px] font-black text-[#1295dd] md:text-[15px]">
+                                {copy.monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
+                              </div>
+                            </div>
+
+                            {monthIndex === 1 ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setStartMonth(
+                                    new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)
+                                  )
+                                }
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8"
+                              >
+                                <ChevronRight size={13} />
+                              </button>
+                            ) : (
+                              <div className="h-6 w-6 lg:h-8 lg:w-8" />
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-7 gap-x-1 gap-y-0.5 text-center text-[#7b8aa0] lg:gap-y-1.5">
+                            {copy.weekdayLabels.map((label, labelIndex) => (
+                              <div
+                                key={label}
+                                className={[
+                                  "py-0.5 text-[9px] font-semibold uppercase tracking-[0.02em] lg:py-1 lg:text-[10px]",
+                                  labelIndex >= 5 ? "text-[#95a4bb]" : "text-[#243042]",
+                                ].join(" ")}
+                              >
+                                {label}
+                              </div>
+                            ))}
+
+                            {cells.map((cell, index) => {
+                              if (!cell) {
+                                  return <div key={`empty-${index}`} className="h-[32px] md:h-[46px]" />
+                              }
+
+                              const iso = toISODate(cell)
+                              const price = prices[iso]
+                              const isSelected = value === iso
+                              const isToday = iso === toISODate(new Date())
+                              const weekDay = (cell.getDay() + 6) % 7
+                              const weekend = weekDay >= 5
+
+                              return (
+                                <button
+                                  key={iso}
+                                  type="button"
+                                  onClick={() => onChange(iso)}
+                                  className={[
+                                    "flex h-[32px] w-full min-w-0 flex-col items-center justify-center rounded-[8px] border px-0.5 text-center transition md:h-[46px] md:px-1",
+                                    isSelected
+                                      ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_14px_34px_rgba(34,104,230,0.22)]"
+                                      : "border-[#eef2f7] bg-[linear-gradient(180deg,#fcfdff_0%,#f6f9fd_100%)] text-[#1d2430] hover:border-[#dce6f3] hover:bg-white",
+                                  ].join(" ")}
+                                >
+                                  <span
+                                    className={[
+                                      "text-[10px] font-black leading-none md:text-[14px]",
+                                      isToday && !isSelected ? "text-[#1f6fff]" : "",
+                                      !isSelected && weekend ? "text-[#95a4bb]" : "",
+                                    ].join(" ")}
+                                  >
+                                    {cell.getDate()}
+                                  </span>
+                                  <span
+                                    className={[
+                                      "mt-0.5 line-clamp-2 px-0.5 text-[5px] font-semibold leading-2 md:px-1 md:text-[8px] md:leading-3",
+                                      isSelected
+                                        ? "text-white/95"
+                                        : typeof price === "number"
+                                          ? "text-[#2cab4d]"
+                                          : "text-[#bcc6d3]",
+                                    ].join(" ")}
+                                  >
+                                    {typeof price === "number" ? compactPrice(price) : loading ? "..." : "—"}
+                                  </span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-2.5 flex flex-col gap-2 border-t border-[#e7edf5] pt-2.5 md:mt-4 md:flex-row md:items-center md:justify-between md:gap-3 md:pt-3">
+                <div className="text-[11px] leading-4 text-[#627188] md:text-[13px]">
+                  {loading
+                    ? copy.loading
+                    : minVisiblePrice
+                      ? `${copy.minPrice}: ${millionPrice(minVisiblePrice)} UZS`
+                      : copy.noPrice}
+                </div>
+
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="h-8 rounded-full border border-[#dbe3ef] bg-white px-4 text-[11px] font-semibold text-[#627188] transition hover:bg-[#f8fbff] sm:min-w-[110px] lg:hidden"
+                  >
+                    {copy.close}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="h-8 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-4 text-[11px] font-bold text-white shadow-[0_14px_32px_rgba(15,154,231,0.24)] transition hover:brightness-105 sm:min-w-[190px] md:h-10 md:px-6 md:text-[13px]"
+                  >
+                    {copy.select} {minVisiblePrice ? `- ${millionPrice(minVisiblePrice)} UZS` : ""}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+  )
+
+  const isDesktopPortal =
+    typeof window !== "undefined" &&
+    window.innerWidth >= 1024 &&
+    resolvedAnchorRect
+
+  if (isDesktopPortal && typeof document !== "undefined") {
+    const viewportWidth = window.innerWidth
+    const panelWidth = Math.min(720, viewportWidth - 72)
+    const left = Math.min(
+      Math.max(24, resolvedAnchorRect.left + resolvedAnchorRect.width / 2 - panelWidth / 2),
+      viewportWidth - panelWidth - 24
+    )
+    const top = resolvedAnchorRect.top + resolvedAnchorRect.height + 10
+
+    return createPortal(
+      <>
+        <button
+          type="button"
+          aria-label={copy.closeAria}
+          onClick={onClose}
+          className="fixed inset-0 z-[159] bg-transparent"
+        />
+        <div
+          className="pointer-events-auto fixed z-[160] overflow-hidden rounded-[24px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl"
+          style={{ top, left, width: panelWidth, maxHeight: "min(760px, calc(100vh - 32px))" }}
+        >
+          <div className="flex max-h-[min(720px,calc(100vh-72px))] flex-col overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-3">
+              <div className="rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-semibold text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
+                {from && to ? `${from} в†’ ${to}` : copy.routePlaceholder}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-9 items-center rounded-full border border-[#dbe3ef] bg-white px-4 text-[13px] font-semibold text-[#627188] transition hover:bg-[#f8fbff]"
+              >
+                {copy.close}
+              </button>
+            </div>
+            {!from || !to ? (
+              <div className="mt-4 rounded-[20px] border border-[#e2e8f1] bg-white px-5 py-8 text-center text-sm text-[#627188]">
+                {copy.routeHint}
+              </div>
+            ) : (
+              <div className="mt-4 overflow-y-auto pr-1">
+                <div className="grid grid-cols-2 gap-3">
+                  {visibleMonths.map((monthDate, monthIndex) => {
+                    const cells = getMonthDays(monthDate)
+
+                    return (
+                      <div key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}>
                         <div className="rounded-[18px] border border-[#e4ebf4] bg-white/95 p-3 shadow-[0_12px_28px_rgba(17,24,39,0.05)]">
                           <div className="mb-2 flex items-center justify-between">
                             {monthIndex === 0 ? (
@@ -300,8 +529,7 @@ export default function FareCalendarPicker({
                               const price = prices[iso]
                               const isSelected = value === iso
                               const isToday = iso === toISODate(new Date())
-                              const weekDay = (cell.getDay() + 6) % 7
-                              const weekend = weekDay >= 5
+                              const weekend = cell.getDay() === 0 || cell.getDay() === 6
 
                               return (
                                 <button
@@ -327,14 +555,10 @@ export default function FareCalendarPicker({
                                   <span
                                     className={[
                                       "mt-0.5 line-clamp-2 px-1 text-[7px] font-semibold leading-3 md:text-[8px]",
-                                      isSelected
-                                        ? "text-white/95"
-                                        : typeof price === "number"
-                                          ? "text-[#2cab4d]"
-                                          : "text-[#bcc6d3]",
+                                      isSelected ? "text-white/95" : "text-[#7d8ca3]",
                                     ].join(" ")}
                                   >
-                                    {typeof price === "number" ? compactPrice(price) : loading ? "..." : "—"}
+                                    {loading ? "..." : compactPrice(price)}
                                   </span>
                                 </button>
                               )
@@ -346,37 +570,44 @@ export default function FareCalendarPicker({
                   })}
                 </div>
               </div>
+            )}
 
-              <div className="mt-4 flex flex-col gap-3 border-t border-[#e7edf5] pt-3 md:flex-row md:items-center md:justify-between">
-                <div className="text-[13px] text-[#627188]">
-                  {loading
-                    ? copy.loading
-                    : minVisiblePrice
-                      ? `${copy.minPrice}: ${millionPrice(minVisiblePrice)} UZS`
-                      : copy.noPrice}
-                </div>
-
-                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="h-10 rounded-full border border-[#dbe3ef] bg-white px-5 text-[13px] font-semibold text-[#627188] transition hover:bg-[#f8fbff] sm:min-w-[126px] lg:hidden"
-                  >
-                    {copy.close}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="h-10 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-6 text-[13px] font-bold text-white shadow-[0_14px_32px_rgba(15,154,231,0.24)] transition hover:brightness-105 sm:min-w-[230px]"
-                  >
-                    {copy.select} {minVisiblePrice ? `- ${millionPrice(minVisiblePrice)} UZS` : ""}
-                  </button>
-                </div>
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#e7edf5] pt-3">
+              <div className="text-xs text-[#627188]">
+                {loading
+                  ? copy.loading
+                  : minVisiblePrice
+                    ? `${copy.minPrice}: ${millionPrice(minVisiblePrice)}`
+                    : copy.noPrice}
               </div>
-            </>
-          )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-10 rounded-full bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] px-4 text-[12px] font-semibold uppercase tracking-[0.08em] text-white shadow-[0_12px_24px_rgba(34,104,230,0.22)]"
+              >
+                {copy.select}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </>
-  )
+      </>,
+      document.body
+    )
+  }
+
+  return typeof document !== "undefined"
+    ? createPortal(
+        <>
+          <button
+            type="button"
+            aria-label={copy.closeAria}
+            onClick={onClose}
+            className="fixed inset-0 z-[118] bg-[rgba(15,23,42,0.22)] backdrop-blur-[2px] lg:hidden"
+          />
+
+          {panelContent}
+        </>,
+        document.body
+      )
+    : null
 }

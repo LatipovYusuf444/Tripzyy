@@ -24,37 +24,37 @@ export default function Services() {
       titleB: "asosiy xizmatlar",
       desc: "TRIPZY avia safar va tur jarayonini bir joyda boshqarishga yordam beradi. Aviabilet, mehmonxona, transfer, viza, sug'urta va korporativ safar xizmatlari bitta oqimda jamlangan.",
       stats: [
-        { label: "24/7", value: "Safar supporti" },
-        { label: "Tour", value: "Tayyor paketlar" },
-        { label: "Flight", value: "Aviabilet oqimi" },
-        { label: "Safe", value: "Himoyalangan bron" },
+        { label: "24/7", value: "Safar yordami", desc: "Safar davomida doimiy aloqa va tezkor yordam ko'rsatiladi." },
+        { label: "Tour", value: "Tayyor paketlar", desc: "Aviachipta, mehmonxona va dastur jamlangan qulay yechimlar." },
+        { label: "Flight", value: "Aviabilet oqimi", desc: "Parvoz qidirish, solishtirish va bron qilish bir oqimda ishlaydi." },
+        { label: "Safe", value: "Himoyalangan bron", desc: "Buyurtma va to'lov jarayoni ishonchli himoya bilan boshqariladi." },
       ],
       services: [
         { title: "Aviabilet bronlash", desc: "Ichki va xalqaro yo'nalishlar uchun qulay tariflarni tanlash va tez bron qilish.", icon: Plane },
         { title: "Tur paketlar", desc: "Aviachipta, yashash va dastur birlashtirilgan tayyor tur yechimlari.", icon: Palmtree },
         { title: "Mehmonxona bronlari", desc: "Safaringizga mos mehmonxona va joylashuv variantlarini tanlab berish.", icon: Building2 },
         { title: "Transfer xizmati", desc: "Aeroport, mehmonxona va uchrashuv nuqtalari orasida tartibli transfer.", icon: Timer },
-        { title: "Visa support", desc: "Viza uchun hujjatlar tayyorlash va topshirish bosqichlarida ko'mak.", icon: Stamp },
+        { title: "Viza yordami", desc: "Viza uchun hujjatlar tayyorlash va topshirish bosqichlarida ko'mak.", icon: Stamp },
         { title: "Safar sug'urtasi", desc: "Safar davomida qo'shimcha himoya va ishonch uchun sug'urta yechimlari.", icon: BadgeCheck },
         { title: "24/7 qo'llab-quvvatlash", desc: "Parvoz, bron va safar jarayonida doimiy aloqa va yordam.", icon: HeartHandshake },
-        { title: "Tezkor support", desc: "Telefon va messenjer orqali tezkor javob va yo'naltirish.", icon: Headphones },
+        { title: "Tezkor yordam", desc: "Telefon va messenjer orqali tezkor javob va yo'naltirish.", icon: Headphones },
         { title: "Shaffof narxlar", desc: "Yashirin to'lovlarsiz, yakuniy summani oldindan aniq ko'rsatish.", icon: CreditCard },
-        { title: "Bagaj va tarif qoidalari", desc: "Bagaj normasi, refund va change shartlarini tushunarli ko'rsatish.", icon: Luggage },
-        { title: "Premium safar paketi", desc: "Priority xizmatlar, VIP support va tezkor qayta rasmiylashtirish.", icon: Sparkles },
+        { title: "Bagaj va tarif qoidalari", desc: "Bagaj normasi, qaytarish va almashtirish shartlarini tushunarli ko'rsatish.", icon: Luggage },
+        { title: "Premium safar paketi", desc: "Ustuvor xizmatlar, VIP yordam va tezkor qayta rasmiylashtirish.", icon: Sparkles },
         { title: "Korporativ safar", desc: "Kompaniyalar uchun xizmat safari, limit va hisobot yechimlari.", icon: Building2 },
         { title: "Ishonch va himoya", desc: "Ma'lumotlar xavfsizligi va to'lov oqimini nazorat qiluvchi himoya qatlamlari.", icon: ShieldCheck },
       ],
     },
     ru: {
-      badge: "Услуги avia tour",
+      badge: "Avia tour услуги",
       titleA: "Основные услуги",
       titleB: "для вашей поездки",
       desc: "TRIPZY помогает управлять авиапоездкой и туром в одном месте. Авиабилеты, отели, трансфер, виза, страховка и корпоративные поездки собраны в одном потоке.",
       stats: [
-        { label: "24/7", value: "Поддержка в пути" },
-        { label: "Tour", value: "Готовые пакеты" },
-        { label: "Flight", value: "Поток авиабилетов" },
-        { label: "Safe", value: "Защищенное бронирование" },
+        { label: "24/7", value: "Поддержка в пути", desc: "Во время поездки вы получаете постоянную связь и быструю помощь." },
+        { label: "Tour", value: "Готовые пакеты", desc: "Удобные решения с авиабилетами, проживанием и программой." },
+        { label: "Flight", value: "Поток авиабилетов", desc: "Поиск, сравнение и бронирование работают в одном процессе." },
+        { label: "Safe", value: "Защищённое бронирование", desc: "Заказ и оплата проходят с надёжной защитой." },
       ],
       services: [
         { title: "Бронирование авиабилетов", desc: "Подбор удобных тарифов и быстрое бронирование внутренних и международных направлений.", icon: Plane },
@@ -63,13 +63,13 @@ export default function Services() {
         { title: "Трансфер", desc: "Организованный трансфер между аэропортом, отелем и точками встречи.", icon: Timer },
         { title: "Визовая поддержка", desc: "Помощь в подготовке и подаче документов на визу.", icon: Stamp },
         { title: "Страхование поездки", desc: "Дополнительная защита и уверенность во время путешествия.", icon: BadgeCheck },
-        { title: "Поддержка 24/7", desc: "Постоянная связь и помощь в процессе перелета, брони и поездки.", icon: HeartHandshake },
-        { title: "Быстрый саппорт", desc: "Оперативные ответы и сопровождение по телефону и в мессенджерах.", icon: Headphones },
+        { title: "Поддержка 24/7", desc: "Постоянная связь и помощь во время перелёта, брони и поездки.", icon: HeartHandshake },
+        { title: "Быстрая помощь", desc: "Оперативные ответы и сопровождение по телефону и в мессенджерах.", icon: Headphones },
         { title: "Прозрачные цены", desc: "Без скрытых платежей, с заранее понятной итоговой суммой.", icon: CreditCard },
-        { title: "Багаж и тарифные правила", desc: "Понятное объяснение норм багажа, refund и change условий.", icon: Luggage },
-        { title: "Премиум пакет", desc: "Priority сервисы, VIP support и быстрое переоформление.", icon: Sparkles },
-        { title: "Корпоративные поездки", desc: "Командировки, лимиты и отчетные решения для компаний.", icon: Building2 },
-        { title: "Надежность и защита", desc: "Слои защиты для безопасности данных и платежного потока.", icon: ShieldCheck },
+        { title: "Багаж и тарифные правила", desc: "Понятное объяснение норм багажа, условий возврата и обмена.", icon: Luggage },
+        { title: "Премиум пакет", desc: "Приоритетные услуги, VIP-поддержка и быстрое переоформление.", icon: Sparkles },
+        { title: "Корпоративные поездки", desc: "Командировки, лимиты и отчётные решения для компаний.", icon: Building2 },
+        { title: "Надёжность и защита", desc: "Слои защиты для безопасности данных и платёжного потока.", icon: ShieldCheck },
       ],
     },
     en: {
@@ -78,10 +78,10 @@ export default function Services() {
       titleB: "for your trip",
       desc: "TRIPZY helps manage flights and travel services in one place. Tickets, hotels, transfers, visas, insurance, and corporate travel are combined in one flow.",
       stats: [
-        { label: "24/7", value: "Travel support" },
-        { label: "Tour", value: "Ready packages" },
-        { label: "Flight", value: "Flight flow" },
-        { label: "Safe", value: "Protected booking" },
+        { label: "24/7", value: "Travel support", desc: "Continuous contact and fast assistance during the whole trip." },
+        { label: "Tour", value: "Ready packages", desc: "Convenient bundles with flights, stays, and travel programs." },
+        { label: "Flight", value: "Flight flow", desc: "Search, compare, and book flights in one simple process." },
+        { label: "Safe", value: "Protected booking", desc: "Orders and payments are secured with reliable protection layers." },
       ],
       services: [
         { title: "Flight booking", desc: "Pick convenient fares and book domestic and international routes quickly.", icon: Plane },
@@ -106,10 +106,10 @@ export default function Services() {
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
-        <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7 dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]">
+        <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7">
           <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative overflow-hidden rounded-[32px] border border-[#dce4ef] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_36%,#eef3fb_62%,#f8f3f7_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-8 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_36%,rgba(20,39,74,0.92)_62%,rgba(28,28,62,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87] dark:border-[#3d5a8e] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#cfe0fb]">
+            <div className="relative overflow-hidden rounded-[32px] border border-[#dce4ef] bg-[linear-gradient(135deg,rgba(255,255,255,0.96)_0%,rgba(244,248,255,0.88)_36%,rgba(238,243,251,0.82)_62%,rgba(248,243,247,0.74)_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-8">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-[rgba(255,255,255,0.82)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87]">
                 <Sparkles size={14} />
                 {copy.badge}
               </div>
@@ -118,7 +118,7 @@ export default function Services() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#1d2430] md:text-[48px] dark:text-white"
+                className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#1d2430] md:text-[48px]"
               >
                 {copy.titleA}
                 <span className="bg-[linear-gradient(135deg,#243a7a_0%,#a44c72_45%,#e36b3a_100%)] bg-clip-text text-transparent">
@@ -126,7 +126,7 @@ export default function Services() {
                 </span>
               </motion.h1>
 
-              <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#627188] md:text-[16px] dark:text-[#a9bddb]">
+              <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#627188] md:text-[16px]">
                 {copy.desc}
               </p>
             </div>
@@ -135,12 +135,15 @@ export default function Services() {
               {copy.stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_22px_60px_rgba(2,8,24,0.34)]"
+                  className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(248,251,255,0.84)_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.06)]"
                 >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0] dark:text-[#93abd0]">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0]">
                     {item.label}
                   </div>
-                  <div className="mt-2 text-xl font-black text-[#1d2430] dark:text-white">{item.value}</div>
+                  <div className="mt-2 text-xl font-black text-[#1d2430]">{item.value}</div>
+                  <div className="mt-3 text-sm leading-6 text-[#627188]">
+                    {item.desc}
+                  </div>
                 </div>
               ))}
             </div>
@@ -155,13 +158,13 @@ export default function Services() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, delay: index * 0.02 }}
                 whileHover={{ y: -4 }}
-                className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_20px_50px_rgba(17,24,39,0.06)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]"
+                className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(248,251,255,0.84)_100%)] p-5 shadow-[0_20px_50px_rgba(17,24,39,0.06)]"
               >
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#3b6db6] dark:bg-[linear-gradient(135deg,rgba(39,72,133,0.9)_0%,rgba(26,47,87,0.96)_100%)] dark:text-[#d4e2fb]">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#3b6db6]">
                   <service.icon size={20} />
                 </div>
-                <div className="mt-4 text-lg font-black text-[#1d2430] dark:text-white">{service.title}</div>
-                <div className="mt-2 text-sm leading-7 text-[#627188] dark:text-[#a9bddb]">{service.desc}</div>
+                <div className="mt-4 text-lg font-black text-[#1d2430]">{service.title}</div>
+                <div className="mt-2 text-sm leading-7 text-[#627188]">{service.desc}</div>
               </motion.div>
             ))}
           </div>

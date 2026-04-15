@@ -20,9 +20,24 @@ import { getAccessToken } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 
 const luxuryBtn =
-  "border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_14px_28px_rgba(17,24,39,0.22)] hover:brightness-110"
+  "border border-[#2f63df]/20 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] text-white shadow-[0_14px_28px_rgba(63,135,212,0.22)] transition hover:brightness-110"
 const softPanel =
-  "border border-[#cce4ff] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,250,255,0.95)_100%)] shadow-[0_20px_60px_rgba(0,100,220,0.10)]"
+  "border border-[#d6e2ee] !bg-white bg-none shadow-[0_20px_60px_rgba(17,24,39,0.08)]"
+const secondaryBtn =
+  "border border-[#d6e2ee] !bg-white bg-none text-[#334155] shadow-[0_8px_22px_rgba(17,24,39,0.05)] transition hover:border-[#c5d4e3] hover:!bg-[#f8fbff] hover:text-[#0f172a]"
+const fieldPanel =
+  "rounded-[20px] border border-[#d6e2ee] !bg-white bg-none px-4 py-3 shadow-[0_10px_20px_rgba(17,24,39,0.04)] transition hover:border-[#c7d7e8]"
+const dropdownPanel =
+  "absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[320px] overflow-y-auto rounded-[22px] border border-[#d6e2ee] !bg-white bg-none shadow-[0_22px_55px_rgba(17,24,39,0.14)]"
+const unifiedCard =
+  "border border-[#d6e2ee] !bg-white bg-none shadow-[0_16px_40px_rgba(17,24,39,0.08)]"
+const unifiedSoftCard =
+  "border border-[#d6e2ee] !bg-white bg-none shadow-[0_14px_34px_rgba(17,24,39,0.06)]"
+const primaryText = "text-[#111827]"
+const secondaryText = "text-[#4b5563]"
+const mutedText = "text-[#6b7280]"
+const accentChip =
+  "rounded-full border border-[#d6e2ee] !bg-[#f3f8fd] text-[#315d8f]"
 const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
@@ -298,7 +313,7 @@ export default function Flights() {
   const [pax, setPax] = useState(1)
   const [travelClass, setTravelClass] = useState<TravelClassCode>("Y")
   const [sort, setSort] = useState<"best" | "cheap" | "fast">("best")
-  const [airlineFilter, setAirlineFilter] = useState("all")
+  const [airlineFilter] = useState("all")
   const [cabinFilter, setCabinFilter] = useState("all")
   const [maxDuration, setMaxDuration] = useState<number | null>(null)
   const [maxPriceFilter, setMaxPriceFilter] = useState<number | null>(null)
@@ -324,7 +339,7 @@ export default function Flights() {
       fillSearch: "Qayerdan, qayerga va sanani to'ldiring.",
       dateFormat: "Sana formati: YYYY-MM-DD",
       searchError: "Qidiruv xato",
-      backendBusy: "Xizmat vaqtincha javob bermayapti.",
+      backendBusy: "Xizmat vaqtincha ishlamayapti.",
       timeout: "Server juda sekin javob berdi. So'rov timeout bo'ldi.",
       invalidRoute: "Jo'nash va manzil uchun to'g'ri variantni tanlang.",
       highlightCheap: "Eng arzon",
@@ -351,7 +366,7 @@ export default function Flights() {
       toPlaceholder: "Masalan: FRA yoki Frankfurt",
       openCalendar: "Narx kalendari",
       classLabel: "Klass",
-      classNames: { Y: "Ekonom", C: "Biznes", F: "First" } as Record<string, string>,
+      classNames: { Y: "Ekonom", C: "Biznes", F: "Birinchi" } as Record<string, string>,
       search: "Qidirish",
       searching: "Qidirilmoqda...",
       searchHint: "* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida minimal narxli kalendar ochiladi.",
@@ -1009,10 +1024,6 @@ export default function Flights() {
 
   const sourceItems = items
 
-  const airlines = useMemo(
-    () => ["all", ...Array.from(new Set(sourceItems.map((item) => item.airline).filter(Boolean)))],
-    [sourceItems]
-  )
   const cabinOptions = useMemo<string[]>(
     () => [
       "all",
@@ -1170,144 +1181,93 @@ export default function Flights() {
   }, [groupedFlights])
 
   const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
-  const heroRouteText =
-    resolvedFrom && resolvedTo ? `${resolvedFrom} → ${resolvedTo}` : copy.routeEnter
-  const heroEta = date || copy.unselected
-
   return (
-    <section className="secondary-page-shell relative overflow-hidden pt-20">
-      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
+    <section className="relative overflow-hidden bg-white pt-20 text-[#111827]">
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
-        <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md dark:shadow-[0_32px_90px_rgba(4,10,28,0.42)] md:p-6 ${softPanel}`}>
-          <div className="relative overflow-hidden rounded-[36px] bg-[linear-gradient(135deg,#0052a5_0%,#0070cc_46%,#1a90e8_100%)] p-5 text-white shadow-[0_26px_70px_rgba(0,80,180,0.28)] md:p-7">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18)_0%,transparent_34%),radial-gradient(circle_at_88%_14%,rgba(255,220,150,0.16)_0%,transparent_28%)]" />
+        <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md md:p-6 ${softPanel}`}>
+          <div className="relative overflow-hidden rounded-[36px] bg-white p-5 text-[#111827] shadow-[0_20px_48px_rgba(17,24,39,0.08)] md:p-7">
             <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/78 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e2ee] bg-[#f8fbff] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#475569] backdrop-blur-sm">
                   <Sparkles size={14} />
                   {copy.routeSelection}
                 </div>
-                <h1 className="mt-6 max-w-[720px] text-[38px] font-black leading-[0.94] tracking-[-0.06em] md:text-[60px]">
+                <h1 className="mt-6 max-w-[720px] text-[38px] font-black leading-[0.94] tracking-[-0.06em] text-[#111827] md:text-[60px]">
                   {copy.heroTitleA}
                   <span className="block bg-[linear-gradient(135deg,#8ec5ff_0%,#d4bcff_46%,#ffd29b_100%)] bg-clip-text text-transparent">
                     {copy.heroTitleB}
                   </span>
                   <span className="block">{copy.heroTitleC}</span>
                 </h1>
-                <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#d2dced] md:text-[17px]">
+                <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#4b5563] md:text-[17px]">
                   {copy.heroDesc}
                 </p>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.88)] p-4 backdrop-blur-sm shadow-[0_14px_34px_rgba(18,53,110,0.14)]">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
+                  <div className={`rounded-[24px] p-4 backdrop-blur-sm ${unifiedCard}`}>
+                    <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
                       <CalendarDays size={14} />
                       {copy.date}
                     </div>
-                    <div className="mt-3 text-[24px] font-black text-[#17355f]">{date || copy.unselected}</div>
+                    <div className={`mt-3 text-[24px] font-black ${primaryText}`}>{date || copy.unselected}</div>
                   </div>
-                  <div className="rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.88)] p-4 backdrop-blur-sm shadow-[0_14px_34px_rgba(18,53,110,0.14)]">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
+                  <div className={`rounded-[24px] p-4 backdrop-blur-sm ${unifiedCard}`}>
+                    <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
                       <Users size={14} />
                       {copy.passenger}
                     </div>
-                    <div className="mt-3 text-[24px] font-black text-[#17355f]">{`${pax} ${language === "en" ? "pax" : "ta"}`.trim()}</div>
+                    <div className={`mt-3 text-[24px] font-black ${primaryText}`}>{`${pax} ${language === "en" ? "pax" : "ta"}`.trim()}</div>
                   </div>
-                  <div className="rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.88)] p-4 backdrop-blur-sm shadow-[0_14px_34px_rgba(18,53,110,0.14)]">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
+                  <div className={`rounded-[24px] p-4 backdrop-blur-sm ${unifiedCard}`}>
+                    <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
                       <Ticket size={14} />
                       {copy.classLabel}
                     </div>
-                    <div className="mt-3 text-[24px] font-black text-[#17355f]">{copy.classNames[travelClass]}</div>
+                    <div className={`mt-3 text-[24px] font-black ${primaryText}`}>{copy.classNames[travelClass]}</div>
                   </div>
                 </div>
               </div>
 
-              <div className="relative overflow-hidden rounded-[30px] border border-white/70 bg-[rgba(255,255,255,0.72)] backdrop-blur-sm shadow-[0_18px_44px_rgba(18,53,110,0.16)]">
-                <img src={currentCitySlide.image} alt={currentCitySlide.city} className="absolute inset-0 h-full w-full object-cover opacity-80 transition duration-700" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(13,50,108,0.18)_100%)]" />
-                <div className="relative flex h-full min-h-[320px] flex-col justify-between p-5">
-                  <div className="rounded-[22px] border border-white/75 bg-[rgba(255,255,255,0.9)] p-4 backdrop-blur-md shadow-[0_12px_30px_rgba(18,53,110,0.14)]">
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5a7a9a]">
-                      {copy.curated}
-                    </div>
-                    <div className="mt-2 text-[26px] font-black leading-tight text-[#17355f]">
-                      {copy.curatedTitle}
-                    </div>
-                    <div className="mt-3 text-sm leading-7 text-[#37577f]">
-                      {copy.curatedDesc}
-                    </div>
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <div className="rounded-full border border-[#d9e6f7] bg-white px-3 py-1.5 text-sm font-semibold text-[#17355f]">
-                        {currentCitySlide.city}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {cityHeroSlides.map((slide, index) => (
-                          <button
-                            key={`${slide.city}-${index}`}
-                            type="button"
-                            onClick={() => setActiveCitySlide(index)}
-                            className={[
-                              "h-2.5 rounded-full transition-all",
-                              index === activeCitySlide ? "w-8 bg-[#1d62c9]" : "w-2.5 bg-[#aac4ea] hover:bg-[#6f9ddb]",
-                            ].join(" ")}
-                            aria-label={slide.city}
-                          />
-                        ))}
-                      </div>
-                    </div>
+              <div className="relative min-h-[320px] overflow-hidden rounded-[30px] border border-[#d6e2ee] shadow-[0_20px_48px_rgba(17,24,39,0.10)]">
+                <img
+                  src={currentCitySlide.image}
+                  alt={currentCitySlide.city}
+                  className="absolute inset-0 h-full w-full object-cover transition duration-700"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.46)_100%)]" />
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
+                  <div className="rounded-full border border-white/18 bg-[rgba(7,18,35,0.34)] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(2,8,24,0.22)] backdrop-blur-[10px]">
+                    {currentCitySlide.city}
                   </div>
-
-                  <div className="rounded-[24px] border border-white/75 bg-[rgba(255,255,255,0.9)] p-5 backdrop-blur-md shadow-[0_12px_30px_rgba(18,53,110,0.14)]">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5a7a9a]">
-                          {copy.route}
-                        </div>
-                        <div className="mt-2 text-[28px] font-black tracking-[-0.05em] text-[#17355f]">
-                          {heroRouteText}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">
-                          {copy.eta}
-                        </div>
-                        <div className="mt-2 text-[22px] font-black text-[#17355f]">
-                          {heroEta}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-5 flex items-center gap-3">
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5a7a9a]">
-                        {copy.from}
-                      </span>
-                      <div className="relative h-[3px] flex-1 rounded-full bg-[#d6e4f7]">
-                        <div className="absolute inset-y-0 left-0 w-full rounded-full bg-[linear-gradient(90deg,#87b5ef_0%,#2f7fe0_48%,#f0c88f_100%)]" />
-                        <Plane className="absolute -top-[11px] left-1/2 -translate-x-1/2 text-[#2f7fe0]" size={18} />
-                      </div>
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5a7a9a]">
-                        {copy.to}
-                      </span>
-                    </div>
-                    <div className="mt-4 text-sm text-[#37577f]">
-                      {currentCitySlide.city} {copy.skylinePreview}
-                    </div>
+                  <div className="flex items-center gap-2 rounded-full border border-white/14 bg-[rgba(7,18,35,0.28)] px-3 py-2 shadow-[0_10px_24px_rgba(2,8,24,0.18)] backdrop-blur-[10px]">
+                    {cityHeroSlides.map((slide, index) => (
+                      <button
+                        key={`${slide.city}-${index}`}
+                        type="button"
+                        onClick={() => setActiveCitySlide(index)}
+                        className={[
+                          "h-2.5 rounded-full transition-all",
+                          index === activeCitySlide ? "w-8 bg-white" : "w-2.5 bg-white/55 hover:bg-white/80",
+                        ].join(" ")}
+                        aria-label={slide.city}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-5 overflow-visible rounded-[32px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-4 shadow-[0_24px_60px_rgba(0,100,220,0.08)] md:p-5">
+          <div className={`mt-5 overflow-visible rounded-[32px] p-4 md:p-5 ${unifiedSoftCard}`}>
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_210px_190px_220px]">
               <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
               <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
-              <div className="relative flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#cce4ff] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(0,100,220,0.06)]">
-                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">{copy.date}</div>
+              <div className={`relative flex min-h-[84px] flex-col justify-center rounded-[24px] px-4 py-3 ${unifiedCard}`}>
+                <div className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>{copy.date}</div>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
-                  className="text-left text-[16px] font-semibold text-[#1d2430]"
+                  className={`text-left text-[16px] font-semibold ${primaryText}`}
                 >
                   {date || copy.openCalendar}
                 </button>
@@ -1326,8 +1286,8 @@ export default function Flights() {
                   />
                 ) : null}
               </div>
-              <div className="flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#cce4ff] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(0,100,220,0.06)]">
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#5a7a9a]">{copy.classLabel}</div>
+              <div className="flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#d6e2ee] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(17,24,39,0.04)]">
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">{copy.classLabel}</div>
                 <div className="grid grid-cols-3 gap-2">
                   {(["Y", "C", "F"] as TravelClassCode[]).map((item) => (
                     <button
@@ -1338,7 +1298,7 @@ export default function Flights() {
                         "h-10 rounded-2xl border text-[13px] font-semibold transition",
                         travelClass === item
                           ? `${luxuryBtn} border-[#1a2231]/10`
-                          : "border-[#cce4ff] bg-white text-[#5a7a9a] hover:bg-[#f0f8ff]",
+                          : secondaryBtn,
                       ].join(" ")}
                     >
                       {copy.classNames[item]}
@@ -1353,14 +1313,14 @@ export default function Flights() {
 
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className="h-10 rounded-full border border-[#cce4ff] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#4a7aaa] transition hover:bg-[#f0f8ff] disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-50 ${secondaryBtn}`}>
                   {copy.swap}
                 </button>
-                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className="h-10 rounded-full border border-[#cce4ff] bg-white px-4 text-xs font-semibold uppercase tracking-[0.14em] text-[#4a7aaa] transition hover:bg-[#f0f8ff] disabled:cursor-not-allowed disabled:opacity-50">
+                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-50 ${secondaryBtn}`}>
                   {copy.clear}
                 </button>
                 {(["best", "cheap", "fast"] as const).map((item) => (
-                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : "border-[#cce4ff] bg-white text-[#4a7aaa] hover:bg-[#f0f8ff]"].join(" ")}>
+                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : secondaryBtn].join(" ")}>
                     {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
                   </button>
                 ))}
@@ -1388,15 +1348,15 @@ export default function Flights() {
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
           <aside className={`rounded-[30px] p-5 ${softPanel}`}>
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4a7aaa]"><Filter size={15} />{copy.filters}</div>
+            <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}><Filter size={15} />{copy.filters}</div>
             <div className="mt-5 space-y-5">
               <FilterBlock title={copy.priceRange}>
                 <input type="range" min={0} max={Math.max(maxPrice, 1)} value={maxPriceFilter ?? Math.max(maxPrice, 1)} onChange={(e) => setMaxPriceFilter(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
-                <div className="mt-2 flex items-center justify-between text-xs text-[#627188]"><span>0</span><span>{formatMoney(maxPriceFilter ?? maxPrice, sourceItems[0]?.currency || "UZS")}</span></div>
+                <div className={`mt-2 flex items-center justify-between text-xs ${secondaryText}`}><span>0</span><span>{formatMoney(maxPriceFilter ?? maxPrice, sourceItems[0]?.currency || "UZS")}</span></div>
               </FilterBlock>
               <FilterBlock title={copy.duration}>
                 <input type="range" min={0} max={Math.max(maxTripDuration, 60)} value={maxDuration ?? Math.max(maxTripDuration, 60)} onChange={(e) => setMaxDuration(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
-                <div className="mt-2 text-xs text-[#627188]">{fmtDuration(maxDuration ?? maxTripDuration, language)}</div>
+                <div className={`mt-2 text-xs ${secondaryText}`}>{fmtDuration(maxDuration ?? maxTripDuration, language)}</div>
               </FilterBlock>
               <FilterBlock title={copy.departureTime}>
                 <div className="grid grid-cols-2 gap-2">{[
@@ -1404,7 +1364,7 @@ export default function Flights() {
                   { key: "morning", label: copy.beforeNoon },
                   { key: "day", label: copy.day },
                   { key: "evening", label: copy.evening },
-                ].map((item) => <button key={item.key} type="button" onClick={() => setDepartureFilter(item.key as "all" | "morning" | "day" | "evening")} className={["rounded-2xl border px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] transition", departureFilter === item.key ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}>{item.label}</button>)}</div>
+                ].map((item) => <button key={item.key} type="button" onClick={() => setDepartureFilter(item.key as "all" | "morning" | "day" | "evening")} className={["rounded-2xl border px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] transition", departureFilter === item.key ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : secondaryBtn].join(" ")}>{item.label}</button>)}</div>
               </FilterBlock>
               <FilterBlock title={copy.conveniences}>
                 <div className="space-y-3">
@@ -1413,20 +1373,12 @@ export default function Flights() {
                 </div>
               </FilterBlock>
               <FilterBlock title={copy.cabin}>
-                <div className="space-y-2">{cabinOptions.map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span>{item === "all" ? copy.all : item}</span><Ticket size={15} /></button>)}</div>
-              </FilterBlock>
-              <FilterBlock title={copy.airline}>
-                <div className="space-y-2">{airlines.map((item) => <button key={item} type="button" onClick={() => setAirlineFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", airlineFilter === item ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff]"].join(" ")}><span className="truncate">{item === "all" ? copy.allCompanies : item}</span><span className="text-xs uppercase">{item === "all" ? sourceItems.length : sourceItems.filter((flight) => flight.airline === item).length}</span></button>)}</div>
+                <div className="space-y-2">{cabinOptions.map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : secondaryBtn].join(" ")}><span>{item === "all" ? copy.all : item}</span><Ticket size={15} /></button>)}</div>
               </FilterBlock>
             </div>
           </aside>
 
           <div className="space-y-4">
-            {!loading && sourceItems.length > 0 ? (
-              <div className="rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] px-5 py-4 text-sm text-[#4a7aaa] shadow-[0_12px_30px_rgba(0,100,220,0.07)]">
-                {copy.visibleFlights} <span className="font-black text-[#1d2430]">{filtered.length}</span> {copy.visibleFlightsSuffix}
-              </div>
-            ) : null}
             {loading ? <InlineLoading /> : null}
             {!loading && groupedFlights.length > 0 ? (
               <div className="space-y-4">
@@ -1444,7 +1396,7 @@ export default function Flights() {
                 ))}
               </div>
             ) : null}
-            {!loading && filtered.length === 0 ? <div className="rounded-[28px] border border-[#cce4ff] bg-white px-6 py-12 text-center text-[#4a7aaa] shadow-[0_18px_40px_rgba(0,100,220,0.07)]">{copy.noFlights}</div> : null}
+            {!loading && filtered.length === 0 ? <div className={`rounded-[28px] px-6 py-12 text-center ${unifiedSoftCard} ${secondaryText}`}>{copy.noFlights}</div> : null}
           </div>
         </div>
       </div>
@@ -1475,10 +1427,10 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
   }
 
   return (
-    <label className="relative rounded-[20px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)] transition hover:border-[#cfd9e8] hover:bg-white dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.28)] dark:hover:bg-[rgba(28,46,84,0.94)]">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#9fb4d7]">{label}</div>
+    <label className={`relative ${fieldPanel}`}>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58789c]">{label}</div>
       <input
-        className="mt-2 w-full bg-transparent text-[15px] font-semibold text-[#1d2430] outline-none placeholder:text-[#93a0b4] dark:text-white dark:placeholder:text-[#8ea5cb]"
+        className="mt-2 w-full bg-transparent text-[15px] font-semibold text-[#1d2430] outline-none placeholder:text-[#90a3ba]"
         placeholder={placeholder}
         value={value}
         onFocus={() => setOpen(true)}
@@ -1509,7 +1461,7 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
         }}
       />
       {open && filteredOptions.length > 0 ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[320px] overflow-y-auto rounded-[22px] border border-[#dbe3ef] bg-white shadow-[0_22px_55px_rgba(17,24,39,0.14)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(13,24,48,0.98)_0%,rgba(18,32,60,0.97)_100%)] dark:shadow-[0_22px_55px_rgba(4,10,28,0.42)]">
+        <div className={dropdownPanel}>
           {filteredOptions.map((option) => (
             <button
               key={option.code}
@@ -1521,15 +1473,15 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
               }}
               onClick={() => pickOption(option)}
               className={[
-                "flex w-full items-center justify-between border-b border-[#eef3f8] px-4 py-3 text-left transition last:border-b-0",
-                filteredOptions[activeIndex]?.code === option.code ? "bg-[#f8fbff] dark:bg-[rgba(28,46,84,0.94)]" : "hover:bg-[#f8fbff] dark:hover:bg-[rgba(28,46,84,0.94)]",
+                "flex w-full items-center justify-between border-b border-[#e7eef6] px-4 py-3 text-left transition last:border-b-0",
+                filteredOptions[activeIndex]?.code === option.code ? "bg-[#eef5fc]" : "hover:bg-[#f7fbff]",
               ].join(" ")}
             >
               <span>
-                <span className="block text-sm font-semibold text-[#1d2430] dark:text-white">{option.name}</span>
-                <span className="block text-xs uppercase tracking-[0.14em] text-[#7f8ca0] dark:text-[#9fb4d7]">{option.code}</span>
+                <span className="block text-sm font-semibold text-[#1d2430]">{option.name}</span>
+                <span className="block text-xs uppercase tracking-[0.14em] text-[#6f84a0]">{option.code}</span>
               </span>
-              <span className="rounded-full border border-[#dce7f3] bg-[#f7fbff] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#5a6f8d] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb]">
+              <span className="rounded-full border border-[#cfe1f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef5fc_100%)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#466b95]">
                 {selectLabel}
               </span>
             </button>
@@ -1542,31 +1494,25 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
 
 function InfoChip({ icon: Icon, label, value }: { icon: typeof CalendarDays; label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(247,250,255,0.92)_100%)] p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.24)]">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0] dark:text-[#9fb4d7]"><Icon size={14} />{label}</div>
-      <div className="mt-2 text-[15px] font-bold text-[#1d2430] dark:text-white">{value}</div>
+    <div className="rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(247,250,255,0.92)_100%)] p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)]">
+      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0]"><Icon size={14} />{label}</div>
+      <div className="mt-2 text-[15px] font-bold text-[#1d2430]">{value}</div>
     </div>
   )
 }
 void InfoChip
 
-function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, chooseFareLabel }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; chooseFareLabel: string }) {
-  const toneStyles = {
-    blue: "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)]",
-    gold: "border-[#f3e2bf] bg-[linear-gradient(135deg,#fffaf0_0%,#fff4da_100%)]",
-    rose: "border-[#f0d9df] bg-[linear-gradient(135deg,#fff8fa_0%,#fff1f3_100%)]",
-  } as const
-
+function TopDealCard({ badge, tone: _tone, flight, onPick, formatRoute, language, chooseFareLabel }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; chooseFareLabel: string }) {
   return (
-    <div className={`rounded-[30px] border p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] ${toneStyles[tone]}`}>
+    <div className={`rounded-[30px] p-5 ${unifiedCard}`}>
       <div className="flex items-start justify-between gap-3">
-        <div className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#5f6e84]">{badge}</div>
-        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7f8ca0]">{flight.airline}</div>
+        <div className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${accentChip}`}>{badge}</div>
+        <div className={`text-xs font-semibold uppercase tracking-[0.14em] ${mutedText}`}>{flight.airline}</div>
       </div>
-      <div className="mt-4 text-xl font-black text-[#1d2430]">{formatRoute(flight.from, flight.to)}</div>
-      <div className="mt-2 text-sm text-[#627188]">{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
-      <div className="mt-4 text-2xl font-black text-[#1d2430]">{formatMoney(flight.price, flight.currency)}</div>
-      <div className="mt-2 text-sm text-[#627188]">
+      <div className={`mt-4 text-xl font-black ${primaryText}`}>{formatRoute(flight.from, flight.to)}</div>
+      <div className={`mt-2 text-sm ${secondaryText}`}>{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
+      <div className={`mt-4 text-2xl font-black ${primaryText}`}>{formatMoney(flight.price, flight.currency)}</div>
+      <div className={`mt-2 text-sm ${secondaryText}`}>
         {flight.departDate || "—"} → {flight.arriveDate || "—"}
       </div>
       <button type="button" onClick={() => onPick(flight)} className={`mt-4 h-11 w-full rounded-2xl text-sm font-semibold ${luxuryBtn}`}>{chooseFareLabel}</button>
@@ -1576,8 +1522,8 @@ function TopDealCard({ badge, tone, flight, onPick, formatRoute, language, choos
 
 function FilterBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-4 shadow-[0_10px_24px_rgba(0,100,220,0.06)]">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4a7aaa]">{title}</div>
+    <div className={`rounded-[24px] p-4 ${unifiedSoftCard}`}>
+      <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>{title}</div>
       <div className="mt-4">{children}</div>
     </div>
   )
@@ -1587,15 +1533,15 @@ function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { 
   return (
     <button type="button" disabled={disabled} onClick={onClick} className={[
       "flex w-full items-center justify-between rounded-[22px] border px-4 py-3 text-left transition",
-      active ? `${luxuryBtn} border-[#1a2231]/10` : "border-[#cce4ff] bg-white text-[#4a7aaa] hover:bg-[#f0f8ff]",
-      disabled ? "cursor-not-allowed opacity-55 hover:bg-white" : "",
+      active ? `${luxuryBtn} border-[#1a2231]/10` : secondaryBtn,
+      disabled ? "cursor-not-allowed opacity-55" : "",
     ].join(" ")}>
       <div>
-        <div className="text-sm font-semibold">{title}</div>
-        <div className={`mt-1 text-xs ${active ? "text-white/70" : "text-[#7a9ab8]"}`}>{subtitle}</div>
+        <div className={`text-sm font-semibold ${active ? "text-white" : primaryText}`}>{title}</div>
+        <div className={`mt-1 text-xs ${active ? "text-white/70" : mutedText}`}>{subtitle}</div>
       </div>
-      <div className={["relative h-7 w-12 rounded-full border transition", active ? "border-white/25 bg-white/15" : "border-[#cce4ff] bg-[#e8f4ff]"].join(" ")}>
-        <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#7ab0d8]"].join(" ")} />
+      <div className={["relative h-7 w-12 rounded-full border transition", active ? "border-white/25 bg-white/15" : "border-[#d6e2ee] bg-[#eef4fb]"].join(" ")}>
+        <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#315d8f]"].join(" ")} />
       </div>
     </button>
   )
@@ -1621,39 +1567,36 @@ function AirlineGroupCard({
   formatRoute: (origin?: string, destination?: string) => string
 }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[#cce4ff] bg-white shadow-[0_16px_40px_rgba(0,100,220,0.08)]">
+    <div className={`overflow-hidden rounded-[28px] ${unifiedCard}`}>
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#f0f8ff]"
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#f7fbff]"
       >
         <span className="flex min-w-0 items-center gap-3">
           {group.airlineLogo ? (
-            <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#edf2f7] bg-white object-contain p-1" />
+            <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#d6e2ee] bg-white object-contain p-1" />
           ) : (
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8f4ff] text-[#0070cc]">
+            <span className={`grid h-8 w-8 place-items-center ${accentChip}`}>
               <Plane size={16} />
             </span>
           )}
           <span className="min-w-0">
-            <span className="block truncate text-[17px] font-semibold text-[#1d2430]">
+            <span className={`block truncate text-[17px] font-semibold ${primaryText}`}>
               {group.airline} ({group.airlineCode})
             </span>
-            <span className="block text-sm text-[#5a7aaa]">
+            <span className={`block text-sm ${secondaryText}`}>
               {group.items.length} {copy.offers} {copy.fromPriceLabel} {formatMoney(group.minPrice, group.items[0]?.currency)}
             </span>
           </span>
         </span>
-        <ChevronDown size={18} className={`shrink-0 text-[#5a7aaa] transition ${expanded ? "rotate-180" : ""}`} />
+        <ChevronDown size={18} className={`shrink-0 ${mutedText} transition ${expanded ? "rotate-180" : ""}`} />
       </button>
 
       {expanded ? (
-        <div className="border-t border-[#deeeff] px-5 py-4">
-          <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#4a7aaa]">
+        <div className="border-t border-[#e5edf7] px-5 py-4">
+          <div className={`mb-3 text-xs font-semibold uppercase tracking-[0.16em] ${mutedText}`}>
             {copy.airlineChoice}
-          </div>
-          <div className="mb-3 text-sm text-[#627188]">
-            {copy.airlineDataNote}
           </div>
           <div className="space-y-3">
             {group.items.map((flight) => (
@@ -1689,37 +1632,37 @@ function AirlineOptionRow({
   const isDirect = (flight.stopsCount ?? 0) === 0
 
   return (
-    <div className="rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-4">
+    <div className={`rounded-[24px] p-4 ${unifiedSoftCard}`}>
       <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)_220px] lg:items-center">
         <div className="min-w-0">
-          <div className="text-[15px] font-black text-[#1d2430]">{flight.flightNo || flight.airline}</div>
-          <div className="mt-1 text-sm text-[#5a7aaa]">{flight.airlineName || flight.airline}</div>
-          <div className="mt-2 text-sm text-[#7a9ab8]">{formatRoute(flight.from, flight.to)}</div>
+          <div className={`text-[15px] font-black ${primaryText}`}>{flight.flightNo || flight.airline}</div>
+          <div className={`mt-1 text-sm ${secondaryText}`}>{flight.airlineName || flight.airline}</div>
+          <div className={`mt-2 text-sm ${mutedText}`}>{formatRoute(flight.from, flight.to)}</div>
         </div>
 
         <div className="min-w-0">
-          <div className="flex items-center justify-center gap-3 text-[15px] font-black text-[#1d2430]">
+          <div className={`flex items-center justify-center gap-3 text-[15px] font-black ${primaryText}`}>
             <span>{flight.depart}</span>
-            <span className="text-[#0070cc]">→</span>
+            <span className="text-[#315d8f]">→</span>
             <span>{flight.arrive}</span>
           </div>
-          <div className="mt-2 text-center text-sm text-[#5a7aaa]">
+          <div className={`mt-2 text-center text-sm ${secondaryText}`}>
             {fmtDuration(flight.durationMin, language)}, {isDirect ? copy.direct : `${flight.stopsCount} ${copy.transfers}`}
           </div>
-          <div className="mt-2 text-center text-sm text-[#7a9ab8]">
+          <div className={`mt-2 text-center text-sm ${mutedText}`}>
             {flight.departDate || "—"} → {flight.arriveDate || "—"}
           </div>
         </div>
 
         <div className="text-left lg:text-right">
-          <div className="text-[17px] font-black text-[#1d2430]">
+          <div className={`text-[17px] font-black ${primaryText}`}>
             {formatCompactPrice(flight.price, flight.currency)}
           </div>
           <div className="mt-2 flex flex-wrap justify-start gap-2 lg:justify-end">
-            {flight.cabin ? <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">{flight.cabin}</span> : null}
-            {flight.baggage ? <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">{flight.baggage} bagaj</span> : null}
-            {flight.carryOn ? <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">{copy.carryOnLabel} {flight.carryOn}</span> : null}
-            <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1 text-xs text-[#4a7aaa]">
+            {flight.cabin ? <span className={`px-2.5 py-1 text-xs ${accentChip}`}>{flight.cabin}</span> : null}
+            {flight.baggage ? <span className={`px-2.5 py-1 text-xs ${accentChip}`}>{flight.baggage} bagaj</span> : null}
+            {flight.carryOn ? <span className={`px-2.5 py-1 text-xs ${accentChip}`}>{copy.carryOnLabel} {flight.carryOn}</span> : null}
+            <span className={`px-2.5 py-1 text-xs ${accentChip}`}>
               {flight.refundable ? copy.refundableYes : copy.refundableNo}
             </span>
           </div>
@@ -1758,7 +1701,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
   const isDirect = (flight.stopsCount ?? 0) === 0
 
   return (
-    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, delay: index * 0.04 }} className="group overflow-hidden rounded-[34px] border border-[#cce4ff] bg-[linear-gradient(180deg,#ffffff_0%,#f5fbff_100%)] p-5 shadow-[0_18px_45px_rgba(0,100,220,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(0,100,220,0.13)]">
+    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, delay: index * 0.04 }} className={`group overflow-hidden rounded-[34px] p-5 transition hover:-translate-y-0.5 ${unifiedCard}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {badge ? (
@@ -1766,16 +1709,16 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
               {badge.label}
             </div>
           ) : null}
-          <div className="mt-3 text-[20px] font-black tracking-[-0.03em] text-[#1d2430]">
+          <div className={`mt-3 text-[20px] font-black tracking-[-0.03em] ${primaryText}`}>
             {formatCompactPrice(flight.price, flight.currency)}
           </div>
-          <div className="mt-2 flex flex-wrap gap-2 text-sm text-[#4a7aaa]">
-            <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">{flight.baggage ? `${flight.baggage} ${copy.baggageOnly.toLowerCase()}` : copy.noBaggage}</span>
-            <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">{flight.carryOn ? `${copy.carryOnLabel} ${flight.carryOn}` : copy.noCarry}</span>
+          <div className={`mt-2 flex flex-wrap gap-2 text-sm ${secondaryText}`}>
+            <span className={`px-2.5 py-1 ${accentChip}`}>{flight.baggage ? `${flight.baggage} ${copy.baggageOnly.toLowerCase()}` : copy.noBaggage}</span>
+            <span className={`px-2.5 py-1 ${accentChip}`}>{flight.carryOn ? `${copy.carryOnLabel} ${flight.carryOn}` : copy.noCarry}</span>
             {flight.seatsAvailable ? <span className="rounded-full bg-[#fff0f3] px-2.5 py-1 text-[#d94b64]">{copy.moreSeats} {flight.seatsAvailable} {copy.seats}</span> : null}
           </div>
         </div>
-        <button type="button" onClick={() => onPick(flight)} className="shrink-0 rounded-2xl border border-[#cce4ff] bg-[#e8f4ff] px-4 py-2 text-sm font-semibold text-[#0052a5] transition hover:bg-[#d4ebff]">
+        <button type="button" onClick={() => onPick(flight)} className={`shrink-0 rounded-2xl px-4 py-2 text-sm font-semibold ${secondaryBtn}`}>
           {copy.view}
         </button>
       </div>
@@ -1783,49 +1726,49 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
         <div className="flex items-center gap-3">
           {flight.airlineLogo ? (
-            <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-11 w-11 rounded-full border border-[#edf2f7] bg-white object-contain p-1.5" />
+            <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-11 w-11 rounded-full border border-[#d6e2ee] bg-white object-contain p-1.5" />
           ) : (
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#4d9ce6] text-white">
+            <div className={`flex h-11 w-11 items-center justify-center ${accentChip}`}>
               <Plane size={18} />
             </div>
           )}
           <div className="min-w-0">
-            <div className="text-[18px] font-black text-[#1d2430]">{flight.depart}</div>
-            <div className="text-sm text-[#5a7aaa]">{flight.from}</div>
-            <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{flight.departDate || "—"}</div>
+            <div className={`text-[18px] font-black ${primaryText}`}>{flight.depart}</div>
+            <div className={`text-sm ${secondaryText}`}>{flight.from}</div>
+            <div className={`mt-1 text-xs font-medium ${mutedText}`}>{flight.departDate || "—"}</div>
             {departureTerminal ? (
-              <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{copy.terminal} {departureTerminal}</div>
+              <div className={`mt-1 text-xs font-medium ${mutedText}`}>{copy.terminal} {departureTerminal}</div>
             ) : null}
-            <div className="text-sm text-[#7a9ab8]">{flight.airlineName || flight.airline}</div>
+            <div className={`text-sm ${mutedText}`}>{flight.airlineName || flight.airline}</div>
           </div>
         </div>
 
         <div className="min-w-0">
-          <div className="flex items-center justify-center gap-3 text-sm text-[#5a7aaa]">
+          <div className={`flex items-center justify-center gap-3 text-sm ${secondaryText}`}>
             <PlaneTakeoff size={15} />
             <span>{fmtDuration(flight.durationMin, language)}, {isDirect ? copy.direct : `${flight.stopsCount} ${copy.transfers}`}</span>
             <PlaneLanding size={15} />
           </div>
           <div className="mt-3 flex items-center gap-3">
-            <span className="text-sm font-bold text-[#1d67ff]">{flight.from}</span>
+            <span className={`text-sm font-bold ${primaryText}`}>{flight.from}</span>
             <div className="relative h-1.5 flex-1 rounded-full bg-[#dfe5ee]">
               <div className="absolute left-0 top-0 h-1.5 rounded-full bg-[linear-gradient(90deg,#dfe5ee_0%,#b7c4d8_45%,#dfe5ee_100%)]" style={{ width: "100%" }} />
               <PlaneTakeoff className="absolute -top-3 left-0 text-[#8d98a9]" size={15} />
               <PlaneLanding className="absolute -top-3 right-0 text-[#8d98a9]" size={15} />
             </div>
-            <span className="text-sm font-bold text-[#1d67ff]">{flight.to}</span>
+            <span className={`text-sm font-bold ${primaryText}`}>{flight.to}</span>
           </div>
-          <div className="mt-3 text-sm text-[#5a7aaa]">{formatRoute(flight.from, flight.to)}</div>
+          <div className={`mt-3 text-sm ${secondaryText}`}>{formatRoute(flight.from, flight.to)}</div>
         </div>
 
         <div className="text-right">
-          <div className="text-[18px] font-black text-[#1d2430]">{flight.arrive}</div>
-          <div className="text-sm text-[#5a7aaa]">{flight.to}</div>
-          <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{flight.arriveDate || "—"}</div>
+          <div className={`text-[18px] font-black ${primaryText}`}>{flight.arrive}</div>
+          <div className={`text-sm ${secondaryText}`}>{flight.to}</div>
+          <div className={`mt-1 text-xs font-medium ${mutedText}`}>{flight.arriveDate || "—"}</div>
           {arrivalTerminal ? (
-            <div className="mt-1 text-xs font-medium text-[#7a9ab8]">{copy.terminal} {arrivalTerminal}</div>
+            <div className={`mt-1 text-xs font-medium ${mutedText}`}>{copy.terminal} {arrivalTerminal}</div>
           ) : null}
-          <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-[#e8f4ff] px-3 py-1 text-xs font-semibold text-[#0052a5]">
+          <div className={`mt-1 inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold ${accentChip}`}>
             <Ticket size={13} />
             {flight.cabin || "—"}
           </div>
@@ -1833,67 +1776,67 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
       </div>
 
       {segments.length ? (
-        <div className="mt-5 rounded-[24px] border border-[#cce4ff] bg-[linear-gradient(180deg,#f5fbff_0%,#eef6ff_100%)] p-4">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4a7aaa]">
+        <div className={`mt-5 rounded-[24px] p-4 ${unifiedSoftCard}`}>
+          <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
             {copy.segments}
           </div>
 
           <div className="mt-3 space-y-3">
             {segments.map((segment, segmentIndex) => (
               <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`}>
-                <div className="grid gap-3 rounded-[20px] border border-[#cce4ff] bg-white p-4 md:grid-cols-[220px_minmax(0,1fr)_200px]">
+                <div className={`grid gap-3 rounded-[20px] p-4 md:grid-cols-[220px_minmax(0,1fr)_200px] ${unifiedCard}`}>
                   <div>
-                    <div className="text-sm font-black text-[#1d2430]">
+                    <div className={`text-sm font-black ${primaryText}`}>
                       {(segment.carrier || segment.operatingCarrier || flight.airline) + (segment.flightNumber ? `-${segment.flightNumber}` : "")}
                     </div>
-                    <div className="mt-1 text-sm text-[#5a7aaa]">
+                    <div className={`mt-1 text-sm ${secondaryText}`}>
                       {formatRoute(segment.origin, segment.destination)}
                     </div>
-                    <div className="mt-2 text-xs text-[#7a9ab8]">
+                    <div className={`mt-2 text-xs ${mutedText}`}>
                       {segment.equipment || "—"} • {segment.bookingClass || "—"} / {segment.serviceClass || "—"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 text-sm text-[#1d2430]">
+                    <div className={`flex items-center gap-3 text-sm ${primaryText}`}>
                       <span className="font-black">{toTime(segment.departure)}</span>
-                      <span className="text-[#0070cc]">→</span>
+                      <span className="text-[#315d8f]">→</span>
                       <span className="font-black">{toTime(segment.arrival)}</span>
                     </div>
-                    <div className="mt-1 text-xs text-[#7a9ab8]">
+                    <div className={`mt-1 text-xs ${mutedText}`}>
                       {toDateOnly(segment.departure)} → {toDateOnly(segment.arrival)}
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-[#4a7aaa]">
-                      <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">
+                    <div className={`mt-2 flex flex-wrap gap-2 text-xs ${secondaryText}`}>
+                      <span className={`px-2.5 py-1 ${accentChip}`}>
                         {segment.origin}
                       </span>
-                      <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">
+                      <span className={`px-2.5 py-1 ${accentChip}`}>
                         {segment.destination}
                       </span>
-                      <span className="rounded-full bg-[#e8f4ff] px-2.5 py-1">
+                      <span className={`px-2.5 py-1 ${accentChip}`}>
                         {segment.duration ? fmtDuration(segment.duration, language) : "—"}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-left md:text-right">
-                    <div className="text-xs text-[#7a9ab8]">
+                    <div className={`text-xs ${mutedText}`}>
                       {copy.terminal}
                     </div>
-                    <div className="mt-1 text-sm font-semibold text-[#1d2430]">
+                    <div className={`mt-1 text-sm font-semibold ${primaryText}`}>
                       {(segment.departureTerminal || "—") + " → " + (segment.arrivalTerminal || "—")}
                     </div>
-                    <div className="mt-2 text-xs text-[#7a9ab8]">
+                    <div className={`mt-2 text-xs ${mutedText}`}>
                       {segment.baggage || copy.noBaggage}
                     </div>
-                    <div className="mt-1 text-xs text-[#7a9ab8]">
+                    <div className={`mt-1 text-xs ${mutedText}`}>
                       {segment.carryOn || copy.noCarry}
                     </div>
                   </div>
                 </div>
 
                 {segmentIndex < segments.length - 1 ? (
-                  <div className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] text-[#4a7aaa]">
+                  <div className={`px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] ${mutedText}`}>
                     {copy.layover}: {segment.layover ? fmtDuration(segment.layover, language) : "—"} • {segment.destination}
                   </div>
                 ) : null}
@@ -1903,13 +1846,13 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
         </div>
       ) : null}
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#deeeff] pt-4">
-        <div className="flex flex-wrap gap-2 text-sm text-[#4a7aaa]">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5"><Clock3 size={14} /> {fmtDuration(flight.durationMin, language)}</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5"><Users size={14} /> {flight.refundable ? copy.refundableYes : copy.refundableNo}</span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5"><ArrowRight size={14} /> {flight.flightNo ?? copy.availableFlight}</span>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5edf7] pt-4">
+        <div className={`flex flex-wrap gap-2 text-sm ${secondaryText}`}>
+          <span className={`inline-flex items-center gap-1 px-3 py-1.5 ${accentChip}`}><Clock3 size={14} /> {fmtDuration(flight.durationMin, language)}</span>
+          <span className={`inline-flex items-center gap-1 px-3 py-1.5 ${accentChip}`}><Users size={14} /> {flight.refundable ? copy.refundableYes : copy.refundableNo}</span>
+          <span className={`inline-flex items-center gap-1 px-3 py-1.5 ${accentChip}`}><ArrowRight size={14} /> {flight.flightNo ?? copy.availableFlight}</span>
           {firstSegment?.origin || lastSegment?.destination ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#e8f4ff] px-3 py-1.5">
+            <span className={`inline-flex items-center gap-1 px-3 py-1.5 ${accentChip}`}>
               <Plane size={14} /> {(firstSegment?.origin || flight.from) + " → " + (lastSegment?.destination || flight.to)}
             </span>
           ) : null}
@@ -1927,7 +1870,7 @@ function InlineLoading() {
   return (
     <div className="space-y-4">
       {[0, 1, 2].map((item) => (
-        <div key={item} className="rounded-[28px] border border-[#cce4ff] bg-white px-6 py-6 shadow-[0_18px_45px_rgba(0,100,220,0.08)]">
+        <div key={item} className={`rounded-[28px] px-6 py-6 ${unifiedCard}`}>
           <div className="space-y-4">
             <SkeletonLine className="h-6 w-[180px]" />
             <SkeletonLine className="h-12 w-full" />
@@ -1946,7 +1889,7 @@ function InlineLoading() {
 
 function SkeletonLine({ className = "" }: { className?: string }) {
   return (
-    <motion.div className={`overflow-hidden rounded-full bg-[#e9eef5] dark:bg-[rgba(38,58,97,0.92)] ${className}`} initial={{ opacity: 0.5 }} animate={{ opacity: [0.45, 0.8, 0.45] }} transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}>
+    <motion.div className={`overflow-hidden rounded-full bg-[#e9eef5] ${className}`} initial={{ opacity: 0.5 }} animate={{ opacity: [0.45, 0.8, 0.45] }} transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}>
       <motion.div className="h-full w-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.72),transparent)]" animate={{ x: ["-100%", "100%"] }} transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }} />
     </motion.div>
   )

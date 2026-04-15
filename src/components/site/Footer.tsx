@@ -9,11 +9,11 @@ export default function Footer() {
   const { language } = useI18n()
   const copy = {
     uz: {
-      subtitle: "Premium trip booking platform",
+      subtitle: "Premium sayohat bronlash platformasi",
       workHours: "Ish vaqti: 09:00 - 23:00",
       pages: "Sahifalar",
       about: "Biz haqimizda",
-      services: "Xizmatlarimiz",
+      services: "Xizmatlar",
       flights: "Reyslar",
       contact: "Aloqa",
       info: "Ma'lumot",
@@ -21,9 +21,11 @@ export default function Footer() {
       privacy: "Maxfiylik siyosati",
       help: "Yordam",
       app: "Ilova",
-      rights: "All rights reserved",
-      developed: "Web developed by",
+      rights: "Barcha huquqlar himoyalangan",
+      developed: "Saytni ishlab chiqqan:",
       social: "Ijtimoiy havola",
+      appStoreTop: "Yuklab oling",
+      playStoreTop: "Ilovani oling",
     },
     ru: {
       subtitle: "Премиальная платформа для бронирования поездок",
@@ -38,9 +40,11 @@ export default function Footer() {
       privacy: "Политика конфиденциальности",
       help: "Помощь",
       app: "Приложение",
-      rights: "All rights reserved",
-      developed: "Web developed by",
+      rights: "Все права защищены",
+      developed: "Сайт разработан:",
       social: "Социальная ссылка",
+      appStoreTop: "Скачайте в",
+      playStoreTop: "Доступно в",
     },
     en: {
       subtitle: "Premium trip booking platform",
@@ -58,6 +62,8 @@ export default function Footer() {
       rights: "All rights reserved",
       developed: "Web developed by",
       social: "Social link",
+      appStoreTop: "Available on",
+      playStoreTop: "Get it on",
     },
   }[language]
 
@@ -112,8 +118,8 @@ export default function Footer() {
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.15 }} className="lg:col-span-1 md:justify-self-end">
             <div className="text-sm font-semibold text-white">{copy.app}</div>
             <div className="mt-4 flex flex-col gap-3">
-              <StoreBtn icon={Apple} top="Available on" title="App Store" href="#" />
-              <StoreBtn icon={PlayCircle} top="Get it on" title="Google Play" href="#" />
+              <StoreBtn icon={Apple} top={copy.appStoreTop} title="App Store" href="#" />
+              <StoreBtn icon={PlayCircle} top={copy.playStoreTop} title="Google Play" href="#" />
             </div>
           </motion.div>
         </div>

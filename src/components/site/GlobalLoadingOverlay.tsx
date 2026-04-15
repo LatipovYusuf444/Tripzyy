@@ -2,11 +2,19 @@ import { AnimatePresence, motion } from "motion/react"
 import { useEffect, useState } from "react"
 
 import { useAppLoading } from "@/shared/store/appLoading"
+import { useI18n } from "@/shared/i18n/i18n"
 
 export default function GlobalLoadingOverlay() {
+  const { language } = useI18n()
   const pendingCount = useAppLoading((state) => state.pendingCount)
   const isLoading = pendingCount > 0
   const [visible, setVisible] = useState(false)
+  const label =
+    language === "uz"
+      ? "Yuklanmoqda"
+      : language === "ru"
+        ? "Загрузка"
+        : "Loading"
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined
@@ -35,7 +43,7 @@ export default function GlobalLoadingOverlay() {
           <div className="relative flex flex-col items-center gap-5">
             <div className="relative overflow-hidden text-center">
               <span className="select-none text-[54px] font-black uppercase tracking-[0.18em] text-black/14 sm:text-[82px] md:text-[108px]">
-                Loading
+                {label}
               </span>
 
               <motion.span
@@ -53,7 +61,7 @@ export default function GlobalLoadingOverlay() {
                   repeat: Infinity,
                 }}
               >
-                Loading
+                {label}
               </motion.span>
             </div>
 

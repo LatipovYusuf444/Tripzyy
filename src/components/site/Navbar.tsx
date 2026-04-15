@@ -8,7 +8,6 @@ import {
   MoonStar,
   SunMedium,
   UserCircle2,
-  Users,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -41,12 +40,16 @@ const menuVariants = {
 
 const actionBtnClass =
   "h-10 rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:brightness-110 " +
-  "border-[#d7e4f4] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.12)] " +
-  "dark:border-white/15 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.08)_100%)] dark:text-white dark:shadow-[0_16px_36px_rgba(2,8,24,0.28)]"
+  "border-[rgba(122,164,255,0.32)] bg-[linear-gradient(180deg,rgba(14,29,67,0.9)_0%,rgba(11,24,58,0.82)_100%)] text-white shadow-[0_18px_34px_rgba(5,12,30,0.34)] backdrop-blur-[18px]"
 
 const desktopGlassClass =
-  "border border-[#d7e4f4] bg-white/70 text-[#111827] shadow-[0_8px_22px_rgba(49,87,143,0.10)] backdrop-blur-[18px] " +
-  "dark:border-white/15 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.08)_100%)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.28)]"
+  "border border-[rgba(122,164,255,0.28)] bg-[linear-gradient(180deg,rgba(13,31,75,0.88)_0%,rgba(11,24,58,0.8)_100%)] text-white shadow-[0_16px_36px_rgba(5,12,30,0.3)] backdrop-blur-[18px]"
+
+const compactNavbarGlassClass =
+  "border border-[rgba(122,164,255,0.22)] bg-[linear-gradient(90deg,rgba(11,31,59,0.98)_0%,rgba(15,58,138,0.92)_100%)] shadow-[0_22px_48px_rgba(2,8,24,0.34),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[24px]"
+
+const compactControlGlassClass =
+  "border border-[rgba(122,164,255,0.24)] bg-[linear-gradient(180deg,rgba(14,29,67,0.92)_0%,rgba(11,24,58,0.82)_100%)] text-white shadow-[0_14px_28px_rgba(5,12,30,0.28)] backdrop-blur-[18px]"
 
 type NavLinkItem = {
   to: string
@@ -180,7 +183,7 @@ const userMemberLabel =
     language === "uz"
       ? "Tripzy a'zosi"
       : language === "ru"
-        ? "Tripzy user"
+        ? "Участник Tripzy"
         : "Tripzy member"
 
   const onToggleTheme = () => {
@@ -191,33 +194,31 @@ const userMemberLabel =
   const copy = {
     uz: {
       leftLinks: [
-        { to: "/flights", label: "Aeroport" },
+        { to: "/flights", label: "Reyslar" },
         { to: "/about", label: "Biz haqimizda" },
-        { to: "/checkout", label: "Rasmiylashtirish", icon: Users },
       ] as NavLinkItem[],
       rightLinks: [
         { to: "/services", label: "Xizmatlar" },
         { to: "/contact", label: "Kontakt" },
       ] as NavLinkItem[],
       home: "Tripzy bosh sahifa",
-      themeDark: "Dark",
-      themeLight: "Light",
+      themeDark: "Tungi",
+      themeLight: "Yorug'",
       login: "Kirish",
       profile: "Profil",
       logout: "Chiqish",
       menu: "Menyu",
       navigation: "Navigatsiya",
-      darkMode: "Dark blue mode",
-      lightMode: "Light mode",
+      darkMode: "Tungi rejim",
+      lightMode: "Yorug' rejim",
       openMenu: "Menyuni ochish",
       closeMenu: "Menyuni yopish",
       switchTheme: "Temani almashtirish",
     },
     ru: {
       leftLinks: [
-        { to: "/flights", label: "Аэропорт" },
+        { to: "/flights", label: "Рейсы" },
         { to: "/about", label: "О нас" },
-        { to: "/passengers", label: "Пассажиры", icon: Users },
       ] as NavLinkItem[],
       rightLinks: [
         { to: "/services", label: "Услуги" },
@@ -239,9 +240,8 @@ const userMemberLabel =
     },
     en: {
       leftLinks: [
-        { to: "/flights", label: "Airport" },
+        { to: "/flights", label: "Flights" },
         { to: "/about", label: "About" },
-        { to: "/checkout", label: "Checkout", icon: Users },
       ] as NavLinkItem[],
       rightLinks: [
         { to: "/services", label: "Services" },
@@ -255,7 +255,7 @@ const userMemberLabel =
       logout: "Logout",
       menu: "Menu",
       navigation: "Navigation",
-      darkMode: "Dark blue mode",
+      darkMode: "Dark mode",
       lightMode: "Light mode",
       openMenu: "Open menu",
       closeMenu: "Close menu",
@@ -281,7 +281,7 @@ const userMemberLabel =
             : "w-full px-4 py-2 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2.5",
           isHome
             ? "border-b border-transparent bg-transparent shadow-none"
-            : "border-b border-white/55 bg-white/52 shadow-[0_4px_18px_rgba(20,40,90,0.05)] backdrop-blur-[22px] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.06)_100%)] dark:shadow-[0_4px_22px_rgba(2,8,24,0.26)] dark:backdrop-blur-[22px]",
+            : compactNavbarGlassClass,
         ].join(" ")}
       >
         <div className={`mx-auto flex !max-w-[1640px] items-center justify-between gap-4 ${isCompactNavbar ? "lg:gap-8" : "lg:gap-10"}`}>
@@ -294,12 +294,12 @@ const userMemberLabel =
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className={`block h-auto object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] ${isCompactNavbar ? "!w-[248px]" : "!w-[310px]"}`}
+              className={`block h-auto object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] ${isCompactNavbar ? "!w-[276px]" : "!w-[334px]"}`}
             />
           </Link>
 
           <div className="hidden min-w-0 flex-1 items-center lg:flex">
-            <div className={`flex min-w-0 flex-1 items-center justify-center ${isCompactNavbar ? "gap-4 px-4 xl:gap-6 xl:px-6 2xl:gap-7 2xl:px-10" : "gap-5 px-6 xl:gap-8 xl:px-10 2xl:gap-9 2xl:px-14"}`}>
+            <div className={`flex min-w-0 flex-1 items-center justify-center ${isCompactNavbar ? "gap-5 px-3 xl:gap-7 xl:px-5 2xl:gap-8 2xl:px-8" : "gap-5 px-6 xl:gap-8 xl:px-10 2xl:gap-9 2xl:px-14"}`}>
               {desktopLinks.map((link) => (
                 <NavItem
                   key={link.to}
@@ -309,22 +309,25 @@ const userMemberLabel =
                   badge={link.to === "/checkout" ? paxCount : 0}
                   isHome={isHome}
                   theme={theme}
+                  forceDark={isCompactNavbar}
                 />
               ))}
             </div>
 
-            <div className={`flex shrink-0 items-center ${isCompactNavbar ? "ml-6 gap-2.5 xl:ml-8" : "ml-8 gap-3.5 xl:ml-10"}`}>
+            <div className={`flex shrink-0 items-center ${isCompactNavbar ? "ml-4 gap-2.5 xl:ml-6" : "ml-8 gap-3.5 xl:ml-10"}`}>
               <div
                 ref={languageMenuRef}
                 className="relative"
               >
-                <div className={`flex items-center gap-1 rounded-full border border-[#d7e4f4] bg-white/58 shadow-[0_8px_20px_rgba(49,87,143,0.10)] backdrop-blur-[16px] dark:border-white/14 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.07)_100%)] ${isCompactNavbar ? "p-0.5" : "p-1"}`}>
+                <div
+                  className={`flex items-center gap-1 rounded-full ${isCompactNavbar ? compactControlGlassClass : "border border-[#cddbeb] bg-[linear-gradient(180deg,rgba(255,255,255,0.88)_0%,rgba(243,247,253,0.82)_100%)] text-[#0f172a] shadow-[0_8px_20px_rgba(49,87,143,0.10)] backdrop-blur-[16px] dark:border-white/14 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.07)_100%)] dark:text-white"} ${isCompactNavbar ? "p-0.5" : "p-1"}`}
+                >
                   <button
                     type="button"
                     onClick={() => setLanguageMenuOpen((value) => !value)}
                     aria-haspopup="menu"
                     aria-expanded={languageMenuOpen}
-                    className={`inline-flex items-center gap-2 rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] font-bold uppercase tracking-[0.06em] text-[#111827] shadow-[0_6px_16px_rgba(49,87,143,0.10)] transition-all duration-200 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
+                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${isCompactNavbar ? "border border-[rgba(122,164,255,0.18)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_100%)] text-white shadow-[0_10px_24px_rgba(2,6,18,0.22)] hover:bg-white/10" : "border border-[#d8e3f0] bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] text-[#0f172a] shadow-[0_6px_16px_rgba(49,87,143,0.10)] dark:border-transparent dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white"} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
                   >
                     <span>{language}</span>
                     <ChevronDown
@@ -337,11 +340,11 @@ const userMemberLabel =
                 <AnimatePresence>
                   {languageMenuOpen ? (
                     <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
-                    className="absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] border border-[#d7e4f4] bg-white/90 p-2 shadow-[0_18px_40px_rgba(49,87,143,0.12)] backdrop-blur-[18px] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"
+                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${isCompactNavbar ? "border border-[rgba(122,164,255,0.22)] bg-[linear-gradient(180deg,rgba(11,24,58,0.98)_0%,rgba(10,20,47,0.94)_100%)] shadow-[0_22px_50px_rgba(2,8,24,0.42)]" : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
                     >
                       {otherLanguages.map((lang) => (
                         <button
@@ -351,7 +354,7 @@ const userMemberLabel =
                             setLanguage(lang)
                             setLanguageMenuOpen(false)
                           }}
-                          className="flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[#2a3a58] transition hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"
+                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? "text-white/82 hover:bg-white/8 hover:text-white" : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
                         >
                           {lang}
                         </button>
@@ -365,8 +368,7 @@ const userMemberLabel =
                 type="button"
                 aria-label={copy.switchTheme}
                 onClick={onToggleTheme}
-                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition hover:bg-white/10 ${desktopGlassClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
-                style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
+                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition hover:bg-white/10 ${isCompactNavbar ? compactControlGlassClass : desktopGlassClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
               >
                 {theme === "dark" ? <SunMedium size={isCompactNavbar ? 12 : 14} /> : <MoonStar size={isCompactNavbar ? 12 : 14} />}
                 {theme === "dark" ? copy.themeLight : copy.themeDark}
@@ -376,7 +378,6 @@ const userMemberLabel =
                   <Button
                     onClick={goAuth}
                     className={`${actionBtnClass} ${isCompactNavbar ? "h-9 px-4 text-[10px]" : "px-5"}`}
-                    style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
                   >
                   {copy.login}
                 </Button>
@@ -385,15 +386,13 @@ const userMemberLabel =
                   <button
                     type="button"
                     onClick={goProfile}
-                    className={`grid shrink-0 place-items-center rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] font-bold uppercase tracking-[0.12em] text-[#111827] shadow-[0_6px_16px_rgba(49,87,143,0.10)] transition hover:opacity-80 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white ${isCompactNavbar ? "h-9 w-9 text-[10px]" : "h-10 w-10 text-[11px]"}`}
-                    style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
+                    className={`grid shrink-0 place-items-center rounded-full font-bold uppercase tracking-[0.12em] transition hover:opacity-80 ${isCompactNavbar ? "border border-[rgba(122,164,255,0.18)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_100%)] text-white shadow-[0_10px_24px_rgba(2,6,18,0.22)]" : "bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,250,255,0.9)_100%)] text-[#111827] shadow-[0_6px_16px_rgba(49,87,143,0.10)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white"} ${isCompactNavbar ? "h-9 w-9 text-[10px]" : "h-10 w-10 text-[11px]"}`}
                   >
                     {userInitials}
                   </button>
                   <Button
                     onClick={logout}
                     className={`${actionBtnClass} ${isCompactNavbar ? "h-9 px-4 text-[10px]" : ""}`}
-                    style={!isHome && theme === "light" ? { color: "#111827" } : undefined}
                   >
                     <LogOut className="mr-1.5" size={14} />
                     {copy.logout}
@@ -412,7 +411,7 @@ const userMemberLabel =
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className={`block h-auto object-contain ${isCompactNavbar ? "w-[164px] sm:w-[176px]" : "w-[188px] sm:w-[204px]"}`}
+              className={`block h-auto object-contain ${isCompactNavbar ? "w-[212px] sm:w-[224px]" : "w-[230px] sm:w-[244px]"}`}
             />
           </Link>
 
@@ -420,7 +419,7 @@ const userMemberLabel =
             type="button"
             aria-label={copy.openMenu}
             onClick={() => setOpen((value) => !value)}
-            className={`ml-auto inline-flex items-center justify-center rounded-2xl border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] transition hover:bg-white/80 dark:border-white/14 dark:bg-[rgba(255,255,255,0.10)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.24)] lg:hidden ${isCompactNavbar ? "h-10 w-10" : "h-12 w-12"}`}
+            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${isCompactNavbar ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-white/14 dark:bg-[rgba(255,255,255,0.10)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.24)]"} ${isCompactNavbar ? "h-10 w-10" : "h-12 w-12"}`}
           >
             {open ? <X size={isCompactNavbar ? 20 : 22} /> : <Menu size={isCompactNavbar ? 20 : 22} />}
           </button>
@@ -446,21 +445,21 @@ const userMemberLabel =
                 exit="closed"
                 variants={menuVariants}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.97)_0%,rgba(248,251,255,0.95)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.96)_0%,rgba(15,28,56,0.94)_100%)] dark:shadow-[0_28px_70px_rgba(4,10,28,0.34)] lg:hidden ${isCompactNavbar ? "top-[74px] max-h-[calc(100svh-88px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
+                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-[#e5edf7] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] lg:hidden ${isCompactNavbar ? "top-[74px] max-h-[calc(100svh-88px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
               >
-                <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3 dark:border-[#2c416a]">
+                <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7d8593] dark:text-[#9fb4d7]">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7d8593]">
                       {copy.menu}
                     </div>
-                    <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[#161d2a] dark:text-white">
+                    <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[#161d2a]">
                       {copy.navigation}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] dark:border-[#36507f] dark:bg-[rgba(24,39,72,0.9)] dark:text-white"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] hover:bg-[#f8fbff]"
                   >
                     <X size={18} />
                   </button>
@@ -472,26 +471,26 @@ const userMemberLabel =
                       <button
                         type="button"
                         onClick={goProfile}
-                        className="flex items-center gap-3 rounded-[20px] border border-[#e7edf6] bg-white/85 p-3 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)]"
+                        className="flex items-center gap-3 rounded-[20px] border border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-3 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)]"
                       >
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#20304a_0%,#111827_100%)] text-sm font-bold uppercase tracking-[0.12em] text-white dark:bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)]">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)] text-sm font-bold uppercase tracking-[0.12em] text-white">
                           {userInitials}
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a879c] dark:text-[#93abd0]">
+                          <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a879c]">
                             {userMemberLabel}
                           </span>
-                          <span className="mt-1 block truncate text-[15px] font-bold text-[#1d2430] dark:text-white">
+                          <span className="mt-1 block truncate text-[15px] font-bold text-[#1d2430]">
                             {user?.fullName || copy.profile}
                           </span>
-                          <span className="block truncate text-xs text-[#627188] dark:text-[#a9bddb]">
+                          <span className="block truncate text-xs text-[#627188]">
                             {user?.email}
                           </span>
                         </span>
                       </button>
                     ) : null}
 
-                    <div className="flex items-center gap-2 rounded-[18px] border border-[#e7edf6] bg-white/85 p-2 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)]">
+                    <div className="flex items-center gap-2 rounded-[18px] border border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-2">
                       {(["uz", "ru", "en"] as const).map((lang) => (
                         <button
                           key={lang}
@@ -500,8 +499,8 @@ const userMemberLabel =
                           className={[
                             "flex-1 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition",
                             language === lang
-                              ? "bg-[#1c2433] text-white dark:bg-[#4b79ff]"
-                              : "text-[#2a3140] hover:bg-[#f3f7fc] dark:text-white/80 dark:hover:bg-white/10",
+                              ? "bg-[linear-gradient(135deg,#5d86ff_0%,#3d6fee_100%)] text-white shadow-[0_10px_24px_rgba(61,111,238,0.22)]"
+                              : "text-[#2a3140] hover:bg-[#f3f7fc]",
                           ].join(" ")}
                         >
                           {lang}
@@ -512,15 +511,15 @@ const userMemberLabel =
                     <button
                       type="button"
                       onClick={onToggleTheme}
-                      className="flex items-center justify-between rounded-[18px] border border-[#e7edf6] bg-white/85 px-4 py-3 text-sm font-semibold text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)] dark:text-white dark:hover:bg-[rgba(28,46,84,0.94)]"
+                      className="flex items-center justify-between rounded-[18px] border border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-4 py-3 text-sm font-semibold text-[#1d2430] transition hover:bg-[#f8fbff]"
                     >
                       <span className="inline-flex items-center gap-3">
-                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[rgba(56,85,136,0.24)] dark:text-[#dbe8ff]">
+                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f]">
                           {theme === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
                         </span>
                         <span>{theme === "dark" ? copy.lightMode : copy.darkMode}</span>
                       </span>
-                      <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
+                      <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268]">
                         {theme === "dark" ? "ON" : "OFF"}
                       </span>
                     </button>
@@ -532,20 +531,20 @@ const userMemberLabel =
                         onClick={() => setOpen(false)}
                         className={({ isActive }) =>
                           [
-                            "flex items-center justify-between rounded-[18px] border px-4 py-3 text-sm font-semibold text-[#1d2430] transition dark:text-white",
+                            "flex items-center justify-between rounded-[18px] border px-4 py-3 text-sm font-semibold text-[#1d2430] transition",
                             isActive
-                              ? "border-[#d8e5f8] bg-[linear-gradient(180deg,#f4f8ff_0%,#edf4ff_100%)] shadow-[0_10px_24px_rgba(71,120,197,0.08)] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:shadow-[0_16px_34px_rgba(4,10,28,0.36)]"
-                              : "border-[#e7edf6] bg-white/85 hover:bg-[#f8fbff] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.82)] dark:hover:bg-[rgba(28,46,84,0.94)]",
+                              ? "border-[#d8e5f8] bg-[linear-gradient(180deg,#f4f8ff_0%,#edf4ff_100%)] shadow-[0_10px_24px_rgba(71,120,197,0.08)]"
+                              : "border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] hover:bg-[#f8fbff]",
                           ].join(" ")
                         }
                       >
                         <span className="inline-flex items-center gap-3">
                           {link.icon ? (
-                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[rgba(56,85,136,0.24)] dark:text-[#dbe8ff]">
+                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f]">
                               <link.icon size={16} />
                             </span>
                           ) : (
-                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[11px] font-bold uppercase tracking-[0.14em] text-[#28466f] dark:bg-[rgba(56,85,136,0.24)] dark:text-[#dbe8ff]">
+                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[11px] font-bold uppercase tracking-[0.14em] text-[#28466f]">
                               {link.label.slice(0, 2)}
                             </span>
                           )}
@@ -553,7 +552,7 @@ const userMemberLabel =
                         </span>
 
                         {link.to === "/checkout" && paxCount > 0 ? (
-                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268] dark:bg-[rgba(57,90,146,0.24)] dark:text-[#dbe8ff]">
+                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268]">
                             {paxCount}
                           </span>
                         ) : null}
@@ -562,11 +561,11 @@ const userMemberLabel =
                   </div>
                 </div>
 
-                <div className="mt-3 border-t border-[#e6edf6] pt-3 dark:border-[#2c416a]">
+                <div className="mt-3 border-t border-[#e6edf6] pt-3">
                   {!authed ? (
                     <Button
                       onClick={goAuth}
-                      className="h-12 w-full rounded-[18px] border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_14px_32px_rgba(17,24,39,0.22)] hover:brightness-110"
+                      className="h-10 w-full rounded-[16px] border border-[#cfe0f5] bg-[linear-gradient(135deg,#5d86ff_0%,#3d6fee_100%)] px-4 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(61,111,238,0.20)] hover:brightness-110"
                     >
                       {copy.login}
                     </Button>
@@ -574,14 +573,14 @@ const userMemberLabel =
                     <div className="grid grid-cols-2 gap-3">
                       <Button
                         onClick={goProfile}
-                        className="h-12 rounded-[18px] border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white shadow-[0_14px_32px_rgba(17,24,39,0.22)] hover:brightness-110"
+                        className="h-10 rounded-[16px] border border-[#d7e4f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-4 text-[13px] font-semibold text-[#1d2430] shadow-[0_10px_20px_rgba(49,87,143,0.08)] hover:bg-white"
                       >
                         <UserCircle2 className="mr-1.5" size={15} />
                         {copy.profile}
                       </Button>
                       <Button
                         onClick={logout}
-                        className="h-12 rounded-[18px] border border-[#e8d7dd] bg-[linear-gradient(180deg,#fff9fb_0%,#fff1f4_100%)] text-sm font-semibold text-[#a54864] shadow-[0_10px_24px_rgba(165,72,100,0.08)] hover:bg-[#fff5f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]"
+                        className="h-10 rounded-[16px] border border-[#e8d7dd] bg-[linear-gradient(180deg,#fff9fb_0%,#fff1f4_100%)] px-4 text-[13px] font-semibold text-[#a54864] shadow-[0_10px_20px_rgba(165,72,100,0.08)] hover:bg-[#fff5f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]"
                       >
                         {copy.logout}
                       </Button>
@@ -604,6 +603,7 @@ function NavItem({
   badge = 0,
   isHome,
   theme,
+  forceDark = false,
 }: {
   to: string
   label: string
@@ -611,6 +611,7 @@ function NavItem({
   badge?: number
   isHome: boolean
   theme: SiteTheme
+  forceDark?: boolean
 }) {
   return (
     <NavLink
@@ -626,7 +627,7 @@ function NavItem({
       {({ isActive }) => {
         const lightText = "#111827"
         const darkText = "#ffffff"
-        const textColor = isHome ? darkText : theme === "dark" ? darkText : lightText
+        const textColor = isHome || forceDark ? darkText : theme === "dark" ? darkText : lightText
 
         const accentMap: Record<string, { line: string; glow: string }> = {
           "/flights": { line: "linear-gradient(90deg,#2f7fe0 0%,#7fb7ff 100%)", glow: "rgba(47,127,224,0.28)" },
@@ -665,7 +666,7 @@ function NavItem({
                 className="rounded-full px-2 py-0.5 text-[10px] tracking-normal"
                 style={{
                   color: textColor,
-                  background: isHome ? "rgba(255,255,255,0.14)" : theme === "dark" ? "rgba(255,255,255,0.18)" : "rgba(17,24,39,0.08)",
+                  background: isHome || forceDark ? "rgba(255,255,255,0.14)" : theme === "dark" ? "rgba(255,255,255,0.18)" : "rgba(17,24,39,0.08)",
                 }}
               >
                 {badge}

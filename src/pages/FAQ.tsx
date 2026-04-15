@@ -16,7 +16,7 @@ export default function FAQ() {
         { q: "Bagaj qancha?", a: "Har bir reys taklifida bagaj miqdori alohida ko'rsatiladi." },
         { q: "Refund (qaytarish) bormi?", a: "Ba'zi tariflar refundable bo'ladi. Taklif ichida ko'rsatiladi." },
         { q: "To'lov qanday bo'ladi?", a: "To'lov usullari reys tanlash va bron jarayonida ko'rsatiladi." },
-        { q: "Qo'llab-quvvatlash?", a: "24/7 support. Kontakt sahifasidan yozishingiz mumkin." },
+        { q: "Qo'llab-quvvatlash?", a: "24/7 yordam mavjud. Kontakt sahifasidan yozishingiz mumkin." },
       ],
     },
     ru: {
