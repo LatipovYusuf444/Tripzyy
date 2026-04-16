@@ -1178,7 +1178,7 @@ export default function Home() {
                 {["Click", "Visa", "Mastercard", "Humo"].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-[#d7e3f5] bg-white/85 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#45628f] shadow-[0_8px_18px_rgba(17,24,39,0.04)] dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-[#d4e2fb] dark:shadow-[0_12px_24px_rgba(4,10,28,0.24)]"
+                    className="rounded-full border border-[#d7e3f5] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#45628f] shadow-[0_8px_18px_rgba(17,24,39,0.04)]"
                   >
                     {item}
                   </span>
@@ -1192,7 +1192,7 @@ export default function Home() {
               title={copy.helpCards[1].title}
               text={copy.helpCards[1].text}
             >
-              <p className="mt-4 text-sm leading-6 text-[#475569] dark:text-[#d2e0f8]">
+              <p className="mt-4 text-sm leading-6 text-[#475569]">
                 {copy.helpCards[1].extra}
               </p>
             </HelpCard>
@@ -1203,7 +1203,7 @@ export default function Home() {
               title={copy.helpCards[2].title}
               text={copy.helpCards[2].text}
             >
-              <p className="mt-4 text-sm leading-6 text-[#475569] dark:text-[#d2e0f8]">
+              <p className="mt-4 text-sm leading-6 text-[#475569]">
                 {copy.helpCards[2].extra}
               </p>
             </HelpCard>
@@ -1836,16 +1836,16 @@ function HelpCard({
   } as const
 
   return (
-    <div className="rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.56)_0%,rgba(245,249,255,0.34)_100%)] p-6 shadow-[0_24px_60px_rgba(17,24,39,0.10)] backdrop-blur-[18px] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.12)] dark:border-[#35507f]/70 dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.62)_0%,rgba(19,35,67,0.48)_100%)] dark:shadow-[0_24px_60px_rgba(4,10,28,0.36)] dark:hover:shadow-[0_28px_70px_rgba(4,10,28,0.46)]">
+    <div className="rounded-[30px] border border-[#e8eef8] bg-white p-6 shadow-[0_24px_60px_rgba(17,24,39,0.08)] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.12)]">
       <div
         className={`grid h-24 w-24 place-items-center rounded-full border shadow-[0_14px_30px_rgba(17,24,39,0.06)] ${accentStyles[accent]}`}
       >
         {icon}
       </div>
-      <h3 className="mt-6 text-2xl font-extrabold leading-tight text-[#0f172a] dark:text-white">
+      <h3 className="mt-6 text-2xl font-extrabold leading-tight text-[#0f172a]">
         {title}
       </h3>
-      <p className="mt-3 text-sm leading-7 text-[#475569] dark:text-[#d2e0f8] sm:text-[15px]">{text}</p>
+      <p className="mt-3 text-sm leading-7 text-[#475569] sm:text-[15px]">{text}</p>
       {children}
     </div>
   )

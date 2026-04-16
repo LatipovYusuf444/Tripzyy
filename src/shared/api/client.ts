@@ -7,13 +7,12 @@ const formatApiKey = (value: string) =>
   value.trim().toLowerCase().startsWith("bearer ") ? value.trim() : `Bearer ${value.trim()}`
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://b2b.onlinetrip.uz/api",
+  baseURL: "/api",
   timeout: 15000,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json; charset=utf-8",
   },
-  withCredentials: true,
 })
 
 client.interceptors.request.use((config) => {

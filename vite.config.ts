@@ -16,7 +16,7 @@ export default defineConfig({
       "/api": {
         target: "https://b2b.onlinetrip.uz",
         changeOrigin: true,
-        secure: true,
+        secure: false,
         timeout: 15000,
         proxyTimeout: 15000,
       },
