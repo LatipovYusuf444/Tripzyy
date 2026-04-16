@@ -43,7 +43,7 @@ const actionBtnClass =
   "border-[rgba(122,164,255,0.32)] bg-[linear-gradient(180deg,rgba(14,29,67,0.9)_0%,rgba(11,24,58,0.82)_100%)] text-white shadow-[0_18px_34px_rgba(5,12,30,0.34)] backdrop-blur-[18px]"
 
 const desktopGlassClass =
-  "border border-[rgba(122,164,255,0.28)] bg-[linear-gradient(180deg,rgba(13,31,75,0.88)_0%,rgba(11,24,58,0.8)_100%)] text-white shadow-[0_16px_36px_rgba(5,12,30,0.3)] backdrop-blur-[18px]"
+  "border border-[rgba(122,164,255,0.28)] !bg-white text-black shadow-[0_16px_36px_rgba(5,12,30,0.3)] backdrop-blur-[18px]"
 
 const compactNavbarGlassClass =
   "border-b border-white/20 bg-white/70 shadow-[0_2px_16px_rgba(0,40,120,0.06)] backdrop-blur-[22px]"
@@ -53,10 +53,10 @@ const compactControlGlassClass =
 
 const compactActionBtnClass =
   "h-9 rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:bg-[#f0f6ff] " +
-  "border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]"
+  "border-[#dde8f5] !bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]"
 
 const homeActionBtnClass =
-  "h-10 rounded-full border px-5 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:bg-[#f0f6ff] " +
+  "h-10 rounded-full border px-5 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:bg-[#000000] " +
   "border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]"
 
 type NavLinkItem = {
@@ -209,7 +209,7 @@ const userMemberLabel =
         { to: "/services", label: "Xizmatlar" },
         { to: "/contact", label: "Kontakt" },
       ] as NavLinkItem[],
-      home: "Tripzy bosh sahifa",
+      home: "Bosh sahifa",
       themeDark: "Tungi",
       themeLight: "Yorug'",
       login: "Kirish",
@@ -449,7 +449,7 @@ const userMemberLabel =
                 variants={backdropVariants}
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 onClick={() => setOpen(false)}
-                className="fixed inset-0 z-[105] bg-[rgba(15,23,42,0.22)] backdrop-blur-[3px] dark:bg-[rgba(4,10,28,0.52)] lg:hidden"
+                className="fixed inset-0 z-[105] backdrop-blur-[3px] dark:bg-[rgba(4,10,28,0.52)] lg:hidden"
               />
               <motion.div
                 initial="closed"
