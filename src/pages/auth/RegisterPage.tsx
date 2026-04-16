@@ -219,7 +219,7 @@ export default function RegisterPage({
   }
 
   return (
-    <section className="secondary-page-shell relative min-h-screen overflow-hidden">
+    <section className="secondary-page-shell relative min-h-[calc(100svh-86px)] overflow-x-hidden">
       <div className="absolute inset-0">
         <img
           src={dubaiImage}
@@ -229,9 +229,9 @@ export default function RegisterPage({
         <div className="secondary-page-overlay absolute inset-0" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-[1320px] items-center px-4 py-10 sm:px-6 lg:px-7 xl:px-8">
+      <div className="relative mx-auto flex min-h-[calc(100svh-86px)] max-w-[1320px] items-start px-4 py-4 sm:px-6 sm:py-7 lg:px-7 xl:min-h-screen xl:items-center xl:px-8 xl:py-10">
         <div className="w-full">
-          <div className="mb-6 flex justify-center xl:hidden">
+          <div className="mb-4 flex justify-center xl:hidden">
             <div className="inline-flex rounded-full border border-white/12 bg-white/6 p-1 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl">
               <TogglePill active={isRegister} onClick={() => switchMode("register")}>
                 {copy.register}
@@ -242,16 +242,16 @@ export default function RegisterPage({
             </div>
           </div>
 
-          <div className="grid gap-6 xl:hidden lg:mx-auto lg:max-w-[980px]">
+          <div className="mx-auto grid max-w-[430px] gap-4 xl:hidden lg:max-w-[820px]">
             <motion.div
               key={mode}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
-              className="overflow-hidden rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,#0d1830_0%,#091424_100%)] shadow-[0_24px_70px_rgba(0,0,0,0.50)] lg:grid lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch"
+              className="overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,#0d1830_0%,#091424_100%)] shadow-[0_18px_50px_rgba(0,0,0,0.42)] sm:rounded-[30px] lg:grid lg:grid-cols-[0.8fr_1.2fr] lg:items-stretch"
             >
               <AuthPromoPanel mode={mode} title={isRegister ? copy.welcomeJoin : copy.welcomeBack} body={isRegister ? copy.rightCopyRegister : copy.rightCopyLogin} mobile />
-              <div className="border-t border-white/8 p-5 sm:p-7 lg:border-t-0 lg:border-l lg:border-white/8 lg:p-8">
+              <div className="border-t border-white/8 p-4 sm:p-7 lg:border-t-0 lg:border-l lg:border-white/8 lg:p-8">
                 <AuthFormCard
                   mode={mode}
                   copy={copy}
@@ -403,16 +403,16 @@ function AuthFormCard({
       transition={{ duration: 0.28 }}
       className="w-full"
     >
-      <div className="mb-7">
-        <h1 className="max-w-[360px] text-[42px] font-black leading-[0.95] tracking-[-0.06em] text-white">
+      <div className="mb-5 sm:mb-7">
+        <h1 className="max-w-[360px] text-[30px] font-black leading-[0.98] tracking-[-0.04em] text-white sm:text-[42px] sm:leading-[0.95] sm:tracking-[-0.06em]">
           {isRegister ? copy.overlayTitleRegister : copy.overlayTitleLogin}
         </h1>
-        <p className="mt-3 max-w-[360px] text-sm leading-6 text-white/55">
+        <p className="mt-2 max-w-[360px] text-xs leading-5 text-white/55 sm:mt-3 sm:text-sm sm:leading-6">
           {isRegister ? copy.registerDesc : copy.loginDesc}
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-3 sm:space-y-4">
         {isRegister ? (
           <Field
             label={copy.fullNameLabel}
@@ -453,7 +453,7 @@ function AuthFormCard({
             type="button"
             aria-label={showPass ? copy.hidePassword : copy.showPassword}
             onClick={() => setShowPass((prev) => !prev)}
-            className="absolute right-0 top-[34px] grid h-12 w-12 place-items-center text-white/40 transition hover:text-white/80"
+            className="absolute right-0 top-[30px] grid h-11 w-11 place-items-center text-white/40 transition hover:text-white/80 sm:top-[34px] sm:h-12 sm:w-12"
           >
             {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
@@ -471,13 +471,13 @@ function AuthFormCard({
           </div>
         ) : null}
 
-        <button disabled={loading} className={`h-12 w-full ${primaryButtonClass}`}>
+        <button disabled={loading} className={`h-11 w-full sm:h-12 ${primaryButtonClass}`}>
           {loading ? "..." : isRegister ? copy.signUpButton : copy.signInButton}
           {!loading ? <ArrowRight size={16} /> : null}
         </button>
       </form>
 
-      <div className="mt-5 text-center text-sm text-white/45">
+      <div className="mt-4 text-center text-sm text-white/45 sm:mt-5">
         {isRegister ? copy.haveAccount : copy.newUser}{" "}
         <button
           type="button"
@@ -489,7 +489,7 @@ function AuthFormCard({
       </div>
 
       {!compactFooter ? (
-        <div className="mt-5 flex justify-center">
+        <div className="mt-4 flex justify-center sm:mt-5">
           <button
             type="button"
             onClick={onBackHome}
@@ -518,15 +518,16 @@ function AuthPromoPanel({
   const clipPath = isRegister
     ? "polygon(0 0,100% 0,72% 100%,0 100%)"
     : "polygon(28% 0,100% 0,100% 100%,0 100%)"
+  const activeClipPath = mobile ? "none" : clipPath
 
   return (
     <motion.div
-      animate={{ clipPath }}
+      animate={{ clipPath: activeClipPath }}
       transition={{ duration: 0.45, ease: "easeInOut" }}
-      className={`relative h-full overflow-hidden border-[#d0a04d]/12 ${
-        mobile ? "min-h-[250px] border-b lg:min-h-full lg:border-b-0" : "border-l"
+      className={`relative overflow-hidden border-[#d0a04d]/12 ${
+        mobile ? "h-[108px] min-h-0 border-b sm:h-[138px] lg:h-full lg:border-b-0" : "h-full border-l"
       }`}
-      style={mobile ? undefined : { clipPath }}
+      style={{ clipPath: activeClipPath }}
     >
       <div className="absolute inset-0 bg-[linear-gradient(135deg,#1c2d4f_0%,#0e1c38_52%,#172b4a_100%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_24%_20%,rgba(208,160,77,0.22),transparent_30%),radial-gradient(circle_at_76%_75%,rgba(208,160,77,0.10),transparent_28%)]" />
@@ -542,15 +543,15 @@ function AuthPromoPanel({
         }`}
       >
         <div
-          className={`flex h-full w-full max-w-[420px] flex-col justify-center p-8 sm:p-10 lg:p-7 ${
+          className={`flex h-full w-full max-w-[420px] flex-col justify-center p-4 sm:p-8 lg:p-7 ${
             isRegister ? "items-start text-left" : "items-end text-right"
           } ${mobile ? "!items-start !text-left" : ""}`}
         >
-          <h2 className="max-w-[250px] text-4xl font-black leading-[0.94] tracking-[-0.06em] text-white sm:text-[52px] lg:text-[44px]">
+          <h2 className="max-w-[260px] text-2xl font-black leading-[0.98] tracking-[-0.03em] text-white sm:text-4xl sm:leading-[0.94] sm:tracking-[-0.06em] lg:text-[44px]">
             {title}
           </h2>
 
-          <p className="mt-4 max-w-[270px] text-sm leading-6 text-white/78 sm:text-[15px] lg:text-sm">
+          <p className="mt-2 max-w-[300px] text-xs leading-5 text-white/72 sm:mt-4 sm:text-[15px] sm:leading-6 lg:text-sm">
             {body}
           </p>
         </div>
@@ -580,12 +581,12 @@ function Field({
 }) {
   return (
     <label className="block">
-      <div className="mb-2 text-[11px] font-medium tracking-[0.08em] text-white/45">
+      <div className="mb-1.5 text-[10px] font-medium tracking-[0.08em] text-white/45 sm:mb-2 sm:text-[11px]">
         {label}
       </div>
-      <div className="flex h-13 w-full items-center gap-3 rounded-[16px] border border-white/10 bg-[#0c1a30] px-3 transition focus-within:border-[#d0a04d]/45 focus-within:bg-[#0e1e38]">
+      <div className="flex h-11 w-full items-center gap-3 rounded-[14px] border border-white/10 bg-[#0c1a30] px-3 transition focus-within:border-[#d0a04d]/45 focus-within:bg-[#0e1e38] sm:h-13 sm:rounded-[16px]">
         <input
-          className="auth-form-input h-full w-full bg-transparent text-[15px] font-medium outline-none"
+          className="auth-form-input h-full w-full bg-transparent text-sm font-medium outline-none sm:text-[15px]"
           placeholder={placeholder}
           value={value}
           type={type}

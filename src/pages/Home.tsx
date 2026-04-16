@@ -22,7 +22,6 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
 import heroBackgroundImage from "@/assets/images/cheerful-woman-looking-out-window-airplane.jpg"
-import heroMobileBackgroundImage from "@/assets/images/mobile-img.webp"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
@@ -54,6 +53,8 @@ const LIVE_DIRECTORY_BOOTSTRAPS = [
   { from: "TAS", to: "IST" },
   { from: "AUH", to: "TAS" },
 ] as const
+
+const heroMobileBackgroundImage = "/images/mobile-img.webp"
 
 
 const getDefaultHomeDate = () => {
@@ -879,13 +880,13 @@ export default function Home() {
               ) : (
                 <div
                   className={[
-                    "luxury-search-grid relative overflow-visible rounded-[20px] grid items-stretch divide-y divide-white/10 sm:rounded-[22px] xl:divide-y-0 xl:divide-x xl:divide-white/10",
+                    "luxury-search-grid relative overflow-visible rounded-[20px] grid items-stretch sm:rounded-[22px]",
                     tripMode === "round"
                       ? "xl:grid-cols-[2.15fr_0.8fr_0.82fr_0.82fr_210px]"
                       : "xl:grid-cols-[2.15fr_0.82fr_0.82fr_210px]",
                   ].join(" ")}
                 >
-                  <div className="relative grid items-stretch divide-y divide-[#d8e2ee] xl:grid-cols-2 xl:divide-x xl:divide-[#d8e2ee] xl:divide-y-0">
+                  <div className="relative grid items-stretch xl:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => {
