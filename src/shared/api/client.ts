@@ -3,12 +3,15 @@ import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
 import { useAppLoading } from "@/shared/store/appLoading"
 
 const apiKey = import.meta.env.VITE_API_KEY
+const formatApiKey = (value: string) =>
+  value.trim().toLowerCase().startsWith("bearer ") ? value.trim() : `Bearer ${value.trim()}`
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://b2b.skyup.uz/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://b2b.onlinetrip.uz/api",
   timeout: 15000,
   headers: {
-    "Content-Type": "application/json",
+    Accept: "application/json",
+    "Content-Type": "application/json; charset=utf-8",
   },
   withCredentials: true,
 })
@@ -19,7 +22,7 @@ client.interceptors.request.use((config) => {
   if (token) {
     config.headers["X-API-KEY"] = `Bearer ${token}`
   } else if (apiKey) {
-    config.headers["X-API-KEY"] = apiKey
+    config.headers["X-API-KEY"] = formatApiKey(apiKey)
   }
   return config
 })

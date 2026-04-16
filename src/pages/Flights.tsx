@@ -1182,7 +1182,7 @@ export default function Flights() {
 
   const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
   return (
-    <section className="relative overflow-hidden bg-white pt-20 text-[#111827]">
+    <section className="relative overflow-hidden bg-white pt-0 text-[#111827] md:pt-20">
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
         <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md md:p-6 ${softPanel}`}>
           <div className="relative overflow-hidden rounded-[36px] bg-white p-5 text-[#111827] shadow-[0_20px_48px_rgba(17,24,39,0.08)] md:p-7">

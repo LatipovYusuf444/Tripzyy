@@ -47,9 +47,9 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section className="secondary-page-shell relative overflow-hidden pt-20">
+    <section className="secondary-page-shell relative overflow-hidden pt-4 md:pt-20">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
-      <div className="relative mx-auto max-w-[900px] px-5 py-14 md:py-16">
+      <div className="relative mx-auto max-w-[900px] px-5 py-7 md:py-16">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="text-center">
           <h1 className="text-4xl font-extrabold text-[#1d2430] dark:text-white md:text-5xl">{copy.title}</h1>
           <p className="mt-4 text-lg text-[#627188] dark:text-[#b9cceb]">{copy.desc}</p>

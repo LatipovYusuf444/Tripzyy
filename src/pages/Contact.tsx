@@ -166,10 +166,10 @@ export default function Contact() {
   }[language]
 
   return (
-    <section className="secondary-page-shell relative overflow-hidden pt-20">
+    <section className="contact-light-page secondary-page-shell relative overflow-hidden pt-4 md:pt-20">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
-      <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
+      <div className="relative mx-auto max-w-[1560px] px-4 py-6 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
         <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7 dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]">
           <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
             <div className="relative overflow-hidden rounded-[32px] border border-[#dce4ef] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_36%,#eef3fb_62%,#f8f3f7_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-8 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_36%,rgba(20,39,74,0.92)_62%,rgba(28,28,62,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">

@@ -46,10 +46,10 @@ const desktopGlassClass =
   "border border-[rgba(122,164,255,0.28)] bg-[linear-gradient(180deg,rgba(13,31,75,0.88)_0%,rgba(11,24,58,0.8)_100%)] text-white shadow-[0_16px_36px_rgba(5,12,30,0.3)] backdrop-blur-[18px]"
 
 const compactNavbarGlassClass =
-  "border border-[rgba(122,164,255,0.22)] bg-[linear-gradient(90deg,rgba(11,31,59,0.98)_0%,rgba(15,58,138,0.92)_100%)] shadow-[0_22px_48px_rgba(2,8,24,0.34),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[24px]"
+  "border-b border-transparent bg-white shadow-none lg:border lg:border-[rgba(122,164,255,0.22)] lg:bg-[linear-gradient(90deg,rgba(11,31,59,0.98)_0%,rgba(15,58,138,0.92)_100%)] lg:shadow-[0_22px_48px_rgba(2,8,24,0.34),inset_0_1px_0_rgba(255,255,255,0.08)]"
 
 const compactControlGlassClass =
-  "border border-[rgba(122,164,255,0.24)] bg-[linear-gradient(180deg,rgba(14,29,67,0.92)_0%,rgba(11,24,58,0.82)_100%)] text-white shadow-[0_14px_28px_rgba(5,12,30,0.28)] backdrop-blur-[18px]"
+  "border border-[#d7e4f4] bg-white text-[#14213d] shadow-none lg:border-[rgba(122,164,255,0.24)] lg:bg-[linear-gradient(180deg,rgba(14,29,67,0.92)_0%,rgba(11,24,58,0.82)_100%)] lg:text-white lg:shadow-[0_14px_28px_rgba(5,12,30,0.28)] lg:backdrop-blur-[18px]"
 
 type NavLinkItem = {
   to: string
@@ -277,8 +277,8 @@ const userMemberLabel =
         transition={{ duration: 0.35 }}
         className={[
           isCompactNavbar
-            ? "w-full px-4 py-1.5 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2"
-            : "w-full px-4 py-2 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-2.5",
+            ? "w-full px-4 py-5 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-5 lg:py-2"
+            : "w-full px-4 py-4 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-4 lg:py-2.5",
           isHome
             ? "border-b border-transparent bg-transparent shadow-none"
             : compactNavbarGlassClass,
@@ -287,14 +287,18 @@ const userMemberLabel =
         <div className={`mx-auto flex !max-w-[1640px] items-center justify-between gap-4 ${isCompactNavbar ? "lg:gap-8" : "lg:gap-10"}`}>
           <Link
             to="/"
-            className="hidden shrink-0 items-center justify-center lg:flex"
+            className={`hidden shrink-0 items-center justify-center lg:flex ${isCompactNavbar ? "tripzy-logo-crop-mobile overflow-hidden" : ""}`}
             onClick={() => setOpen(false)}
             aria-label={copy.home}
           >
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className={`block h-auto object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] ${isCompactNavbar ? "!w-[276px]" : "!w-[334px]"}`}
+              className={
+                isCompactNavbar
+                  ? "tripzy-logo-image-mobile block h-auto max-w-none object-contain"
+                  : "block h-auto object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] !w-[334px]"
+              }
             />
           </Link>
 
@@ -327,7 +331,7 @@ const userMemberLabel =
                     onClick={() => setLanguageMenuOpen((value) => !value)}
                     aria-haspopup="menu"
                     aria-expanded={languageMenuOpen}
-                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${isCompactNavbar ? "border border-[rgba(122,164,255,0.18)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_100%)] text-white shadow-[0_10px_24px_rgba(2,6,18,0.22)] hover:bg-white/10" : "border border-[#d8e3f0] bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] text-[#0f172a] shadow-[0_6px_16px_rgba(49,87,143,0.10)] dark:border-transparent dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white"} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
+                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${isCompactNavbar ? "border border-[#c8daf0] bg-[linear-gradient(180deg,#ffffff_0%,#edf5ff_100%)] text-[#14213d] shadow-[0_8px_18px_rgba(49,87,143,0.10)] hover:bg-white lg:border-[rgba(122,164,255,0.18)] lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_100%)] lg:text-white lg:shadow-[0_10px_24px_rgba(2,6,18,0.22)] lg:hover:bg-white/10" : "border border-[#d8e3f0] bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] text-[#0f172a] shadow-[0_6px_16px_rgba(49,87,143,0.10)] dark:border-transparent dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white"} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
                   >
                     <span>{language}</span>
                     <ChevronDown
@@ -344,7 +348,7 @@ const userMemberLabel =
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
-                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${isCompactNavbar ? "border border-[rgba(122,164,255,0.22)] bg-[linear-gradient(180deg,rgba(11,24,58,0.98)_0%,rgba(10,20,47,0.94)_100%)] shadow-[0_22px_50px_rgba(2,8,24,0.42)]" : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
+                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${isCompactNavbar ? "border border-[#d7e4f4] bg-white/95 shadow-[0_18px_40px_rgba(49,87,143,0.16)] lg:border-[rgba(122,164,255,0.22)] lg:bg-[linear-gradient(180deg,rgba(11,24,58,0.98)_0%,rgba(10,20,47,0.94)_100%)] lg:shadow-[0_22px_50px_rgba(2,8,24,0.42)]" : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
                     >
                       {otherLanguages.map((lang) => (
                         <button
@@ -354,7 +358,7 @@ const userMemberLabel =
                             setLanguage(lang)
                             setLanguageMenuOpen(false)
                           }}
-                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? "text-white/82 hover:bg-white/8 hover:text-white" : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
+                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] lg:text-white/82 lg:hover:bg-white/8 lg:hover:text-white" : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
                         >
                           {lang}
                         </button>
@@ -404,14 +408,14 @@ const userMemberLabel =
 
           <Link
             to="/"
-            className="flex items-center justify-start lg:hidden"
+            className={`flex items-center justify-start overflow-hidden lg:hidden ${isCompactNavbar ? "tripzy-logo-crop-mobile" : "tripzy-logo-crop-home-mobile"}`}
             onClick={() => setOpen(false)}
             aria-label={copy.home}
           >
             <img
               src={logoImage}
               alt="Tripzy logo"
-              className={`block h-auto object-contain ${isCompactNavbar ? "w-[212px] sm:w-[224px]" : "w-[230px] sm:w-[244px]"}`}
+              className={`block h-auto max-w-none object-contain ${isCompactNavbar ? "tripzy-logo-image-mobile" : "tripzy-logo-image-home-mobile"}`}
             />
           </Link>
 
@@ -419,9 +423,9 @@ const userMemberLabel =
             type="button"
             aria-label={copy.openMenu}
             onClick={() => setOpen((value) => !value)}
-            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${isCompactNavbar ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-white/14 dark:bg-[rgba(255,255,255,0.10)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.24)]"} ${isCompactNavbar ? "h-10 w-10" : "h-12 w-12"}`}
+            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${isCompactNavbar ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-white/14 dark:bg-[rgba(255,255,255,0.10)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.24)]"} ${isCompactNavbar ? "h-11 w-11" : "h-12 w-12"}`}
           >
-            {open ? <X size={isCompactNavbar ? 20 : 22} /> : <Menu size={isCompactNavbar ? 20 : 22} />}
+            {open ? <X size={isCompactNavbar ? 22 : 22} /> : <Menu size={isCompactNavbar ? 22 : 22} />}
           </button>
         </div>
 
@@ -445,7 +449,7 @@ const userMemberLabel =
                 exit="closed"
                 variants={menuVariants}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-[#e5edf7] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] lg:hidden ${isCompactNavbar ? "top-[74px] max-h-[calc(100svh-88px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
+                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-[#e5edf7] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] lg:hidden ${isCompactNavbar ? "top-[96px] max-h-[calc(100svh-110px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
               >
                 <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3">
                   <div>

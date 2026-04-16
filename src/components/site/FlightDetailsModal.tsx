@@ -767,6 +767,21 @@ export default function FlightDetailsModal({
   }, [language, open, safeFlight.id])
 
   useEffect(() => {
+    if (!open) return
+
+    const bodyOverflow = document.body.style.overflow
+    const htmlOverscroll = document.documentElement.style.overscrollBehavior
+
+    document.body.style.overflow = "hidden"
+    document.documentElement.style.overscrollBehavior = "none"
+
+    return () => {
+      document.body.style.overflow = bodyOverflow
+      document.documentElement.style.overscrollBehavior = htmlOverscroll
+    }
+  }, [open])
+
+  useEffect(() => {
     if (!toastOpen) return
     const t = setTimeout(() => setToastOpen(false), 3500)
     return () => clearTimeout(t)
@@ -1223,21 +1238,23 @@ export default function FlightDetailsModal({
             exit="exit"
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="
+              flight-details-light
               fixed inset-0 z-[70]
-              w-screen h-[100dvh]
-              flex flex-col
+              h-[100svh] max-h-[100svh] w-screen
               overflow-hidden
               rounded-none
               border-0
-              bg-[linear-gradient(180deg,#f8fbff_0%,#eef3f8_42%,#e8eef6_100%)]
-              backdrop-blur-2xl
-              shadow-[0_45px_140px_rgba(17,24,39,0.18)]
-              dark:bg-[linear-gradient(180deg,#0d1830_0%,#111e39_26%,#15254a_62%,#11203d_100%)]
-              dark:shadow-[0_45px_140px_rgba(4,10,28,0.42)]
+              bg-white
+              shadow-[0_24px_70px_rgba(17,24,39,0.10)]
+              supports-[height:100dvh]:h-[100dvh]
+              supports-[height:100dvh]:max-h-[100dvh]
+              dark:bg-white
+              dark:shadow-[0_24px_70px_rgba(17,24,39,0.10)]
             "
           >
+            <div className="h-full overflow-y-auto overscroll-y-contain bg-white [-webkit-overflow-scrolling:touch]">
             {/* header */}
-            <div className="relative border-b border-[#dbe3ef] p-5 md:p-7 bg-[linear-gradient(180deg,rgba(255,255,255,0.88)_0%,rgba(245,249,255,0.82)_100%)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(16,31,60,0.94)_0%,rgba(19,35,67,0.9)_100%)]">
+            <div className="relative border-b border-[#dbe3ef] bg-white p-4 md:p-7 dark:border-[#dbe3ef] dark:bg-white">
               <button
                 onClick={onClose}
                 className="
@@ -1245,7 +1262,7 @@ export default function FlightDetailsModal({
                   h-10 w-10 rounded-xl
                   border border-[#d7e1ee] bg-white/90
                   text-[#1d2430] hover:bg-white transition
-                  dark:border-[#35507f] dark:bg-[rgba(22,40,74,0.84)] dark:text-white dark:hover:bg-[rgba(28,46,84,0.94)]
+                  dark:border-[#d7e1ee] dark:bg-white dark:text-[#1d2430] dark:hover:bg-[#f8fbff]
                   grid place-items-center
                 "
               >
@@ -1254,24 +1271,24 @@ export default function FlightDetailsModal({
 
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pr-14 md:pr-16">
                 <div>
-                  <div className="text-[#627188] text-sm dark:text-[#d2e0f8]">
+                  <div className="text-[#627188] text-sm dark:text-[#627188]">
                     {bookingFlight.airline} · {flightNo}
                   </div>
-                  <div className="mt-1 text-2xl md:text-3xl font-extrabold text-[#1d2430] dark:text-white">
+                  <div className="mt-1 text-2xl md:text-3xl font-extrabold text-[#1d2430] dark:text-[#1d2430]">
                     {bookingFlight.from} → {bookingFlight.to}
                   </div>
-                  <div className="mt-2 text-[#627188] text-sm dark:text-[#d2e0f8]">
-                    {copy.headerDate}: <span className="text-[#1d2430] dark:text-white">{date || "—"}</span> · {copy.headerPax}:{" "}
-                    <span className="text-[#1d2430] dark:text-white">{Math.max(1, pax)}</span>
+                  <div className="mt-2 text-[#627188] text-sm dark:text-[#627188]">
+                    {copy.headerDate}: <span className="text-[#1d2430] dark:text-[#1d2430]">{date || "—"}</span> · {copy.headerPax}:{" "}
+                    <span className="text-[#1d2430] dark:text-[#1d2430]">{Math.max(1, pax)}</span>
                   </div>
                 </div>
 
                 <div className="text-left md:text-right w-full md:w-auto">
-                  <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{copy.finalPrice}</div>
-                  <div className="text-3xl font-extrabold text-[#1d2430] dark:text-white">
+                  <div className="text-[#718198] text-xs dark:text-[#718198]">{copy.finalPrice}</div>
+                  <div className="text-3xl font-extrabold text-[#1d2430] dark:text-[#1d2430]">
                     {formatMoney(total, bookingFlight.currency)}
                   </div>
-                  <div className="text-[#718198] text-xs dark:text-[#a9bddb]">{copy.taxesIncluded}</div>
+                  <div className="text-[#718198] text-xs dark:text-[#718198]">{copy.taxesIncluded}</div>
                 </div>
               </div>
 
@@ -1305,7 +1322,7 @@ export default function FlightDetailsModal({
             </div>
 
             {/* body */}
-            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5 pb-24 md:p-7">
+            <div className="px-5 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-5 md:p-7 md:pb-28">
               {step === "select" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
@@ -1964,6 +1981,7 @@ export default function FlightDetailsModal({
                   </div>
                 </div>
               )}
+            </div>
             </div>
 
             {/* Toast */}

@@ -297,7 +297,7 @@ export default function About() {
     <div className="secondary-page-shell relative overflow-hidden bg-white text-[#111827] dark:bg-transparent" style={{ backgroundColor: "#ffffff" }}>
       <section ref={heroRef} className="relative bg-white dark:bg-transparent" style={{ backgroundColor: "#ffffff" }}>
         <div className="absolute inset-0 bg-white" />
-        <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-32 md:px-8 2xl:max-w-[1680px]">
+        <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-10 md:px-8 md:pt-32 2xl:max-w-[1680px]">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }}>
               <motion.h1 variants={fadeUp} className="mt-5 text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl xl:text-6xl">

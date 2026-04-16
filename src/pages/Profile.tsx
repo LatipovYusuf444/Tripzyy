@@ -144,7 +144,7 @@ export default function Profile() {
   }
 
   return (
-    <section className="secondary-page-shell relative overflow-hidden pt-24">
+    <section className="secondary-page-shell relative overflow-hidden pt-6 md:pt-24">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-14 xl:px-8 2xl:max-w-[1680px]">

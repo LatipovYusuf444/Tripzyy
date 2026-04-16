@@ -880,13 +880,13 @@ export default function Home() {
               ) : (
                 <div
                   className={[
-                    "luxury-search-grid relative overflow-visible rounded-[20px] grid items-stretch sm:rounded-[22px]",
+                    "luxury-search-grid relative grid items-stretch gap-3 overflow-visible rounded-[20px] bg-transparent sm:rounded-[22px] xl:gap-0 xl:bg-white",
                     tripMode === "round"
                       ? "xl:grid-cols-[2.15fr_0.8fr_0.82fr_0.82fr_210px]"
                       : "xl:grid-cols-[2.15fr_0.82fr_0.82fr_210px]",
                   ].join(" ")}
                 >
-                  <div className="relative grid items-stretch xl:grid-cols-2">
+                  <div className="relative grid items-stretch gap-3 xl:grid-cols-2 xl:gap-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -954,7 +954,7 @@ export default function Home() {
                   />
                   <div
                     className={[
-                      "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[60px] items-center overflow-visible rounded-[18px] bg-transparent px-4 sm:min-h-[66px] sm:px-5 xl:after:block after:hidden",
+                      "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden",
                       calendarOpen
                         ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
                         : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
@@ -994,7 +994,7 @@ export default function Home() {
                   {tripMode === "round" ? (
                     <div
                       className={[
-                        "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[60px] items-center overflow-visible rounded-[18px] bg-transparent px-4 sm:min-h-[66px] sm:px-5 xl:after:block after:hidden",
+                        "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden",
                         openMultiDateIndex === -2
                           ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
                           : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
@@ -1076,18 +1076,18 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-10 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(245,249,255,0.42)_100%)] p-5 shadow-[0_26px_70px_rgba(17,24,39,0.10)] backdrop-blur-[18px] dark:border-[#35507f]/70 dark:bg-[linear-gradient(180deg,rgba(15,27,52,0.62)_0%,rgba(19,35,67,0.48)_100%)] dark:shadow-[0_26px_70px_rgba(4,10,28,0.42)] sm:p-6 md:p-7">
+          <div className="mt-10 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(245,249,255,0.42)_100%)] p-5 shadow-[0_26px_70px_rgba(17,24,39,0.10)] backdrop-blur-[18px] dark:border-white/70 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,249,255,0.88)_100%)] dark:shadow-[0_26px_70px_rgba(17,24,39,0.14)] sm:p-6 md:p-7">
             <div className="grid gap-4 md:grid-cols-[1fr_170px]">
               <label className="block">
-                <div className="mb-2 text-sm font-semibold text-[#334155] dark:text-[#d4e2fb]">
+                <div className="mb-2 text-sm font-semibold text-[#334155] dark:text-[#334155]">
                   {copy.ask}
                 </div>
-                <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/55 bg-white/34 px-4 shadow-[0_8px_20px_rgba(17,24,39,0.05)] backdrop-blur-[14px] dark:border-[#30476f]/70 dark:bg-[rgba(20,35,66,0.58)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.3)]">
-                  <CircleHelp size={18} className="text-[#8da0ba] dark:text-[#9eb5db]" />
+                <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/55 bg-white/34 px-4 shadow-[0_8px_20px_rgba(17,24,39,0.05)] backdrop-blur-[14px] dark:border-[#dbe3ef] dark:bg-white dark:shadow-[0_14px_28px_rgba(17,24,39,0.08)]">
+                  <CircleHelp size={18} className="text-[#8da0ba] dark:text-[#8da0ba]" />
                   <input
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
-                    className="h-full w-full bg-transparent text-[15px] font-medium text-[#0f172a] outline-none placeholder:text-[#64748b] dark:text-white dark:placeholder:text-[#8ea5cb]"
+                    className="h-full w-full bg-transparent text-[15px] font-medium text-[#0f172a] outline-none placeholder:text-[#64748b] dark:text-[#0f172a] dark:placeholder:text-[#64748b]"
                     placeholder={copy.askPlaceholder}
                   />
                 </div>
@@ -1109,17 +1109,17 @@ export default function Home() {
                 return (
                   <div
                     key={item.question}
-                    className="overflow-hidden rounded-[22px] border border-white/50 bg-white/34 shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[14px] dark:border-[#30476f]/70 dark:bg-[rgba(20,35,66,0.58)] dark:shadow-[0_14px_32px_rgba(4,10,28,0.26)]"
+                    className="overflow-hidden rounded-[22px] border border-white/50 bg-white/34 shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[14px] dark:border-[#dbe3ef] dark:bg-white dark:shadow-[0_14px_32px_rgba(17,24,39,0.08)]"
                   >
                     <button
                       type="button"
                       onClick={() => setFaqOpen(isOpen ? -1 : index)}
-                      className="flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-[#f8fbff] dark:hover:bg-[rgba(28,46,84,0.92)] sm:px-5"
+                      className="flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-[#f8fbff] dark:hover:bg-[#f8fbff] sm:px-5"
                     >
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#4790d8] dark:bg-[linear-gradient(135deg,rgba(57,95,170,0.34)_0%,rgba(43,72,128,0.38)_100%)] dark:text-[#9dc1ff]">
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#4790d8] dark:bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] dark:text-[#4790d8]">
                         <CircleHelp size={16} />
                       </span>
-                      <span className="flex-1 text-sm font-semibold text-[#1e293b] dark:text-white sm:text-base">
+                      <span className="flex-1 text-sm font-semibold text-[#1e293b] dark:text-[#1e293b] sm:text-base">
                         {item.question}
                       </span>
                       <ChevronDown
@@ -1137,7 +1137,7 @@ export default function Home() {
                       transition={{ duration: 0.24, ease: "easeOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-white/35 bg-[linear-gradient(180deg,rgba(248,251,255,0.28)_0%,rgba(243,247,252,0.12)_100%)] px-5 py-4 text-sm leading-7 text-[#475569] dark:border-[#30476f]/70 dark:bg-[linear-gradient(180deg,rgba(27,46,84,0.44)_0%,rgba(21,37,69,0.58)_100%)] dark:text-[#d2e0f8]">
+                      <div className="border-t border-white/35 bg-[linear-gradient(180deg,rgba(248,251,255,0.28)_0%,rgba(243,247,252,0.12)_100%)] px-5 py-4 text-sm leading-7 text-[#475569] dark:border-[#e2e8f0] dark:bg-[#f8fbff] dark:text-[#475569]">
                         {item.answer}
                       </div>
                     </motion.div>
@@ -1429,7 +1429,7 @@ function HomeAutocompleteField({
         ref={fieldRef}
         className={[
           compact
-            ? "luxury-search-segment luxury-search-divider relative flex min-h-[66px] items-center gap-3 bg-transparent px-4 sm:min-h-[72px] sm:px-5 xl:after:block after:hidden"
+            ? "luxury-search-segment luxury-search-divider relative flex min-h-[58px] items-center gap-3 rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[66px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
             : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
           compact
             ? active ? "" : ""
@@ -1697,10 +1697,11 @@ function PassengerField({
       disableIncrement: totalPassengers >= 9 || infants >= adults,
     },
   ]
+  const passengerSummary = valueLabel ?? `${pax} ${safeCopy.people}`
 
   const fieldShellClass = [
     compact
-      ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[60px] items-center overflow-visible rounded-[18px] bg-transparent px-4 sm:min-h-[66px] sm:px-5 xl:after:block after:hidden"
+      ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
       : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5",
     open
       ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
@@ -1730,12 +1731,14 @@ function PassengerField({
                 {label ?? safeCopy.passenger}
               </div>
             ) : null}
-            <div className="luxury-search-value text-[14px] font-medium sm:text-[15px]">
-              {valueLabel ?? `${pax} ${safeCopy.people}`}
+            <div className="luxury-search-value text-[13px] font-semibold sm:text-[14px]">
+              {compact ? `${passengerSummary} - ${safeCopy.cabin}` : passengerSummary}
             </div>
-            <div className="luxury-search-subvalue mt-1 text-[11px]">
-              {safeCopy.cabin}
-            </div>
+            {!compact ? (
+              <div className="luxury-search-subvalue mt-1 text-[11px]">
+                {safeCopy.cabin}
+              </div>
+            ) : null}
           </div>
         </div>
         <ChevronDown

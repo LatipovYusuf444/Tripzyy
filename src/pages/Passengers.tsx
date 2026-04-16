@@ -49,7 +49,7 @@ const btnBase =
 
 const primaryButtonClass = `${btnBase} border-[#1a2231]/10 ${primaryBtn}`
 const secondaryButtonClass =
-  `${btnBase} border-[#dbe3ef] bg-white/90 text-[#1d2430] shadow-[0_12px_30px_rgba(17,24,39,0.08)] hover:bg-white dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:shadow-[0_14px_28px_rgba(4,10,28,0.28)] dark:hover:bg-[rgba(28,46,84,0.94)]`
+  `${btnBase} border-[#dbe3ef] bg-white/90 text-[#1d2430] shadow-[0_12px_30px_rgba(17,24,39,0.08)] hover:bg-white lg:dark:border-[#30476f] lg:dark:bg-[rgba(20,35,66,0.84)] lg:dark:text-white lg:dark:shadow-[0_14px_28px_rgba(4,10,28,0.28)] lg:dark:hover:bg-[rgba(28,46,84,0.94)]`
 const dangerButtonClass =
   `${btnBase} border-[#f0d8d9] bg-[linear-gradient(135deg,#fff7f7_0%,#fff0f1_100%)] text-[#9e4e5b] shadow-[0_12px_28px_rgba(158,78,91,0.10)] hover:bg-[#fff6f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]`
 
@@ -710,7 +710,7 @@ export default function PassengersPage() {
     }
   }
   return (
-    <section className="secondary-page-shell relative min-h-screen overflow-hidden pt-24">
+    <section className="checkout-mobile-light secondary-page-shell relative min-h-screen overflow-hidden bg-white pt-6 text-[#1d2430] dark:bg-white dark:text-[#1d2430] md:pt-24 lg:dark:bg-transparent lg:dark:text-white">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <motion.div
         variants={container}
@@ -1086,9 +1086,6 @@ export default function PassengersPage() {
                     </table>
                   </div>
 
-                  <div className="mt-3 text-xs text-[#718198] dark:text-[#93abd0]">
-                    {copy.paxHint} {pax}{copy.paxHintSuffix}
-                  </div>
                 </div>
               </div>
             </div>
@@ -1299,16 +1296,16 @@ export default function PassengersPage() {
         )}
 
         {open && (
-          <div className="fixed inset-0 z-[80] bg-[rgba(15,23,42,0.45)] backdrop-blur-sm grid place-items-center p-4">
+          <div className="fixed inset-0 z-[80] grid items-start overflow-y-auto bg-[rgba(15,23,42,0.45)] p-3 py-5 backdrop-blur-sm sm:p-4 md:place-items-center">
             <div
               className="
-                w-full max-w-[720px]
-                rounded-[28px]
+                w-full max-w-[560px]
+                rounded-[24px]
                 border border-white/80
                 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.94)_100%)]
                 backdrop-blur-2xl
                 shadow-[0_45px_140px_rgba(17,24,39,0.22)]
-                p-5
+                p-4 sm:p-5
                 dark:border-[#35507f]
                 dark:bg-[linear-gradient(180deg,rgba(10,22,44,0.98)_0%,rgba(14,28,54,0.96)_100%)]
                 dark:shadow-[0_45px_140px_rgba(2,8,24,0.65)]
@@ -1319,14 +1316,14 @@ export default function PassengersPage() {
                   {draft.id ? copy.editPassenger : copy.addPassenger}
                 </div>
                 <button
-                onClick={() => setOpen(false)}
-                  className="h-10 w-10 rounded-xl border border-[#dbe3ef] bg-white text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:hover:bg-[rgba(24,43,80,0.92)]"
+                  onClick={() => setOpen(false)}
+                  className="h-9 w-9 rounded-xl border border-[#dbe3ef] bg-white text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:hover:bg-[rgba(24,43,80,0.92)]"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <Field
                   label={copy.firstName}
                   value={draft.firstName}
@@ -1388,7 +1385,7 @@ export default function PassengersPage() {
               <button
                 onClick={onSave}
                 disabled={!canSave}
-                className={`mt-4 h-12 w-full ${primaryButtonClass}`}
+                className={`mt-3 h-11 w-full ${primaryButtonClass}`}
               >
                 {copy.savePassenger}
               </button>

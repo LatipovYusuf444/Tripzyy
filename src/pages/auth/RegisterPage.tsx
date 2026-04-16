@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner"
 
 import dubaiImage from "@/assets/SHaharlar/dubai-marina-cityscape-skyline-skyscrapers-buildings-city-2560x1440-4870.jpg"
-import { login, register } from "@/shared/api/auth/auth.api"
+import { login } from "@/shared/api/auth/auth.api"
 import { getAccessToken, setAccessToken, setAuthUser } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 
@@ -128,6 +128,12 @@ export default function RegisterPage({
   const navigate = useNavigate()
   const { language } = useI18n()
   const copy = copyByLanguage[language] ?? copyByLanguage.en
+  const registerUnavailableMessage =
+    language === "uz"
+      ? "Backend Swagger ichida /auth/register endpointi yo'q. Hozircha faqat login ishlaydi."
+      : language === "ru"
+        ? "Endpoint /auth/register отсутствует в Swagger backend. Сейчас доступен только login."
+        : "The backend Swagger does not include /auth/register. Only login is available right now."
   const [mode, setMode] = useState<Mode>(initialMode === "register" ? "register" : "login")
   const [loading, setLoading] = useState(false)
   const [fullName, setFullName] = useState("")
@@ -172,15 +178,7 @@ export default function RegisterPage({
     setLoading(true)
     try {
       if (mode === "register") {
-        await register({
-          full_name: fullName,
-          email,
-          password,
-        })
-
-        toast.success(copy.registerSuccess)
-        switchMode("login")
-        setPassword("")
+        toast.error(registerUnavailableMessage)
         return
       }
 
