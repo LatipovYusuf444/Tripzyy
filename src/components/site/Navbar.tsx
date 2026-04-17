@@ -42,22 +42,39 @@ const actionBtnClass =
   "h-10 rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:brightness-110 " +
   "border-[rgba(122,164,255,0.32)] bg-[linear-gradient(180deg,rgba(14,29,67,0.9)_0%,rgba(11,24,58,0.82)_100%)] text-white shadow-[0_18px_34px_rgba(5,12,30,0.34)] backdrop-blur-[18px]"
 
-const desktopGlassClass =
-  "border border-[rgba(122,164,255,0.28)] !bg-white text-black shadow-[0_16px_36px_rgba(5,12,30,0.3)] backdrop-blur-[18px]"
 
-const compactNavbarGlassClass =
-  "border-b border-white/20 bg-white/70 shadow-[0_2px_16px_rgba(0,40,120,0.06)] backdrop-blur-[22px]"
+const compactNavbarLightClass =
+  "border-b border-[#e6eef8] bg-white shadow-[0_8px_28px_rgba(17,24,39,0.07)]"
 
-const compactControlGlassClass =
-  "border border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_14px_rgba(0,40,120,0.06)]"
+const compactNavbarDarkClass =
+  "border-b border-[#35507f]/55 bg-[linear-gradient(180deg,rgba(12,28,58,0.78)_0%,rgba(7,18,40,0.58)_100%)] shadow-[0_14px_38px_rgba(2,8,24,0.28)] backdrop-blur-[22px]"
 
-const compactActionBtnClass =
-  "h-9 rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:bg-[#f0f6ff] " +
-  "border-[#dde8f5] !bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]"
+const compactControlLightClass =
+  "border border-[#dde8f5] bg-white text-[#0f172a] shadow-[0_4px_14px_rgba(0,40,120,0.06)]"
 
-const homeActionBtnClass =
-  "h-10 rounded-full border px-5 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:bg-[#000000] " +
-  "border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]"
+const compactControlDarkClass =
+  "border border-[#4a6799]/70 bg-[linear-gradient(180deg,rgba(22,45,88,0.72)_0%,rgba(10,27,60,0.6)_100%)] text-white shadow-[0_14px_30px_rgba(2,8,24,0.24)] backdrop-blur-[18px]"
+
+const compactActionLightClass =
+  "h-9 rounded-full border border-[#dde8f5] !bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_4px_12px_rgba(0,40,120,0.08)] transition hover:!bg-white"
+
+const compactActionDarkClass =
+  "h-9 rounded-full border border-[#5a78b1]/70 !bg-[linear-gradient(180deg,rgba(27,55,105,0.74)_0%,rgba(13,30,64,0.62)_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_16px_34px_rgba(2,8,24,0.28)] transition hover:brightness-110"
+
+const homeActionBtnBaseClass =
+  "h-10 rounded-full border px-5 text-[10px] font-semibold uppercase tracking-[0.1em] transition"
+
+const homeActionBtnLightClass =
+  `${homeActionBtnBaseClass} border-[#d8e3f0] !bg-[#ffffff] text-white shadow-[0_8px_22px_rgba(49,87,143,0.12)] hover:!bg-[#ffffff]`
+
+const homeActionBtnDarkClass =
+  `${homeActionBtnBaseClass} border-[#5d7fba]/55 bg-[linear-gradient(180deg,rgba(20,42,84,0.78)_0%,rgba(9,24,54,0.62)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.34)] backdrop-blur-[14px] hover:brightness-110`
+
+const homeGlassBtnLightClass =
+  "border border-[#d8e3f0] !bg-[#ffffff] text-[#0f172a] shadow-[0_8px_22px_rgba(49,87,143,0.12)] transition hover:!bg-[#ffffff]"
+
+const homeGlassBtnDarkClass =
+  "border border-[#5d7fba]/50 bg-[linear-gradient(180deg,rgba(20,42,84,0.72)_0%,rgba(9,24,54,0.56)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.32)] backdrop-blur-[14px] transition hover:bg-[rgba(36,67,122,0.78)]"
 
 type NavLinkItem = {
   to: string
@@ -276,6 +293,34 @@ const userMemberLabel =
   const otherLanguages = (["uz", "ru", "en"] as const).filter(
     (lang) => lang !== language
   )
+  const homeGlassBtnClass =
+    theme === "dark" ? homeGlassBtnDarkClass : homeGlassBtnLightClass
+  const homeActionBtnClass =
+    theme === "dark" ? homeActionBtnDarkClass : homeActionBtnLightClass
+  const homeLanguageShellClass =
+    theme === "dark"
+      ? "border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(20,42,84,0.46)_0%,rgba(9,24,54,0.36)_100%)] p-0.5 shadow-[0_18px_42px_rgba(2,8,24,0.28)] backdrop-blur-[14px]"
+      : "border border-[#d8e3f0] !bg-[#ffffff] p-0.5 shadow-[0_8px_22px_rgba(49,87,143,0.12)]"
+  const compactNavbarGlassClass =
+    theme === "dark" ? compactNavbarDarkClass : compactNavbarLightClass
+  const compactControlGlassClass =
+    theme === "dark" ? compactControlDarkClass : compactControlLightClass
+  const compactActionBtnClass =
+    theme === "dark" ? compactActionDarkClass : compactActionLightClass
+  const compactLanguageShellClass =
+    theme === "dark"
+      ? "border border-[#4a6799]/70 bg-[rgba(16,34,68,0.5)] p-0.5 shadow-[0_14px_30px_rgba(2,8,24,0.22)] backdrop-blur-[14px]"
+      : "border border-[#dde8f5] bg-white p-0.5 shadow-[0_4px_14px_rgba(0,40,120,0.06)]"
+  const compactDropdownPanelClass =
+    theme === "dark"
+      ? "border border-[#5a78b1]/60 bg-[linear-gradient(180deg,rgba(18,38,76,0.92)_0%,rgba(9,23,52,0.86)_100%)] shadow-[0_22px_50px_rgba(2,8,24,0.38)]"
+      : "border border-[#dde8f5] bg-white shadow-[0_18px_40px_rgba(0,60,180,0.12)]"
+  const compactDropdownItemClass =
+    theme === "dark"
+      ? "text-white/82 hover:bg-white/10 hover:text-white"
+      : "text-[#0f172a] hover:bg-[#e8f0fc] hover:text-[#0052a5]"
+  const compactControlHoverClass =
+    theme === "dark" ? "hover:bg-[rgba(36,67,122,0.78)]" : "hover:bg-[#f8fbff]"
 
   return (
     <header className="fixed inset-x-0 top-0 z-100">
@@ -286,7 +331,9 @@ const userMemberLabel =
         className={[
           isCompactNavbar
             ? "w-full px-4 py-3 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-3 lg:px-10 lg:py-7 xl:py-8"
-            : "w-full px-4 py-4 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-4 lg:py-2.5",
+            : isHome
+              ? "w-full px-4 pb-4 pt-7 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:pb-4 md:pt-8 lg:py-2.5"
+              : "w-full px-4 py-4 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-4 lg:py-2.5",
           isHome
             ? "border-b border-transparent bg-transparent shadow-none"
             : compactNavbarGlassClass,
@@ -332,14 +379,14 @@ const userMemberLabel =
                 className="relative"
               >
                 <div
-                  className={`flex items-center gap-1 rounded-full ${isCompactNavbar ? "border border-[#dde8f5] bg-white/80 p-0.5 shadow-[0_4px_14px_rgba(0,40,120,0.06)] backdrop-blur-[14px]" : "border border-[#cddbeb] bg-[linear-gradient(180deg,rgba(255,255,255,0.88)_0%,rgba(243,247,253,0.82)_100%)] p-1 text-[#0f172a] shadow-[0_8px_20px_rgba(49,87,143,0.10)] backdrop-blur-[16px] dark:border-white/14 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.07)_100%)] dark:text-white"}`}
+                  className={`flex items-center gap-1 rounded-full ${isCompactNavbar ? compactLanguageShellClass : homeLanguageShellClass}`}
                 >
                   <button
                     type="button"
                     onClick={() => setLanguageMenuOpen((value) => !value)}
                     aria-haspopup="menu"
                     aria-expanded={languageMenuOpen}
-                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${isCompactNavbar ? "border border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)] hover:bg-[#f0f6ff]" : "border border-[#d8e3f0] bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] text-[#0f172a] shadow-[0_6px_16px_rgba(49,87,143,0.10)] dark:border-transparent dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.10)_100%)] dark:text-white"} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
+                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${isCompactNavbar ? compactControlGlassClass : `${homeGlassBtnClass}`} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
                   >
                     <span>{language}</span>
                     <ChevronDown
@@ -356,7 +403,7 @@ const userMemberLabel =
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
-                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${isCompactNavbar ? "border border-[#dde8f5] bg-white/97 shadow-[0_18px_40px_rgba(0,60,180,0.12)]" : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
+                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${isCompactNavbar ? compactDropdownPanelClass : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
                     >
                       {otherLanguages.map((lang) => (
                         <button
@@ -366,7 +413,7 @@ const userMemberLabel =
                             setLanguage(lang)
                             setLanguageMenuOpen(false)
                           }}
-                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? "text-[#1a2e52] hover:bg-[#e8f0fc] hover:text-[#0052a5]" : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
+                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? compactDropdownItemClass : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
                         >
                           {lang}
                         </button>
@@ -380,7 +427,7 @@ const userMemberLabel =
                 type="button"
                 aria-label={copy.switchTheme}
                 onClick={onToggleTheme}
-                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? `${compactControlGlassClass} hover:bg-[#e8f0fc]` : `${desktopGlassClass} hover:bg-white/10`} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
+                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? `${compactControlGlassClass} ${compactControlHoverClass}` : homeGlassBtnClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
               >
                 {theme === "dark" ? <SunMedium size={isCompactNavbar ? 12 : 14} /> : <MoonStar size={isCompactNavbar ? 12 : 14} />}
                 {theme === "dark" ? copy.themeLight : copy.themeDark}
@@ -398,7 +445,7 @@ const userMemberLabel =
                   <button
                     type="button"
                     onClick={goProfile}
-                    className={`grid shrink-0 place-items-center rounded-full font-bold uppercase tracking-[0.12em] transition hover:opacity-80 ${isCompactNavbar ? "border border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]" : "border border-[#dde8f5] bg-white text-[#1a2e52] shadow-[0_4px_12px_rgba(0,40,120,0.08)]"} ${isCompactNavbar ? "h-9 w-9 text-[10px]" : "h-10 w-10 text-[11px]"}`}
+                    className={`grid shrink-0 place-items-center rounded-full font-bold uppercase tracking-[0.12em] transition hover:opacity-80 ${isCompactNavbar ? compactControlGlassClass : homeGlassBtnClass} ${isCompactNavbar ? "h-9 w-9 text-[10px]" : "h-10 w-10 text-[11px]"}`}
                   >
                     {userInitials}
                   </button>
@@ -431,7 +478,7 @@ const userMemberLabel =
             type="button"
             aria-label={copy.openMenu}
             onClick={() => setOpen((value) => !value)}
-            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${isCompactNavbar ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-white/14 dark:bg-[rgba(255,255,255,0.10)] dark:text-white dark:shadow-[0_12px_28px_rgba(2,8,24,0.24)]"} ${isCompactNavbar ? "h-11 w-11" : "h-12 w-12"}`}
+            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${isCompactNavbar ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-[#5d7fba]/50 dark:bg-[linear-gradient(180deg,rgba(20,42,84,0.72)_0%,rgba(9,24,54,0.56)_100%)] dark:text-white dark:shadow-[0_18px_42px_rgba(2,8,24,0.32)]"} ${isCompactNavbar ? "h-11 w-11" : "h-12 w-12"}`}
           >
             {open ? <X size={isCompactNavbar ? 22 : 22} /> : <Menu size={isCompactNavbar ? 22 : 22} />}
           </button>
@@ -457,21 +504,21 @@ const userMemberLabel =
                 exit="closed"
                 variants={menuVariants}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-[#e5edf7] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] lg:hidden ${isCompactNavbar ? "top-[96px] max-h-[calc(100svh-110px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
+                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-[#e5edf7] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] backdrop-blur-[22px] dark:border-[#405d90]/70 dark:bg-[linear-gradient(180deg,rgba(17,36,72,0.9)_0%,rgba(8,22,50,0.84)_100%)] dark:shadow-[0_28px_80px_rgba(2,8,24,0.48)] lg:hidden ${isCompactNavbar ? "top-[96px] max-h-[calc(100svh-110px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
               >
-                <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3">
+                <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3 dark:border-[#405d90]/55">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7d8593]">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7d8593] dark:text-[#9fb8e4]">
                       {copy.menu}
                     </div>
-                    <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[#161d2a]">
+                    <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[#161d2a] dark:text-white">
                       {copy.navigation}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] hover:bg-[#f8fbff]"
+                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] hover:bg-[#f8fbff] dark:border-[#5572a8]/70 dark:bg-[rgba(23,45,86,0.74)] dark:text-white dark:shadow-[0_14px_30px_rgba(2,8,24,0.24)]"
                   >
                     <X size={18} />
                   </button>

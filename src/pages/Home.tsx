@@ -25,6 +25,7 @@ import heroBackgroundImage from "@/assets/images/cheerful-woman-looking-out-wind
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
+import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 type LocationOption = { code: string; name: string; searchText: string }
 type TripMode = "round" | "oneway" | "multi"
@@ -200,6 +201,9 @@ export default function Home() {
   const [pax, setPax] = useState(1)
   const [airportLabels, setAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
   const [calendarOpen, setCalendarOpen] = useState(false)
+  const calendarAnchorRef = useRef<HTMLDivElement>(null)
+  const returnDateAnchorRef = useRef<HTMLDivElement>(null)
+  const multiDateAnchorRefs = useRef<(HTMLDivElement | null)[]>([])
   const [faqOpen, setFaqOpen] = useState(-1)
   const [faqQuestion, setFaqQuestion] = useState("")
   const [tripMode, setTripMode] = useState<TripMode>("round")
@@ -210,6 +214,22 @@ export default function Home() {
     { from: "", to: "", date: "" },
   ])
   const [openMultiDateIndex, setOpenMultiDateIndex] = useState<number | null>(null)
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
+
+  useEffect(() => {
+    const syncTheme = () => setSiteTheme(getStoredTheme())
+
+    syncTheme()
+    window.addEventListener("storage", syncTheme)
+    window.addEventListener("tripzy-theme-change", syncTheme as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", syncTheme)
+      window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
+    }
+  }, [])
+
+  const isDarkTheme = siteTheme === "dark"
   const copy = {
     uz: {
       titleLines: ["Xalqaro avia qatnovlar", "va tezkor reyslar"],
@@ -725,6 +745,90 @@ export default function Home() {
     navigate(`/flights?${q}`)
   }
 
+  const faqSectionClass = isDarkTheme
+    ? "relative z-10 bg-transparent px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14"
+    : "relative z-10 bg-transparent px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14"
+
+  const helpSectionClass = isDarkTheme
+    ? "relative z-10 bg-transparent px-4 pb-20 sm:px-6 md:px-10 lg:px-14"
+    : "relative z-10 bg-transparent px-4 pb-20 sm:px-6 md:px-10 lg:px-14"
+
+  const faqGlowClass = isDarkTheme
+    ? "pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.2)_0%,rgba(92,134,211,0)_72%)] blur-3xl"
+    : "pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.1)_0%,rgba(92,134,211,0)_72%)] blur-3xl"
+
+  const faqPanelClass = isDarkTheme
+    ? "mt-10 rounded-[30px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.62)_0%,rgba(9,24,54,0.42)_100%)] p-5 shadow-[0_30px_80px_rgba(2,8,24,0.36)] backdrop-blur-[18px] sm:p-6 md:p-7"
+    : "mt-10 rounded-[30px] border border-[#e5edf7] bg-white p-5 shadow-[0_24px_60px_rgba(17,24,39,0.08)] sm:p-6 md:p-7"
+
+  const faqInputWrapClass = isDarkTheme
+    ? "flex h-14 items-center gap-3 rounded-2xl border border-[#5d7fba]/45 bg-[rgba(13,30,62,0.56)] px-4 shadow-[0_14px_34px_rgba(2,8,24,0.26)] backdrop-blur-[14px]"
+    : "flex h-14 items-center gap-3 rounded-2xl border border-[#dbe5f2] bg-white px-4 shadow-[0_8px_20px_rgba(17,24,39,0.04)]"
+
+  const faqInputClass = isDarkTheme
+    ? "h-full w-full bg-transparent text-[15px] font-medium text-white outline-none placeholder:text-[#9fb8e4]"
+    : "h-full w-full bg-transparent text-[15px] font-medium text-[#0f172a] outline-none placeholder:text-[#64748b]"
+
+  const faqItemClass = isDarkTheme
+    ? "overflow-hidden rounded-[22px] border border-[#5d7fba]/45 bg-[rgba(13,30,62,0.5)] shadow-[0_18px_42px_rgba(2,8,24,0.3)] backdrop-blur-[14px]"
+    : "overflow-hidden rounded-[22px] border border-[#e3eaf3] bg-white shadow-[0_10px_24px_rgba(17,24,39,0.05)]"
+
+  const faqAnswerClass = isDarkTheme
+    ? "border-t border-[#5d7fba]/35 bg-[rgba(8,22,50,0.34)] px-5 py-4 text-sm leading-7 text-[#cfe0fb]"
+    : "border-t border-[#edf2f7] bg-[#f8fbff] px-5 py-4 text-sm leading-7 text-[#475569]"
+
+  const faqQuestionTextClass = isDarkTheme
+    ? "flex-1 text-sm font-semibold text-white sm:text-base"
+    : "flex-1 text-sm font-semibold text-[#1e293b] sm:text-base"
+
+  const faqIconClass = isDarkTheme
+    ? "grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,rgba(66,120,220,0.34)_0%,rgba(28,62,132,0.28)_100%)] text-[#9fc7ff]"
+    : "grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#4790d8]"
+
+  const faqSendButtonClass = isDarkTheme
+    ? "inline-flex h-14 items-center justify-center gap-2 self-end rounded-2xl border border-[#36507f] bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_40px_rgba(33,79,184,0.34)] transition hover:brightness-110"
+    : "inline-flex h-14 items-center justify-center gap-2 self-end rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_40px_rgba(63,135,212,0.22)] transition hover:brightness-110"
+
+  const sectionBadgeClass = isDarkTheme
+    ? "inline-flex items-center gap-2 rounded-full border border-[#35507f] bg-[rgba(19,35,67,0.82)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#d4e2fb] shadow-[0_10px_24px_rgba(2,8,24,0.24)] backdrop-blur-[12px]"
+    : "inline-flex items-center gap-2 rounded-full border border-[#e2eaf5] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#334155] shadow-[0_10px_24px_rgba(17,24,39,0.06)]"
+
+  const sectionTitleClass = isDarkTheme
+    ? "mt-5 text-3xl font-extrabold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl"
+    : "mt-5 text-3xl font-extrabold tracking-[-0.04em] text-white drop-shadow-[0_6px_22px_rgba(2,8,24,0.72)] sm:text-4xl md:text-5xl"
+
+  const sectionTitleAccentClass = isDarkTheme
+    ? "block bg-[linear-gradient(135deg,#78b7ff_0%,#bba7ff_48%,#ffd1b8_100%)] bg-clip-text text-transparent"
+    : "block bg-[linear-gradient(135deg,#ffffff_0%,#dceaff_42%,#86b9ff_100%)] bg-clip-text text-transparent drop-shadow-[0_6px_22px_rgba(2,8,24,0.62)]"
+
+  const sectionDescriptionClass = isDarkTheme
+    ? "mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#d2e0f8] sm:text-base"
+    : "mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#475569] sm:text-base"
+
+  const mobileSearchSegmentClass = isDarkTheme
+    ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:backdrop-blur-none xl:after:block after:hidden"
+    : "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
+
+  const activeMobileSearchSegmentClass = isDarkTheme
+    ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
+    : "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+
+  const idleMobileSearchSegmentClass = isDarkTheme
+    ? "z-10 hover:bg-[linear-gradient(180deg,rgba(24,48,92,0.82)_0%,rgba(11,28,62,0.62)_100%)]"
+    : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]"
+
+  const multiFlightLabelClass = isDarkTheme
+    ? "mb-1.5 text-[12px] font-semibold text-[#d4e2fb]"
+    : "mb-1.5 text-[12px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)]"
+
+  const multiDateSegmentClass = isDarkTheme
+    ? "luxury-search-segment pointer-events-auto relative flex min-h-[58px] flex-col justify-center overflow-visible rounded-[20px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] xl:min-h-[62px]"
+    : "luxury-search-segment pointer-events-auto relative flex min-h-[58px] flex-col justify-center overflow-visible rounded-[20px] border border-[#e3eaf3] bg-white px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] xl:min-h-[62px]"
+
+  const activeMultiDateSegmentClass = isDarkTheme
+    ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
+    : "z-40 shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+
   return (
     <div className="-mt-[86px] relative overflow-x-hidden bg-transparent text-[#1d2430] md:-mt-[94px] xl:-mt-[102px] dark:text-white">
       <HeroSection
@@ -750,7 +854,7 @@ export default function Home() {
                 <div className="space-y-2.5">
                   {multiTrips.map((trip, index) => (
                     <div key={`trip-${index}`}>
-                      <div className="mb-1.5 text-[12px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)]">
+                      <div className={multiFlightLabelClass}>
                         {heroCopy.flightLabel} {index + 1}
                       </div>
                       <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
@@ -771,6 +875,7 @@ export default function Home() {
                           onDismiss={() => setActiveAirportField(null)}
                           useInlinePanel
                           active={activeAirportField === `multi-${index}-from`}
+                          isDark={isDarkTheme}
                         />
                         <HomeAutocompleteField
                           label={heroCopy.toTitle}
@@ -789,13 +894,13 @@ export default function Home() {
                           onDismiss={() => setActiveAirportField(null)}
                           useInlinePanel
                           active={activeAirportField === `multi-${index}-to`}
+                          isDark={isDarkTheme}
                         />
                         <div
+                          ref={(el) => { multiDateAnchorRefs.current[index] = el }}
                           className={[
-                            "luxury-search-segment pointer-events-auto relative flex min-h-[58px] flex-col justify-center overflow-visible rounded-[20px] px-4 py-2 xl:min-h-[62px]",
-                            openMultiDateIndex === index
-                              ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
-                              : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+                            multiDateSegmentClass,
+                            openMultiDateIndex === index ? activeMultiDateSegmentClass : "z-10",
                           ].join(" ")}
                         >
                           <button
@@ -828,6 +933,7 @@ export default function Home() {
                                 setOpenMultiDateIndex(null)
                               }}
                               onClose={() => setOpenMultiDateIndex(null)}
+                              anchorElement={multiDateAnchorRefs.current[index]}
                             />
                           ) : null}
                         </div>
@@ -851,6 +957,7 @@ export default function Home() {
                       label={heroCopy.guestCabin}
                       valueLabel={heroCopy.guestValue}
                       icon={<UsersRound size={16} />}
+                      isDark={isDarkTheme}
                     />
                     <div className="flex items-center gap-4">
                       <button
@@ -880,7 +987,7 @@ export default function Home() {
               ) : (
                 <div
                   className={[
-                    "luxury-search-grid relative grid items-stretch gap-3 overflow-visible rounded-[20px] bg-transparent sm:rounded-[22px] xl:gap-0 xl:bg-white",
+                    `luxury-search-grid relative grid items-stretch gap-3 overflow-visible rounded-[20px] bg-transparent sm:rounded-[22px] xl:gap-0 ${isDarkTheme ? "xl:bg-[rgba(8,20,44,0.38)]" : "xl:bg-white"}`,
                     tripMode === "round"
                       ? "xl:grid-cols-[2.15fr_0.8fr_0.82fr_0.82fr_210px]"
                       : "xl:grid-cols-[2.15fr_0.82fr_0.82fr_210px]",
@@ -915,6 +1022,7 @@ export default function Home() {
                       onDismiss={() => setActiveAirportField(null)}
                       useInlinePanel
                       active={activeAirportField === "from"}
+                      isDark={isDarkTheme}
                       compact
                     />
                     <HomeAutocompleteField
@@ -932,6 +1040,7 @@ export default function Home() {
                       onDismiss={() => setActiveAirportField(null)}
                       useInlinePanel
                       active={activeAirportField === "to"}
+                      isDark={isDarkTheme}
                       compact
                     />
                   </div>
@@ -950,14 +1059,14 @@ export default function Home() {
                     label={searchUiCopy.passengers}
                     valueLabel={language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`}
                     icon={<UsersRound size={20} className="text-[#18a0ea]" />}
+                    isDark={isDarkTheme}
                     compact
                   />
                   <div
+                    ref={calendarAnchorRef}
                     className={[
-                      "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden",
-                      calendarOpen
-                        ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
-                        : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+                      mobileSearchSegmentClass,
+                      calendarOpen ? activeMobileSearchSegmentClass : idleMobileSearchSegmentClass,
                     ].join(" ")}
                   >
                     <button type="button" onClick={() => {
@@ -988,16 +1097,16 @@ export default function Home() {
                           setCalendarOpen(false)
                         }}
                         onClose={() => setCalendarOpen(false)}
+                        anchorElement={calendarAnchorRef.current}
                       />
                     ) : null}
                   </div>
                   {tripMode === "round" ? (
                     <div
+                      ref={returnDateAnchorRef}
                       className={[
-                        "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden",
-                        openMultiDateIndex === -2
-                          ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
-                          : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+                        mobileSearchSegmentClass,
+                        openMultiDateIndex === -2 ? activeMobileSearchSegmentClass : idleMobileSearchSegmentClass,
                       ].join(" ")}
                     >
                       <button
@@ -1033,6 +1142,7 @@ export default function Home() {
                             setOpenMultiDateIndex(null)
                           }}
                           onClose={() => setOpenMultiDateIndex(null)}
+                          anchorElement={returnDateAnchorRef.current}
                         />
                       ) : null}
                     </div>
@@ -1057,37 +1167,37 @@ export default function Home() {
             </div>
       </HeroSection>
 
-      <section className="relative z-10 px-4 pb-18 pt-14 bg-transparent sm:px-6 md:px-10 lg:px-14">
-        <div className="pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.12)_0%,rgba(92,134,211,0)_72%)] blur-3xl" />
+      <section className={faqSectionClass}>
+        <div className={faqGlowClass} />
         <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/65 bg-white/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#334155] shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[12px] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
+            <div className={sectionBadgeClass}>
               <CircleHelp size={14} />
               {copy.faqBadge}
             </div>
-            <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#0f172a] drop-shadow-[0_3px_18px_rgba(255,255,255,0.72)] dark:text-white sm:text-4xl md:text-5xl">
+            <h2 className={sectionTitleClass}>
               {copy.faqTitleA}
-              <span className="block bg-[linear-gradient(135deg,#345f9f_0%,#6d4ea0_48%,#bf5d3e_100%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_rgba(255,255,255,0.55)]">
+              <span className={sectionTitleAccentClass}>
                 {copy.faqTitleB}
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[720px] text-sm leading-7 text-[#475569] drop-shadow-[0_2px_12px_rgba(255,255,255,0.58)] dark:text-[#d2e0f8] sm:text-base">
+            <p className={sectionDescriptionClass.replace("max-w-[760px]", "max-w-[720px]")}>
               {copy.faqDesc}
             </p>
           </div>
 
-          <div className="mt-10 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(245,249,255,0.42)_100%)] p-5 shadow-[0_26px_70px_rgba(17,24,39,0.10)] backdrop-blur-[18px] dark:border-white/70 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(246,249,255,0.88)_100%)] dark:shadow-[0_26px_70px_rgba(17,24,39,0.14)] sm:p-6 md:p-7">
+          <div className={faqPanelClass}>
             <div className="grid gap-4 md:grid-cols-[1fr_170px]">
               <label className="block">
-                <div className="mb-2 text-sm font-semibold text-[#334155] dark:text-[#334155]">
+                <div className={`mb-2 text-sm font-semibold ${isDarkTheme ? "text-[#d4e2fb]" : "text-[#334155]"}`}>
                   {copy.ask}
                 </div>
-                <div className="flex h-14 items-center gap-3 rounded-2xl border border-white/55 bg-white/34 px-4 shadow-[0_8px_20px_rgba(17,24,39,0.05)] backdrop-blur-[14px] dark:border-[#dbe3ef] dark:bg-white dark:shadow-[0_14px_28px_rgba(17,24,39,0.08)]">
-                  <CircleHelp size={18} className="text-[#8da0ba] dark:text-[#8da0ba]" />
+                <div className={faqInputWrapClass}>
+                  <CircleHelp size={18} className={isDarkTheme ? "text-[#9fc7ff]" : "text-[#8da0ba]"} />
                   <input
                     value={faqQuestion}
                     onChange={(e) => setFaqQuestion(e.target.value)}
-                    className="h-full w-full bg-transparent text-[15px] font-medium text-[#0f172a] outline-none placeholder:text-[#64748b] dark:text-[#0f172a] dark:placeholder:text-[#64748b]"
+                    className={faqInputClass}
                     placeholder={copy.askPlaceholder}
                   />
                 </div>
@@ -1095,7 +1205,7 @@ export default function Home() {
 
               <button
                 type="button"
-                className="inline-flex h-14 items-center justify-center gap-2 self-end rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_40px_rgba(63,135,212,0.22)] transition hover:brightness-110 dark:border-[#36507f] dark:bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] dark:shadow-[0_18px_40px_rgba(33,79,184,0.34)]"
+                className={faqSendButtonClass}
               >
                 <Send size={16} />
                 {copy.send}
@@ -1109,17 +1219,17 @@ export default function Home() {
                 return (
                   <div
                     key={item.question}
-                    className="overflow-hidden rounded-[22px] border border-white/50 bg-white/34 shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[14px] dark:border-[#dbe3ef] dark:bg-white dark:shadow-[0_14px_32px_rgba(17,24,39,0.08)]"
+                    className={faqItemClass}
                   >
                     <button
                       type="button"
                       onClick={() => setFaqOpen(isOpen ? -1 : index)}
-                      className="flex w-full items-center gap-3 px-4 py-4 text-left transition hover:bg-[#f8fbff] dark:hover:bg-[#f8fbff] sm:px-5"
+                      className={`flex w-full items-center gap-3 px-4 py-4 text-left transition sm:px-5 ${isDarkTheme ? "hover:bg-white/8" : "hover:bg-[#f8fbff]"}`}
                     >
-                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#4790d8] dark:bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] dark:text-[#4790d8]">
+                      <span className={faqIconClass}>
                         <CircleHelp size={16} />
                       </span>
-                      <span className="flex-1 text-sm font-semibold text-[#1e293b] dark:text-[#1e293b] sm:text-base">
+                      <span className={faqQuestionTextClass}>
                         {item.question}
                       </span>
                       <ChevronDown
@@ -1137,7 +1247,7 @@ export default function Home() {
                       transition={{ duration: 0.24, ease: "easeOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-white/35 bg-[linear-gradient(180deg,rgba(248,251,255,0.28)_0%,rgba(243,247,252,0.12)_100%)] px-5 py-4 text-sm leading-7 text-[#475569] dark:border-[#e2e8f0] dark:bg-[#f8fbff] dark:text-[#475569]">
+                      <div className={faqAnswerClass}>
                         {item.answer}
                       </div>
                     </motion.div>
@@ -1149,20 +1259,20 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative z-10 px-4 pb-20 bg-transparent sm:px-6 md:px-10 lg:px-14">
+      <section className={helpSectionClass}>
         <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/65 bg-white/50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#334155] shadow-[0_10px_24px_rgba(17,24,39,0.06)] backdrop-blur-[12px] dark:border-[#35507f] dark:bg-[rgba(19,35,67,0.82)] dark:text-[#d4e2fb]">
+            <div className={sectionBadgeClass}>
               <CreditCard size={14} />
               {copy.helpBadge}
             </div>
-            <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.04em] text-[#0f172a] drop-shadow-[0_3px_18px_rgba(255,255,255,0.72)] dark:text-white sm:text-4xl md:text-5xl">
+            <h2 className={sectionTitleClass}>
               {copy.helpTitleA}
-              <span className="block bg-[linear-gradient(135deg,#345f9f_0%,#6d4ea0_48%,#bf5d3e_100%)] bg-clip-text text-transparent drop-shadow-[0_2px_14px_rgba(255,255,255,0.55)]">
+              <span className={sectionTitleAccentClass}>
                 {copy.helpTitleB}
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#475569] drop-shadow-[0_2px_12px_rgba(255,255,255,0.58)] dark:text-[#d2e0f8] sm:text-base">
+            <p className={sectionDescriptionClass}>
               {copy.helpDesc}
             </p>
           </div>
@@ -1173,12 +1283,13 @@ export default function Home() {
               accent="blue"
               title={copy.helpCards[0].title}
               text={copy.helpCards[0].text}
+              isDark={isDarkTheme}
             >
               <div className="mt-4 flex flex-wrap gap-2">
                 {["Click", "Visa", "Mastercard", "Humo"].map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-[#d7e3f5] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#45628f] shadow-[0_8px_18px_rgba(17,24,39,0.04)]"
+                    className={isDarkTheme ? "rounded-full border border-[#5d7fba]/42 bg-[rgba(13,30,62,0.56)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#cfe0fb] shadow-[0_10px_24px_rgba(2,8,24,0.2)]" : "rounded-full border border-[#d7e3f5] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#45628f] shadow-[0_8px_18px_rgba(17,24,39,0.04)]"}
                   >
                     {item}
                   </span>
@@ -1191,8 +1302,9 @@ export default function Home() {
               accent="gold"
               title={copy.helpCards[1].title}
               text={copy.helpCards[1].text}
+              isDark={isDarkTheme}
             >
-              <p className="mt-4 text-sm leading-6 text-[#475569]">
+              <p className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-[#cfe0fb]" : "text-[#475569]"}`}>
                 {copy.helpCards[1].extra}
               </p>
             </HelpCard>
@@ -1202,8 +1314,9 @@ export default function Home() {
               accent="rose"
               title={copy.helpCards[2].title}
               text={copy.helpCards[2].text}
+              isDark={isDarkTheme}
             >
-              <p className="mt-4 text-sm leading-6 text-[#475569]">
+              <p className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-[#cfe0fb]" : "text-[#475569]"}`}>
                 {copy.helpCards[2].extra}
               </p>
             </HelpCard>
@@ -1225,6 +1338,7 @@ function HomeAutocompleteField({
   onDismiss,
   useInlinePanel = false,
   active = false,
+  isDark = false,
   compact = false,
 }: {
   label: string
@@ -1237,6 +1351,7 @@ function HomeAutocompleteField({
   onDismiss?: () => void
   useInlinePanel?: boolean
   active?: boolean
+  isDark?: boolean
   compact?: boolean
 }) {
   const { language } = useI18n()
@@ -1333,6 +1448,46 @@ function HomeAutocompleteField({
     setActiveIndex(0)
   }
 
+  const optionButtonClass = (activeOption: boolean) =>
+    [
+      "flex w-full items-center justify-between px-4 py-3 text-left transition",
+      isDark
+        ? activeOption
+          ? "bg-[rgba(42,82,150,0.36)]"
+          : "hover:bg-[rgba(42,82,150,0.28)]"
+        : activeOption
+          ? "bg-[#f8fbff]"
+          : "hover:bg-[#f8fbff]",
+    ].join(" ")
+
+  const optionTitleClass = isDark
+    ? "block text-sm font-semibold text-white"
+    : "block text-sm font-semibold text-[#0f172a]"
+
+  const optionCodeClass = isDark
+    ? "block text-xs uppercase tracking-[0.14em] text-[#b9cceb]"
+    : "block text-xs uppercase tracking-[0.14em] text-[#7f8ca0]"
+
+  const optionBadgeClass = isDark
+    ? "rounded-full border border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#cfe0fb]"
+    : "rounded-full bg-[#f3f7fc] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#637791]"
+
+  const emptyOptionClass = isDark
+    ? "px-4 py-4 text-sm text-[#b9cceb]"
+    : "px-4 py-4 text-sm text-[#475569]"
+
+  const inlinePanelHeaderClass = isDark
+    ? "flex items-center justify-between border-b border-[#5d7fba]/34 px-4 py-2.5"
+    : "flex items-center justify-between border-b border-[#e2e8f0] px-4 py-2.5"
+
+  const inlinePanelTitleClass = isDark
+    ? "text-[13px] font-semibold text-white"
+    : "text-[13px] font-semibold text-[#0f172a]"
+
+  const inlinePanelCloseClass = isDark
+    ? "grid h-8 w-8 place-items-center rounded-full border border-[#5d7fba]/42 text-[#cfe0fb] transition hover:bg-[rgba(42,82,150,0.28)] hover:text-white"
+    : "grid h-8 w-8 place-items-center rounded-full border border-[#dbe3ef] text-[#64748b] transition hover:bg-[#f8fbff] hover:text-[#0f172a]"
+
   const optionList = filteredOptions.length ? (
     filteredOptions.map((option, index) => (
       <button
@@ -1344,22 +1499,19 @@ function HomeAutocompleteField({
           pickOption(option)
         }}
         onClick={() => pickOption(option)}
-        className={[
-          "flex w-full items-center justify-between px-4 py-3 text-left transition",
-          activeIndex === index ? "bg-[#f8fbff]" : "hover:bg-[#f8fbff]",
-        ].join(" ")}
+        className={optionButtonClass(activeIndex === index)}
       >
         <span>
-          <span className="block text-sm font-semibold text-[#0f172a]">{option.name}</span>
-          <span className="block text-xs uppercase tracking-[0.14em] text-[#7f8ca0]">{option.code}</span>
+          <span className={optionTitleClass}>{option.name}</span>
+          <span className={optionCodeClass}>{option.code}</span>
         </span>
-        <span className="rounded-full bg-[#f3f7fc] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#637791]">
+        <span className={optionBadgeClass}>
           {safeCopy.select}
         </span>
       </button>
     ))
   ) : (
-    <div className="px-4 py-4 text-sm text-[#475569]">
+    <div className={emptyOptionClass}>
       {safeCopy.noResult}
     </div>
   )
@@ -1377,13 +1529,13 @@ function HomeAutocompleteField({
               zIndex: 9999,
             }}
           >
-            <div className="flex items-center justify-between border-b border-[#e2e8f0] px-4 py-2.5">
-              <div className="text-[13px] font-semibold text-[#0f172a]">{label}</div>
+            <div className={inlinePanelHeaderClass}>
+              <div className={inlinePanelTitleClass}>{label}</div>
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => onDismiss?.()}
-                className="grid h-8 w-8 place-items-center rounded-full border border-[#dbe3ef] text-[#64748b] transition hover:bg-[#f8fbff] hover:text-[#0f172a]"
+                className={inlinePanelCloseClass}
               >
                 <X size={14} />
               </button>
@@ -1398,24 +1550,24 @@ function HomeAutocompleteField({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { pickOption(option); onDismiss?.() }}
-                  className="flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left transition hover:bg-[#f8fbff]"
+                  className={`flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left transition ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#f8fbff]"}`}
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <span className="luxury-search-icon h-9 w-9 shrink-0 rounded-[12px]">
                       <MapPinned size={15} />
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-[13px] font-semibold text-[#0f172a]">{option.name}</span>
-                      <span className="block text-[11px] text-[#64748b]">{option.code}</span>
+                      <span className={`block truncate text-[13px] font-semibold ${isDark ? "text-white" : "text-[#0f172a]"}`}>{option.name}</span>
+                      <span className={`block text-[11px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{option.code}</span>
                     </span>
                   </span>
-                  <span className="shrink-0 rounded-[999px] border border-[#dbe3ef] bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-[#475569]">
+                  <span className={`shrink-0 rounded-[999px] border px-2.5 py-1 text-[11px] font-semibold ${isDark ? "border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] text-[#cfe0fb]" : "border-[#dbe3ef] bg-white/70 text-[#475569]"}`}>
                     {option.code}
                   </span>
                 </button>
               ))}
               {!filteredOptions.length ? (
-                <div className="py-5 text-center text-[13px] text-[#64748b]">{safeCopy.noResult}</div>
+                <div className={`py-5 text-center text-[13px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{safeCopy.noResult}</div>
               ) : null}
             </div>
           </div>,
@@ -1429,12 +1581,18 @@ function HomeAutocompleteField({
         ref={fieldRef}
         className={[
           compact
-            ? "luxury-search-segment luxury-search-divider relative flex min-h-[58px] items-center gap-3 rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[66px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
-            : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
+            ? isDark
+              ? "luxury-search-segment luxury-search-divider relative flex min-h-[58px] items-center gap-3 rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[64px] sm:px-5 xl:min-h-[66px] xl:border-0 xl:bg-transparent xl:shadow-none xl:backdrop-blur-none xl:after:block after:hidden"
+              : "luxury-search-segment luxury-search-divider relative flex min-h-[58px] items-center gap-3 rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[66px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
+            : isDark
+              ? "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px]"
+              : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
           compact
-            ? active ? "" : ""
+            ? active ? isDark ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)] xl:bg-transparent xl:shadow-none" : "" : ""
             : active
-              ? "border-[#18a0ea]/50 shadow-[0_0_0_3px_rgba(24,160,234,0.08)]"
+              ? isDark
+                ? "z-40 border-[#78b8ff]/55 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
+                : "border-[#18a0ea]/50 shadow-[0_0_0_3px_rgba(24,160,234,0.08)]"
               : "",
         ].join(" ")}
         data-active={compact ? (active ? "true" : "false") : undefined}
@@ -1502,13 +1660,13 @@ function HomeAutocompleteField({
               onClick={() => setOpen(false)}
               className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
             />
-            <div className="fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] xl:bg-white">
-              <div className="mx-auto mt-2 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
-              <div className="border-b border-[#eef3f8] px-4 py-3 xl:hidden">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a879c]">
+            <div className={`fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] ${isDark ? "border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.96)_0%,rgba(9,24,54,0.94)_100%)] shadow-[0_28px_80px_rgba(2,8,24,0.48)] backdrop-blur-[22px]" : "border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] xl:bg-white"}`}>
+              <div className={`mx-auto mt-2 h-1.5 w-14 rounded-full xl:hidden ${isDark ? "bg-[#5d7fba]/45" : "bg-[#d8e1ee]"}`} />
+              <div className={`border-b px-4 py-3 xl:hidden ${isDark ? "border-[#5d7fba]/34" : "border-[#eef3f8]"}`}>
+                <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? "text-[#b9cceb]" : "text-[#7a879c]"}`}>
                   {label}
                 </div>
-                <div className="mt-1 text-sm font-semibold text-[#0f172a]">
+                <div className={`mt-1 text-sm font-semibold ${isDark ? "text-white" : "text-[#0f172a]"}`}>
                   {safeCopy.chooseOption}
                 </div>
               </div>
@@ -1531,6 +1689,7 @@ function PassengerField({
   label,
   valueLabel,
   icon,
+  isDark,
   compact = false,
 }: {
   pax: number
@@ -1539,6 +1698,7 @@ function PassengerField({
   label?: string
   valueLabel?: string
   icon?: ReactNode
+  isDark: boolean
   compact?: boolean
 }) {
   void label
@@ -1701,12 +1861,64 @@ function PassengerField({
 
   const fieldShellClass = [
     compact
-      ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
-      : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5",
+      ? isDark
+        ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:backdrop-blur-none xl:after:block after:hidden"
+        : "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
+      : isDark
+        ? "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px]"
+        : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5",
     open
-      ? "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
-      : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+      ? isDark
+        ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
+        : "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+      : isDark
+        ? "z-10 hover:bg-[linear-gradient(180deg,rgba(24,48,92,0.82)_0%,rgba(11,28,62,0.62)_100%)]"
+        : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
   ].join(" ")
+
+  const dropdownPanelClass = isDark
+    ? "fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.96)_0%,rgba(9,24,54,0.94)_100%)] p-4 shadow-[0_28px_80px_rgba(2,8,24,0.48)] backdrop-blur-[22px] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[360px] xl:rounded-[22px]"
+    : "fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[360px] xl:rounded-[22px] xl:bg-white"
+
+  const dropdownHandleClass = isDark
+    ? "mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#5d7fba]/45 xl:hidden"
+    : "mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden"
+
+  const dropdownTitleClass = isDark
+    ? "text-sm font-semibold text-white"
+    : "text-sm font-semibold text-[#0f172a]"
+
+  const passengerRowClass = isDark
+    ? "flex items-center justify-between gap-3 rounded-[18px] border border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+    : "flex items-center justify-between gap-3 rounded-[18px] border border-[#e7edf6] bg-white/90 px-3 py-3"
+
+  const passengerRowTitleClass = isDark
+    ? "text-[15px] font-bold text-white"
+    : "text-[15px] font-bold text-[#0f172a]"
+
+  const passengerRowHintClass = isDark
+    ? "text-[12px] text-[#b9cceb]"
+    : "text-[12px] text-[#64748b]"
+
+  const counterBoxClass = isDark
+    ? "flex shrink-0 items-center gap-3 rounded-[14px] border border-[#5d7fba]/38 bg-[rgba(8,22,50,0.52)] px-2.5 py-2"
+    : "flex shrink-0 items-center gap-3 rounded-[14px] border border-[#d7e6f7] bg-[#f8fbff] px-2.5 py-2"
+
+  const counterButtonClass = isDark
+    ? "grid h-9 w-9 place-items-center rounded-full border-2 border-[#60b7ff] text-xl font-semibold leading-none text-[#8fd0ff] transition hover:bg-[#1d4f8d]/40 disabled:cursor-not-allowed disabled:border-[#4a6799] disabled:text-[#7895bd] disabled:hover:bg-transparent"
+    : "grid h-9 w-9 place-items-center rounded-full border-2 border-[#1697ea] text-xl font-semibold leading-none text-[#1697ea] transition hover:bg-[#eaf6ff] disabled:cursor-not-allowed disabled:border-[#bfd8ea] disabled:text-[#bfd8ea] disabled:hover:bg-transparent"
+
+  const counterValueClass = isDark
+    ? "min-w-[18px] text-center text-lg font-bold text-white"
+    : "min-w-[18px] text-center text-lg font-bold text-[#0f172a]"
+
+  const morePassengersClass = isDark
+    ? "mt-4 text-sm font-medium text-[#8fd0ff] underline underline-offset-4"
+    : "mt-4 text-sm font-medium text-[#1697ea] underline underline-offset-4"
+
+  const doneButtonClass = isDark
+    ? "mt-3 h-11 w-full rounded-[16px] border border-[#5d7fba]/42 bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] text-sm font-semibold text-white shadow-[0_16px_34px_rgba(33,79,184,0.32)]"
+    : "mt-3 h-11 w-full rounded-[16px] bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white"
 
   return (
     <div
@@ -1755,40 +1967,40 @@ function PassengerField({
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
           />
-          <div className="fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[360px] xl:rounded-[22px] xl:bg-white">
-            <div className="mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden" />
-            <div className="text-sm font-semibold text-[#0f172a]">
+          <div className={dropdownPanelClass}>
+            <div className={dropdownHandleClass} />
+            <div className={dropdownTitleClass}>
               {safeCopy.passengersCount}
             </div>
             <div className="mt-3 space-y-2.5">
               {passengerRows.map((row) => (
                 <div
                   key={row.key}
-                  className="flex items-center justify-between gap-3 rounded-[18px] border border-[#e7edf6] bg-white/90 px-3 py-3"
+                  className={passengerRowClass}
                 >
                   <div className="min-w-0">
-                    <div className="text-[15px] font-bold text-[#0f172a]">
+                    <div className={passengerRowTitleClass}>
                       {row.title}
                     </div>
-                    <div className="text-[12px] text-[#64748b]">{row.hint}</div>
+                    <div className={passengerRowHintClass}>{row.hint}</div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-3 rounded-[14px] border border-[#d7e6f7] bg-[#f8fbff] px-2.5 py-2">
+                  <div className={counterBoxClass}>
                     <button
                       type="button"
                       onClick={row.decrement}
                       disabled={row.disableDecrement}
-                      className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#1697ea] text-xl font-semibold leading-none text-[#1697ea] transition hover:bg-[#eaf6ff] disabled:cursor-not-allowed disabled:border-[#bfd8ea] disabled:text-[#bfd8ea] disabled:hover:bg-transparent"
+                      className={counterButtonClass}
                     >
                       -
                     </button>
-                    <div className="min-w-[18px] text-center text-lg font-bold text-[#0f172a]">
+                    <div className={counterValueClass}>
                       {row.value}
                     </div>
                     <button
                       type="button"
                       onClick={row.increment}
                       disabled={row.disableIncrement}
-                      className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#1697ea] text-xl font-semibold leading-none text-[#1697ea] transition hover:bg-[#eaf6ff] disabled:cursor-not-allowed disabled:border-[#bfd8ea] disabled:text-[#bfd8ea] disabled:hover:bg-transparent"
+                      className={counterButtonClass}
                     >
                       +
                     </button>
@@ -1798,14 +2010,14 @@ function PassengerField({
             </div>
             <button
               type="button"
-              className="mt-4 text-sm font-medium text-[#1697ea] underline underline-offset-4"
+              className={morePassengersClass}
             >
               {safeCopy.moreThanNine}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="mt-3 h-11 w-full rounded-[16px] bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white"
+              className={doneButtonClass}
             >
               {safeCopy.done}
             </button>
@@ -1821,31 +2033,43 @@ function HelpCard({
   title,
   text,
   accent,
+  isDark,
   children,
 }: {
   icon: ReactNode
   title: string
   text: string
   accent: "blue" | "gold" | "rose"
+  isDark: boolean
   children?: ReactNode
 }) {
   const accentStyles = {
-    blue: "bg-[linear-gradient(135deg,#f5f9ff_0%,#e8f1ff_100%)] border-[#dce7fb] text-[#2f5ba8]",
-    gold: "bg-[linear-gradient(135deg,#fffaf2_0%,#fff2db_100%)] border-[#f0e0b8] text-[#93631a]",
-    rose: "bg-[linear-gradient(135deg,#fff7f9_0%,#fff0f3_100%)] border-[#f1d9df] text-[#9b506b]",
+    blue: isDark
+      ? "bg-[linear-gradient(135deg,rgba(66,120,220,0.34)_0%,rgba(28,62,132,0.28)_100%)] border-[#5d7fba]/42 text-[#9fc7ff]"
+      : "bg-[linear-gradient(135deg,#f5f9ff_0%,#e8f1ff_100%)] border-[#dce7fb] text-[#2f5ba8]",
+    gold: isDark
+      ? "bg-[linear-gradient(135deg,rgba(245,192,95,0.2)_0%,rgba(105,74,29,0.16)_100%)] border-[#a98751]/36 text-[#ffd891]"
+      : "bg-[linear-gradient(135deg,#fffaf2_0%,#fff2db_100%)] border-[#f0e0b8] text-[#93631a]",
+    rose: isDark
+      ? "bg-[linear-gradient(135deg,rgba(255,129,170,0.2)_0%,rgba(106,45,75,0.18)_100%)] border-[#a86282]/36 text-[#ffc3d8]"
+      : "bg-[linear-gradient(135deg,#fff7f9_0%,#fff0f3_100%)] border-[#f1d9df] text-[#9b506b]",
   } as const
 
+  const cardClass = isDark
+    ? "rounded-[30px] border border-[#5d7fba]/42 bg-[linear-gradient(180deg,rgba(18,38,76,0.58)_0%,rgba(9,24,54,0.42)_100%)] p-6 shadow-[0_28px_70px_rgba(2,8,24,0.34)] backdrop-blur-[18px] transition hover:-translate-y-1 hover:shadow-[0_32px_80px_rgba(2,8,24,0.42)]"
+    : "rounded-[30px] border border-[#e8eef8] bg-white p-6 shadow-[0_24px_60px_rgba(17,24,39,0.08)] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.12)]"
+
   return (
-    <div className="rounded-[30px] border border-[#e8eef8] bg-white p-6 shadow-[0_24px_60px_rgba(17,24,39,0.08)] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.12)]">
+    <div className={cardClass}>
       <div
         className={`grid h-24 w-24 place-items-center rounded-full border shadow-[0_14px_30px_rgba(17,24,39,0.06)] ${accentStyles[accent]}`}
       >
         {icon}
       </div>
-      <h3 className="mt-6 text-2xl font-extrabold leading-tight text-[#0f172a]">
+      <h3 className={`mt-6 text-2xl font-extrabold leading-tight ${isDark ? "text-white" : "text-[#0f172a]"}`}>
         {title}
       </h3>
-      <p className="mt-3 text-sm leading-7 text-[#475569] sm:text-[15px]">{text}</p>
+      <p className={`mt-3 text-sm leading-7 sm:text-[15px] ${isDark ? "text-[#cfe0fb]" : "text-[#475569]"}`}>{text}</p>
       {children}
     </div>
   )

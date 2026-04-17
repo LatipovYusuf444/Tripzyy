@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
 import {
   LogOut,
@@ -15,15 +15,7 @@ import { toast } from "sonner"
 import { formatUzPhoneInput } from "@/lib/phone"
 import { clearAccessToken, getAccessToken, getAuthUser } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
-
-const primaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_50px_rgba(17,24,39,0.22)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(53,89,170,0.34)_0%,rgba(17,27,52,0.96)_52%,rgba(30,55,104,0.9)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.42)]"
-
-const secondaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#dbe3ef] bg-white/90 px-5 text-sm font-semibold text-[#1d2430] shadow-[0_12px_30px_rgba(17,24,39,0.08)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:shadow-[0_16px_34px_rgba(2,8,24,0.28)] dark:hover:bg-[rgba(24,43,80,0.94)]"
-
-const panelClass =
-  "rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,249,255,0.92)_100%)] shadow-[0_24px_70px_rgba(17,24,39,0.08)] backdrop-blur-xl dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]"
+import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -124,8 +116,22 @@ export default function Profile() {
   const [phone, setPhone] = useState("+998")
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
 
   const token = useMemo(() => getAccessToken(), [])
+
+  useEffect(() => {
+    const syncTheme = () => setSiteTheme(getStoredTheme())
+
+    syncTheme()
+    window.addEventListener("storage", syncTheme)
+    window.addEventListener("tripzy-theme-change", syncTheme as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", syncTheme)
+      window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
+    }
+  }, [])
 
   const logout = async () => {
     clearAccessToken()
@@ -143,51 +149,77 @@ export default function Profile() {
     }
   }
 
-  return (
-    <section className="secondary-page-shell relative overflow-hidden pt-6 md:pt-24">
-      <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
+  const isDarkTheme = siteTheme === "dark"
+  const pageClass = isDarkTheme
+    ? "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(54,103,199,0.22)_0%,rgba(9,24,54,0)_34%),linear-gradient(180deg,#07152f_0%,#0b1e42_46%,#061226_100%)] pt-4 text-white md:pt-6"
+    : "relative min-h-screen overflow-hidden bg-white pt-4 text-[#0f172a] md:pt-6"
+  const glowClass = isDarkTheme
+    ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(92,154,255,0.2)_0%,rgba(92,154,255,0)_30%),radial-gradient(circle_at_84%_12%,rgba(125,167,255,0.12)_0%,rgba(125,167,255,0)_34%)]"
+    : "hidden"
+  const panelToneClass = isDarkTheme
+    ? "rounded-[30px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.72)_0%,rgba(9,24,54,0.58)_100%)] shadow-[0_32px_90px_rgba(2,8,24,0.46)] backdrop-blur-[18px]"
+    : "rounded-[30px] border border-[#e4ebf6] bg-white shadow-[0_24px_70px_rgba(17,24,39,0.08)]"
+  const secondaryBtnToneClass = isDarkTheme
+    ? "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#5d7fba]/55 bg-[linear-gradient(180deg,rgba(20,42,84,0.78)_0%,rgba(9,24,54,0.62)_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(2,8,24,0.34)] backdrop-blur-[14px] transition hover:bg-[rgba(36,67,122,0.78)] disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#dbe3ef] bg-white px-5 text-sm font-semibold text-[#0f172a] shadow-[0_12px_30px_rgba(17,24,39,0.08)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+  const primaryBtnToneClass = isDarkTheme
+    ? "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#6ea8ff]/45 bg-[linear-gradient(135deg,rgba(74,143,255,0.72)_0%,rgba(36,98,220,0.88)_54%,rgba(19,49,121,0.92)_100%)] px-5 text-sm font-semibold text-white shadow-[0_22px_50px_rgba(2,8,24,0.42)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#1d4ed8]/20 bg-[linear-gradient(135deg,#2f8cff_0%,#2563eb_54%,#1d4ed8_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(37,99,235,0.24)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+  const badgeClass = isDarkTheme
+    ? "inline-flex items-center gap-2 rounded-full border border-[#5d7fba]/45 bg-[rgba(13,30,62,0.56)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d4e2fb]"
+    : "inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#334155] shadow-[0_8px_22px_rgba(17,24,39,0.05)]"
+  const innerCardClass = isDarkTheme
+    ? "rounded-[26px] border border-[#5d7fba]/45 bg-[linear-gradient(135deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_42px_rgba(2,8,24,0.34)] backdrop-blur-[16px]"
+    : "rounded-[26px] border border-[#e3eaf4] bg-white p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_46px_rgba(17,24,39,0.06)]"
+  const mutedTextClass = isDarkTheme ? "text-[#a9bddb]" : "text-[#627188]"
+  const labelTextClass = isDarkTheme ? "text-[#b9cceb]" : "text-[#64748b]"
+  const headingTextClass = isDarkTheme ? "text-white" : "text-[#0f172a]"
 
-      <div className="relative mx-auto max-w-[1500px] px-4 py-10 sm:px-6 sm:py-14 xl:px-8 2xl:max-w-[1680px]">
+  return (
+    <section className={pageClass}>
+      <div className={glowClass} />
+
+      <div className="relative mx-auto max-w-[1500px] px-4 py-6 sm:px-6 sm:py-8 xl:px-8 2xl:max-w-[1680px]">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
-            className={`overflow-hidden p-6 md:p-7 ${panelClass}`}
+            className={`overflow-hidden p-6 md:p-7 ${panelToneClass}`}
           >
             <div className="pointer-events-none absolute" />
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white/90 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#627188] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#cfe0fb]">
-                <span className="h-2 w-2 rounded-full bg-[#8A3A5A]" />
+              <div className={badgeClass}>
+                <span className={`h-2 w-2 rounded-full ${isDarkTheme ? "bg-[#8fd0ff]" : "bg-[#2f8cff]"}`} />
                 {copy.badge}
               </div>
 
-              <button onClick={logout} className={`h-11 ${secondaryButtonClass}`}>
+              <button onClick={logout} className={`h-11 ${secondaryBtnToneClass}`}>
                 <LogOut size={16} />
                 {copy.logout}
               </button>
             </div>
 
-            <div className="mt-7 rounded-[26px] border border-[#e3eaf4] bg-[linear-gradient(135deg,#fbfdff_0%,#f5f9ff_42%,#f9f2f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_42%,rgba(30,24,53,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className={`mt-7 ${innerCardClass}`}>
               <div className="flex items-start gap-4">
-                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-[22px] bg-[linear-gradient(135deg,#eef5ff_0%,#e5eefc_100%)] text-[#31569e] shadow-[0_12px_30px_rgba(49,86,158,0.12)] dark:bg-[linear-gradient(135deg,rgba(39,72,133,0.9)_0%,rgba(26,47,87,0.96)_100%)] dark:text-[#d4e2fb] dark:shadow-[0_16px_34px_rgba(2,8,24,0.24)]">
+                <div className={`grid h-16 w-16 shrink-0 place-items-center rounded-[22px] border shadow-[0_12px_30px_rgba(49,86,158,0.12)] ${isDarkTheme ? "border-[#5d7fba]/42 bg-[rgba(42,82,150,0.28)] text-[#d4e2fb]" : "border-[#dbe8fb] bg-white text-[#31569e]"}`}>
                   <User2 size={28} />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-3xl font-extrabold leading-tight text-[#1d2430] dark:text-white">
+                  <div className={`text-3xl font-extrabold leading-tight ${headingTextClass}`}>
                     {name}
                   </div>
-                  <div className="mt-2 flex items-center gap-2 break-all text-sm text-[#627188] dark:text-[#a9bddb]">
-                    <Mail size={16} className="text-[#7f8ea5]" />
+                  <div className={`mt-2 flex items-center gap-2 break-all text-sm ${mutedTextClass}`}>
+                    <Mail size={16} className={isDarkTheme ? "text-[#9fc7ff]" : "text-[#7f8ea5]"} />
                     {email}
                   </div>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                <InfoPill title={copy.accountStatus} value={copy.active} accent="blue" icon={<ShieldCheck size={18} />} />
-                <InfoPill title={copy.token} value={token ? copy.available : copy.missing} accent="rose" icon={<ShieldCheck size={18} />} />
-                <InfoPill title={copy.support} value={copy.premiumSupport} accent="gold" icon={<Sparkles size={18} />} />
+                <InfoPill title={copy.accountStatus} value={copy.active} accent="blue" icon={<ShieldCheck size={18} />} isDark={isDarkTheme} />
+                <InfoPill title={copy.token} value={token ? copy.available : copy.missing} accent="rose" icon={<ShieldCheck size={18} />} isDark={isDarkTheme} />
+                <InfoPill title={copy.support} value={copy.premiumSupport} accent="gold" icon={<Sparkles size={18} />} isDark={isDarkTheme} />
               </div>
             </div>
           </motion.div>
@@ -196,21 +228,21 @@ export default function Profile() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.05 }}
-            className={`lg:col-span-2 p-6 md:p-7 ${panelClass}`}
+            className={`lg:col-span-2 p-6 md:p-7 ${panelToneClass}`}
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-extrabold text-[#1d2430] md:text-4xl dark:text-white">
+                <h1 className={`text-3xl font-extrabold md:text-4xl ${headingTextClass}`}>
                   {copy.title}
                 </h1>
-                <p className="mt-2 max-w-[620px] text-[#627188] dark:text-[#a9bddb]">
+                <p className={`mt-2 max-w-[620px] ${mutedTextClass}`}>
                   {copy.desc}
                 </p>
               </div>
 
               <button
                 onClick={() => setEditing((p) => !p)}
-                className={`h-11 ${editing ? primaryButtonClass : secondaryButtonClass}`}
+                className={`h-11 ${editing ? primaryBtnToneClass : secondaryBtnToneClass}`}
               >
                 <PencilLine size={16} />
                 {editing ? copy.cancel : copy.edit}
@@ -218,34 +250,34 @@ export default function Profile() {
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-2">
-              <Field label={copy.name} icon={<User2 size={18} className="text-[#7f8ea5]" />} value={name} disabled={!editing} onChange={setName} />
-              <Field label={copy.phone} icon={<User2 size={18} className="text-[#7f8ea5]" />} value={phone} disabled={!editing} onChange={(v) => setPhone(formatUzPhoneInput(v))} />
+              <Field label={copy.name} icon={<User2 size={18} />} value={name} disabled={!editing} onChange={setName} isDark={isDarkTheme} />
+              <Field label={copy.phone} icon={<User2 size={18} />} value={phone} disabled={!editing} onChange={(v) => setPhone(formatUzPhoneInput(v))} isDark={isDarkTheme} />
               <div className="md:col-span-2">
-                <Field label={copy.email} icon={<Mail size={18} className="text-[#7f8ea5]" />} value={email} disabled onChange={() => {}} />
-                <div className="mt-2 text-xs text-[#7b8aa0] dark:text-[#93abd0]">
+                <Field label={copy.email} icon={<Mail size={18} />} value={email} disabled onChange={() => {}} isDark={isDarkTheme} />
+                <div className={`mt-2 text-xs ${labelTextClass}`}>
                   {copy.emailHint}
                 </div>
               </div>
             </div>
 
             <div className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="rounded-[26px] border border-[#e3eaf4] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_46%,#f8f2f5_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_46%,rgba(30,24,53,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#7b8aa0] dark:text-[#93abd0]">
+              <div className={innerCardClass}>
+                <div className={`text-sm font-semibold uppercase tracking-[0.16em] ${labelTextClass}`}>
                   {copy.overview}
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <StatCard label={copy.status} value={copy.active} />
-                  <StatCard label={copy.security} value={copy.protected} />
-                  <StatCard label={copy.fare} value={copy.premiumFare} />
+                  <StatCard label={copy.status} value={copy.active} isDark={isDarkTheme} />
+                  <StatCard label={copy.security} value={copy.protected} isDark={isDarkTheme} />
+                  <StatCard label={copy.fare} value={copy.premiumFare} isDark={isDarkTheme} />
                 </div>
               </div>
 
-              <div className="flex flex-col justify-between rounded-[26px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-5 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)]">
+              <div className={`flex flex-col justify-between ${innerCardClass}`}>
                 <div>
-                  <div className="text-sm font-semibold uppercase tracking-[0.16em] text-[#7b8aa0] dark:text-[#93abd0]">
+                  <div className={`text-sm font-semibold uppercase tracking-[0.16em] ${labelTextClass}`}>
                     {copy.actions}
                   </div>
-                  <div className="mt-2 text-sm text-[#627188] dark:text-[#a9bddb]">
+                  <div className={`mt-2 text-sm ${mutedTextClass}`}>
                     {copy.actionsDesc}
                   </div>
                 </div>
@@ -254,7 +286,7 @@ export default function Profile() {
                   <button
                     disabled={!editing || loading}
                     onClick={onSave}
-                    className={`h-12 w-full sm:w-auto ${primaryButtonClass}`}
+                    className={`h-12 w-full sm:w-auto ${primaryBtnToneClass}`}
                   >
                     <Save size={18} />
                     {loading ? "..." : copy.saveChanges}
@@ -274,29 +306,37 @@ function InfoPill({
   value,
   icon,
   accent,
+  isDark,
 }: {
   title: string
   value: string
   icon: React.ReactNode
   accent: "blue" | "rose" | "gold"
+  isDark: boolean
 }) {
-  const accentStyles = {
-    blue: "bg-[linear-gradient(135deg,#f5f9ff_0%,#e8f1ff_100%)] border-[#dce7fb] text-[#31569e] dark:bg-[linear-gradient(135deg,rgba(30,55,104,0.92)_0%,rgba(20,35,66,0.96)_100%)] dark:border-[#4067a5] dark:text-[#d6e6ff]",
-    rose: "bg-[linear-gradient(135deg,#fff7f9_0%,#fff0f3_100%)] border-[#f1d9df] text-[#9b506b] dark:bg-[linear-gradient(135deg,rgba(69,34,71,0.94)_0%,rgba(38,28,59,0.96)_100%)] dark:border-[#6d4c8f] dark:text-[#f3d7ea]",
-    gold: "bg-[linear-gradient(135deg,#fffaf2_0%,#fff2db_100%)] border-[#f0e0b8] text-[#93631a] dark:bg-[linear-gradient(135deg,rgba(73,54,22,0.94)_0%,rgba(39,32,25,0.96)_100%)] dark:border-[#7d6632] dark:text-[#f5e2a8]",
-  } as const
+  const accentStyles = isDark
+    ? {
+        blue: "border-[#5d7fba]/45 bg-[linear-gradient(135deg,rgba(30,55,104,0.72)_0%,rgba(13,30,62,0.58)_100%)] text-[#d6e6ff]",
+        rose: "border-[#6d7fb3]/40 bg-[linear-gradient(135deg,rgba(42,48,94,0.66)_0%,rgba(13,30,62,0.58)_100%)] text-[#f3d7ea]",
+        gold: "border-[#7d8ab8]/38 bg-[linear-gradient(135deg,rgba(59,60,91,0.62)_0%,rgba(13,30,62,0.58)_100%)] text-[#f5e2a8]",
+      }
+    : {
+        blue: "border-[#dce7fb] bg-white text-[#31569e]",
+        rose: "border-[#e5eaf3] bg-white text-[#9b506b]",
+        gold: "border-[#e9dfc8] bg-white text-[#93631a]",
+      }
 
   return (
     <div
-      className={`rounded-2xl border p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:shadow-[0_16px_34px_rgba(2,8,24,0.28)] ${accentStyles[accent]}`}
+      className={`rounded-2xl border p-4 ${isDark ? "shadow-[0_16px_34px_rgba(2,8,24,0.28)] backdrop-blur-[14px]" : "shadow-[0_10px_24px_rgba(17,24,39,0.05)]"} ${accentStyles[accent]}`}
     >
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/70 dark:bg-[rgba(255,255,255,0.08)]">
+        <div className={`grid h-10 w-10 place-items-center rounded-xl border text-current ${isDark ? "border-[#5d7fba]/30 bg-[rgba(255,255,255,0.08)]" : "border-[#e3eaf4] bg-white shadow-[0_8px_18px_rgba(17,24,39,0.04)]"}`}>
           {icon}
         </div>
         <div className="min-w-0">
-          <div className="text-xs uppercase tracking-[0.14em] text-[#7b8aa0] dark:text-[#93abd0]">{title}</div>
-          <div className="font-semibold text-[#1d2430] dark:text-white">{value}</div>
+          <div className={`text-xs uppercase tracking-[0.14em] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{title}</div>
+          <div className={`font-semibold ${isDark ? "text-white" : "text-[#0f172a]"}`}>{value}</div>
         </div>
       </div>
     </div>
@@ -309,25 +349,30 @@ function Field({
   value,
   disabled,
   onChange,
+  isDark,
 }: {
   label: string
   icon: React.ReactNode
   value: string
   disabled: boolean
   onChange: (v: string) => void
+  isDark: boolean
 }) {
   return (
     <div>
-      <div className="mb-2 text-xs text-[#7b8aa0] dark:text-[#93abd0]">{label}</div>
+      <div className={`mb-2 text-xs ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{label}</div>
       <div
         className={[
-          "flex h-12 w-full items-center gap-3 rounded-2xl border border-[#dbe3ef] bg-white px-4 shadow-[0_8px_20px_rgba(17,24,39,0.04)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:shadow-[0_16px_34px_rgba(2,8,24,0.22)]",
-          disabled ? "opacity-80" : "focus-within:border-[#c7d4e7] dark:focus-within:border-[#537dc2]",
+          "flex h-12 w-full items-center gap-3 rounded-2xl border px-4 transition",
+          isDark
+            ? "border-[#5d7fba]/45 bg-[rgba(13,30,62,0.58)] shadow-[0_16px_34px_rgba(2,8,24,0.22)] backdrop-blur-[12px]"
+            : "border-[#dbe3ef] bg-white shadow-[0_8px_20px_rgba(17,24,39,0.04)]",
+          disabled ? "opacity-90" : isDark ? "focus-within:border-[#78b8ff]" : "focus-within:border-[#8ebcff]",
         ].join(" ")}
       >
-        <span className="shrink-0">{icon}</span>
+        <span className={`shrink-0 ${isDark ? "text-[#9fc7ff]" : "text-[#64748b]"}`}>{icon}</span>
         <input
-          className="h-full w-full bg-transparent text-[#1d2430] outline-none placeholder:text-[#97a5ba] dark:text-white dark:placeholder:text-[#8ba4ca]"
+          className={`h-full w-full bg-transparent outline-none ${isDark ? "text-white placeholder:text-[#9fb8e4]" : "text-[#0f172a] placeholder:text-[#64748b]"}`}
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
@@ -337,11 +382,11 @@ function Field({
   )
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, isDark }: { label: string; value: string; isDark: boolean }) {
   return (
-    <div className="rounded-2xl border border-[#dde5f0] bg-white/85 p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:shadow-[0_16px_34px_rgba(2,8,24,0.22)]">
-      <div className="text-xs uppercase tracking-[0.14em] text-[#7b8aa0] dark:text-[#93abd0]">{label}</div>
-      <div className="mt-1 text-lg font-semibold text-[#1d2430] dark:text-white">{value}</div>
+    <div className={`rounded-2xl border p-4 ${isDark ? "border-[#5d7fba]/42 bg-[rgba(13,30,62,0.58)] shadow-[0_16px_34px_rgba(2,8,24,0.22)] backdrop-blur-[12px]" : "border-[#dde5f0] bg-white shadow-[0_10px_24px_rgba(17,24,39,0.05)]"}`}>
+      <div className={`text-xs uppercase tracking-[0.14em] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{label}</div>
+      <div className={`mt-1 text-lg font-semibold ${isDark ? "text-white" : "text-[#0f172a]"}`}>{value}</div>
     </div>
   )
 }

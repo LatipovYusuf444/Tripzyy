@@ -18,6 +18,7 @@ import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { getAccessToken } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
+import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 const luxuryBtn =
   "border border-[#2f63df]/20 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] text-white shadow-[0_14px_28px_rgba(63,135,212,0.22)] transition hover:brightness-110"
@@ -332,6 +333,20 @@ export default function Flights() {
   const [searchTrips, setSearchTrips] = useState<SearchTrip[]>([])
   const [activeCitySlide, setActiveCitySlide] = useState(0)
   const [expandedAirline, setExpandedAirline] = useState<string | null>(null)
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
+
+  useEffect(() => {
+    const syncTheme = () => setSiteTheme(getStoredTheme())
+
+    syncTheme()
+    window.addEventListener("storage", syncTheme)
+    window.addEventListener("tripzy-theme-change", syncTheme as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", syncTheme)
+      window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
+    }
+  }, [])
 
   const copy = {
     uz: {
@@ -1182,7 +1197,10 @@ export default function Flights() {
 
   const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
   return (
-    <section className="relative overflow-hidden bg-white pt-0 text-[#111827] md:pt-20">
+    <section
+      className="flights-page relative overflow-hidden bg-white pt-0 text-[#111827] md:pt-20"
+      data-flight-theme={siteTheme}
+    >
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
         <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md md:p-6 ${softPanel}`}>
           <div className="relative overflow-hidden rounded-[36px] bg-white p-5 text-[#111827] shadow-[0_20px_48px_rgba(17,24,39,0.08)] md:p-7">
