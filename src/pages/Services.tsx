@@ -102,14 +102,14 @@ export default function Services() {
   }[language]
 
   return (
-    <section className="secondary-page-shell relative overflow-hidden pt-4 md:pt-20">
+    <section className="secondary-page-shell relative overflow-hidden pt-4">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-6 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
-        <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7">
+        <div className="rounded-[34px] border border-[#E3E8F7] bg-[linear-gradient(180deg,#F7F9FF_0%,#F2F5FD_100%)] p-5 shadow-[0_28px_80px_rgba(70,90,140,0.10)] md:p-7 dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(11,28,62,0.88)_0%,rgba(7,18,46,0.84)_100%)]">
           <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative overflow-hidden rounded-[32px] border border-[#dce4ef] bg-[linear-gradient(135deg,rgba(255,255,255,0.96)_0%,rgba(244,248,255,0.88)_36%,rgba(238,243,251,0.82)_62%,rgba(248,243,247,0.74)_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-[rgba(255,255,255,0.82)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87]">
+            <div className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-[#F7F9FF] p-6 md:p-8 dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E3E8F7] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8A93B2] dark:border-[#35507f]/55 dark:bg-[rgba(22,46,90,0.72)] dark:text-[#a9bddb]">
                 <Sparkles size={14} />
                 {copy.badge}
               </div>
@@ -118,15 +118,15 @@ export default function Services() {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#1d2430] md:text-[48px]"
+                className="mt-6 max-w-[680px] text-[34px] font-black leading-[1.02] tracking-[-0.04em] text-[#111A34] dark:text-white md:text-[48px]"
               >
                 {copy.titleA}
-                <span className="bg-[linear-gradient(135deg,#243a7a_0%,#a44c72_45%,#e36b3a_100%)] bg-clip-text text-transparent">
+                <span className="bg-[linear-gradient(135deg,#6E8DFF_0%,#8B7FFF_45%,#5C7CFA_100%)] bg-clip-text text-transparent dark:bg-[linear-gradient(135deg,#8ec5ff_0%,#b8a4ff_100%)]">
                   {" "}{copy.titleB}
                 </span>
               </motion.h1>
 
-              <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#627188] md:text-[16px]">
+              <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#6F7898] dark:text-[#a9bddb] md:text-[16px]">
                 {copy.desc}
               </p>
             </div>
@@ -135,13 +135,13 @@ export default function Services() {
               {copy.stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(248,251,255,0.84)_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.06)]"
+                  className="rounded-[28px] border border-[#E3E8F7] bg-[#F2F5FD] p-5 shadow-[0_18px_45px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.58)]"
                 >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0]">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8A93B2] dark:text-[#8ea5cb]">
                     {item.label}
                   </div>
-                  <div className="mt-2 text-xl font-black text-[#1d2430]">{item.value}</div>
-                  <div className="mt-3 text-sm leading-6 text-[#627188]">
+                  <div className="mt-2 text-xl font-black text-[#111A34] dark:text-white">{item.value}</div>
+                  <div className="mt-3 text-sm leading-6 text-[#6F7898] dark:text-[#a9bddb]">
                     {item.desc}
                   </div>
                 </div>
@@ -158,13 +158,13 @@ export default function Services() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, delay: index * 0.02 }}
                 whileHover={{ y: -4 }}
-                className="rounded-[28px] border border-[#dbe5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(248,251,255,0.84)_100%)] p-5 shadow-[0_20px_50px_rgba(17,24,39,0.06)]"
+                className="rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] p-5 shadow-[0_20px_50px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.62)]"
               >
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#3b6db6]">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#EEF1FB_0%,#E8ECF8_100%)] text-[#5C7CFA] dark:bg-[linear-gradient(135deg,rgba(22,46,90,0.84)_0%,rgba(14,30,66,0.76)_100%)] dark:text-[#8ec5ff]">
                   <service.icon size={20} />
                 </div>
-                <div className="mt-4 text-lg font-black text-[#1d2430]">{service.title}</div>
-                <div className="mt-2 text-sm leading-7 text-[#627188]">{service.desc}</div>
+                <div className="mt-4 text-lg font-black text-[#111A34] dark:text-white">{service.title}</div>
+                <div className="mt-2 text-sm leading-7 text-[#6F7898] dark:text-[#a9bddb]">{service.desc}</div>
               </motion.div>
             ))}
           </div>

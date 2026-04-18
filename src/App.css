@@ -128,9 +128,19 @@
   html[data-theme="dark"] body,
   body[data-theme="dark"] {
     background:
-      radial-gradient(circle at top, rgba(73, 116, 224, 0.22), transparent 34%),
-      linear-gradient(180deg, #0d1830 0%, #111e3b 52%, #162548 100%);
+      radial-gradient(circle at top, rgba(60, 100, 210, 0.32), transparent 34%),
+      linear-gradient(180deg, #060c18 0%, #090f22 52%, #0b152e 100%);
   }
+}
+
+html[data-theme="dark"] .layout-shell,
+body[data-theme="dark"] .layout-shell {
+  background: transparent !important;
+}
+
+html[data-theme="dark"] .layout-main,
+body[data-theme="dark"] .layout-main {
+  background: transparent !important;
 }
 
 .secondary-page-shell {

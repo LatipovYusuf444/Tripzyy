@@ -240,12 +240,12 @@ export default function FareCalendarPicker({
   const resolvedAnchorRect = liveAnchorRect ?? anchorRect
 
   const panelContent = (
-      <div className="pointer-events-auto fixed inset-x-5 bottom-3 z-[120] max-h-[min(500px,calc(100svh-24px))] overflow-hidden rounded-[20px] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(247,250,255,0.985)_100%)] p-2 shadow-[0_22px_56px_rgba(17,24,39,0.16)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:rounded-[24px] lg:p-3 lg:backdrop-blur-xl">
-        <div className="mx-auto mb-2.5 h-1.5 w-12 rounded-full bg-[#d8e1ee] lg:hidden" />
+      <div className="pointer-events-auto fixed inset-x-3 bottom-2 z-[120] max-h-[min(440px,calc(100svh-16px))] overflow-hidden rounded-[18px] border border-[#d6d6d6] bg-[#EBEBEB] p-1.5 shadow-[0_22px_56px_rgba(17,24,39,0.18)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:rounded-[24px] lg:border-white/85 lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] lg:p-3 lg:backdrop-blur-xl">
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#c8cdd6] lg:hidden" />
 
-        <div className="flex max-h-[min(452px,calc(100svh-72px))] flex-col overflow-hidden lg:max-h-none">
-          <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-2.5 lg:pb-3">
-            <div className="rounded-[13px] border border-[#dde6f1] bg-white/90 px-3 py-1.5 text-[12px] font-semibold text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)] lg:rounded-[14px] lg:py-2 lg:text-[13px]">
+        <div className="flex max-h-[min(400px,calc(100svh-56px))] flex-col overflow-hidden lg:max-h-none">
+          <div className="flex items-center justify-between gap-2 border-b border-[#d0d5de] pb-2 lg:border-[#e7edf5] lg:pb-3">
+            <div className="rounded-[10px] border border-[#d6d6d6] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#52627b] lg:rounded-[14px] lg:px-3 lg:py-2 lg:text-[13px]">
               {from && to ? `${from} → ${to}` : copy.routePlaceholder}
             </div>
             <button
@@ -258,13 +258,13 @@ export default function FareCalendarPicker({
           </div>
 
           {!from || !to ? (
-            <div className="mt-3 rounded-[18px] border border-[#e2e8f1] bg-white px-4 py-6 text-center text-[13px] leading-6 text-[#627188] lg:mt-4 lg:rounded-[20px] lg:px-5 lg:py-8 lg:text-sm">
+            <div className="mt-2.5 rounded-[14px] border border-[#d6d6d6] bg-white px-3 py-5 text-center text-[12px] leading-5 text-[#627188] lg:mt-4 lg:rounded-[20px] lg:px-5 lg:py-8 lg:text-sm">
               {copy.routeHint}
             </div>
           ) : (
             <>
-              <div className="mt-2.5 overflow-y-auto pr-0.5 lg:mt-4 lg:overflow-visible lg:pr-0">
-                <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2 lg:gap-3">
+              <div className="mt-2 overflow-y-auto pr-0.5 lg:mt-4 lg:overflow-visible lg:pr-0">
+                <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 lg:gap-3">
                   {visibleMonths.map((monthDate, monthIndex) => {
                     const cells = getMonthDays(monthDate)
 
@@ -273,7 +273,7 @@ export default function FareCalendarPicker({
                         key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
                         className={monthIndex === 1 ? "hidden lg:block" : "block"}
                       >
-                        <div className="rounded-[15px] border border-[#e4ebf4] bg-white/95 p-2 shadow-[0_12px_28px_rgba(17,24,39,0.05)] lg:rounded-[18px] lg:p-3">
+                        <div className="rounded-[12px] border border-[#d6d6d6] bg-white p-1.5 lg:rounded-[18px] lg:border-[#e4ebf4] lg:p-3 lg:shadow-[0_12px_28px_rgba(17,24,39,0.05)]">
                           <div className="mb-1 flex items-center justify-between lg:mb-2">
                             {monthIndex === 0 ? (
                               <button
@@ -283,16 +283,16 @@ export default function FareCalendarPicker({
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() - 1, 1)
                                   )
                                 }
-                                className="grid h-6 w-6 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8"
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8 lg:border-[#e2e9f2] lg:bg-[#f8fbff]"
                               >
-                                <ChevronLeft size={13} />
+                                <ChevronLeft size={12} />
                               </button>
                             ) : (
                               <div className="h-6 w-6 lg:h-8 lg:w-8" />
                             )}
 
                             <div className="text-center">
-                              <div className="text-[11px] font-black text-[#1295dd] md:text-[15px]">
+                              <div className="text-[11px] font-black text-[#1295dd] lg:text-[15px]">
                                 {copy.monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
                               </div>
                             </div>
@@ -305,21 +305,21 @@ export default function FareCalendarPicker({
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)
                                   )
                                 }
-                                className="grid h-6 w-6 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8"
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8 lg:border-[#e2e9f2] lg:bg-[#f8fbff]"
                               >
-                                <ChevronRight size={13} />
+                                <ChevronRight size={12} />
                               </button>
                             ) : (
                               <div className="h-6 w-6 lg:h-8 lg:w-8" />
                             )}
                           </div>
 
-                          <div className="grid grid-cols-7 gap-x-1 gap-y-0.5 text-center text-[#7b8aa0] lg:gap-y-1.5">
+                          <div className="grid grid-cols-7 gap-x-0.5 gap-y-0.5 text-center text-[#7b8aa0] lg:gap-x-1 lg:gap-y-1.5">
                             {copy.weekdayLabels.map((label, labelIndex) => (
                               <div
                                 key={label}
                                 className={[
-                                  "py-0.5 text-[9px] font-semibold uppercase tracking-[0.02em] lg:py-1 lg:text-[10px]",
+                                  "py-0.5 text-[8px] font-semibold uppercase tracking-[0.02em] lg:py-1 lg:text-[10px]",
                                   labelIndex >= 5 ? "text-[#95a4bb]" : "text-[#243042]",
                                 ].join(" ")}
                               >
@@ -329,7 +329,7 @@ export default function FareCalendarPicker({
 
                             {cells.map((cell, index) => {
                               if (!cell) {
-                                  return <div key={`empty-${index}`} className="h-[32px] md:h-[46px]" />
+                                  return <div key={`empty-${index}`} className="h-[28px] lg:h-[46px]" />
                               }
 
                               const iso = toISODate(cell)
@@ -345,15 +345,15 @@ export default function FareCalendarPicker({
                                   type="button"
                                   onClick={() => onChange(iso)}
                                   className={[
-                                    "flex h-[32px] w-full min-w-0 flex-col items-center justify-center rounded-[8px] border px-0.5 text-center transition md:h-[46px] md:px-1",
+                                    "flex h-[28px] w-full min-w-0 flex-col items-center justify-center rounded-[6px] border text-center transition lg:h-[46px] lg:rounded-[8px] lg:px-1",
                                     isSelected
-                                      ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_14px_34px_rgba(34,104,230,0.22)]"
-                                      : "border-[#eef2f7] bg-[linear-gradient(180deg,#fcfdff_0%,#f6f9fd_100%)] text-[#1d2430] hover:border-[#dce6f3] hover:bg-white",
+                                      ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_6px_16px_rgba(34,104,230,0.22)]"
+                                      : "border-[#d6d6d6] bg-white text-[#1d2430] hover:border-[#c8d4e8] hover:bg-[#f5f5f5]",
                                   ].join(" ")}
                                 >
                                   <span
                                     className={[
-                                      "text-[10px] font-black leading-none md:text-[14px]",
+                                      "text-[10px] font-black leading-none lg:text-[14px]",
                                       isToday && !isSelected ? "text-[#1f6fff]" : "",
                                       !isSelected && weekend ? "text-[#95a4bb]" : "",
                                     ].join(" ")}
@@ -362,7 +362,7 @@ export default function FareCalendarPicker({
                                   </span>
                                   <span
                                     className={[
-                                      "mt-0.5 line-clamp-2 px-0.5 text-[5px] font-semibold leading-2 md:px-1 md:text-[8px] md:leading-3",
+                                      "hidden lg:block mt-0.5 line-clamp-2 px-0.5 text-[5px] font-semibold leading-2 lg:px-1 lg:text-[8px] lg:leading-3",
                                       isSelected
                                         ? "text-white/95"
                                         : typeof price === "number"
@@ -383,8 +383,8 @@ export default function FareCalendarPicker({
                 </div>
               </div>
 
-              <div className="mt-2.5 flex flex-col gap-2 border-t border-[#e7edf5] pt-2.5 md:mt-4 md:flex-row md:items-center md:justify-between md:gap-3 md:pt-3">
-                <div className="text-[11px] leading-4 text-[#627188] md:text-[13px]">
+              <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#d0d5de] pt-2 lg:mt-4 lg:border-[#e7edf5] lg:pt-3">
+                <div className="text-[10px] leading-4 text-[#627188] lg:text-[13px]">
                   {loading
                     ? copy.loading
                     : minVisiblePrice
@@ -392,20 +392,20 @@ export default function FareCalendarPicker({
                       : copy.noPrice}
                 </div>
 
-                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-end">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-8 rounded-full border border-[#dbe3ef] bg-white px-4 text-[11px] font-semibold text-[#627188] transition hover:bg-[#f8fbff] sm:min-w-[110px] lg:hidden"
+                    className="h-8 rounded-full border border-[#d6d6d6] bg-white px-3 text-[11px] font-semibold text-[#627188] transition hover:bg-[#f5f5f5] lg:hidden"
                   >
                     {copy.close}
                   </button>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-8 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-4 text-[11px] font-bold text-white shadow-[0_14px_32px_rgba(15,154,231,0.24)] transition hover:brightness-105 sm:min-w-[190px] md:h-10 md:px-6 md:text-[13px]"
+                    className="h-8 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-4 text-[11px] font-bold text-white shadow-[0_8px_20px_rgba(15,154,231,0.24)] transition hover:brightness-105 lg:h-10 lg:px-6 lg:text-[13px]"
                   >
-                    {copy.select} {minVisiblePrice ? `- ${millionPrice(minVisiblePrice)} UZS` : ""}
+                    {copy.select}
                   </button>
                 </div>
               </div>
@@ -444,7 +444,7 @@ export default function FareCalendarPicker({
           <div className="flex max-h-[min(720px,calc(100vh-72px))] flex-col overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-3">
               <div className="rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-semibold text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
-                {from && to ? `${from} в†’ ${to}` : copy.routePlaceholder}
+                {from && to ? `${from} → ${to}` : copy.routePlaceholder}
               </div>
               <button
                 type="button"

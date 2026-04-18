@@ -47,7 +47,7 @@ export default function FAQ() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section className="secondary-page-shell relative overflow-hidden pt-4 md:pt-20">
+    <section className="secondary-page-shell relative overflow-hidden pt-4">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <div className="relative mx-auto max-w-[900px] px-5 py-7 md:py-16">
         <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="text-center">
@@ -59,7 +59,7 @@ export default function FAQ() {
           {copy.items.map((faq, idx) => {
             const isOpen = open === idx
             return (
-              <div key={faq.q} className="overflow-hidden rounded-[22px] border border-[#dbe3ef] bg-white/90 shadow-[0_16px_40px_rgba(17,24,39,0.06)] backdrop-blur-2xl dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_20px_44px_rgba(2,8,24,0.28)]">
+              <div key={faq.q} className="overflow-hidden rounded-[22px] border border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_16px_40px_rgba(70,90,140,0.10)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.82)] dark:shadow-[0_20px_44px_rgba(2,8,24,0.28)]">
                 <button onClick={() => setOpen(isOpen ? null : idx)} className="flex w-full items-center justify-between px-5 py-4 text-left text-[#1d2430] dark:text-white">
                   <span className="font-semibold">{faq.q}</span>
                   <ChevronDown className={`transition text-[#627188] dark:text-[#cfe0fb] ${isOpen ? "rotate-180" : ""}`} />

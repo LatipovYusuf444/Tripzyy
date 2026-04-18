@@ -13,7 +13,7 @@ export type AirSearchPayload = {
   adults: number
   children: number
   infants: number
-  class: "Y" | "C" | "F" | string
+  class: "Y" | "B" | "F" | string
   trips: Array<{
     origin: string
     destination: string

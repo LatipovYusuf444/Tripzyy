@@ -152,25 +152,25 @@ export default function Profile() {
   const isDarkTheme = siteTheme === "dark"
   const pageClass = isDarkTheme
     ? "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(54,103,199,0.22)_0%,rgba(9,24,54,0)_34%),linear-gradient(180deg,#07152f_0%,#0b1e42_46%,#061226_100%)] pt-4 text-white md:pt-6"
-    : "relative min-h-screen overflow-hidden bg-white pt-4 text-[#0f172a] md:pt-6"
+    : "relative min-h-screen overflow-hidden bg-[#EEF1FB] pt-4 text-[#111A34] md:pt-6"
   const glowClass = isDarkTheme
     ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(92,154,255,0.2)_0%,rgba(92,154,255,0)_30%),radial-gradient(circle_at_84%_12%,rgba(125,167,255,0.12)_0%,rgba(125,167,255,0)_34%)]"
     : "hidden"
   const panelToneClass = isDarkTheme
     ? "rounded-[30px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.72)_0%,rgba(9,24,54,0.58)_100%)] shadow-[0_32px_90px_rgba(2,8,24,0.46)] backdrop-blur-[18px]"
-    : "rounded-[30px] border border-[#e4ebf6] bg-white shadow-[0_24px_70px_rgba(17,24,39,0.08)]"
+    : "rounded-[30px] border border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_24px_70px_rgba(70,90,140,0.10)]"
   const secondaryBtnToneClass = isDarkTheme
     ? "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#5d7fba]/55 bg-[linear-gradient(180deg,rgba(20,42,84,0.78)_0%,rgba(9,24,54,0.62)_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(2,8,24,0.34)] backdrop-blur-[14px] transition hover:bg-[rgba(36,67,122,0.78)] disabled:cursor-not-allowed disabled:opacity-60"
-    : "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#dbe3ef] bg-white px-5 text-sm font-semibold text-[#0f172a] shadow-[0_12px_30px_rgba(17,24,39,0.08)] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+    : "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] px-5 text-sm font-semibold text-[#111A34] shadow-[0_12px_30px_rgba(70,90,140,0.10)] transition hover:bg-[#EEF1FB] disabled:cursor-not-allowed disabled:opacity-60"
   const primaryBtnToneClass = isDarkTheme
     ? "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#6ea8ff]/45 bg-[linear-gradient(135deg,rgba(74,143,255,0.72)_0%,rgba(36,98,220,0.88)_54%,rgba(19,49,121,0.92)_100%)] px-5 text-sm font-semibold text-white shadow-[0_22px_50px_rgba(2,8,24,0.42)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
     : "inline-flex items-center justify-center gap-2 rounded-2xl border border-[#1d4ed8]/20 bg-[linear-gradient(135deg,#2f8cff_0%,#2563eb_54%,#1d4ed8_100%)] px-5 text-sm font-semibold text-white shadow-[0_18px_42px_rgba(37,99,235,0.24)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
   const badgeClass = isDarkTheme
     ? "inline-flex items-center gap-2 rounded-full border border-[#5d7fba]/45 bg-[rgba(13,30,62,0.56)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d4e2fb]"
-    : "inline-flex items-center gap-2 rounded-full border border-[#dbe3ef] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#334155] shadow-[0_8px_22px_rgba(17,24,39,0.05)]"
+    : "inline-flex items-center gap-2 rounded-full border border-[#E3E8F7] bg-[#F7F9FF] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6F7898] shadow-[0_8px_22px_rgba(70,90,140,0.08)]"
   const innerCardClass = isDarkTheme
     ? "rounded-[26px] border border-[#5d7fba]/45 bg-[linear-gradient(135deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_18px_42px_rgba(2,8,24,0.34)] backdrop-blur-[16px]"
-    : "rounded-[26px] border border-[#e3eaf4] bg-white p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_18px_46px_rgba(17,24,39,0.06)]"
+    : "rounded-[26px] border border-[#E3E8F7] bg-[#F2F5FD] p-5 shadow-[0_18px_46px_rgba(70,90,140,0.08)]"
   const mutedTextClass = isDarkTheme ? "text-[#a9bddb]" : "text-[#627188]"
   const labelTextClass = isDarkTheme ? "text-[#b9cceb]" : "text-[#64748b]"
   const headingTextClass = isDarkTheme ? "text-white" : "text-[#0f172a]"
@@ -321,9 +321,9 @@ function InfoPill({
         gold: "border-[#7d8ab8]/38 bg-[linear-gradient(135deg,rgba(59,60,91,0.62)_0%,rgba(13,30,62,0.58)_100%)] text-[#f5e2a8]",
       }
     : {
-        blue: "border-[#dce7fb] bg-white text-[#31569e]",
-        rose: "border-[#e5eaf3] bg-white text-[#9b506b]",
-        gold: "border-[#e9dfc8] bg-white text-[#93631a]",
+        blue: "border-[#E3E8F7] bg-[#F7F9FF] text-[#5C7CFA]",
+        rose: "border-[#E3E8F7] bg-[#F7F9FF] text-[#9b506b]",
+        gold: "border-[#E3E8F7] bg-[#F7F9FF] text-[#93631a]",
       }
 
   return (
@@ -331,7 +331,7 @@ function InfoPill({
       className={`rounded-2xl border p-4 ${isDark ? "shadow-[0_16px_34px_rgba(2,8,24,0.28)] backdrop-blur-[14px]" : "shadow-[0_10px_24px_rgba(17,24,39,0.05)]"} ${accentStyles[accent]}`}
     >
       <div className="flex items-center gap-3">
-        <div className={`grid h-10 w-10 place-items-center rounded-xl border text-current ${isDark ? "border-[#5d7fba]/30 bg-[rgba(255,255,255,0.08)]" : "border-[#e3eaf4] bg-white shadow-[0_8px_18px_rgba(17,24,39,0.04)]"}`}>
+        <div className={`grid h-10 w-10 place-items-center rounded-xl border text-current ${isDark ? "border-[#5d7fba]/30 bg-[rgba(255,255,255,0.08)]" : "border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_8px_18px_rgba(70,90,140,0.08)]"}`}>
           {icon}
         </div>
         <div className="min-w-0">

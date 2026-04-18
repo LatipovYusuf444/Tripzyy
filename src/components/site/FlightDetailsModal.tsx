@@ -10,10 +10,16 @@ import {
   bookAir,
   getAirOptionDetails,
   getAirOptionFareFamilies,
-  getAirOptionRules,
   getBrandedFares,
+  searchAir,
 } from "@/shared/api/air/air.api"
-import type { AirOptionRule, BrandedFaresResponse } from "@/types/air"
+import type { BrandedFaresResponse } from "@/types/air"
+import {
+  issueOrder,
+  cancelOrderService,
+  getOrderById,
+  voidOrderService,
+} from "@/shared/api/order/order.api"
 import {
   X,
   PlaneTakeoff,
@@ -24,7 +30,14 @@ import {
   Users,
   Mail,
   Phone,
+  Plus,
+  Trash2,
 } from "lucide-react"
+
+const brandPrimaryAction =
+  "border border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_30px_rgba(23,74,139,0.22)] transition hover:bg-[#123F78] hover:shadow-[0_18px_40px_rgba(23,74,139,0.28)] disabled:cursor-not-allowed disabled:opacity-50"
+const brandSecondaryAction =
+  "border border-[#C8D3E0] bg-[#EBEBEB] text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.08)] transition hover:bg-[#E1E7EF] disabled:cursor-not-allowed disabled:opacity-45"
 
 export type FlightSegment = {
   id: string
@@ -139,16 +152,6 @@ const fmtDuration = (mins: number, language: "uz" | "ru" | "en") => {
 const isEmail = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim())
 const isPhone = (s: string) => s.replace(/\D/g, "").length >= 9
 
-const cleanRuleText = (value: string) =>
-  value
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&quot;/gi, '"')
-    .replace(/&amp;/gi, "&")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\s*\n\s*/g, "\n")
-    .trim()
-
 const translateBookingError = (message: string | undefined, language: "uz" | "ru" | "en") => {
   const text = (message || "").trim()
   if (!text) {
@@ -171,6 +174,13 @@ const translateBookingError = (message: string | undefined, language: "uz" | "ru
       : language === "en"
         ? "Unable to create the booking. The fare or seat availability may have changed."
         : "Bron yaratib bo'lmadi. Tarif yoki joy holati o'zgargan bo'lishi mumkin."
+  }
+  if (isExpiredOfferMessage(text)) {
+    return language === "ru"
+      ? "Предложение истекло или больше недоступно. Мы обновили поиск, попробуйте оформить еще раз."
+      : language === "en"
+        ? "The offer expired or is no longer available. We refreshed the search; please try checkout again."
+        : "Offer muddati tugagan yoki mavjud emas. Qidiruv yangilandi, rasmiylashtirishni yana bir marta bosing."
   }
   return text
 }
@@ -212,6 +222,45 @@ const translateBackendInfoError = (
   }
 
   return text
+}
+
+const isExpiredOfferMessage = (message?: string) =>
+  /not found|expired|срок действ|не найден|topilmadi|muddati/i.test(message || "")
+
+const toDateOnly = (value?: string) => {
+  if (!value) return ""
+  const trimmed = value.trim()
+  if (!trimmed) return ""
+  return (trimmed.split(" ")[0] || trimmed.split("T")[0] || "").slice(0, 10)
+}
+
+const cabinToSearchClass = (value?: string): "Y" | "B" | "F" => {
+  const text = (value || "").toUpperCase()
+  if (text.includes("F") || text.includes("FIRST") || text.includes("BIRINCHI") || text.includes("ПЕРВ")) return "F"
+  if (text.includes("B") || text.includes("C") || text.includes("J") || text.includes("BUSINESS") || text.includes("BIZNES") || text.includes("БИЗ")) return "B"
+  return "Y"
+}
+
+const segmentsSignature = (segments: FlightSegment[] | undefined) =>
+  (segments ?? [])
+    .map((segment) => `${segment.carrier || segment.operatingCarrier || ""}-${segment.flightNumber || ""}`.toUpperCase())
+    .filter((value) => value !== "-")
+
+const scoreSearchOption = (option: any, target: Flight) => {
+  const optionTrips = option?.trips ?? []
+  const optionSegments = mapSegmentsFromTrips(optionTrips)
+  const targetSignature = segmentsSignature(target.segments)
+  const optionSignature = segmentsSignature(optionSegments)
+  let score = 0
+
+  if (option.id === target.id) score += 100
+  if ((option.carrier || "").toUpperCase() === (target.airline || "").toUpperCase()) score += 15
+  if ((optionTrips[0]?.origin || optionSegments[0]?.origin) === target.from) score += 10
+  if ((optionTrips[optionTrips.length - 1]?.destination || optionSegments[optionSegments.length - 1]?.destination) === target.to) score += 10
+  if (targetSignature.length && targetSignature.every((item) => optionSignature.includes(item))) score += 50
+  if (toDateOnly(optionTrips[0]?.departure || optionSegments[0]?.departure) === toDateOnly(target.departDate || target.segments?.[0]?.departure)) score += 8
+
+  return score
 }
 
 function makePassengers(pax: number): PassengerForm[] {
@@ -416,12 +465,16 @@ export default function FlightDetailsModal({
   flight,
   pax,
   date,
+  pageMode = false,
+  stayOnPage = false,
 }: {
   open: boolean
   onClose: () => void
   flight: Flight | null
   pax: number
   date: string
+  pageMode?: boolean
+  stayOnPage?: boolean
 }) {
   const navigate = useNavigate()
   const { language } = useI18n()
@@ -436,7 +489,7 @@ export default function FlightDetailsModal({
       headerPax: "Yo'lovchi",
       finalPrice: "Yakuniy narx",
       taxesIncluded: "Soliq va yig'imlar bilan",
-      step1: "1) Bron qilish",
+      step1: "1) Tarif tanlash",
       step2: "2) Rasmiylashtirish",
       step3: "3) To'lov",
       depart: "Uchish",
@@ -463,16 +516,13 @@ export default function FlightDetailsModal({
       fareUnavailable: "Ruxsat berilmagan",
       seatsLeft: "ta o'rindiqlar qoldi",
       extraPrice: "Qo'shimcha narx",
-      rules: "Tarif qoidalari",
-      rulesLoading: "Qoidalar yuklanmoqda...",
-      noRules: "Hozircha tarif qoidalari mavjud emas.",
       services: "Xizmatlar",
       meal: "Ovqat",
       support: "24/7 Qo'llab-quvvatlash",
       continue: "Davom etish",
-      enterPassengerInfo: "Tanlangan reys bron bo'limiga saqlanadi. Yo'lovchi ma'lumotlari va to'lov keyingi alohida sahifada to'ldiriladi.",
-      select: "Rasmiylashtirishga o'tish",
-      formOpensFor: "ta yo'lovchi uchun alohida rasmiylashtirish sahifasi ochiladi.",
+      enterPassengerInfo: "Tanlangan tarif saqlanadi. Yo'lovchi ma'lumotlari va to'lov shu sahifada to'ldiriladi.",
+      select: "Yo'lovchi ma'lumotlarini kiritish",
+      formOpensFor: "ta yo'lovchi uchun ma'lumotlar shu yerda ochiladi.",
       payerDetails: "To'lovchi ma'lumotlari",
       emailPhone: "Email va telefon",
       countryCode: "Mamlakat kodi",
@@ -480,6 +530,8 @@ export default function FlightDetailsModal({
       passengersDetails: "Yo'lovchilar ma'lumotlari",
       total: "Jami",
       passenger: "Yo'lovchi",
+      addPassenger: "Yo'lovchi qo'shish",
+      removePassenger: "Yo'lovchini o'chirish",
       firstName: "Ism",
       lastName: "Familiya",
       birthDate: "Tug'ilgan sana",
@@ -491,6 +543,7 @@ export default function FlightDetailsModal({
       back: "Orqaga",
       paymentMethod: "To'lov usuli",
       chooseMethod: "Mos usulni tanlang.",
+      paymentApiNotice: "To'lov usuli saqlanadi. Payment redirect/callback frontendga ulanmagan.",
       finishOrder: "Buyurtma yakunlash",
       route: "Yo'nalish",
       passengerCount: "Yo'lovchi soni",
@@ -500,6 +553,25 @@ export default function FlightDetailsModal({
       confirmData: "Yuqoridagi ma'lumotlar to'g'ri ekanligini tasdiqlayman",
       markConfirmation: "* Rasmiylashtirish uchun tasdiqlashni belgilang.",
       checkout: "Rasmiylashtirish",
+      refreshingOffer: "Offer yangilanmoqda...",
+      issuePnr: "Issue PNR",
+      cancelPnr: "Cancel PNR",
+      voidPnr: "VOID PNR",
+      getOrderById: "Order holatini tekshirish",
+      orderMissing: "Order ID topilmadi.",
+      issueDone: "Issue so'rovi yuborildi.",
+      issueError: "Issue qilishda xatolik.",
+      cancelDone: "Cancel so'rovi yuborildi.",
+      cancelError: "Cancel qilishda xatolik.",
+      voidDone: "VOID so'rovi yuborildi.",
+      voidError: "VOID qilishda xatolik.",
+      orderNotFound: "Order topilmadi.",
+      orderRequestError: "Order so'rovida xatolik.",
+      success: "Muvaffaqiyatli",
+      status: "Status",
+      client: "Mijoz",
+      service: "Xizmat",
+      reservation: "Rezervatsiya",
       toastTitle: "Xatolik",
       segment: "Segment",
       time: "Vaqt",
@@ -523,7 +595,7 @@ export default function FlightDetailsModal({
       headerPax: "Пассажиры",
       finalPrice: "Итоговая цена",
       taxesIncluded: "С налогами и сборами",
-      step1: "1) Бронирование",
+      step1: "1) Выбор тарифа",
       step2: "2) Оформление",
       step3: "3) Оплата",
       depart: "Вылет",
@@ -550,16 +622,13 @@ export default function FlightDetailsModal({
       fareUnavailable: "Не разрешено",
       seatsLeft: "мест осталось",
       extraPrice: "Доплата",
-      rules: "Правила тарифа",
-      rulesLoading: "Загрузка правил...",
-      noRules: "Правила тарифа пока недоступны.",
       services: "Услуги",
       meal: "Питание",
       support: "Поддержка 24/7",
       continue: "Продолжить",
-      enterPassengerInfo: "Выбранный рейс сохранится в бронировании. Данные пассажиров и оплата будут заполнены на отдельной странице оформления.",
-      select: "Перейти к оформлению",
-      formOpensFor: "пассажиров будет открыта отдельная страница оформления.",
+      enterPassengerInfo: "Выбранный тариф сохранится. Данные пассажиров и оплата заполняются здесь же.",
+      select: "Ввести данные пассажира",
+      formOpensFor: "пассажиров будут заполнены здесь же.",
       payerDetails: "Данные плательщика",
       emailPhone: "Email и телефон",
       countryCode: "Country code",
@@ -567,6 +636,8 @@ export default function FlightDetailsModal({
       passengersDetails: "Данные пассажиров",
       total: "Всего",
       passenger: "Пассажир",
+      addPassenger: "Добавить пассажира",
+      removePassenger: "Удалить пассажира",
       firstName: "Имя",
       lastName: "Фамилия",
       birthDate: "Дата рождения",
@@ -578,6 +649,7 @@ export default function FlightDetailsModal({
       back: "Назад",
       paymentMethod: "Способ оплаты",
       chooseMethod: "Выберите подходящий способ.",
+      paymentApiNotice: "Способ оплаты сохраняется. Payment redirect/callback не подключен к frontend.",
       finishOrder: "Завершение заказа",
       route: "Маршрут",
       passengerCount: "Количество пассажиров",
@@ -587,6 +659,25 @@ export default function FlightDetailsModal({
       confirmData: "Подтверждаю правильность указанных выше данных",
       markConfirmation: "* Для оформления отметьте подтверждение.",
       checkout: "Оформить",
+      refreshingOffer: "Обновляем offer...",
+      issuePnr: "Issue PNR",
+      cancelPnr: "Cancel PNR",
+      voidPnr: "VOID PNR",
+      getOrderById: "Проверить статус Order",
+      orderMissing: "Order ID не найден.",
+      issueDone: "Issue запрос отправлен.",
+      issueError: "Ошибка Issue.",
+      cancelDone: "Cancel запрос отправлен.",
+      cancelError: "Ошибка Cancel.",
+      voidDone: "VOID запрос отправлен.",
+      voidError: "Ошибка VOID.",
+      orderNotFound: "Order не найден.",
+      orderRequestError: "Ошибка запроса Order.",
+      success: "Успешно",
+      status: "Статус",
+      client: "Клиент",
+      service: "Услуга",
+      reservation: "Резервация",
       toastTitle: "Ошибка",
       segment: "Сегмент",
       time: "Время",
@@ -610,7 +701,7 @@ export default function FlightDetailsModal({
       headerPax: "Passengers",
       finalPrice: "Final price",
       taxesIncluded: "Including taxes and fees",
-      step1: "1) Booking",
+      step1: "1) Fare selection",
       step2: "2) Checkout",
       step3: "3) Payment",
       depart: "Departure",
@@ -637,16 +728,13 @@ export default function FlightDetailsModal({
       fareUnavailable: "Not allowed",
       seatsLeft: "seats left",
       extraPrice: "Extra price",
-      rules: "Fare rules",
-      rulesLoading: "Loading rules...",
-      noRules: "Fare rules are not available yet.",
       services: "Services",
       meal: "Meal",
       support: "24/7 support",
       continue: "Continue",
-      enterPassengerInfo: "The selected flight will be saved to the booking stage. Passenger details and payment will be completed on a separate checkout page.",
-      select: "Go to checkout",
-      formOpensFor: "passengers will open on a separate checkout page.",
+      enterPassengerInfo: "The selected fare is saved. Passenger details and payment are completed on this page.",
+      select: "Enter passenger details",
+      formOpensFor: "passengers will be handled here.",
       payerDetails: "Payer details",
       emailPhone: "Email and phone",
       countryCode: "Country code",
@@ -654,6 +742,8 @@ export default function FlightDetailsModal({
       passengersDetails: "Passenger details",
       total: "Total",
       passenger: "Passenger",
+      addPassenger: "Add passenger",
+      removePassenger: "Remove passenger",
       firstName: "First name",
       lastName: "Last name",
       birthDate: "Birth date",
@@ -665,6 +755,7 @@ export default function FlightDetailsModal({
       back: "Back",
       paymentMethod: "Payment method",
       chooseMethod: "Choose a suitable method.",
+      paymentApiNotice: "The payment method is saved. Payment redirect/callback is not connected to the frontend.",
       finishOrder: "Complete order",
       route: "Route",
       passengerCount: "Passenger count",
@@ -674,6 +765,25 @@ export default function FlightDetailsModal({
       confirmData: "I confirm that the information above is correct",
       markConfirmation: "* Mark the confirmation to proceed.",
       checkout: "Checkout",
+      refreshingOffer: "Refreshing offer...",
+      issuePnr: "Issue PNR",
+      cancelPnr: "Cancel PNR",
+      voidPnr: "VOID PNR",
+      getOrderById: "Check order status",
+      orderMissing: "Order ID was not found.",
+      issueDone: "Issue request sent.",
+      issueError: "Issue error.",
+      cancelDone: "Cancel request sent.",
+      cancelError: "Cancel error.",
+      voidDone: "VOID request sent.",
+      voidError: "VOID error.",
+      orderNotFound: "Order was not found.",
+      orderRequestError: "Order request error.",
+      success: "Success",
+      status: "Status",
+      client: "Client",
+      service: "Service",
+      reservation: "Reservation",
       toastTitle: "Error",
       segment: "Segment",
       time: "Time",
@@ -718,15 +828,25 @@ export default function FlightDetailsModal({
   const [toastMsg, setToastMsg] = useState("")
   const [bookLoading, setBookLoading] = useState(false)
   const [lastOrderId, setLastOrderId] = useState<number | null>(null)
+  const [issueLoading, setIssueLoading] = useState(false)
+  const [cancelLoading, setCancelLoading] = useState(false)
+  const [voidLoading, setVoidLoading] = useState(false)
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderData, setOrderData] = useState<{
+    id?: number
+    status?: string
+    currency?: string
+    price?: number
+    client?: string
+    serviceType?: string
+    reservationId?: string
+  } | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<
     "click" | "payme" | "uzum" | "paynet" | "visa" | ""
   >("")
   const [fareLoading, setFareLoading] = useState(false)
   const [fareError, setFareError] = useState<string | null>(null)
   const [fareData, setFareData] = useState<BrandedFaresResponse["data"] | null>(null)
-  const [rulesLoading, setRulesLoading] = useState(false)
-  const [rulesError, setRulesError] = useState<string | null>(null)
-  const [rulesData, setRulesData] = useState<AirOptionRule[]>([])
   const [fareFamiliesLoading, setFareFamiliesLoading] = useState(false)
   const [fareFamiliesError, setFareFamiliesError] = useState<string | null>(null)
   const [fareFamiliesData, setFareFamiliesData] = useState<
@@ -754,9 +874,6 @@ export default function FlightDetailsModal({
     setFareLoading(false)
     setFareError(null)
     setFareData(null)
-    setRulesLoading(false)
-    setRulesError(null)
-    setRulesData([])
     setFareFamiliesLoading(false)
     setFareFamiliesError(null)
     setFareFamiliesData([])
@@ -767,7 +884,7 @@ export default function FlightDetailsModal({
   }, [language, open, safeFlight.id])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || pageMode) return
 
     const bodyOverflow = document.body.style.overflow
     const htmlOverscroll = document.documentElement.style.overscrollBehavior
@@ -980,41 +1097,6 @@ export default function FlightDetailsModal({
     }
   }, [copy.farePackages, language, open, safeFlight.id])
 
-  useEffect(() => {
-    if (!open) return
-    if (!safeFlight.id) return
-    const token = getAccessToken()
-    if (!token) return
-
-    let alive = true
-    setRulesLoading(true)
-    setRulesError(null)
-
-    getAirOptionRules(safeFlight.id)
-      .then((res) => {
-        if (!alive) return
-        if (res.data.status !== "success") {
-          setRulesError(translateBackendInfoError(res.data.message, copy.rules, language))
-          setRulesData([])
-          return
-        }
-        setRulesData(res.data.data ?? [])
-      })
-      .catch((err: any) => {
-        if (!alive) return
-        const msg = translateBackendInfoError(err?.response?.data?.message, copy.rules, language)
-        setRulesError(msg)
-        setRulesData([])
-      })
-      .finally(() => {
-        if (alive) setRulesLoading(false)
-      })
-
-    return () => {
-      alive = false
-    }
-  }, [copy.rules, language, open, safeFlight.id])
-
   const selectedFare = useMemo(
     () => fareFamiliesData.find((fare) => fare.id === selectedFareId) ?? null,
     [fareFamiliesData, selectedFareId]
@@ -1064,6 +1146,50 @@ export default function FlightDetailsModal({
     () => bookingFlight.price,
     [bookingFlight.price]
   )
+  const passengerCount = Math.max(1, passengers.length)
+
+  const addPassenger = () => {
+    setPassengers((prev) => [...prev, makePassengers(1)[0]])
+  }
+
+  const removePassenger = (index: number) => {
+    setPassengers((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== index)))
+  }
+
+  const getFreshBookableOptionId = async () => {
+    const departure =
+      toDateOnly(date) ||
+      toDateOnly(bookingFlight.departDate) ||
+      toDateOnly(itinerarySegments[0]?.departure)
+
+    if (!bookingFlight.from || !bookingFlight.to || !departure) {
+      return bookingFlight.id
+    }
+
+    const res = await searchAir({
+      adults: passengerCount,
+      children: 0,
+      infants: 0,
+      class: cabinToSearchClass(bookingFlight.cabin),
+      trips: [
+        {
+          origin: bookingFlight.from,
+          destination: bookingFlight.to,
+          departure,
+        },
+      ],
+    })
+
+    if (res.data.status !== "success" || !res.data.data?.options?.length) {
+      throw new Error(res.data.message || copy.optionMissing)
+    }
+
+    const best = [...res.data.data.options]
+      .map((option) => ({ option, score: scoreSearchOption(option, bookingFlight) }))
+      .sort((a, b) => b.score - a.score || Number(a.option.price || 0) - Number(b.option.price || 0))[0]?.option
+
+    return best?.id || bookingFlight.id
+  }
 
   const proceedToFormalization = () => {
     if (!bookingFlight.id) {
@@ -1078,7 +1204,7 @@ export default function FlightDetailsModal({
       flightId: bookingFlight.id,
       route: `${bookingFlight.from} → ${bookingFlight.to}`,
       date,
-      pax: Math.max(1, pax),
+      pax: passengerCount,
       amount: total,
       currency: bookingFlight.currency,
       airline: bookingFlight.airline,
@@ -1088,6 +1214,11 @@ export default function FlightDetailsModal({
       carryOn: bookingFlight.carryOn,
       segments: bookingFlight.segments ?? [],
     })
+
+    if (stayOnPage) {
+      setStep("details")
+      return
+    }
 
     onClose()
     navigate("/checkout")
@@ -1140,8 +1271,12 @@ export default function FlightDetailsModal({
         return
       }
 
+      setToastMsg(copy.refreshingOffer)
+      setToastOpen(true)
+      const optionID = await getFreshBookableOptionId()
+
       const res = await bookAir({
-        optionID: bookingFlight.id,
+        optionID,
         email: payer.email.trim(),
         countryCode: payer.countryCode?.trim() || "998",
         phoneNumber: payer.phone.replace(/\D/g, ""),
@@ -1171,10 +1306,10 @@ export default function FlightDetailsModal({
         const curr = bookingCart.get()
         bookingCart.set({
           ...curr,
-          flightId: bookingFlight.id,
+          flightId: optionID,
           route: `${bookingFlight.from} → ${bookingFlight.to}`,
           date,
-          pax: Math.max(1, pax),
+          pax: passengerCount,
           lastOrderId: res.data.data.orderID,
           amount: total,
           currency: bookingFlight.currency,
@@ -1218,51 +1353,108 @@ export default function FlightDetailsModal({
     } finally {
       setBookLoading(false)
     }
-    onClose()
-    navigate("/checkout")
+    if (!stayOnPage) {
+      onClose()
+      navigate("/checkout")
+    }
+  }
+
+  const activeOrderId = lastOrderId
+
+  const runOrderAction = async (
+    action: "issue" | "cancel" | "void",
+    setLoading: (value: boolean) => void
+  ) => {
+    if (!activeOrderId) {
+      setToastMsg(copy.orderMissing)
+      setToastOpen(true)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res =
+        action === "issue"
+          ? await issueOrder(activeOrderId)
+          : action === "cancel"
+            ? await cancelOrderService(activeOrderId)
+            : await voidOrderService(activeOrderId)
+
+      const fallback =
+        action === "issue"
+          ? copy.issueDone
+          : action === "cancel"
+            ? copy.cancelDone
+            : copy.voidDone
+      setToastMsg(res.data.message || fallback)
+      setToastOpen(true)
+    } catch (err: any) {
+      const fallback =
+        action === "issue"
+          ? copy.issueError
+          : action === "cancel"
+            ? copy.cancelError
+            : copy.voidError
+      setToastMsg(err?.response?.data?.message || fallback)
+      setToastOpen(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const checkOrderStatus = async () => {
+    if (!activeOrderId) {
+      setToastMsg(copy.orderMissing)
+      setToastOpen(true)
+      return
+    }
+
+    setOrderLoading(true)
+    setOrderData(null)
+    try {
+      const res = await getOrderById(activeOrderId)
+      if (res.data.status !== "success") {
+        setToastMsg(res.data.message || copy.orderNotFound)
+        setToastOpen(true)
+        return
+      }
+      const item = res.data.data?.[0]
+      setOrderData({
+        id: item?.id,
+        status: item?.status,
+        currency: item?.currency,
+        price: item?.price,
+        client: item?.client,
+        serviceType: item?.services?.[0]?.type,
+        reservationId: item?.services?.[0]?.reservation?.id,
+      })
+      setToastMsg(res.data.message || copy.success)
+      setToastOpen(true)
+    } catch (err: any) {
+      setToastMsg(err?.response?.data?.message || copy.orderRequestError)
+      setToastOpen(true)
+    } finally {
+      setOrderLoading(false)
+    }
   }
 
   // UI umuman render qilmaymiz (lekin hooklar ishlayveradi)
   if (!flight) return null
 
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            variants={panel}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="
-              flight-details-light
-              fixed inset-0 z-[70]
-              h-[100svh] max-h-[100svh] w-screen
-              overflow-hidden
-              rounded-none
-              border-0
-              bg-white
-              shadow-[0_24px_70px_rgba(17,24,39,0.10)]
-              supports-[height:100dvh]:h-[100dvh]
-              supports-[height:100dvh]:max-h-[100dvh]
-              dark:bg-white
-              dark:shadow-[0_24px_70px_rgba(17,24,39,0.10)]
-            "
-          >
-            <div className="h-full overflow-y-auto overscroll-y-contain bg-white [-webkit-overflow-scrolling:touch]">
+  if (pageMode) {
+    return (
+      <div className="flight-details-light relative min-h-screen bg-[#EBEBEB]">
+        <div className="bg-white">
             {/* header */}
-            <div className="relative border-b border-[#dbe3ef] bg-white p-4 md:p-7 dark:border-[#dbe3ef] dark:bg-white">
+            <div className="relative border-b border-[#D9D5CE] bg-white p-4 md:p-7 dark:border-[#D9D5CE] dark:bg-white">
               <button
                 onClick={onClose}
                 className="
                   absolute right-5 top-5 z-10
                   h-10 w-10 rounded-xl
-                  border border-[#d7e1ee] bg-white/90
-                  text-[#1d2430] hover:bg-white transition
-                  dark:border-[#d7e1ee] dark:bg-white dark:text-[#1d2430] dark:hover:bg-[#f8fbff]
+                  border border-[#D9D5CE] bg-white/90
+                  text-[#111A34] hover:bg-[#F3F1ED] transition
+                  dark:border-[#D9D5CE] dark:bg-white dark:text-[#111A34] dark:hover:bg-[#F3F1ED]
                   grid place-items-center
                 "
               >
@@ -1271,24 +1463,24 @@ export default function FlightDetailsModal({
 
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pr-14 md:pr-16">
                 <div>
-                  <div className="text-[#627188] text-sm dark:text-[#627188]">
+                  <div className="text-[#5F5A54] text-sm dark:text-[#5F5A54]">
                     {bookingFlight.airline} · {flightNo}
                   </div>
-                  <div className="mt-1 text-2xl md:text-3xl font-extrabold text-[#1d2430] dark:text-[#1d2430]">
+                  <div className="mt-1 text-2xl md:text-3xl font-extrabold text-[#111A34] dark:text-[#111A34]">
                     {bookingFlight.from} → {bookingFlight.to}
                   </div>
-                  <div className="mt-2 text-[#627188] text-sm dark:text-[#627188]">
-                    {copy.headerDate}: <span className="text-[#1d2430] dark:text-[#1d2430]">{date || "—"}</span> · {copy.headerPax}:{" "}
-                    <span className="text-[#1d2430] dark:text-[#1d2430]">{Math.max(1, pax)}</span>
+                  <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
+                    {copy.headerDate}: <span className="text-[#111A34] dark:text-[#111A34]">{date || "—"}</span> · {copy.headerPax}:{" "}
+                    <span className="text-[#111A34] dark:text-[#111A34]">{passengerCount}</span>
                   </div>
                 </div>
 
                 <div className="text-left md:text-right w-full md:w-auto">
-                  <div className="text-[#718198] text-xs dark:text-[#718198]">{copy.finalPrice}</div>
-                  <div className="text-3xl font-extrabold text-[#1d2430] dark:text-[#1d2430]">
+                  <div className="text-[#77716A] text-xs dark:text-[#77716A]">{copy.finalPrice}</div>
+                  <div className="text-3xl font-extrabold text-[#111A34] dark:text-[#111A34]">
                     {formatMoney(total, bookingFlight.currency)}
                   </div>
-                  <div className="text-[#718198] text-xs dark:text-[#718198]">{copy.taxesIncluded}</div>
+                  <div className="text-[#77716A] text-xs dark:text-[#77716A]">{copy.taxesIncluded}</div>
                 </div>
               </div>
 
@@ -1296,16 +1488,16 @@ export default function FlightDetailsModal({
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174] dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)] dark:text-white",
+                    "border-[#174A8B] bg-[#174A8B] text-white dark:border-[#174A8B] dark:bg-[#174A8B] dark:text-white",
                   ].join(" ")}
                 >
                   {copy.step1}
                 </span>
-                <span className="text-[#9ba8ba] dark:text-[#8ea5cb]">→</span>
+                <span className="text-[#77716A] dark:text-[#77716A]">→</span>
                 <span
                   className={[
                     "px-3 py-1 rounded-full border",
-                    "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]",
+                    "border-[#D9D5CE] bg-[#F3F1ED] text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]",
                   ].join(" ")}
                 >
                   {copy.step2}
@@ -1326,11 +1518,11 @@ export default function FlightDetailsModal({
               {step === "select" && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
-                    <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                      <div className="text-[#1d2430] font-semibold dark:text-white">{copy.fareRules}</div>
+                    <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                      <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.fareRules}</div>
 
                       <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                        <span className="rounded-full border border-[#dbe3ef] bg-[#f8fbff] px-3 py-1 text-[#234174] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d7e5ff]">
+                        <span className="rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-1 text-[#174A8B] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#174A8B]">
                           {cabin}
                         </span>
 
@@ -1338,36 +1530,36 @@ export default function FlightDetailsModal({
                           className={`rounded-full border px-3 py-1 text-sm ${
                             refundable
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : "border-[#dbe3ef] bg-white text-[#627188] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]"
+                              : "border-[#D9D5CE] bg-white text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]"
                           }`}
                         >
                           {refundable ? copy.refundable : copy.nonRefundable}
                         </span>
 
-                        <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#51627c] inline-flex items-center gap-2 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                        <span className="rounded-full border border-[#D9D5CE] bg-white px-3 py-1 text-[#5F5A54] inline-flex items-center gap-2 dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]">
                           <Luggage size={14} />
                           {bookingFlight.baggage ?? "—"}
                         </span>
 
-                        <span className="rounded-full border border-[#dbe3ef] bg-white px-3 py-1 text-[#51627c] inline-flex items-center gap-2 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
+                        <span className="rounded-full border border-[#D9D5CE] bg-white px-3 py-1 text-[#5F5A54] inline-flex items-center gap-2 dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]">
                           <Luggage size={14} />
                           {copy.carryOn}: {bookingFlight.carryOn ?? "—"}
                         </span>
                       </div>
 
-                      <div className="mt-4 text-[#627188] text-sm leading-relaxed dark:text-[#a9bddb]">
+                      <div className="mt-4 text-[#5F5A54] text-sm leading-relaxed dark:text-[#5F5A54]">
                         {copy.fareTerms}
                       </div>
 
-                      <div className="mt-4 text-[#627188] text-sm dark:text-[#a9bddb]">
+                      <div className="mt-4 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
                         {fareLoading && copy.faresLoading}
                         {!fareLoading && fareError && `${copy.fares}: ${fareError}`}
                         {!fareLoading && !fareError && fareFamiliesData.length === 0 && fareData?.families?.length ? (
                           <div className="mt-2 space-y-2">
                             {fareData.families.map((f) => (
-                              <div key={f.id} className="rounded-[20px] border border-[#e2e9f2] bg-white p-3 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
-                                <div className="text-[#1d2430] font-semibold text-sm dark:text-white">{f.name}</div>
-                                <div className="mt-1 text-[#627188] text-xs dark:text-[#a9bddb]">
+                              <div key={f.id} className="rounded-[16px] border border-[#D9D5CE] bg-white p-3 dark:border-[#D9D5CE] dark:bg-white">
+                                <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{f.name}</div>
+                                <div className="mt-1 text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                                   {copy.baggage}: {f.baggageInfos?.join(", ") || "—"}
                                 </div>
                                 {f.services && f.services.length > 0 && (
@@ -1375,7 +1567,7 @@ export default function FlightDetailsModal({
                                     {f.services.map((s, i) => (
                                       <span
                                         key={`${f.id}-${i}`}
-                                        className="rounded-full border border-[#e2e9f2] bg-[#f7faff] px-2.5 py-1 text-[11px] text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]"
+                                        className="rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-2.5 py-1 text-[11px] text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]"
                                       >
                                         {translateServiceText(s.description || "", language) || s.description}
                                       </span>
@@ -1389,8 +1581,8 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{copy.flightDetails}</div>
-                        <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
+                        <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">{copy.flightDetails}</div>
+                        <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
                           {optionDetailsLoading && copy.flightDetailsLoading}
                           {!optionDetailsLoading &&
                             optionDetailsError &&
@@ -1399,55 +1591,55 @@ export default function FlightDetailsModal({
                         {itinerarySegments.length > 0 ? (
                           <div className="mt-3 space-y-3">
                             {itinerarySegments.map((segment, index) => (
-                              <div key={segment.id} className="rounded-[20px] border border-[#e2e9f2] bg-white p-3 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
+                              <div key={segment.id} className="rounded-[16px] border border-[#D9D5CE] bg-white p-3 dark:border-[#D9D5CE] dark:bg-white">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <div className="text-[#1d2430] text-sm font-semibold dark:text-white">
+                                  <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">
                                     {copy.segment} {index + 1}: {segment.origin} → {segment.destination}
                                   </div>
-                                  <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">
+                                  <div className="text-xs text-[#77716A] dark:text-[#77716A]">
                                     {segment.carrier || "—"} {segment.flightNumber || ""}
                                   </div>
                                 </div>
                                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.time}: {segment.departure} → {segment.arrival}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.duration}: {segment.duration ? fmtDuration(segment.duration, language) : "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.departTerminal}: {segment.departureTerminal || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.arriveTerminal}: {segment.arrivalTerminal || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.baggage}: {segment.baggage || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.carryOn}: {segment.carryOn || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.bookingClass}: {segment.bookingClass || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.serviceClass}: {segment.serviceClass || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.operatingAirline}: {segment.operatingCarrier || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.seatsAvailable}: {segment.seatsAvailable ?? "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.aircraftType}: {segment.equipment || "—"}
                                   </div>
-                                  <div className="rounded-[16px] border border-[#edf2f7] bg-[#f8fbff] px-3 py-2 text-xs text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(26,47,87,0.86)] dark:text-[#d4e2fb]">
+                                  <div className="rounded-[12px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                                     {copy.fareCode}: {segment.fareBasis || "—"}
                                   </div>
                                 </div>
                                 {segment.layover ? (
-                                  <div className="mt-2 text-xs text-[#7b889c] dark:text-[#93abd0]">
+                                  <div className="mt-2 text-xs text-[#77716A] dark:text-[#77716A]">
                                     {copy.layover}: {fmtDuration(segment.layover, language)}
                                   </div>
                                 ) : null}
@@ -1458,8 +1650,8 @@ export default function FlightDetailsModal({
                       </div>
 
                       <div className="mt-4">
-                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{copy.farePackages}</div>
-                        <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
+                        <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">{copy.farePackages}</div>
+                        <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
                           {fareFamiliesLoading && copy.farePackagesLoading}
                           {!fareFamiliesLoading &&
                             fareFamiliesError &&
@@ -1485,31 +1677,31 @@ export default function FlightDetailsModal({
                                     className={[
                                       "relative rounded-[18px] border p-4 text-left transition",
                                       active
-                                        ? "border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_14px_28px_rgba(17,24,39,0.28)]"
-                                        : "border-[#e2e9f2] bg-white text-[#1d2430] hover:border-[#c7d8ef] hover:shadow-[0_6px_18px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white",
+                                        ? "border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_28px_rgba(23,74,139,0.24)]"
+                                        : "border-[#D9D5CE] bg-white text-[#174A8B] hover:border-[#174A8B]/45 hover:bg-[#F3F1ED] hover:shadow-none dark:border-[#D9D5CE] dark:bg-white dark:text-[#174A8B]",
                                     ].join(" ")}
                                   >
                                     {isBest && (
-                                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#18a0ea] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(24,160,234,0.40)]">
+                                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#174A8B] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(23,74,139,0.30)]">
                                         Eng zo'r
                                       </span>
                                     )}
                                     <div className="flex items-start gap-2.5">
                                       <span className={[
                                         "mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 transition",
-                                        active ? "border-white bg-white" : "border-[#c0cfe0] dark:border-[#5a7ab0]",
+                                        active ? "border-white bg-white" : "border-[#D9D5CE] dark:border-[#D9D5CE]",
                                       ].join(" ")}>
                                         {active && <span className="block h-full w-full scale-50 rounded-full bg-[#1c2433]" />}
                                       </span>
                                       <div className="min-w-0 flex-1">
-                                        <div className={`text-[15px] font-bold ${active ? "text-white" : "text-[#1d2430] dark:text-white"}`}>
+                                        <div className={`text-[15px] font-bold ${active ? "text-white" : "text-[#111A34] dark:text-[#111A34]"}`}>
                                           {f.name}
                                         </div>
-                                        <div className={`mt-1 text-[18px] font-black leading-tight ${active ? "text-white" : "text-[#1d2430] dark:text-white"}`}>
+                                        <div className={`mt-1 text-[18px] font-black leading-tight ${active ? "text-white" : "text-[#111A34] dark:text-[#111A34]"}`}>
                                           {formatMoney(f.price, f.currency ?? bookingFlight.currency)}
                                         </div>
                                         {f.seatsAvailable != null && (
-                                          <div className={`mt-1.5 text-[11px] font-medium ${active ? "text-white/70" : "text-[#7b8ea8] dark:text-[#93abd0]"}`}>
+                                          <div className={`mt-1.5 text-[11px] font-medium ${active ? "text-white/70" : "text-[#77716A] dark:text-[#77716A]"}`}>
                                             {f.seatsAvailable} {copy.seatsLeft}
                                           </div>
                                         )}
@@ -1522,11 +1714,11 @@ export default function FlightDetailsModal({
 
                             {/* ── Selected fare rules: 3-column ── */}
                             {selectedFare && (
-                              <div className="rounded-[18px] border border-[#e2e9f2] bg-white p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
+                              <div className="rounded-[16px] border border-[#D9D5CE] bg-white p-4 dark:border-[#D9D5CE] dark:bg-white">
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                   {/* Included */}
                                   <div>
-                                    <div className="mb-2.5 text-[13px] font-bold text-[#1d2430] dark:text-white">
+                                    <div className="mb-2.5 text-[13px] font-bold text-[#111A34] dark:text-[#111A34]">
                                       {copy.fareIncluded}
                                     </div>
                                     <div className="space-y-2">
@@ -1534,7 +1726,7 @@ export default function FlightDetailsModal({
                                         ? selectedFare.includedServices
                                         : [selectedFare.carryOn, selectedFare.baggage].filter(Boolean) as string[]
                                       ).map((item) => (
-                                        <div key={`inc-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                        <div key={`inc-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
                                           <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                           </span>
@@ -1546,19 +1738,19 @@ export default function FlightDetailsModal({
 
                                   {/* Chargeable / Allowed */}
                                   <div>
-                                    <div className="mb-2.5 text-[13px] font-bold text-[#1d2430] dark:text-white">
+                                    <div className="mb-2.5 text-[13px] font-bold text-[#111A34] dark:text-[#111A34]">
                                       {copy.fareChargeable}
                                     </div>
                                     <div className="space-y-2">
                                       {selectedFare.chargeableServices.length === 0 ? (
-                                        <div className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                        <div className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
                                           <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                           </span>
                                           <span>—</span>
                                         </div>
                                       ) : selectedFare.chargeableServices.map((item) => (
-                                        <div key={`chg-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                        <div key={`chg-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
                                           <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                           </span>
@@ -1570,14 +1762,14 @@ export default function FlightDetailsModal({
 
                                   {/* Unavailable */}
                                   <div>
-                                    <div className="mb-2.5 text-[13px] font-bold text-[#1d2430] dark:text-white">
+                                    <div className="mb-2.5 text-[13px] font-bold text-[#111A34] dark:text-[#111A34]">
                                       {copy.fareUnavailable}
                                     </div>
                                     <div className="space-y-2">
                                       {selectedFare.unavailableServices.length === 0 ? (
                                         <div className="text-[12px] text-[#9aacbf] dark:text-[#6a8ab0]">—</div>
                                       ) : selectedFare.unavailableServices.map((item) => (
-                                        <div key={`na-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#d4e2fb]">
+                                        <div key={`na-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
                                           <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ef4444] text-white">
                                             <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M2 2l4 4M6 2L2 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
                                           </span>
@@ -1589,13 +1781,13 @@ export default function FlightDetailsModal({
                                 </div>
 
                                 {/* Total footer */}
-                                <div className="mt-4 flex items-center justify-between border-t border-[#eef2f7] pt-3 dark:border-[#2a4070]">
-                                  <div className="text-[12px] text-[#7b889c] dark:text-[#93abd0]">
-                                    {copy.selectedFare}: <span className="font-semibold text-[#1d2430] dark:text-white">{selectedFare.name}</span>
+                                <div className="mt-4 flex items-center justify-between border-t border-[#D9D5CE] pt-3 dark:border-[#D9D5CE]">
+                                  <div className="text-[12px] text-[#77716A] dark:text-[#77716A]">
+                                    {copy.selectedFare}: <span className="font-semibold text-[#111A34] dark:text-[#111A34]">{selectedFare.name}</span>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-[11px] text-[#7b889c] dark:text-[#93abd0]">{copy.total}</div>
-                                    <div className="text-[16px] font-black text-[#1d2430] dark:text-white">
+                                    <div className="text-[11px] text-[#77716A] dark:text-[#77716A]">{copy.total}</div>
+                                    <div className="text-[16px] font-black text-[#111A34] dark:text-[#111A34]">
                                       {formatMoney(total, bookingFlight.currency)}
                                     </div>
                                   </div>
@@ -1606,60 +1798,21 @@ export default function FlightDetailsModal({
                         )}
                       </div>
 
-                      <div className="mt-4">
-                        <div className="text-[#1d2430] text-sm font-semibold dark:text-white">{copy.rules}</div>
-                        <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">
-                          {rulesLoading && copy.rulesLoading}
-                          {!rulesLoading && rulesError && `${copy.rules}: ${rulesError}`}
-                          {!rulesLoading && !rulesError && rulesData.length === 0 && (
-                            <span>{copy.noRules}</span>
-                          )}
-                        </div>
-                        {!rulesLoading && !rulesError && rulesData.length > 0 && (
-                          <div className="mt-2 space-y-2">
-                            {rulesData.slice(0, 2).map((rule, idx) => (
-                              <div
-                                key={`${rule.flight}-${idx}`}
-                                className="rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)]"
-                              >
-                                <div className="text-[#1d2430] text-sm font-semibold dark:text-white">
-                                  {rule.flight} · {rule.fareBasis}
-                                </div>
-                                <div className="mt-2 space-y-2">
-                                  {rule.categories.slice(0, 2).map((c) => (
-                                    <div
-                                      key={`${rule.flight}-${c.id}`}
-                                      className="rounded-[18px] border border-[#e2e9f2] bg-white p-3"
-                                    >
-                                      <div className="text-[#234174] text-xs font-semibold uppercase tracking-[0.12em]">
-                                        {c.category}
-                                      </div>
-                                      <div className="mt-2 text-[#5f6e84] text-sm whitespace-pre-wrap leading-6">
-                                        {cleanRuleText(c.text)}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                   </div>
 
                   <div className="space-y-4">
-                    <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                      <div className="text-[#1d2430] font-semibold dark:text-white">{copy.continue}</div>
-                      <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">{copy.enterPassengerInfo}</div>
+                    <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                      <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.continue}</div>
+                      <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.enterPassengerInfo}</div>
 
                       {selectedFare && (
-                        <div className="mt-4 rounded-[18px] border border-[#e2e9f2] bg-white px-3 py-3 text-sm text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
-                          <div className="font-semibold text-[#1d2430] dark:text-white">
+                        <div className="mt-4 rounded-[16px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-3 text-sm text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
+                          <div className="font-semibold text-[#111A34] dark:text-[#111A34]">
                             {copy.selectedFare}: {selectedFare.name}
                           </div>
-                          <div className="mt-1 text-xs text-[#7b889c] dark:text-[#93abd0]">
+                          <div className="mt-1 text-xs text-[#77716A] dark:text-[#77716A]">
                             {formatMoney(total, bookingFlight.currency)}
                           </div>
                         </div>
@@ -1667,19 +1820,13 @@ export default function FlightDetailsModal({
 
                       <button
                         onClick={proceedToFormalization}
-                        className="
-                          mt-5 w-full h-12 rounded-2xl
-                          bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                          text-white font-semibold transition
-                          shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                          hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                        "
+                        className={`mt-5 h-12 w-full rounded-2xl font-semibold ${brandPrimaryAction}`}
                       >
                         {copy.select}
                       </button>
 
-                      <div className="mt-3 rounded-[18px] border border-[#e2e9f2] bg-white px-3 py-3 text-sm text-[#52627b] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
-                        {Math.max(1, pax)} {copy.formOpensFor}
+                      <div className="mt-3 rounded-[16px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-3 text-sm text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
+                        {passengerCount} {copy.formOpensFor}
                       </div>
                     </div>
                   </div>
@@ -1688,13 +1835,13 @@ export default function FlightDetailsModal({
 
               {step === "details" && (
                 <div className="space-y-4">
-                  <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
+                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
                     <div className="flex items-center justify-between">
-                      <div className="text-[#1d2430] font-semibold inline-flex items-center gap-2 dark:text-white">
+                      <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
                         <User size={18} />
                         {copy.payerDetails}
                       </div>
-                      <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.emailPhone}</div>
+                      <div className="text-xs text-[#77716A] dark:text-[#77716A]">{copy.emailPhone}</div>
                     </div>
 
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1723,19 +1870,41 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                    <div className="flex items-center justify-between">
-                      <div className="text-[#1d2430] font-semibold inline-flex items-center gap-2 dark:text-white">
+                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
                         <Users size={18} />
                         {copy.passengersDetails}
                       </div>
-                      <div className="text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.total}: {Math.max(1, pax)}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-xs text-[#77716A] dark:text-[#77716A]">{copy.total}: {passengerCount}</div>
+                        <button
+                          type="button"
+                          onClick={addPassenger}
+                          className={`inline-flex h-10 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold ${brandPrimaryAction}`}
+                        >
+                          <Plus size={16} />
+                          {copy.addPassenger}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-4 space-y-4">
                       {passengers.map((p, idx) => (
-                        <div key={idx} className="rounded-[24px] border border-[#e2e9f2] bg-white p-4 dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)]">
-                          <div className="text-[#1d2430] font-semibold text-sm dark:text-white">{copy.passenger} #{idx + 1}</div>
+                        <div key={idx} className="rounded-[18px] border border-[#D9D5CE] bg-[#F8F7F4] p-4 dark:border-[#D9D5CE] dark:bg-[#F8F7F4]">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{copy.passenger} #{idx + 1}</div>
+                            <button
+                              type="button"
+                              onClick={() => removePassenger(idx)}
+                              disabled={passengers.length <= 1}
+                              className={`inline-flex h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold ${brandSecondaryAction}`}
+                              title={copy.removePassenger}
+                            >
+                              <Trash2 size={14} />
+                              {copy.removePassenger}
+                            </button>
+                          </div>
 
                           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                             <Input
@@ -1812,9 +1981,9 @@ export default function FlightDetailsModal({
                             />
                             <div className="md:col-span-2">
                               <label className="block">
-                                <div className="mb-2 text-xs text-[#7b889c] dark:text-[#93abd0]">{copy.gender}</div>
+                                <div className="mb-2 text-xs text-[#77716A] dark:text-[#77716A]">{copy.gender}</div>
                                 <select
-                                  className="h-12 w-full rounded-2xl border border-[#dbe3ef] bg-[#fbfdff] px-4 text-[#1d2430] outline-none transition focus:border-[#b9cce7] focus:bg-white dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white dark:focus:border-[#4d6fa8]"
+                                  className="h-12 w-full rounded-2xl border border-[#D9D5CE] bg-white px-4 text-[#111A34] outline-none transition focus:border-[#174A8B]/45 focus:bg-white dark:border-[#D9D5CE] dark:bg-white dark:text-[#111A34] dark:focus:border-[#174A8B]/45"
                                   value={p.gender}
                                   onChange={(e) =>
                                     setPassengers((arr) => {
@@ -1864,19 +2033,13 @@ export default function FlightDetailsModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={() => setStep("pay")}
-                      className="
-                        h-12 rounded-2xl
-                        bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                        text-white font-semibold transition
-                        shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                        hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                      "
+                      className={`h-12 rounded-2xl font-semibold ${brandPrimaryAction}`}
                     >
                       {copy.continue}
                     </button>
                     <button
                       onClick={() => setStep("select")}
-                      className="h-12 rounded-2xl border border-[#dbe3ef] bg-white text-[#52627b] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]"
+                      className={`h-12 rounded-2xl font-semibold ${brandSecondaryAction}`}
                     >
                       {copy.back}
                     </button>
@@ -1886,9 +2049,9 @@ export default function FlightDetailsModal({
 
               {step === "pay" && (
                 <div className="space-y-4">
-                  <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                    <div className="text-[#1d2430] font-semibold dark:text-white">{copy.paymentMethod}</div>
-                    <div className="mt-2 text-[#627188] text-sm dark:text-[#a9bddb]">{copy.chooseMethod}</div>
+                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.paymentMethod}</div>
+                    <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.chooseMethod}</div>
                     <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
                       {[
                         { id: "click", label: "Click" },
@@ -1904,8 +2067,8 @@ export default function FlightDetailsModal({
                           className={[
                             "h-11 rounded-2xl border text-sm font-semibold transition",
                             paymentMethod === m.id
-                              ? "border-[#1a2231]/10 bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-white shadow-[0_14px_28px_rgba(17,24,39,0.22)]"
-                              : "border-[#dbe3ef] bg-white text-[#52627b] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]",
+                              ? "border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_28px_rgba(23,74,139,0.22)]"
+                              : "border-[#D9D5CE] bg-[#EBEBEB] text-[#174A8B] hover:bg-[#F3F1ED] dark:border-[#D9D5CE] dark:bg-[#EBEBEB] dark:text-[#174A8B] dark:hover:bg-[#F3F1ED]",
                           ].join(" ")}
                         >
                           {m.label}
@@ -1914,19 +2077,22 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="rounded-[28px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_18px_45px_rgba(17,24,39,0.07)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)]">
-                    <div className="text-[#1d2430] font-semibold dark:text-white">{copy.finishOrder}</div>
+                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.finishOrder}</div>
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <PriceRow label={copy.route} value={`${bookingFlight.from} → ${bookingFlight.to}`} />
                       <PriceRow label={copy.headerDate} value={date || "—"} />
-                      <PriceRow label={copy.passengerCount} value={String(Math.max(1, pax))} />
+                      <PriceRow label={copy.passengerCount} value={String(passengerCount)} />
                       <PriceRow label={copy.totalPrice} value={formatMoney(total, bookingFlight.currency)} />
                     </div>
-                    <div className="mt-3 text-xs text-[#7b889c] dark:text-[#93abd0]">
+                    <div className="mt-3 text-xs text-[#77716A] dark:text-[#77716A]">
                       {copy.selectedPayment}:{" "}
-                      <span className="text-[#1d2430] font-semibold dark:text-white">
+                      <span className="text-[#111A34] font-semibold dark:text-[#111A34]">
                         {paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
                       </span>
+                    </div>
+                    <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
+                      {copy.paymentApiNotice}
                     </div>
                   </div>
 
@@ -1936,7 +2102,7 @@ export default function FlightDetailsModal({
                     </div>
                   )}
 
-                  <label className="mt-2 flex items-start gap-2 text-xs text-[#627188] dark:text-[#a9bddb]">
+                  <label className="mt-2 flex items-start gap-2 text-xs text-[#5F5A54] dark:text-[#5F5A54]">
                     <input
                       type="checkbox"
                       checked={agreeData}
@@ -1946,7 +2112,7 @@ export default function FlightDetailsModal({
                     {copy.confirmData}
                   </label>
                   {!agreeData && (
-                    <div className="text-xs text-[#8a97aa] dark:text-[#93abd0]">
+                    <div className="text-xs text-[#77716A] dark:text-[#77716A]">
                       {copy.markConfirmation}
                     </div>
                   )}
@@ -1961,24 +2127,68 @@ export default function FlightDetailsModal({
                     <button
                       onClick={submit}
                       disabled={!canSubmit || bookLoading}
-                      className="
-                        h-12 rounded-2xl
-                        bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B]
-                        text-white font-semibold transition
-                        shadow-[0_18px_50px_rgba(138,58,90,0.35)]
-                        hover:shadow-[0_24px_80px_rgba(138,58,90,0.45)] hover:brightness-110
-                        disabled:opacity-50 disabled:cursor-not-allowed
-                      "
+                      className={`h-12 rounded-2xl font-semibold ${brandPrimaryAction}`}
                     >
                       {bookLoading ? "..." : copy.checkout}
                     </button>
                     <button
                       onClick={() => setStep("details")}
-                      className="h-12 rounded-2xl border border-[#dbe3ef] bg-white text-[#52627b] transition hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]"
+                      className={`h-12 rounded-2xl font-semibold ${brandSecondaryAction}`}
                     >
                       {copy.back}
                     </button>
                   </div>
+
+                  {activeOrderId && (
+                    <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white">
+                      <div className="text-[#111A34] font-semibold dark:text-[#111A34]">Order ID: {activeOrderId}</div>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          onClick={() => runOrderAction("issue", setIssueLoading)}
+                          disabled={issueLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandPrimaryAction}`}
+                        >
+                          {issueLoading ? "Issue..." : copy.issuePnr}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={checkOrderStatus}
+                          disabled={orderLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandSecondaryAction}`}
+                        >
+                          {orderLoading ? "..." : copy.getOrderById}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runOrderAction("cancel", setCancelLoading)}
+                          disabled={cancelLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandSecondaryAction}`}
+                        >
+                          {cancelLoading ? "Cancel..." : copy.cancelPnr}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runOrderAction("void", setVoidLoading)}
+                          disabled={voidLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandSecondaryAction}`}
+                        >
+                          {voidLoading ? "VOID..." : copy.voidPnr}
+                        </button>
+                      </div>
+
+                      {orderData && (
+                        <div className="mt-4 grid grid-cols-1 gap-2 rounded-2xl border border-[#D9D5CE] bg-[#F3F1ED] p-4 text-xs text-[#5F5A54] sm:grid-cols-2">
+                          <div>ID: {orderData.id ?? "—"}</div>
+                          <div>{copy.status}: {orderData.status ?? "—"}</div>
+                          <div>{copy.totalPrice}: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
+                          <div>{copy.client}: {orderData.client ?? "—"}</div>
+                          <div>{copy.service}: {orderData.serviceType ?? "—"}</div>
+                          <div>{copy.reservation}: {orderData.reservationId ?? "—"}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2012,8 +2222,42 @@ export default function FlightDetailsModal({
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        </>
+        </div>
+    )
+  }
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          variants={panel}
+          initial="hidden"
+          animate="show"
+          exit="exit"
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className="
+            flight-details-light
+            fixed inset-0 z-[70]
+            h-[100svh] max-h-[100svh] w-screen
+            overflow-hidden
+            rounded-none
+            border-0
+            bg-white
+            shadow-[0_24px_70px_rgba(17,24,39,0.10)]
+            supports-[height:100dvh]:h-[100dvh]
+            supports-[height:100dvh]:max-h-[100dvh]
+            dark:bg-white
+            dark:shadow-[0_24px_70px_rgba(17,24,39,0.10)]
+          "
+        >
+          <div className="h-full overflow-y-auto overscroll-y-contain bg-white [-webkit-overflow-scrolling:touch]">
+            <div className="bg-white">
+              {/* Re-renders same content via pageMode path */}
+            </div>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   )
@@ -2021,14 +2265,14 @@ export default function FlightDetailsModal({
 
 function Pill({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)] dark:shadow-[0_14px_28px_rgba(4,10,28,0.24)]">
+    <div className="rounded-[16px] border border-[#D9D5CE] bg-white p-4 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#f1f5fa] dark:bg-[rgba(31,51,89,0.88)]">
-          <Icon className="text-[#52627b] dark:text-[#9fb4d7]" size={18} />
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#F3F1ED] dark:bg-[#F3F1ED]">
+          <Icon className="text-[#174A8B] dark:text-[#174A8B]" size={18} />
         </div>
         <div>
-          <div className="text-xs text-[#7b889c] dark:text-[#a9bddb]">{label}</div>
-          <div className="font-semibold text-[#1d2430] dark:text-white">{value}</div>
+          <div className="text-xs text-[#77716A] dark:text-[#77716A]">{label}</div>
+          <div className="font-semibold text-[#111A34] dark:text-[#111A34]">{value}</div>
         </div>
       </div>
     </div>
@@ -2052,19 +2296,19 @@ function Input({
 }) {
   return (
     <label className="block">
-      <div className="mb-2 text-xs text-[#7b889c] dark:text-[#a9bddb]">{label}</div>
+      <div className="mb-2 text-xs text-[#77716A] dark:text-[#77716A]">{label}</div>
       <div className="relative">
         {Icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a97aa] dark:text-[#9fb4d7]">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#77716A] dark:text-[#77716A]">
             <Icon size={16} />
           </div>
         )}
         <input
           type={type}
           className={`
-            h-12 w-full rounded-2xl border border-[#dbe3ef] bg-[#fbfdff] dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]
+            h-12 w-full rounded-2xl border border-[#D9D5CE] bg-white dark:border-[#D9D5CE] dark:bg-white
             ${Icon ? "pl-10 pr-4" : "px-4"}
-            text-[#1d2430] outline-none transition placeholder:text-[#9aa5b5] focus:border-[#b9cce7] focus:bg-white dark:text-white dark:placeholder:text-[#8ea5cb] dark:focus:bg-[rgba(28,46,84,0.94)]
+            text-[#111A34] outline-none transition placeholder:text-[#9A948C] focus:border-[#174A8B]/45 focus:bg-white dark:text-[#111A34] dark:placeholder:text-[#9A948C] dark:focus:bg-white
           `}
           value={value}
           placeholder={placeholder}
@@ -2077,9 +2321,9 @@ function Input({
 
 function PriceRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] border border-[#e2e9f2] bg-white p-4 dark:border-[#30476f] dark:bg-[rgba(20,35,66,0.84)]">
-      <div className="text-xs text-[#7b889c] dark:text-[#a9bddb]">{label}</div>
-      <div className="mt-1 font-semibold text-[#1d2430] dark:text-white">{value}</div>
+    <div className="rounded-[16px] border border-[#D9D5CE] bg-[#F8F7F4] p-4 dark:border-[#D9D5CE] dark:bg-[#F8F7F4]">
+      <div className="text-xs text-[#77716A] dark:text-[#77716A]">{label}</div>
+      <div className="mt-1 font-semibold text-[#111A34] dark:text-[#111A34]">{value}</div>
     </div>
   )
 }

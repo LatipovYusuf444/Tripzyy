@@ -294,10 +294,10 @@ export default function About() {
   };
 
   return (
-    <div className="secondary-page-shell relative overflow-hidden bg-white text-[#111827] dark:bg-transparent" style={{ backgroundColor: "#ffffff" }}>
-      <section ref={heroRef} className="relative bg-white dark:bg-transparent" style={{ backgroundColor: "#ffffff" }}>
-        <div className="absolute inset-0 bg-white" />
-        <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-10 md:px-8 md:pt-32 2xl:max-w-[1680px]">
+    <div className="secondary-page-shell relative overflow-hidden bg-[#EEF1FB] text-[#111A34] dark:bg-transparent dark:text-white">
+      <section ref={heroRef} className="relative bg-transparent">
+        <div className="absolute inset-0 bg-[#EEF1FB] dark:bg-transparent" />
+        <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-6 md:px-8 md:pt-8 2xl:max-w-[1680px]">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }}>
               <motion.h1 variants={fadeUp} className="mt-5 text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl xl:text-6xl">
@@ -314,7 +314,7 @@ export default function About() {
                     <ArrowRight size={16} className="transition group-hover:translate-x-1" />
                   </span>
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.98 }} className="h-12 rounded-2xl border border-[#dbe5f2] bg-white px-6 text-sm font-semibold text-[#1b1f2a] shadow-[0_8px_20px_rgba(17,24,39,0.06)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white">
+                <motion.button whileTap={{ scale: 0.98 }} className="h-12 rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] px-6 text-sm font-semibold text-[#111A34] shadow-[0_8px_20px_rgba(70,90,140,0.10)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white">
                   {copy.details}
                 </motion.button>
               </motion.div>
@@ -331,7 +331,7 @@ export default function About() {
             </motion.div>
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} className="grid grid-cols-2 gap-4">
               {heroImages.map((src, i) => (
-                <motion.div key={src} variants={softScale} transition={{ duration: 0.3 }} className={`group relative overflow-hidden rounded-[28px] border border-[#dbe5f2] bg-white shadow-[0_14px_34px_rgba(17,24,39,0.08)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)] ${i === 1 ? "mt-10" : ""}`}>
+                <motion.div key={src} variants={softScale} transition={{ duration: 0.3 }} className={`group relative overflow-hidden rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_14px_34px_rgba(70,90,140,0.10)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)] ${i === 1 ? "mt-10" : ""}`}>
                   <motion.img src={src} alt="Tour" loading="lazy" decoding="async" className="h-[240px] w-full object-cover md:h-[280px]" />
                 </motion.div>
               ))}
@@ -339,8 +339,8 @@ export default function About() {
           </div>
         </motion.div>
         <div className="mt-6" ref={statsRef}>
-          <div className="relative overflow-hidden rounded-[32px] border border-[#dbe5f2] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(248,250,253,0.92)_100%)] shadow-[0_18px_50px_rgba(17,24,39,0.08)]">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.12)_100%)]" />
+          <div className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-[linear-gradient(180deg,#F7F9FF_0%,#F2F5FD_100%)] shadow-[0_18px_50px_rgba(70,90,140,0.10)] dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(14,32,72,0.82)_0%,rgba(7,18,46,0.78)_100%)] dark:shadow-[0_18px_50px_rgba(2,8,24,0.34)]">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.12)_100%)] dark:bg-transparent" />
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="relative mx-auto grid max-w-[1500px] grid-cols-2 gap-6 px-5 py-12 md:grid-cols-3 md:px-8 lg:grid-cols-6 2xl:max-w-[1680px]">
               {stats.map((s) => (
                 <motion.div key={s.title} variants={softScale}>
@@ -352,7 +352,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="relative bg-white py-16 dark:bg-transparent">
+      <section className="relative bg-transparent py-16">
         <div className="mx-auto max-w-[1500px] px-5 md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
             <motion.div variants={fadeUp}>
@@ -370,21 +370,21 @@ export default function About() {
                 ))}
               </ul>
             </motion.div>
-            <motion.div variants={softScale} className="group relative overflow-hidden rounded-[28px] border border-[#dbe5f2] bg-[rgba(255,255,255,0.96)] p-4 shadow-[0_18px_44px_rgba(17,24,39,0.08)]">
+            <motion.div variants={softScale} className="group relative overflow-hidden rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] p-4 shadow-[0_18px_44px_rgba(70,90,140,0.10)] dark:border-[#35507f]/60 dark:bg-[rgba(18,38,76,0.72)]">
               <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80&fm=webp" alt="Travel" className="h-[380px] w-full rounded-2xl object-cover" loading="lazy" decoding="async" />
               <div className="absolute inset-4 rounded-2xl ring-1 ring-white/40" />
             </motion.div>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap} className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-3">
             {copy.benefits.map((x) => (
-              <motion.div key={x.title} variants={softScale} className="group relative overflow-hidden rounded-[24px] border border-[#dbe5f2] bg-[rgba(255,255,255,0.96)] p-6 shadow-[0_14px_34px_rgba(17,24,39,0.07)]">
+              <motion.div key={x.title} variants={softScale} className="group relative overflow-hidden rounded-[24px] border border-[#E3E8F7] bg-[#F7F9FF] p-6 shadow-[0_14px_34px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
                 <div className="relative flex items-start gap-5">
                   <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-[#ff6a00]/30 bg-[#ff6a00]/10 text-[#ff6a00] shadow-[0_10px_25px_rgba(255,106,0,0.12)]">
                     <x.icon size={24} />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold tracking-wide text-[#1b1f2a]">{x.title}</div>
-                    <div className="mt-2 text-sm leading-7 text-[#4a5361]">{x.desc}</div>
+                    <div className="text-sm font-semibold tracking-wide text-[#111A34] dark:text-white">{x.title}</div>
+                    <div className="mt-2 text-sm leading-7 text-[#6F7898] dark:text-[#a9bddb]">{x.desc}</div>
                   </div>
                 </div>
               </motion.div>
@@ -392,7 +392,7 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-      <section className="bg-white py-16 dark:bg-transparent">
+      <section className="bg-[#EEF1FB] py-16 dark:bg-transparent">
         <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
@@ -404,7 +404,7 @@ export default function About() {
             <motion.div variants={fadeUp} className="mx-auto mt-5 h-1 w-16 bg-[#ff6a00]" />
             <div className="mt-10 grid grid-cols-1 items-center gap-6 sm:grid-cols-2 lg:grid-cols-6">
               {certImages.map((src, i) => (
-                <motion.div key={src} variants={softScale} className="group relative overflow-hidden rounded-2xl border border-[#dbe5f2] bg-[rgba(255,255,255,0.96)] shadow-[0_12px_28px_rgba(17,24,39,0.07)]">
+                <motion.div key={src} variants={softScale} className="group relative overflow-hidden rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_12px_28px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
                   <img src={src} alt={`${copy.certificateAlt} ${i + 1}`} className="aspect-[4/5] h-full w-full object-cover" loading="lazy" decoding="async" />
                 </motion.div>
               ))}
@@ -413,7 +413,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-white py-16 dark:bg-transparent">
+      <section className="bg-[#EEF1FB] py-16 dark:bg-transparent">
         <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
@@ -424,21 +424,21 @@ export default function About() {
             </motion.h3>
             <motion.div variants={fadeUp} className="mx-auto mt-5 h-1 w-16 bg-[#ff6a00]" />
             <motion.div variants={fadeUp} className="relative mt-10">
-              <button type="button" aria-label={copy.prev} onClick={() => moveCarousel("left")} className="absolute -left-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#dbe5f2] bg-[rgba(255,255,255,0.94)] text-[#1b1f2a] shadow-md transition">
+              <button type="button" aria-label={copy.prev} onClick={() => moveCarousel("left")} className="absolute -left-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#E3E8F7] bg-[#F7F9FF] text-[#111A34] shadow-md transition dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] dark:text-white">
                 ‹
               </button>
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-white to-transparent" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-white to-transparent" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-[#EEF1FB] to-transparent dark:from-[#07152f]" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-[#EEF1FB] to-transparent dark:from-[#07152f]" />
               <div ref={carouselRef} className="overflow-hidden">
                 <div className="flex w-max gap-6 pr-6">
                   {[...partnerLogos, ...partnerLogos].map((p, i) => (
-                    <motion.div key={`${p.name}-${i}`} data-partner-card className="group grid h-24 min-w-[210px] place-items-center rounded-2xl border border-[#dbe5f2] bg-[rgba(255,255,255,0.96)] px-5 shadow-[0_12px_28px_rgba(17,24,39,0.08)]">
+                    <motion.div key={`${p.name}-${i}`} data-partner-card className="group grid h-24 min-w-[210px] place-items-center rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] px-5 shadow-[0_12px_28px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
                       <img src={p.logo} alt={p.name} className="max-h-12 w-auto object-contain" loading="lazy" decoding="async" />
                     </motion.div>
                   ))}
                 </div>
               </div>
-              <button type="button" aria-label={copy.next} onClick={() => moveCarousel("right")} className="absolute -right-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#dbe5f2] bg-[rgba(255,255,255,0.94)] text-[#1b1f2a] shadow-md transition">
+              <button type="button" aria-label={copy.next} onClick={() => moveCarousel("right")} className="absolute -right-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#E3E8F7] bg-[#F7F9FF] text-[#111A34] shadow-md transition dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] dark:text-white">
                 ›
               </button>
             </motion.div>
@@ -448,9 +448,9 @@ export default function About() {
 
       <section className="py-16">
         <div className="w-full px-5 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="relative overflow-hidden rounded-[32px] border border-[#dbe5f2] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(249,251,254,0.94)_100%)] shadow-[0_20px_50px_rgba(17,24,39,0.08)]">
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-[linear-gradient(180deg,#F7F9FF_0%,#F2F5FD_100%)] shadow-[0_20px_50px_rgba(70,90,140,0.10)] dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(14,32,72,0.88)_0%,rgba(7,18,46,0.84)_100%)]">
             <div className="relative z-10 grid min-h-[560px] grid-cols-1 gap-10 p-9 md:p-14 lg:grid-cols-2">
-              <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="relative overflow-hidden rounded-[28px] border border-[#dbe5f2] bg-[rgba(255,255,255,0.94)] p-7 shadow-[0_16px_36px_rgba(17,24,39,0.06)] md:p-8">
+              <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="relative overflow-hidden rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] p-7 shadow-[0_16px_36px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] md:p-8">
                 <div className="relative text-center text-lg font-semibold md:text-xl">{copy.contactTitle}</div>
                 <div className="relative mt-1 text-center text-sm text-[#6b7280]">{copy.contactText}</div>
                 <form className="relative mt-6 space-y-3" onSubmit={(e) => { e.preventDefault(); toast.success(copy.applied); }}>
@@ -466,10 +466,10 @@ export default function About() {
                   </motion.button>
                 </form>
               </motion.div>
-              <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.1 }} className="flex flex-col justify-center text-[#111827]">
+              <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.1 }} className="flex flex-col justify-center text-[#111A34] dark:text-white">
                 <div className="text-3xl font-extrabold leading-tight md:text-5xl">{copy.orderTitle}</div>
-                <div className="mt-4 max-w-[520px] text-lg leading-8 text-[#374151] md:text-xl">{copy.orderText}</div>
-                <div className="mt-6 max-w-[540px] leading-8 text-[#4b5563]">{copy.orderSub}</div>
+                <div className="mt-4 max-w-[520px] text-lg leading-8 text-[#6F7898] dark:text-[#a9bddb] md:text-xl">{copy.orderText}</div>
+                <div className="mt-6 max-w-[540px] leading-8 text-[#6F7898] dark:text-[#a9bddb]">{copy.orderSub}</div>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <motion.button whileTap={{ scale: 0.98 }} className="h-12 rounded-2xl bg-[#ff6a00] px-6 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(255,106,0,0.20)]">
                     {copy.contactUs}
@@ -493,7 +493,7 @@ function LuxuryInput({ placeholder, phoneWord }: { placeholder: string; phoneWor
 
   return (
     <motion.input
-      className="h-12 w-full rounded-2xl border border-[#dbe5f2] bg-[rgba(255,255,255,0.96)] px-4 outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)]"
+      className="h-12 w-full rounded-2xl border border-[#E3E8F7] bg-[#F2F5FD] px-4 text-[#111A34] outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)] dark:border-[#35507f]/55 dark:bg-[rgba(14,28,58,0.72)] dark:text-white dark:placeholder:text-[#8ea5cb]"
       placeholder={placeholder}
       value={value}
       onChange={(e) => setValue(isPhone ? formatUzPhoneInput(e.target.value) : e.target.value)}
@@ -527,15 +527,15 @@ function StatItem({ data, animate }: { data: { icon: LucideIcon; end: number; su
   const display = useMemo(() => `${val}${data.suffix}`, [val, data.suffix]);
 
   return (
-    <motion.div className="group relative h-full overflow-hidden rounded-[24px] border border-[#dbe5f2] bg-[rgba(255,255,255,0.96)] p-5 text-center shadow-[0_12px_28px_rgba(17,24,39,0.06)]">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#f8fbff] via-white to-transparent" />
+    <motion.div className="group relative h-full overflow-hidden rounded-[24px] border border-[#E3E8F7] bg-[#F7F9FF] p-5 text-center shadow-[0_12px_28px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#F2F5FD] via-transparent to-transparent dark:from-transparent" />
       <div className="relative flex flex-col items-center">
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[linear-gradient(135deg,#fff3eb_0%,#ffe6d6_100%)] shadow-[0_10px_25px_rgba(255,106,0,0.10)]">
-          <Icon size={34} className="text-[#8A3A5A]" />
+        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[linear-gradient(135deg,#fff3eb_0%,#ffe6d6_100%)] shadow-[0_10px_25px_rgba(255,106,0,0.10)] dark:bg-[linear-gradient(135deg,rgba(42,28,18,0.82)_0%,rgba(60,28,14,0.74)_100%)]">
+          <Icon size={34} className="text-[#8A3A5A] dark:text-[#ffb07a]" />
         </div>
-        <div className="mt-4 text-4xl font-extrabold text-[#111827]">{display}</div>
-        <div className="mt-2 flex min-h-[40px] items-center justify-center text-center text-sm font-semibold tracking-wide text-[#111827]">{data.title}</div>
-        <div className="mt-4 flex min-h-[72px] items-center justify-center text-center text-sm leading-relaxed text-[#4a5361] md:text-base">{data.desc}</div>
+        <div className="mt-4 text-4xl font-extrabold text-[#111A34] dark:text-white">{display}</div>
+        <div className="mt-2 flex min-h-[40px] items-center justify-center text-center text-sm font-semibold tracking-wide text-[#111A34] dark:text-white">{data.title}</div>
+        <div className="mt-4 flex min-h-[72px] items-center justify-center text-center text-sm leading-relaxed text-[#6F7898] dark:text-[#a9bddb] md:text-base">{data.desc}</div>
       </div>
     </motion.div>
   );

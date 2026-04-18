@@ -11,9 +11,9 @@ import FAQ from "@/pages/FAQ";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import Profile from "@/pages/Profile";
-import ProtectedRoute from "@/pages/auth/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
-import PassengersPage from "@/pages/Passengers";
+import PassengersPage from "@/pages/Passengers"
+import FlightDetailPage from "@/pages/FlightDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -25,20 +25,16 @@ export const router = createBrowserRouter([
       { path: "register", element: <RegisterPage initialMode="register" /> },
       { path: "login", element: <LoginPage /> },
 
-      {
-        element: <ProtectedRoute />,
-        children: [
-          { path: "about", element: <About /> },
-          { path: "services", element: <Services /> },
-          { path: "flights", element: <Flights /> },
-          { path: "flight-catalog", element: <FlightCatalog /> },
-          { path: "passengers", element: <PassengersPage /> },
-          { path: "checkout", element: <PassengersPage /> },
-          { path: "contact", element: <Contact /> },
-          { path: "faq", element: <FAQ /> },
-          { path: "profile", element: <Profile /> },
-        ],
-      },
+      { path: "about", element: <About /> },
+      { path: "services", element: <Services /> },
+      { path: "flights", element: <Flights /> },
+      { path: "flight-catalog", element: <FlightCatalog /> },
+      { path: "flight-detail", element: <FlightDetailPage /> },
+      { path: "passengers", element: <PassengersPage /> },
+      { path: "checkout", element: <PassengersPage /> },
+      { path: "contact", element: <Contact /> },
+      { path: "faq", element: <FAQ /> },
+      { path: "profile", element: <Profile /> },
 
       { path: "404", element: <NotFound /> },
       { path: "*", element: <Navigate to="/404" replace /> },

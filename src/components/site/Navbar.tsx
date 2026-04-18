@@ -47,19 +47,19 @@ const compactNavbarLightClass =
   "border-b border-[#e6eef8] bg-white shadow-[0_8px_28px_rgba(17,24,39,0.07)]"
 
 const compactNavbarDarkClass =
-  "border-b border-[#35507f]/55 bg-[linear-gradient(180deg,rgba(12,28,58,0.78)_0%,rgba(7,18,40,0.58)_100%)] shadow-[0_14px_38px_rgba(2,8,24,0.28)] backdrop-blur-[22px]"
+  "border-b border-transparent bg-[linear-gradient(180deg,rgba(8,18,44,0.97)_0%,rgba(5,11,30,0.94)_100%)] shadow-[0_14px_38px_rgba(2,8,24,0.50)] backdrop-blur-[22px]"
 
 const compactControlLightClass =
   "border border-[#dde8f5] bg-white text-[#0f172a] shadow-[0_4px_14px_rgba(0,40,120,0.06)]"
 
 const compactControlDarkClass =
-  "border border-[#4a6799]/70 bg-[linear-gradient(180deg,rgba(22,45,88,0.72)_0%,rgba(10,27,60,0.6)_100%)] text-white shadow-[0_14px_30px_rgba(2,8,24,0.24)] backdrop-blur-[18px]"
+  "border border-[#4a6799]/80 bg-[linear-gradient(180deg,rgba(12,26,58,0.96)_0%,rgba(7,16,40,0.92)_100%)] text-white shadow-[0_14px_30px_rgba(2,8,24,0.42)] backdrop-blur-[18px]"
 
 const compactActionLightClass =
   "h-9 rounded-full border border-[#dde8f5] !bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_4px_12px_rgba(0,40,120,0.08)] transition hover:!bg-white"
 
 const compactActionDarkClass =
-  "h-9 rounded-full border border-[#5a78b1]/70 !bg-[linear-gradient(180deg,rgba(27,55,105,0.74)_0%,rgba(13,30,64,0.62)_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_16px_34px_rgba(2,8,24,0.28)] transition hover:brightness-110"
+  "h-9 rounded-full border border-[#5a78b1]/80 !bg-[linear-gradient(180deg,rgba(14,30,66,0.98)_0%,rgba(8,18,44,0.96)_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_16px_34px_rgba(2,8,24,0.46)] transition hover:brightness-110"
 
 const homeActionBtnBaseClass =
   "h-10 rounded-full border px-5 text-[10px] font-semibold uppercase tracking-[0.1em] transition"
@@ -68,13 +68,13 @@ const homeActionBtnLightClass =
   `${homeActionBtnBaseClass} border-[#d8e3f0] !bg-[#ffffff] text-white shadow-[0_8px_22px_rgba(49,87,143,0.12)] hover:!bg-[#ffffff]`
 
 const homeActionBtnDarkClass =
-  `${homeActionBtnBaseClass} border-[#5d7fba]/55 bg-[linear-gradient(180deg,rgba(20,42,84,0.78)_0%,rgba(9,24,54,0.62)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.34)] backdrop-blur-[14px] hover:brightness-110`
+  `${homeActionBtnBaseClass} border-[#5d7fba]/65 bg-[linear-gradient(180deg,rgba(10,22,52,0.97)_0%,rgba(6,13,34,0.94)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.52)] backdrop-blur-[14px] hover:brightness-110`
 
 const homeGlassBtnLightClass =
   "border border-[#d8e3f0] !bg-[#ffffff] text-[#0f172a] shadow-[0_8px_22px_rgba(49,87,143,0.12)] transition hover:!bg-[#ffffff]"
 
 const homeGlassBtnDarkClass =
-  "border border-[#5d7fba]/50 bg-[linear-gradient(180deg,rgba(20,42,84,0.72)_0%,rgba(9,24,54,0.56)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.32)] backdrop-blur-[14px] transition hover:bg-[rgba(36,67,122,0.78)]"
+  "border border-[#5d7fba]/65 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.48)] backdrop-blur-[14px] transition hover:bg-[rgba(16,34,72,0.98)]"
 
 type NavLinkItem = {
   to: string
@@ -299,7 +299,7 @@ const userMemberLabel =
     theme === "dark" ? homeActionBtnDarkClass : homeActionBtnLightClass
   const homeLanguageShellClass =
     theme === "dark"
-      ? "border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(20,42,84,0.46)_0%,rgba(9,24,54,0.36)_100%)] p-0.5 shadow-[0_18px_42px_rgba(2,8,24,0.28)] backdrop-blur-[14px]"
+      ? "border border-[#5d7fba]/65 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] p-0.5 shadow-[0_18px_42px_rgba(2,8,24,0.48)] backdrop-blur-[14px]"
       : "border border-[#d8e3f0] !bg-[#ffffff] p-0.5 shadow-[0_8px_22px_rgba(49,87,143,0.12)]"
   const compactNavbarGlassClass =
     theme === "dark" ? compactNavbarDarkClass : compactNavbarLightClass
@@ -309,11 +309,11 @@ const userMemberLabel =
     theme === "dark" ? compactActionDarkClass : compactActionLightClass
   const compactLanguageShellClass =
     theme === "dark"
-      ? "border border-[#4a6799]/70 bg-[rgba(16,34,68,0.5)] p-0.5 shadow-[0_14px_30px_rgba(2,8,24,0.22)] backdrop-blur-[14px]"
+      ? "border border-[#4a6799]/80 bg-[rgba(8,18,44,0.96)] p-0.5 shadow-[0_14px_30px_rgba(2,8,24,0.44)] backdrop-blur-[14px]"
       : "border border-[#dde8f5] bg-white p-0.5 shadow-[0_4px_14px_rgba(0,40,120,0.06)]"
   const compactDropdownPanelClass =
     theme === "dark"
-      ? "border border-[#5a78b1]/60 bg-[linear-gradient(180deg,rgba(18,38,76,0.92)_0%,rgba(9,23,52,0.86)_100%)] shadow-[0_22px_50px_rgba(2,8,24,0.38)]"
+      ? "border border-[#5a78b1]/70 bg-[linear-gradient(180deg,rgba(8,18,46,0.99)_0%,rgba(5,12,32,0.98)_100%)] shadow-[0_22px_50px_rgba(2,8,24,0.58)]"
       : "border border-[#dde8f5] bg-white shadow-[0_18px_40px_rgba(0,60,180,0.12)]"
   const compactDropdownItemClass =
     theme === "dark"

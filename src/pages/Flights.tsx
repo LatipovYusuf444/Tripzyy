@@ -1,9 +1,11 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import { motion } from "motion/react"
-import { ArrowRight, CalendarDays, ChevronDown, Clock3, Filter, Plane, PlaneLanding, PlaneTakeoff, Sparkles, Ticket, Users } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
+import Lottie, { type LottieRefCurrentProps } from "lottie-react"
+import { ArrowRight, CalendarDays, ChevronDown, Clock3, Filter, Luggage, Plane, PlaneLanding, PlaneTakeoff, Sparkles, Ticket, Users, X } from "lucide-react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
+import flightLoadingAnimation from "@/assets/animations/Animation - 1776516038455.json"
 import amsterdamImage from "@/assets/SHaharlar/amsterdam.webp"
 import dubaiImage from "@/assets/SHaharlar/dubai-marina-cityscape-skyline-skyscrapers-buildings-city-2560x1440-4870.jpg"
 import spainImage from "@/assets/SHaharlar/Espania.webp"
@@ -21,24 +23,24 @@ import { useI18n } from "@/shared/i18n/i18n"
 import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 const luxuryBtn =
-  "border border-[#2f63df]/20 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] text-white shadow-[0_14px_28px_rgba(63,135,212,0.22)] transition hover:brightness-110"
+  "border border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_28px_rgba(23,74,139,0.22)] transition hover:bg-[#123F78]"
 const softPanel =
-  "border border-[#d6e2ee] !bg-white bg-none shadow-[0_20px_60px_rgba(17,24,39,0.08)]"
+  "border border-[#D9D5CE] !bg-[#EBEBEB] bg-none shadow-[0_18px_52px_rgba(30,32,36,0.08)]"
 const secondaryBtn =
-  "border border-[#d6e2ee] !bg-white bg-none text-[#334155] shadow-[0_8px_22px_rgba(17,24,39,0.05)] transition hover:border-[#c5d4e3] hover:!bg-[#f8fbff] hover:text-[#0f172a]"
+  "border border-[#D9D5CE] !bg-white bg-none text-[#5F5A54] shadow-none transition hover:border-[#174A8B]/35 hover:!bg-[#F6F6F6] hover:text-[#174A8B]"
 const fieldPanel =
-  "rounded-[20px] border border-[#d6e2ee] !bg-white bg-none px-4 py-3 shadow-[0_10px_20px_rgba(17,24,39,0.04)] transition hover:border-[#c7d7e8]"
+  "rounded-[16px] border border-[#D9D5CE] !bg-white bg-none px-4 py-3 shadow-none transition hover:border-[#174A8B]/35"
 const dropdownPanel =
-  "absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-[320px] overflow-y-auto rounded-[22px] border border-[#d6e2ee] !bg-white bg-none shadow-[0_22px_55px_rgba(17,24,39,0.14)]"
+  "flights-dropdown-panel absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[320px] overflow-y-auto rounded-[18px] border border-[#D9D5CE] !bg-white bg-none shadow-[0_20px_42px_rgba(30,32,36,0.14)]"
 const unifiedCard =
-  "border border-[#d6e2ee] !bg-white bg-none shadow-[0_16px_40px_rgba(17,24,39,0.08)]"
+  "border border-[#D9D5CE] !bg-white bg-none shadow-none"
 const unifiedSoftCard =
-  "border border-[#d6e2ee] !bg-white bg-none shadow-[0_14px_34px_rgba(17,24,39,0.06)]"
-const primaryText = "text-[#111827]"
-const secondaryText = "text-[#4b5563]"
-const mutedText = "text-[#6b7280]"
+  "border border-[#D9D5CE] !bg-[#F3F1ED] bg-none shadow-none"
+const primaryText = "text-[#111A34]"
+const secondaryText = "text-[#5F5A54]"
+const mutedText = "text-[#77716A]"
 const accentChip =
-  "rounded-full border border-[#d6e2ee] !bg-[#f3f8fd] text-[#315d8f]"
+  "rounded-full border border-[#D9D5CE] !bg-[#EBEBEB] text-[#174A8B]"
 const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
@@ -53,18 +55,7 @@ const cityHeroSlides = [
   { image: turkeyImage, city: "Istanbul" },
 ] as const
 
-const UZ_AIRPORT_OVERRIDES: Record<string, string> = {
-  ALA: "Olmaota",
-  NQZ: "Astana",
-  FRA: "Frankfurt",
-  LIS: "Lissabon",
-  ESB: "Anqara (Esenboga)",
-  AYT: "Antaliya",
-  DME: "Moskva (Domodedovo)",
-  SVO: "Moskva (Sheremetyevo)",
-}
-
-type TravelClassCode = "Y" | "C" | "F"
+type TravelClassCode = "Y" | "B" | "F"
 type SearchTrip = { origin: string; destination: string; departure: string }
 type SearchCriteria = { from: string; to: string; date: string; pax: number; travelClass: TravelClassCode; trips?: SearchTrip[] }
 type LocationOption = { code: string; name: string; searchText: string }
@@ -255,6 +246,16 @@ const matchDepartureBucket = (
   return hours >= 18
 }
 
+const isNightTime = (time?: string) => {
+  const hour = Number((time || "").split(":")[0])
+  return Number.isFinite(hour) && (hour < 6 || hour >= 23)
+}
+
+const isNightFlight = (flight: Flight) =>
+  isNightTime(flight.depart) ||
+  isNightTime(flight.arrive) ||
+  (flight.segments ?? []).some((segment) => isNightTime(toTime(segment.departure)) || isNightTime(toTime(segment.arrival)))
+
 const normalizeText = (value: string) =>
   value
     .toLowerCase()
@@ -285,14 +286,15 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
 
 const normalizeTravelClass = (value?: string): TravelClassCode => {
   const upper = (value || "").toUpperCase()
-  if (upper === "C" || upper === "F") return upper
+  if (upper === "B" || upper === "C" || upper === "J") return "B"
+  if (upper === "F") return "F"
   return "Y"
 }
 
 const formatCabinClass = (code?: string, language: "uz" | "ru" | "en" = "en") => {
   const upper = (code || "").toUpperCase()
-  if (upper === "C" || upper === "J") {
-    return language === "uz" ? "Biznes (C)" : language === "ru" ? "Бизнес (C)" : "Business (C)"
+  if (upper === "B" || upper === "C" || upper === "J") {
+    return language === "uz" ? "Biznes (B)" : language === "ru" ? "Бизнес (B)" : "Business (B)"
   }
   if (upper === "F") {
     return language === "uz" ? "Birinchi klass (F)" : language === "ru" ? "Первый класс (F)" : "First (F)"
@@ -314,10 +316,13 @@ export default function Flights() {
   const [pax, setPax] = useState(1)
   const [travelClass, setTravelClass] = useState<TravelClassCode>("Y")
   const [sort, setSort] = useState<"best" | "cheap" | "fast">("best")
-  const [airlineFilter] = useState("all")
+  const [airlineFilter, setAirlineFilter] = useState("all")
   const [cabinFilter, setCabinFilter] = useState("all")
   const [maxDuration, setMaxDuration] = useState<number | null>(null)
   const [maxPriceFilter, setMaxPriceFilter] = useState<number | null>(null)
+  const [stopFilter, setStopFilter] = useState<"all" | "direct" | "one">("all")
+  const [shortOnly, setShortOnly] = useState(false)
+  const [excludeNight, setExcludeNight] = useState(false)
   const [departureFilter, setDepartureFilter] = useState<
     "all" | "morning" | "day" | "evening"
   >("all")
@@ -326,14 +331,16 @@ export default function Flights() {
 
   const [items, setItems] = useState<Flight[]>([])
   const [loading, setLoading] = useState(false)
-  const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState<Flight | null>(null)
+
   const [dynamicAirportLabels, setDynamicAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
   const [calendarOpen, setCalendarOpen] = useState(false)
+  const calendarAnchorRef = useRef<HTMLDivElement>(null)
   const [searchTrips, setSearchTrips] = useState<SearchTrip[]>([])
   const [activeCitySlide, setActiveCitySlide] = useState(0)
-  const [expandedAirline, setExpandedAirline] = useState<string | null>(null)
   const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
+  const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null)
+  const [previewFlight, setPreviewFlight] = useState<Flight | null>(null)
+  const checkoutRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const syncTheme = () => setSiteTheme(getStoredTheme())
@@ -357,9 +364,6 @@ export default function Flights() {
       backendBusy: "Xizmat vaqtincha ishlamayapti.",
       timeout: "Server juda sekin javob berdi. So'rov timeout bo'ldi.",
       invalidRoute: "Jo'nash va manzil uchun to'g'ri variantni tanlang.",
-      highlightCheap: "Eng arzon",
-      highlightBest: "Optimal",
-      highlightFast: "Eng tez",
       heroBadge: "Qulay yo'nalish tanlovi",
       heroTitleA: "Reyslar ichidan",
       heroTitleB: "eng qulay",
@@ -381,7 +385,7 @@ export default function Flights() {
       toPlaceholder: "Masalan: FRA yoki Frankfurt",
       openCalendar: "Narx kalendari",
       classLabel: "Klass",
-      classNames: { Y: "Ekonom", C: "Biznes", F: "Birinchi" } as Record<string, string>,
+      classNames: { Y: "Ekonom", B: "Biznes", F: "Birinchi" } as Record<string, string>,
       search: "Qidirish",
       searching: "Qidirilmoqda...",
       searchHint: "* Shahar nomi yoki IATA kod yozsangiz, autocomplete ishlaydi. Sana blokida minimal narxli kalendar ochiladi.",
@@ -447,9 +451,6 @@ export default function Flights() {
       backendBusy: "Backend временно не отвечает (502 Bad Gateway).",
       timeout: "Сервер отвечает слишком медленно. Запрос превысил timeout.",
       invalidRoute: "Выберите корректные пункты отправления и назначения.",
-      highlightCheap: "Самый дешевый",
-      highlightBest: "Оптимальный",
-      highlightFast: "Самый быстрый",
       heroBadge: "Премиальный выбор маршрута",
       heroTitleA: "Выберите",
       heroTitleB: "лучший",
@@ -471,7 +472,7 @@ export default function Flights() {
       toPlaceholder: "Например: IST или Frankfurt",
       openCalendar: "Календарь цен",
       classLabel: "Класс",
-      classNames: { Y: "Эконом", C: "Бизнес", F: "Первый" } as Record<string, string>,
+      classNames: { Y: "Эконом", B: "Бизнес", F: "Первый" } as Record<string, string>,
       search: "Поиск",
       searching: "Поиск...",
       searchHint: "* Можно вводить название города или IATA код, autocomplete сработает. В блоке даты открывается календарь минимальных цен из backend.",
@@ -537,9 +538,6 @@ export default function Flights() {
       backendBusy: "The backend is temporarily unavailable (502 Bad Gateway).",
       timeout: "The server responded too slowly. The request timed out.",
       invalidRoute: "Choose valid origin and destination values.",
-      highlightCheap: "Cheapest",
-      highlightBest: "Best",
-      highlightFast: "Fastest",
       heroBadge: "Premium route selection",
       heroTitleA: "Choose the",
       heroTitleB: "best",
@@ -561,7 +559,7 @@ export default function Flights() {
       toPlaceholder: "For example: FRA or Frankfurt",
       openCalendar: "Price calendar",
       classLabel: "Class",
-      classNames: { Y: "Economy", C: "Business", F: "First" } as Record<string, string>,
+      classNames: { Y: "Economy", B: "Business", F: "First" } as Record<string, string>,
       search: "Search",
       searching: "Searching...",
       searchHint: "* Enter a city name or IATA code to use autocomplete. The date block opens the minimum-price calendar from the backend.",
@@ -643,29 +641,6 @@ export default function Flights() {
 
   const resolvedFrom = useMemo(() => resolveLocationCode(from, locationOptions), [from, locationOptions])
   const resolvedTo = useMemo(() => resolveLocationCode(to, locationOptions), [to, locationOptions])
-
-  const formatAirport = useCallback(
-    (code?: string) => {
-      if (!code) return COMMON_COPY[language].unknown
-      const upper = code.toUpperCase()
-      const city =
-        language === "uz"
-          ? UZ_AIRPORT_OVERRIDES[upper] || airportLabels[upper]
-          : airportLabels[upper]
-      const safeCity =
-        language === "uz" && city && /[\u0400-\u04FF]/.test(city)
-          ? UZ_AIRPORT_OVERRIDES[upper] || upper
-          : city
-      return safeCity ? `${safeCity} (${upper})` : upper
-    },
-    [airportLabels, language]
-  )
-
-  const formatRoute = useCallback(
-    (origin?: string, destination?: string) =>
-      `${formatAirport(origin)} → ${formatAirport(destination)}`,
-    [formatAirport]
-  )
 
   const mapLocationLabels = useCallback((data?: SearchDataLike) => {
     const next: Record<string, string> = {}
@@ -852,13 +827,6 @@ export default function Flights() {
     hydratedRef.current = true
   }, [sp])
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false)
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [])
 
   useEffect(() => {
     try {
@@ -1052,6 +1020,23 @@ export default function Flights() {
     ],
     [sourceItems]
   )
+  const airlineOptions = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          sourceItems.map((item) => [
+            item.airline,
+            {
+              code: item.airline,
+              name: item.airlineName || item.airline || COMMON_COPY[language].unknown,
+              logo: item.airlineLogo,
+              minPrice: item.price,
+            },
+          ])
+        ).values()
+      ).sort((a, b) => a.name.localeCompare(b.name)),
+    [language, sourceItems]
+  )
   const maxPrice = useMemo(
     () => (sourceItems.length ? Math.max(...sourceItems.map((item) => item.price)) : 0),
     [sourceItems]
@@ -1087,6 +1072,10 @@ export default function Flights() {
       if (cabinFilter !== "all" && flight.cabin !== cabinFilter) return false
       if (maxPriceFilter !== null && flight.price > maxPriceFilter) return false
       if (maxDuration !== null && flight.durationMin > maxDuration) return false
+      if (stopFilter === "direct" && (flight.stopsCount ?? 0) !== 0) return false
+      if (stopFilter === "one" && (flight.stopsCount ?? 0) !== 1) return false
+      if (shortOnly && flight.durationMin > 180) return false
+      if (excludeNight && isNightFlight(flight)) return false
       if (!matchDepartureBucket(flight.depart, departureFilter)) return false
       if (onlyBaggage && !hasBaggage(flight.baggage)) return false
       if (onlyRefundable && !flight.refundable) return false
@@ -1113,6 +1102,9 @@ export default function Flights() {
     resolvedFrom,
     resolvedTo,
     sort,
+    stopFilter,
+    shortOnly,
+    excludeNight,
   ])
 
   const groupedFlights = useMemo(() => {
@@ -1146,25 +1138,19 @@ export default function Flights() {
       }))
       .sort((a, b) => a.minPrice - b.minPrice)
   }, [filtered, language])
-
-  const highlightCards = useMemo(() => {
-    if (!filtered.length) return []
-    const cheapest = [...filtered].sort((a, b) => a.price - b.price)[0]
-    const fastest = [...filtered].sort((a, b) => a.durationMin - b.durationMin)[0]
-    const best = [...filtered].sort(
-      (a, b) => a.price * 0.7 + a.durationMin * 0.3 - (b.price * 0.7 + b.durationMin * 0.3)
-    )[0]
-
-    return [
-      { key: "cheap", badge: copy.highlightCheap, tone: "blue" as const, flight: cheapest },
-      { key: "best", badge: copy.highlightBest, tone: "gold" as const, flight: best },
-      { key: "fast", badge: copy.highlightFast, tone: "rose" as const, flight: fastest },
-    ]
-  }, [copy.highlightBest, copy.highlightCheap, copy.highlightFast, filtered])
+  void groupedFlights
 
   const onPick = (flight: Flight) => {
-    setSelected(flight)
-    setOpen(true)
+    setPreviewFlight(null)
+    localStorage.setItem("tripzyy_flight_pick", JSON.stringify(flight))
+    setSelectedFlight(flight)
+    window.setTimeout(() => {
+      checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 0)
+  }
+
+  const openPreview = (flight: Flight) => {
+    setPreviewFlight(flight)
   }
 
   const onSwapRoute = () => {
@@ -1178,41 +1164,32 @@ export default function Flights() {
     setDate("")
     setTravelClass("Y")
     setItems([])
+    setSelectedFlight(null)
+    setPreviewFlight(null)
     lastAutoQueryRef.current = ""
     localStorage.removeItem(LAST_SUCCESSFUL_SEARCH_KEY)
     localStorage.removeItem(LAST_AIR_RESULT_META_KEY)
     navigate("/flights", { replace: true })
   }
 
-  useEffect(() => {
-    if (!groupedFlights.length) {
-      setExpandedAirline(null)
-      return
-    }
-
-    setExpandedAirline((prev) =>
-      prev && groupedFlights.some((group) => group.key === prev) ? prev : groupedFlights[0].key
-    )
-  }, [groupedFlights])
-
   const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
   return (
     <section
-      className="flights-page relative overflow-hidden bg-white pt-0 text-[#111827] md:pt-20"
+      className="flights-page relative overflow-hidden bg-[#EBEBEB] pt-0 text-[#111A34]"
       data-flight-theme={siteTheme}
     >
       <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
-        <div className={`overflow-visible rounded-[40px] border p-4 shadow-[0_30px_90px_rgba(17,24,39,0.08)] backdrop-blur-md md:p-6 ${softPanel}`}>
-          <div className="relative overflow-hidden rounded-[36px] bg-white p-5 text-[#111827] shadow-[0_20px_48px_rgba(17,24,39,0.08)] md:p-7">
+        <div className={`relative z-10 overflow-visible rounded-[28px] border p-4 md:p-5 ${softPanel}`}>
+          <div className="relative overflow-hidden rounded-[24px] bg-white p-5 text-[#111A34] shadow-none md:p-7">
             <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#d6e2ee] bg-[#f8fbff] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#475569] backdrop-blur-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#77716A]">
                   <Sparkles size={14} />
                   {copy.routeSelection}
                 </div>
-                <h1 className="mt-6 max-w-[720px] text-[38px] font-black leading-[0.94] tracking-[-0.06em] text-[#111827] md:text-[60px]">
+                <h1 className="mt-6 max-w-[720px] text-[38px] font-black leading-[0.94] tracking-[-0.06em] text-[#111A34] md:text-[60px]">
                   {copy.heroTitleA}
-                  <span className="block bg-[linear-gradient(135deg,#8ec5ff_0%,#d4bcff_46%,#ffd29b_100%)] bg-clip-text text-transparent">
+                  <span className="block text-[#174A8B]">
                     {copy.heroTitleB}
                   </span>
                   <span className="block">{copy.heroTitleC}</span>
@@ -1246,7 +1223,7 @@ export default function Flights() {
                 </div>
               </div>
 
-              <div className="relative min-h-[320px] overflow-hidden rounded-[30px] border border-[#d6e2ee] shadow-[0_20px_48px_rgba(17,24,39,0.10)]">
+              <div className="relative min-h-[320px] overflow-hidden rounded-[22px] border border-[#D9D5CE] shadow-none">
                 <img
                   src={currentCitySlide.image}
                   alt={currentCitySlide.city}
@@ -1276,11 +1253,11 @@ export default function Flights() {
             </div>
           </div>
 
-          <div className={`mt-5 overflow-visible rounded-[32px] p-4 md:p-5 ${unifiedSoftCard}`}>
+          <div className={`mt-5 overflow-visible rounded-[24px] p-4 md:p-5 ${unifiedSoftCard}`}>
             <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_210px_190px_220px]">
               <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
               <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
-              <div className={`relative flex min-h-[84px] flex-col justify-center rounded-[24px] px-4 py-3 ${unifiedCard}`}>
+              <div ref={calendarAnchorRef} className={`relative flex min-h-[84px] flex-col justify-center rounded-[24px] px-4 py-3 ${unifiedCard}`}>
                 <div className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>{copy.date}</div>
                 <button
                   type="button"
@@ -1296,6 +1273,7 @@ export default function Flights() {
                     pax={pax}
                     classCode={travelClass}
                     value={date}
+                    anchorElement={calendarAnchorRef.current}
                     onChange={(nextDate) => {
                       setDate(nextDate)
                       setCalendarOpen(false)
@@ -1304,10 +1282,10 @@ export default function Flights() {
                   />
                 ) : null}
               </div>
-              <div className="flex min-h-[84px] flex-col justify-center rounded-[24px] border border-[#d6e2ee] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(17,24,39,0.04)]">
+              <div className="flex min-h-[84px] flex-col justify-center rounded-[16px] border border-[#D9D5CE] bg-white px-4 py-3 shadow-none">
                 <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">{copy.classLabel}</div>
                 <div className="grid grid-cols-3 gap-2">
-                  {(["Y", "C", "F"] as TravelClassCode[]).map((item) => (
+                  {(["Y", "B", "F"] as TravelClassCode[]).map((item) => (
                     <button
                       key={item}
                       type="button"
@@ -1347,69 +1325,120 @@ export default function Flights() {
           </div>
         </div>
 
-        {highlightCards.length > 0 ? (
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {highlightCards.map((card) => (
-              <TopDealCard
-                key={card.key}
-                badge={card.badge}
-                tone={card.tone}
-                flight={card.flight}
-                onPick={onPick}
-                formatRoute={formatRoute}
-                language={language}
-                chooseFareLabel={copy.chooseFare}
-              />
-            ))}
+        {selectedFlight ? (
+          <div ref={checkoutRef} className="mt-8 overflow-hidden rounded-[28px] border border-[#D9D5CE] bg-white shadow-[0_18px_52px_rgba(30,32,36,0.08)]">
+            <FlightDetailsModal
+              open
+              onClose={() => setSelectedFlight(null)}
+              flight={selectedFlight}
+              pax={pax}
+              date={date}
+              pageMode
+              stayOnPage
+            />
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
-          <aside className={`rounded-[30px] p-5 ${softPanel}`}>
-            <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}><Filter size={15} />{copy.filters}</div>
-            <div className="mt-5 space-y-5">
-              <FilterBlock title={copy.priceRange}>
-                <input type="range" min={0} max={Math.max(maxPrice, 1)} value={maxPriceFilter ?? Math.max(maxPrice, 1)} onChange={(e) => setMaxPriceFilter(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
-                <div className={`mt-2 flex items-center justify-between text-xs ${secondaryText}`}><span>0</span><span>{formatMoney(maxPriceFilter ?? maxPrice, sourceItems[0]?.currency || "UZS")}</span></div>
-              </FilterBlock>
-              <FilterBlock title={copy.duration}>
-                <input type="range" min={0} max={Math.max(maxTripDuration, 60)} value={maxDuration ?? Math.max(maxTripDuration, 60)} onChange={(e) => setMaxDuration(Number(e.target.value))} className="w-full accent-[#4f8bd6]" />
-                <div className={`mt-2 text-xs ${secondaryText}`}>{fmtDuration(maxDuration ?? maxTripDuration, language)}</div>
-              </FilterBlock>
-              <FilterBlock title={copy.departureTime}>
-                <div className="grid grid-cols-2 gap-2">{[
-                  { key: "all", label: copy.allDay },
-                  { key: "morning", label: copy.beforeNoon },
-                  { key: "day", label: copy.day },
-                  { key: "evening", label: copy.evening },
-                ].map((item) => <button key={item.key} type="button" onClick={() => setDepartureFilter(item.key as "all" | "morning" | "day" | "evening")} className={["rounded-2xl border px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] transition", departureFilter === item.key ? "border-[#d8e6ff] bg-[linear-gradient(135deg,#f7fbff_0%,#eef5ff_100%)] text-[#234174]" : secondaryBtn].join(" ")}>{item.label}</button>)}</div>
-              </FilterBlock>
-              <FilterBlock title={copy.conveniences}>
-                <div className="space-y-3">
-                  <ToggleButton active={onlyBaggage} onClick={() => setOnlyBaggage((prev) => !prev)} title={copy.baggageOnly} subtitle={copy.baggageOnlySub} />
-                  <ToggleButton active={onlyRefundable} disabled={!hasRefundableFlights} onClick={() => setOnlyRefundable((prev) => !prev)} title={copy.refundable} subtitle={hasRefundableFlights ? copy.refundableSub : copy.refundableNone} />
+        <div className="mt-8 grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className="rounded-[22px] border border-[#D9D5CE] bg-[#F8F7F4] p-3 shadow-[0_14px_34px_rgba(30,32,36,0.06)]">
+            <div className="sticky top-24 space-y-3 text-[13px] text-[#1F2933]">
+              <div className="flex items-center gap-2 rounded-[16px] border border-[#D9D5CE] bg-white px-3 py-3 text-[13px] font-bold text-[#111A34]">
+                <Filter size={15} className="text-[#174A8B]" />
+                {copy.filters}
+              </div>
+
+              <CityFilterBlock title={language === "ru" ? "Пересадки туда" : language === "en" ? "Outbound stops" : "Borishda transfer"}>
+                <MiniCheck checked={stopFilter === "direct"} onChange={() => setStopFilter(stopFilter === "direct" ? "all" : "direct")} label={copy.direct} side={formatMoney(Math.min(...sourceItems.filter((f) => (f.stopsCount ?? 0) === 0).map((f) => f.price), maxPrice || 0), sourceItems[0]?.currency)} />
+                <MiniCheck checked={stopFilter === "one"} onChange={() => setStopFilter(stopFilter === "one" ? "all" : "one")} label={`1 ${copy.transfers}`} side={formatMoney(Math.min(...sourceItems.filter((f) => (f.stopsCount ?? 0) === 1).map((f) => f.price), maxPrice || 0), sourceItems[0]?.currency)} />
+                <MiniToggle checked={shortOnly} onChange={() => setShortOnly((prev) => !prev)} label={language === "ru" ? "Короткие (до 3ч)" : language === "en" ? "Short (up to 3h)" : "Qisqa (3 soatgacha)"} />
+                <MiniToggle checked={excludeNight} onChange={() => setExcludeNight((prev) => !prev)} label={language === "ru" ? "Кроме ночных" : language === "en" ? "Exclude night" : "Tungi reyslarsiz"} />
+              </CityFilterBlock>
+
+              <CityFilterBlock title={copy.priceRange}>
+                <input type="range" min={0} max={Math.max(maxPrice, 1)} value={maxPriceFilter ?? Math.max(maxPrice, 1)} onChange={(e) => setMaxPriceFilter(Number(e.target.value))} className="w-full accent-[#174A8B]" />
+                <div className="mt-1 flex items-center justify-between text-[11px] text-[#59636E]">
+                  <span>{formatCompactPrice(Math.min(...sourceItems.map((f) => f.price), 0), sourceItems[0]?.currency)}</span>
+                  <span>{formatCompactPrice(maxPriceFilter ?? maxPrice, sourceItems[0]?.currency)}</span>
                 </div>
-              </FilterBlock>
-              <FilterBlock title={copy.cabin}>
-                <div className="space-y-2">{cabinOptions.map((item) => <button key={item} type="button" onClick={() => setCabinFilter(item)} className={["flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition", cabinFilter === item ? `${luxuryBtn} border-[#1a2231]/10` : secondaryBtn].join(" ")}><span>{item === "all" ? copy.all : item}</span><Ticket size={15} /></button>)}</div>
-              </FilterBlock>
+              </CityFilterBlock>
+
+              <CityFilterBlock title={copy.departureTime}>
+                <input type="range" min={0} max={Math.max(maxTripDuration, 60)} value={maxDuration ?? Math.max(maxTripDuration, 60)} onChange={(e) => setMaxDuration(Number(e.target.value))} className="w-full accent-[#174A8B]" />
+                <div className="mt-1 text-[11px] text-[#59636E]">{fmtDuration(maxDuration ?? maxTripDuration, language)}</div>
+                <div className="mt-3 grid grid-cols-2 gap-1.5">
+                  {[
+                    { key: "all", label: copy.allDay },
+                    { key: "morning", label: copy.beforeNoon },
+                    { key: "day", label: copy.day },
+                    { key: "evening", label: copy.evening },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setDepartureFilter(item.key as "all" | "morning" | "day" | "evening")}
+                      className={[
+                        "rounded-[6px] border px-2 py-1.5 text-left text-[11px] transition",
+                        departureFilter === item.key
+                          ? "border-[#174A8B]/40 bg-[#E7F2FF] text-[#174A8B]"
+                          : "border-[#D9D5CE] bg-white text-[#59636E] hover:border-[#9DBFE3]",
+                      ].join(" ")}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </CityFilterBlock>
+
+              <CityFilterBlock title={copy.airline}>
+                <MiniCheck checked={airlineFilter === "all"} onChange={() => setAirlineFilter("all")} label={copy.allCompanies} />
+                {airlineOptions.slice(0, 8).map((item) => (
+                  <MiniCheck
+                    key={item.code}
+                    checked={airlineFilter === item.code}
+                    onChange={() => setAirlineFilter(airlineFilter === item.code ? "all" : item.code)}
+                    label={item.name}
+                    side={formatCompactPrice(item.minPrice, sourceItems[0]?.currency)}
+                    icon={item.logo}
+                  />
+                ))}
+              </CityFilterBlock>
+
+              <CityFilterBlock title={copy.conveniences}>
+                <MiniCheck checked={onlyBaggage} onChange={() => setOnlyBaggage((prev) => !prev)} label={copy.baggageOnly} />
+                <MiniCheck checked={onlyRefundable} disabled={!hasRefundableFlights} onChange={() => setOnlyRefundable((prev) => !prev)} label={copy.refundable} />
+              </CityFilterBlock>
+
+              <CityFilterBlock title={copy.cabin}>
+                {cabinOptions.map((item) => (
+                  <MiniCheck key={item} checked={cabinFilter === item} onChange={() => setCabinFilter(item)} label={item === "all" ? copy.all : item} />
+                ))}
+              </CityFilterBlock>
             </div>
           </aside>
 
           <div className="space-y-4">
             {loading ? <InlineLoading /> : null}
-            {!loading && groupedFlights.length > 0 ? (
-              <div className="space-y-4">
-                {groupedFlights.map((group) => (
-                  <AirlineGroupCard
-                    key={group.key}
-                    group={group}
-                    expanded={expandedAirline === group.key}
-                    onToggle={() => setExpandedAirline((prev) => (prev === group.key ? null : group.key))}
-                    onPick={onPick}
+            {!loading && filtered.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 text-sm shadow-[0_10px_24px_rgba(30,32,36,0.06)]">
+                  <div className="font-semibold text-[#111A34]">{filtered.length} {copy.offers}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {(["best", "cheap", "fast"] as const).map((item) => (
+                      <button key={item} onClick={() => setSort(item)} className={["h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition", sort === item ? "border-[#0A84FF] bg-[#E7F2FF] text-[#075DB8]" : "border-[#D9D5CE] bg-white text-[#59636E]"].join(" ")}>
+                        {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {filtered.map((flight, index) => (
+                  <CityTravelResultCard
+                    key={flight.id}
+                    flight={flight}
+                    index={index}
+                    pax={pax}
+                    onPick={openPreview}
                     copy={copy}
                     language={language}
-                    formatRoute={formatRoute}
                   />
                 ))}
               </div>
@@ -1419,7 +1448,14 @@ export default function Flights() {
         </div>
       </div>
 
-      <FlightDetailsModal open={open} onClose={() => setOpen(false)} flight={selected} pax={pax} date={date} />
+      <FlightPreviewModal
+        flight={previewFlight}
+        language={language}
+        pax={pax}
+        onClose={() => setPreviewFlight(null)}
+        onBuy={(flight) => onPick(flight)}
+      />
+
     </section>
   )
 }
@@ -1448,7 +1484,7 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
     <label className={`relative ${fieldPanel}`}>
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58789c]">{label}</div>
       <input
-        className="mt-2 w-full bg-transparent text-[15px] font-semibold text-[#1d2430] outline-none placeholder:text-[#90a3ba]"
+        className="mt-2 w-full bg-transparent text-[15px] font-semibold text-[#111A34] outline-none placeholder:text-[#90a3ba]"
         placeholder={placeholder}
         value={value}
         onFocus={() => setOpen(true)}
@@ -1491,12 +1527,12 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
               }}
               onClick={() => pickOption(option)}
               className={[
-                "flex w-full items-center justify-between border-b border-[#e7eef6] px-4 py-3 text-left transition last:border-b-0",
-                filteredOptions[activeIndex]?.code === option.code ? "bg-[#eef5fc]" : "hover:bg-[#f7fbff]",
+                "flex w-full items-center justify-between border-b border-[#D9D5CE] px-4 py-3 text-left transition last:border-b-0",
+                filteredOptions[activeIndex]?.code === option.code ? "bg-[#F3F1ED]" : "hover:bg-[#F6F6F6]",
               ].join(" ")}
             >
               <span>
-                <span className="block text-sm font-semibold text-[#1d2430]">{option.name}</span>
+                <span className="block text-sm font-semibold text-[#111A34]">{option.name}</span>
                 <span className="block text-xs uppercase tracking-[0.14em] text-[#6f84a0]">{option.code}</span>
               </span>
               <span className="rounded-full border border-[#cfe1f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef5fc_100%)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#466b95]">
@@ -1514,29 +1550,11 @@ function InfoChip({ icon: Icon, label, value }: { icon: typeof CalendarDays; lab
   return (
     <div className="rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(247,250,255,0.92)_100%)] p-4 shadow-[0_10px_24px_rgba(17,24,39,0.05)]">
       <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f8ca0]"><Icon size={14} />{label}</div>
-      <div className="mt-2 text-[15px] font-bold text-[#1d2430]">{value}</div>
+      <div className="mt-2 text-[15px] font-bold text-[#111A34]">{value}</div>
     </div>
   )
 }
 void InfoChip
-
-function TopDealCard({ badge, tone: _tone, flight, onPick, formatRoute, language, chooseFareLabel }: { badge: string; tone: "blue" | "gold" | "rose"; flight: Flight; onPick: (flight: Flight) => void; formatRoute: (origin?: string, destination?: string) => string; language: "uz" | "ru" | "en"; chooseFareLabel: string }) {
-  return (
-    <div className={`rounded-[30px] p-5 ${unifiedCard}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${accentChip}`}>{badge}</div>
-        <div className={`text-xs font-semibold uppercase tracking-[0.14em] ${mutedText}`}>{flight.airline}</div>
-      </div>
-      <div className={`mt-4 text-xl font-black ${primaryText}`}>{formatRoute(flight.from, flight.to)}</div>
-      <div className={`mt-2 text-sm ${secondaryText}`}>{flight.depart} — {flight.arrive} · {fmtDuration(flight.durationMin, language)}</div>
-      <div className={`mt-4 text-2xl font-black ${primaryText}`}>{formatMoney(flight.price, flight.currency)}</div>
-      <div className={`mt-2 text-sm ${secondaryText}`}>
-        {flight.departDate || "—"} → {flight.arriveDate || "—"}
-      </div>
-      <button type="button" onClick={() => onPick(flight)} className={`mt-4 h-11 w-full rounded-2xl text-sm font-semibold ${luxuryBtn}`}>{chooseFareLabel}</button>
-    </div>
-  )
-}
 
 function FilterBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -1546,6 +1564,7 @@ function FilterBlock({ title, children }: { title: string; children: ReactNode }
     </div>
   )
 }
+void FilterBlock
 
 function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { active: boolean; disabled?: boolean; onClick: () => void; title: string; subtitle: string }) {
   return (
@@ -1558,10 +1577,540 @@ function ToggleButton({ active, disabled = false, onClick, title, subtitle }: { 
         <div className={`text-sm font-semibold ${active ? "text-white" : primaryText}`}>{title}</div>
         <div className={`mt-1 text-xs ${active ? "text-white/70" : mutedText}`}>{subtitle}</div>
       </div>
-      <div className={["relative h-7 w-12 rounded-full border transition", active ? "border-white/25 bg-white/15" : "border-[#d6e2ee] bg-[#eef4fb]"].join(" ")}>
-        <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#315d8f]"].join(" ")} />
+      <div className={["relative h-7 w-12 rounded-full border transition", active ? "border-white/25 bg-white/15" : "border-[#D9D5CE] bg-[#EBEBEB]"].join(" ")}>
+        <span className={["absolute top-1 h-5 w-5 rounded-full transition", active ? "left-6 bg-white" : "left-1 bg-[#174A8B]"].join(" ")} />
       </div>
     </button>
+  )
+}
+void ToggleButton
+
+function CityFilterBlock({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="rounded-[18px] border border-[#D9D5CE] bg-white p-3 shadow-[0_8px_20px_rgba(30,32,36,0.04)]">
+      <div className="mb-3 flex items-center justify-between border-b border-[#ECE8E1] pb-2 text-[13px] font-bold text-[#111A34]">
+        <span>{title}</span>
+        <ChevronDown size={14} className="text-[#174A8B]" />
+      </div>
+      <div className="space-y-2.5">{children}</div>
+    </div>
+  )
+}
+
+function MiniCheck({
+  checked,
+  disabled = false,
+  onChange,
+  label,
+  side,
+  icon,
+}: {
+  checked: boolean
+  disabled?: boolean
+  onChange: () => void
+  label: string
+  side?: string
+  icon?: string
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onChange}
+      className={[
+        "flex w-full items-center justify-between gap-2 rounded-[10px] border px-2.5 py-2 text-left text-[12px] transition disabled:cursor-not-allowed disabled:opacity-45",
+        checked ? "border-[#0A84FF]/35 bg-[#E7F2FF] text-[#075DB8]" : "border-[#ECE8E1] bg-[#FBFAF8] text-[#26313C] hover:border-[#C9D8E8] hover:bg-white",
+      ].join(" ")}
+    >
+      <span className="flex min-w-0 items-center gap-2">
+        <span
+          className={[
+            "grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border",
+            checked ? "border-[#0A84FF] bg-[#0A84FF]" : "border-[#B7B2AA] bg-white",
+          ].join(" ")}
+        >
+          {checked ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+        </span>
+        {icon ? <img src={icon} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
+        <span className="truncate">{label}</span>
+      </span>
+      {side ? <span className={["shrink-0 text-[11px]", checked ? "text-[#075DB8]" : "text-[#59636E]"].join(" ")}>{side}</span> : null}
+    </button>
+  )
+}
+
+function MiniToggle({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      className={[
+        "flex w-full items-center justify-between gap-2 rounded-[10px] border px-2.5 py-2 text-left text-[12px] transition",
+        checked ? "border-[#0A84FF]/35 bg-[#E7F2FF] text-[#075DB8]" : "border-[#ECE8E1] bg-[#FBFAF8] text-[#26313C] hover:border-[#C9D8E8] hover:bg-white",
+      ].join(" ")}
+    >
+      <span>{label}</span>
+      <span className={["relative h-5 w-9 rounded-full transition", checked ? "bg-[#0A84FF]" : "bg-[#D1CDC6]"].join(" ")}>
+        <span className={["absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition", checked ? "left-[18px]" : "left-0.5"].join(" ")} />
+      </span>
+    </button>
+  )
+}
+
+function CityTravelResultCard({
+  flight,
+  index,
+  pax,
+  onPick,
+  copy,
+  language,
+}: {
+  flight: Flight
+  index: number
+  pax: number
+  onPick: (flight: Flight) => void
+  copy: FlightsCopy
+  language: "uz" | "ru" | "en"
+}) {
+  const segments =
+    flight.segments && flight.segments.length
+      ? flight.segments.slice(0, Math.min(2, flight.segments.length))
+      : [
+          {
+            id: flight.id,
+            origin: flight.from,
+            destination: flight.to,
+            departure: `${flight.departDate || ""} ${flight.depart}`,
+            arrival: `${flight.arriveDate || ""} ${flight.arrive}`,
+            carrier: flight.airline,
+            flightNumber: flight.flightNo,
+            duration: flight.durationMin,
+            layover: undefined,
+          } as any,
+        ]
+  const selected = index === 0
+  const isDirect = (flight.stopsCount ?? 0) === 0
+
+  return (
+    <div
+      className={[
+        "grid gap-3 rounded-[18px] border bg-white px-4 py-3 shadow-[0_10px_24px_rgba(30,32,36,0.06)] transition hover:shadow-[0_16px_34px_rgba(30,32,36,0.10)] lg:grid-cols-[minmax(0,1fr)_150px]",
+        selected ? "border-[#35B871]" : "border-transparent",
+      ].join(" ")}
+    >
+      <div className="min-w-0 divide-y divide-[#E6E2DC]">
+        {segments.map((segment, segmentIndex) => {
+          const dep = toTime(segment.departure)
+          const arr = toTime(segment.arrival)
+          const segDuration = Number(segment.duration || 0) || Math.round(flight.durationMin / Math.max(segments.length, 1))
+          const segStops = segmentIndex === 0 ? flight.stopsCount ?? 0 : 0
+          return (
+            <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`} className="grid gap-2 py-2 first:pt-0 last:pb-0 md:grid-cols-[118px_82px_minmax(0,1fr)_82px] md:items-center">
+              <div className="flex min-w-0 items-center gap-2">
+                {flight.airlineLogo ? (
+                  <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-5 w-5 shrink-0 object-contain" />
+                ) : (
+                  <Plane size={16} className="shrink-0 text-[#0A84FF]" />
+                )}
+                <div className="min-w-0">
+                  <div className="truncate text-[12px] font-semibold text-[#26313C]">{flight.airlineName || flight.airline}</div>
+                  <div className="text-[10px] leading-4 text-[#59636E]">{segment.carrier || flight.airline}</div>
+                  <div className="text-[10px] leading-4 text-[#59636E]">{segment.flightNumber || flight.flightNo || "—"}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[15px] font-bold leading-5 text-[#111A34]">{dep}</div>
+                <div className="text-[11px] leading-4 text-[#59636E]">{toDateOnly(segment.departure)}</div>
+                <div className="text-[11px] leading-4 text-[#59636E]">{segment.origin}</div>
+              </div>
+
+              <div className="min-w-0 px-1">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-[5px] bg-[#EEEAE4] px-2 py-0.5 text-[10px] font-semibold text-[#59636E]">{segment.origin}</span>
+                  <span className="h-px min-w-[32px] flex-1 bg-[#C9C4BD]" />
+                  <span className="rounded-[5px] bg-[#EEEAE4] px-2 py-0.5 text-[10px] font-semibold text-[#59636E]">{segment.destination}</span>
+                </div>
+                <div className="mt-1 text-center text-[11px] font-semibold text-[#26313C]">{fmtDuration(segDuration, language)}</div>
+                <div className={["mt-0.5 text-center text-[10px]", isDirect ? "text-[#078A50]" : "text-[#59636E]"].join(" ")}>
+                  {segStops === 0 ? copy.direct : `${segStops} ${copy.transfers}`}
+                </div>
+                {segment.layover ? <div className="mt-0.5 text-center text-[10px] text-[#A33B22]">{copy.layover}: {fmtDuration(segment.layover, language)}</div> : null}
+              </div>
+
+              <div className="text-left md:text-right">
+                <div className="text-[15px] font-bold leading-5 text-[#111A34]">{arr}</div>
+                <div className="text-[11px] leading-4 text-[#59636E]">{toDateOnly(segment.arrival)}</div>
+                <div className="text-[11px] leading-4 text-[#59636E]">{segment.destination}</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 border-t border-[#E6E2DC] pt-3 lg:flex-col lg:items-end lg:justify-center lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
+        <div className="text-left lg:text-right">
+          <div className="text-[20px] font-black leading-6 text-[#111A34]">{formatCompactPrice(flight.price, flight.currency)}</div>
+          <div className="mt-1 text-[11px] leading-4 text-[#59636E]">{tripTypeLabel(flight, language)}</div>
+          <div className="text-[11px] leading-4 text-[#59636E]">{paxLabel(language, pax)}</div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onPick(flight)}
+          className="h-10 min-w-[116px] rounded-[9px] bg-[#DDEEFF] px-5 text-[13px] font-semibold text-[#006CD8] transition hover:bg-[#CFE7FF]"
+        >
+          {copy.select}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const paxLabel = (language: "uz" | "ru" | "en", pax: number) =>
+  language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`
+
+const isRoundTripFlight = (flight: Flight) => {
+  const segments = flight.segments ?? []
+  const firstOrigin = (segments[0]?.origin || flight.from || "").toUpperCase()
+  const outboundDestination = (flight.to || segments[0]?.destination || "").toUpperCase()
+  const lastDestination = (segments[segments.length - 1]?.destination || flight.to || "").toUpperCase()
+
+  if (!firstOrigin || !outboundDestination || !lastDestination) return false
+  if (segments.length < 2) return false
+
+  const hasReturnLeg = segments.some((segment, index) => {
+    if (index === 0) return false
+    const origin = (segment.origin || "").toUpperCase()
+    const destination = (segment.destination || "").toUpperCase()
+    return origin === outboundDestination || destination === firstOrigin
+  })
+
+  return hasReturnLeg && lastDestination === firstOrigin
+}
+
+const tripTypeLabel = (flight: Flight, language: "uz" | "ru" | "en") => {
+  const roundTrip = isRoundTripFlight(flight)
+  if (language === "ru") return roundTrip ? "Туда и обратно" : "В одну сторону"
+  if (language === "en") return roundTrip ? "Round trip" : "One way"
+  return roundTrip ? "Borish va qaytish" : "Bir tomonga"
+}
+
+function FlightPreviewModal({
+  flight,
+  language,
+  pax,
+  onClose,
+  onBuy,
+}: {
+  flight: Flight | null
+  language: "uz" | "ru" | "en"
+  pax: number
+  onClose: () => void
+  onBuy: (flight: Flight) => void
+}) {
+  const copy = {
+    uz: {
+      title: "Parvoz tafsilotlari",
+      subtitle: "Uchish va yetib kelish vaqtlari mahalliy",
+      inWay: "yo'lda",
+      inFlight: "parvozda",
+      cabinBaggage: "Qo'l yuki",
+      baggage: "Bagaj",
+      paidBaggage: "bagaj uchun qo'shimcha to'lov",
+      baggageNote: "Bagaj miqdorini o'zgartirish va tarifni tanlash bron sahifasida amalga oshiriladi",
+      transfer: "Transfer",
+      buy: "Sotib olish",
+      checking: "Iltimos, kuting",
+      checkingSub: "Reys, tarif va joylar tekshirilmoqda...",
+      aircraft: "Samolyot",
+    },
+    ru: {
+      title: "Детали перелёта",
+      subtitle: "Время вылета и прилёта местное",
+      inWay: "в пути",
+      inFlight: "в полёте",
+      cabinBaggage: "Ручная кладь",
+      baggage: "Багаж",
+      paidBaggage: "доплата за багаж",
+      baggageNote: "Изменить количество багажа и выбрать тариф можно на странице бронирования",
+      transfer: "Пересадка",
+      buy: "Купить",
+      checking: "Пожалуйста, подождите",
+      checkingSub: "Проверяем рейс, тариф и наличие мест...",
+      aircraft: "Самолёт",
+    },
+    en: {
+      title: "Flight details",
+      subtitle: "Departure and arrival times are local",
+      inWay: "in transit",
+      inFlight: "in flight",
+      cabinBaggage: "Cabin baggage",
+      baggage: "Baggage",
+      paidBaggage: "extra baggage fee",
+      baggageNote: "Baggage quantity and fare can be changed on the booking page",
+      transfer: "Transfer",
+      buy: "Buy",
+      checking: "Please wait",
+      checkingSub: "Checking flight, fare, and seat availability...",
+      aircraft: "Aircraft",
+    },
+  }[language]
+  const [isBuying, setIsBuying] = useState(false)
+  const buyTimerRef = useRef<number | null>(null)
+
+  const segments =
+    flight?.segments && flight.segments.length
+      ? flight.segments
+      : flight
+        ? [
+            {
+              id: flight.id,
+              origin: flight.from,
+              destination: flight.to,
+              departure: `${flight.departDate || ""} ${flight.depart}`,
+              arrival: `${flight.arriveDate || ""} ${flight.arrive}`,
+              carrier: flight.airline,
+              flightNumber: flight.flightNo,
+              duration: flight.durationMin,
+              layover: undefined,
+              baggage: flight.baggage,
+              carryOn: flight.carryOn,
+              equipment: undefined,
+            } as any,
+          ]
+        : []
+
+  useEffect(() => {
+    return () => {
+      if (buyTimerRef.current) window.clearTimeout(buyTimerRef.current)
+    }
+  }, [])
+
+  if (!flight) return null
+
+  const startBuyCheck = () => {
+    if (isBuying) return
+    setIsBuying(true)
+    buyTimerRef.current = window.setTimeout(() => {
+      buyTimerRef.current = null
+      onBuy(flight)
+    }, 10000)
+  }
+
+  const handleClose = () => {
+    if (buyTimerRef.current) {
+      window.clearTimeout(buyTimerRef.current)
+      buyTimerRef.current = null
+    }
+    setIsBuying(false)
+    onClose()
+  }
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-5"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 34, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 24, scale: 0.98 }}
+          transition={{ duration: 0.2 }}
+          className="relative flex max-h-[96svh] w-full max-w-[760px] flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[88vh] sm:rounded-[28px]"
+        >
+          <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5 sm:px-8 sm:pt-7">
+            <div>
+              <div className="text-[22px] font-black leading-7 text-[#111111]">{copy.title}</div>
+              <div className="mt-1 text-[14px] text-[#6D6760]">{copy.subtitle}</div>
+            </div>
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isBuying}
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#111111] transition hover:bg-[#F0EDE8]"
+              aria-label="Close"
+            >
+              <X size={22} />
+            </button>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 sm:px-8">
+            <div className="mb-5">
+              <div className="text-[26px] font-black leading-8 text-[#111111]">
+                {flight.from} → {flight.to}
+              </div>
+              <div className="mt-1 text-[16px] text-[#6D6760]">
+                {fmtDuration(flight.durationMin, language)} {copy.inWay}
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {segments.map((segment, index) => {
+                const carrier = segment.carrier || segment.operatingCarrier || flight.airline
+                const flightNo = segment.flightNumber || flight.flightNo || ""
+                const duration = Number(segment.duration || 0) || Math.round(flight.durationMin / Math.max(segments.length, 1))
+                return (
+                  <div key={segment.id || `${segment.origin}-${segment.destination}-${index}`}>
+                    <div className="mb-3 flex items-center gap-3">
+                      {flight.airlineLogo ? (
+                        <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-9 w-9 object-contain" />
+                      ) : (
+                        <Plane size={26} className="text-[#0A84FF]" />
+                      )}
+                      <div>
+                        <div className="text-[17px] font-bold text-[#111111]">{flight.airlineName || flight.airline}</div>
+                        <div className="text-[14px] text-[#6D6760]">{fmtDuration(duration, language)} {copy.inFlight}</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-[22px_minmax(0,1fr)_58px] gap-3">
+                      <div className="relative flex justify-center">
+                        <span className="mt-2 h-2 w-2 rounded-full border border-[#C9C4BD] bg-white" />
+                        <span className="absolute bottom-2 top-4 w-px bg-[#D9D5CE]" />
+                      </div>
+                      <div className="pb-6">
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-3">
+                          <div>
+                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{toTime(segment.departure)}</div>
+                            <div className="text-[14px] text-[#6D6760]">{toDateOnly(segment.departure)}</div>
+                          </div>
+                          <div>
+                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{segment.origin}</div>
+                            <div className="text-[14px] text-[#6D6760]">{segment.departureTerminal || ""}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="pb-6 text-right">
+                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[13px] font-semibold text-[#6D6760]">{segment.origin}</span>
+                      </div>
+
+                      <div className="relative flex justify-center">
+                        <span className="mt-2 h-2 w-2 rounded-full border border-[#C9C4BD] bg-white" />
+                      </div>
+                      <div>
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-3">
+                          <div>
+                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{toTime(segment.arrival)}</div>
+                            <div className="text-[14px] text-[#6D6760]">{toDateOnly(segment.arrival)}</div>
+                          </div>
+                          <div>
+                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{segment.destination}</div>
+                            <div className="text-[14px] text-[#6D6760]">{segment.arrivalTerminal || ""}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[13px] font-semibold text-[#6D6760]">{segment.destination}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 space-y-2 text-[15px] text-[#111111]">
+                      <div className="flex items-center gap-2 text-[#6D6760]">
+                        <Ticket size={17} />
+                        <span>{carrier}{flightNo ? `-${flightNo}` : ""} · {segment.equipment || copy.aircraft}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Luggage size={17} />
+                        <span>{copy.cabinBaggage}: {segment.carryOn || flight.carryOn || "—"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Luggage size={17} />
+                        <span>{copy.baggage}: {segment.baggage || flight.baggage || copy.paidBaggage}</span>
+                      </div>
+                      <div className="text-[13px] leading-5 text-[#6D6760]">{copy.baggageNote}</div>
+                    </div>
+
+                    {index < segments.length - 1 ? (
+                      <div className="mt-5 rounded-[14px] bg-[#F0EDE8] px-5 py-4 text-[16px] font-bold text-[#111111]">
+                        {copy.transfer} {segment.layover ? fmtDuration(segment.layover, language) : fmtDuration(segments[index + 1]?.layover || 0, language)} {segment.destination}
+                      </div>
+                    ) : null}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="grid gap-3 border-t border-[#E6E2DC] bg-white px-5 py-4 sm:grid-cols-[1fr_1.2fr] sm:px-8">
+            <div>
+              <div className="text-[24px] font-black leading-7 text-[#111111]">{formatCompactPrice(flight.price, flight.currency)}</div>
+              <div className="text-[14px] text-[#111111]">{tripTypeLabel(flight, language)}, {paxLabel(language, pax)}</div>
+            </div>
+            <button
+              type="button"
+              onClick={startBuyCheck}
+              disabled={isBuying}
+              className="h-12 rounded-[12px] bg-[#0A84FF] px-6 text-[16px] font-bold text-white transition hover:bg-[#006CD8] disabled:cursor-wait disabled:opacity-80"
+            >
+              {isBuying ? `${copy.checking}...` : copy.buy}
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {isBuying ? (
+              <motion.div
+                className="absolute inset-0 z-20 grid place-items-center bg-black/45 p-5"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                  className="flex min-h-[520px] w-full max-w-[650px] flex-col overflow-hidden rounded-[28px] bg-[#F8F7F4] text-center shadow-[0_28px_80px_rgba(0,0,0,0.28)] sm:min-h-[607px]"
+                >
+                  <div className="px-6 pt-8">
+                    <div className="mx-auto mb-4 h-10 w-10 rounded-[10px] bg-[#174A8B]" />
+                    <div className="text-[22px] font-black text-[#111111]">{copy.checking}</div>
+                    <div className="mt-2 text-[14px] text-[#6D6760]">{copy.checkingSub}</div>
+                  </div>
+                  <FlightLoadingAnimation />
+                  <div className="mt-auto px-6 pb-7">
+                    <div className="mx-auto h-2 max-w-[320px] overflow-hidden rounded-full bg-[#D9D5CE]">
+                      <motion.div
+                        className="h-full rounded-full bg-[#0A84FF]"
+                        initial={{ width: "0%" }}
+                        animate={{ width: "100%" }}
+                        transition={{ duration: 10, ease: "linear" }}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  )
+}
+
+function FlightLoadingAnimation() {
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+
+  useEffect(() => {
+    const durationSeconds =
+      (Number(flightLoadingAnimation.op) - Number(flightLoadingAnimation.ip || 0)) /
+      Number(flightLoadingAnimation.fr || 30)
+    const tenSecondSpeed = durationSeconds > 0 ? durationSeconds / 10 : 1
+    lottieRef.current?.setSpeed(tenSecondSpeed)
+  }, [])
+
+  return (
+    <div className="relative mx-auto flex min-h-[340px] w-full flex-1 items-center justify-center overflow-hidden px-4 py-3">
+      <Lottie
+        lottieRef={lottieRef}
+        animationData={flightLoadingAnimation}
+        loop={false}
+        autoplay
+        className="h-full max-h-[390px] min-h-[320px] w-full"
+        aria-label="Flight availability loading"
+      />
+    </div>
   )
 }
 
@@ -1589,11 +2138,11 @@ function AirlineGroupCard({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#f7fbff]"
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#F3F1ED]"
       >
         <span className="flex min-w-0 items-center gap-3">
           {group.airlineLogo ? (
-            <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#d6e2ee] bg-white object-contain p-1" />
+            <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#D9D5CE] bg-white object-contain p-1" />
           ) : (
             <span className={`grid h-8 w-8 place-items-center ${accentChip}`}>
               <Plane size={16} />
@@ -1612,7 +2161,7 @@ function AirlineGroupCard({
       </button>
 
       {expanded ? (
-        <div className="border-t border-[#e5edf7] px-5 py-4">
+        <div className="border-t border-[#d6d6d6] px-5 py-4">
           <div className={`mb-3 text-xs font-semibold uppercase tracking-[0.16em] ${mutedText}`}>
             {copy.airlineChoice}
           </div>
@@ -1633,6 +2182,7 @@ function AirlineGroupCard({
     </div>
   )
 }
+void AirlineGroupCard
 
 function AirlineOptionRow({
   flight,
@@ -1744,7 +2294,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
         <div className="flex items-center gap-3">
           {flight.airlineLogo ? (
-            <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-11 w-11 rounded-full border border-[#d6e2ee] bg-white object-contain p-1.5" />
+            <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-11 w-11 rounded-full border border-[#D9D5CE] bg-white object-contain p-1.5" />
           ) : (
             <div className={`flex h-11 w-11 items-center justify-center ${accentChip}`}>
               <Plane size={18} />
@@ -1864,7 +2414,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
         </div>
       ) : null}
 
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#e5edf7] pt-4">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#D9D5CE] pt-4">
         <div className={`flex flex-wrap gap-2 text-sm ${secondaryText}`}>
           <span className={`inline-flex items-center gap-1 px-3 py-1.5 ${accentChip}`}><Clock3 size={14} /> {fmtDuration(flight.durationMin, language)}</span>
           <span className={`inline-flex items-center gap-1 px-3 py-1.5 ${accentChip}`}><Users size={14} /> {flight.refundable ? copy.refundableYes : copy.refundableNo}</span>

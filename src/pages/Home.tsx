@@ -2,16 +2,16 @@ import { motion } from "framer-motion"
 import {
   ArrowRightLeft,
   CalendarDays,
-  ChevronDown,
-  CircleHelp,
+  Clock3,
   CreditCard,
+  Headphones,
   MapPinned,
   PlaneLanding,
   PlaneTakeoff,
-  RefreshCcw,
   Search,
-  Send,
-  Ticket,
+  ShieldCheck,
+  Minus,
+  Plus,
   UsersRound,
   X,
 } from "lucide-react"
@@ -25,22 +25,11 @@ import heroBackgroundImage from "@/assets/images/cheerful-woman-looking-out-wind
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
-import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 type LocationOption = { code: string; name: string; searchText: string }
 type TripMode = "round" | "oneway" | "multi"
 type MultiTrip = { from: string; to: string; date: string }
-type HeroModeOption = { key: TripMode; label: string }
-type SearchUiCopyShape = {
-  tripModes: Record<TripMode, string>
-  from: string
-  to: string
-  depart: string
-  return: string
-  passengers: string
-  search: string
-  airportNotFound: string
-}
+type TravelClassCode = "Y" | "B" | "F"
 const DEFAULT_HOME_SEARCH = {
   from: "",
   to: "",
@@ -143,40 +132,6 @@ function HeroSection({
   )
 }
 
-function TripModeTabs({
-  tripModes,
-  tripMode,
-  searchUiCopy,
-  setTripMode,
-  className,
-}: {
-  tripModes: HeroModeOption[]
-  tripMode: TripMode
-  searchUiCopy: SearchUiCopyShape
-  setTripMode: (mode: TripMode) => void
-  className?: string
-}) {
-  return (
-    <div className={["luxury-search-tabs pointer-events-auto relative z-10 mt-6 flex w-full max-w-[490px] items-center justify-between gap-1 rounded-[999px] p-1.5 sm:p-2", className ?? ""].join(" ")}>
-      {tripModes.map((mode) => (
-        <button
-          key={mode.key}
-          type="button"
-          onClick={() => setTripMode(mode.key)}
-          className={[
-            "luxury-search-tab flex-1 rounded-full px-4 py-3 text-[12px] font-semibold transition-all duration-200 sm:flex-none sm:px-8 sm:py-3.5 sm:text-[14px]",
-            tripMode === mode.key
-              ? "luxury-search-tab-active"
-              : "",
-          ].join(" ")}
-        >
-          {searchUiCopy.tripModes[mode.key]}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 function BookingGlassBar({
   className,
   children,
@@ -187,6 +142,48 @@ function BookingGlassBar({
   return (
     <div className={["luxury-search-shell pointer-events-auto relative isolate", className ?? ""].join(" ")}>
       {children}
+    </div>
+  )
+}
+
+function TripModeTabs({
+  tripMode,
+  searchUiCopy,
+  setTripMode,
+}: {
+  tripMode: TripMode
+  searchUiCopy: { tripModes: Record<TripMode, string> }
+  setTripMode: (mode: TripMode) => void
+}) {
+  const modes: TripMode[] = ["oneway", "round", "multi"]
+  const modeIcons: Record<TripMode, ReactNode> = {
+    oneway: <PlaneTakeoff size={15} />,
+    round: <ArrowRightLeft size={15} />,
+    multi: <ArrowRightLeft size={15} />,
+  }
+
+  return (
+    <div className="premium-trip-tabs pointer-events-auto mt-3 flex w-full max-w-[620px] items-center rounded-[999px] border border-white/22 bg-[rgba(7,13,28,0.56)] p-1 shadow-[0_18px_44px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:mt-6 sm:p-2">
+      {modes.map((mode) => {
+        const active = tripMode === mode
+
+        return (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => setTripMode(mode)}
+            className={[
+              "premium-trip-tab flex h-8 flex-1 items-center justify-center gap-1 rounded-full px-1.5 text-[11px] font-semibold leading-none sm:h-11 sm:gap-2 sm:px-3 sm:text-[14px]",
+              active
+                ? "bg-[linear-gradient(135deg,#2369ff_0%,#0ea5ff_100%)] text-white shadow-[0_12px_28px_rgba(14,165,255,0.36)]"
+                : "text-white/82 hover:bg-white/8 hover:text-white",
+            ].join(" ")}
+          >
+            <span className="shrink-0">{modeIcons[mode]}</span>
+            {searchUiCopy.tripModes[mode]}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -204,9 +201,8 @@ export default function Home() {
   const calendarAnchorRef = useRef<HTMLDivElement>(null)
   const returnDateAnchorRef = useRef<HTMLDivElement>(null)
   const multiDateAnchorRefs = useRef<(HTMLDivElement | null)[]>([])
-  const [faqOpen, setFaqOpen] = useState(-1)
-  const [faqQuestion, setFaqQuestion] = useState("")
-  const [tripMode, setTripMode] = useState<TripMode>("round")
+  const [tripMode, setTripMode] = useState<TripMode>("oneway")
+  const [travelClass, setTravelClass] = useState<TravelClassCode>("Y")
   const [passengerTouched, setPassengerTouched] = useState(false)
   const [activeAirportField, setActiveAirportField] = useState<string | null>(null)
   const [multiTrips, setMultiTrips] = useState<MultiTrip[]>([
@@ -214,22 +210,6 @@ export default function Home() {
     { from: "", to: "", date: "" },
   ])
   const [openMultiDateIndex, setOpenMultiDateIndex] = useState<number | null>(null)
-  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
-
-  useEffect(() => {
-    const syncTheme = () => setSiteTheme(getStoredTheme())
-
-    syncTheme()
-    window.addEventListener("storage", syncTheme)
-    window.addEventListener("tripzy-theme-change", syncTheme as EventListener)
-
-    return () => {
-      window.removeEventListener("storage", syncTheme)
-      window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
-    }
-  }, [])
-
-  const isDarkTheme = siteTheme === "dark"
   const copy = {
     uz: {
       titleLines: ["Xalqaro avia qatnovlar", "va tezkor reyslar"],
@@ -519,7 +499,8 @@ export default function Home() {
 
   const heroCopy = {
     uz: {
-      title: "Aviation Tour bilan qulay va ishonchli avia sayohat",
+      titleStart: "Butun dunyo bo'ylab",
+      titleAccent: "aviachiptalar",
       subtitle: "Xalqaro reyslar, tezkor bron va bir joyda jamlangan aeroport yo'nalishlari",
       learnMore: "Batafsil",
       tripModes: [
@@ -553,7 +534,8 @@ export default function Home() {
       addSegment: "Parvoz qo'shish",
     },
     ru: {
-      title: "Aviation Tour для комфортных и надежных авиапутешествий",
+      titleStart: "Авиабилеты",
+      titleAccent: "по всему миру",
       subtitle: "Международные рейсы, быстрое бронирование и все аэропортные направления в одном месте",
       learnMore: "Подробнее",
       tripModes: [
@@ -585,7 +567,8 @@ export default function Home() {
       addSegment: "Добавить рейс",
     },
     en: {
-      title: "Aviation Tour for comfortable and reliable air travel",
+      titleStart: "Air tickets",
+      titleAccent: "around the world",
       subtitle: "International flights, fast booking, and airport routes gathered in one place",
       learnMore: "Learn more",
       tripModes: [
@@ -632,7 +615,10 @@ export default function Home() {
       depart: "Ketish",
       return: "Qaytish",
       passengers: "Yo'lovchi",
-      search: "Bilet topish",
+      passengerSummary: "1 yo'lovchi",
+      cabin: "ekonom",
+      classNames: { Y: "Ekonom", B: "Biznes", F: "Birinchi" } as Record<TravelClassCode, string>,
+      search: "Topish",
       invalidRoute: "Qayerdan va qayerga uchun to'g'ri variantni tanlang.",
       invalidDate: "Sanani tanlang.",
       close: "Yopish",
@@ -649,7 +635,10 @@ export default function Home() {
       depart: "Туда",
       return: "Обратно",
       passengers: "Пассажир",
-      search: "Найти билеты",
+      passengerSummary: "1 пассажир",
+      cabin: "эконом",
+      classNames: { Y: "Эконом", B: "Бизнес", F: "Первый" } as Record<TravelClassCode, string>,
+      search: "Найти",
       invalidRoute: "Выберите корректные пункты отправления и назначения.",
       invalidDate: "Выберите дату.",
       close: "Закрыть",
@@ -666,13 +655,42 @@ export default function Home() {
       depart: "Departure",
       return: "Return",
       passengers: "Passenger",
-      search: "Find tickets",
+      passengerSummary: "1 passenger",
+      cabin: "economy",
+      classNames: { Y: "Economy", B: "Business", F: "First" } as Record<TravelClassCode, string>,
+      search: "Find",
       invalidRoute: "Select valid origin and destination values.",
       invalidDate: "Select a date.",
       close: "Close",
       airportNotFound: "Airport not found",
     },
   }[language]
+  const heroBenefits = {
+    uz: [
+      { title: "Eng yaxshi narxlar", text: "Kafolatlangan arzon chipta", icon: <ShieldCheck size={18} /> },
+      { title: "Ishonchli xizmat", text: "24/7 qo'llab-quvvatlash", icon: <Headphones size={18} /> },
+      { title: "Xavfsiz to'lov", text: "100% himoyalangan to'lov", icon: <CreditCard size={18} /> },
+      { title: "Tez va oson bron", text: "Bir necha daqiqada chipta", icon: <Clock3 size={18} /> },
+    ],
+    ru: [
+      { title: "Лучшие цены", text: "Гарантированно выгодные билеты", icon: <ShieldCheck size={18} /> },
+      { title: "Надежный сервис", text: "Поддержка 24/7", icon: <Headphones size={18} /> },
+      { title: "Безопасная оплата", text: "100% защищенный платеж", icon: <CreditCard size={18} /> },
+      { title: "Быстрое бронирование", text: "Билет за несколько минут", icon: <Clock3 size={18} /> },
+    ],
+    en: [
+      { title: "Best fares", text: "Guaranteed affordable tickets", icon: <ShieldCheck size={18} /> },
+      { title: "Reliable service", text: "24/7 support", icon: <Headphones size={18} /> },
+      { title: "Secure payment", text: "100% protected checkout", icon: <CreditCard size={18} /> },
+      { title: "Fast booking", text: "Tickets in a few minutes", icon: <Clock3 size={18} /> },
+    ],
+  }[language]
+  const heroSubtitle = {
+    uz: "Eng qulay narxlar va ishonchli xizmatlar bilan sayohatingizni boshlang",
+    ru: "Начните путешествие с выгодными ценами и надежным сервисом",
+    en: "Start your journey with great fares and reliable service",
+  }[language]
+  const isHeroSearchDark = false
 
   const onSearch = () => {
     if (tripMode === "multi") {
@@ -697,7 +715,7 @@ export default function Home() {
       const q = new URLSearchParams({
         trips: JSON.stringify(trips),
         pax: String(Math.max(1, pax)),
-        class: "Y",
+        class: travelClass,
       }).toString()
 
       navigate(`/flights?${q}`)
@@ -728,7 +746,7 @@ export default function Home() {
           { origin: resolvedTo, destination: resolvedFrom, departure: returnDate.trim() },
         ]),
         pax: String(Math.max(1, pax)),
-        class: "Y",
+        class: travelClass,
       }).toString()
 
       navigate(`/flights?${q}`)
@@ -740,93 +758,34 @@ export default function Home() {
       to: resolvedTo,
       date: date.trim(),
       pax: String(Math.max(1, pax)),
+      class: travelClass,
     }).toString()
 
     navigate(`/flights?${q}`)
   }
 
-  const faqSectionClass = isDarkTheme
-    ? "relative z-10 bg-transparent px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14"
-    : "relative z-10 bg-transparent px-4 pb-18 pt-14 sm:px-6 md:px-10 lg:px-14"
+  const mobileSearchSegmentClass = isHeroSearchDark
+    ? "luxury-search-segment pointer-events-auto relative flex min-h-[64px] items-center overflow-visible rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-l xl:border-white/18 xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
+    : "luxury-search-segment pointer-events-auto relative flex min-h-[44px] items-center overflow-visible rounded-[10px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[52px] sm:rounded-[12px] sm:px-3.5 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none"
 
-  const helpSectionClass = isDarkTheme
-    ? "relative z-10 bg-transparent px-4 pb-20 sm:px-6 md:px-10 lg:px-14"
-    : "relative z-10 bg-transparent px-4 pb-20 sm:px-6 md:px-10 lg:px-14"
+  const activeMobileSearchSegmentClass = isHeroSearchDark
+    ? "z-40 bg-white/[0.07] shadow-[0_18px_42px_rgba(2,8,24,0.36)]"
+    : "z-40 bg-[#EBEBEB] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
 
-  const faqGlowClass = isDarkTheme
-    ? "pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.2)_0%,rgba(92,134,211,0)_72%)] blur-3xl"
-    : "pointer-events-none absolute inset-x-0 top-8 mx-auto h-40 max-w-[980px] rounded-full bg-[radial-gradient(circle,rgba(92,134,211,0.1)_0%,rgba(92,134,211,0)_72%)] blur-3xl"
+  const idleMobileSearchSegmentClass = isHeroSearchDark
+    ? "z-10 hover:bg-white/[0.06]"
+    : "z-10 hover:bg-[#e4e4e4]"
 
-  const faqPanelClass = isDarkTheme
-    ? "mt-10 rounded-[30px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.62)_0%,rgba(9,24,54,0.42)_100%)] p-5 shadow-[0_30px_80px_rgba(2,8,24,0.36)] backdrop-blur-[18px] sm:p-6 md:p-7"
-    : "mt-10 rounded-[30px] border border-[#e5edf7] bg-white p-5 shadow-[0_24px_60px_rgba(17,24,39,0.08)] sm:p-6 md:p-7"
-
-  const faqInputWrapClass = isDarkTheme
-    ? "flex h-14 items-center gap-3 rounded-2xl border border-[#5d7fba]/45 bg-[rgba(13,30,62,0.56)] px-4 shadow-[0_14px_34px_rgba(2,8,24,0.26)] backdrop-blur-[14px]"
-    : "flex h-14 items-center gap-3 rounded-2xl border border-[#dbe5f2] bg-white px-4 shadow-[0_8px_20px_rgba(17,24,39,0.04)]"
-
-  const faqInputClass = isDarkTheme
-    ? "h-full w-full bg-transparent text-[15px] font-medium text-white outline-none placeholder:text-[#9fb8e4]"
-    : "h-full w-full bg-transparent text-[15px] font-medium text-[#0f172a] outline-none placeholder:text-[#64748b]"
-
-  const faqItemClass = isDarkTheme
-    ? "overflow-hidden rounded-[22px] border border-[#5d7fba]/45 bg-[rgba(13,30,62,0.5)] shadow-[0_18px_42px_rgba(2,8,24,0.3)] backdrop-blur-[14px]"
-    : "overflow-hidden rounded-[22px] border border-[#e3eaf3] bg-white shadow-[0_10px_24px_rgba(17,24,39,0.05)]"
-
-  const faqAnswerClass = isDarkTheme
-    ? "border-t border-[#5d7fba]/35 bg-[rgba(8,22,50,0.34)] px-5 py-4 text-sm leading-7 text-[#cfe0fb]"
-    : "border-t border-[#edf2f7] bg-[#f8fbff] px-5 py-4 text-sm leading-7 text-[#475569]"
-
-  const faqQuestionTextClass = isDarkTheme
-    ? "flex-1 text-sm font-semibold text-white sm:text-base"
-    : "flex-1 text-sm font-semibold text-[#1e293b] sm:text-base"
-
-  const faqIconClass = isDarkTheme
-    ? "grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,rgba(66,120,220,0.34)_0%,rgba(28,62,132,0.28)_100%)] text-[#9fc7ff]"
-    : "grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#edf5ff_0%,#dceaff_100%)] text-[#4790d8]"
-
-  const faqSendButtonClass = isDarkTheme
-    ? "inline-flex h-14 items-center justify-center gap-2 self-end rounded-2xl border border-[#36507f] bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_40px_rgba(33,79,184,0.34)] transition hover:brightness-110"
-    : "inline-flex h-14 items-center justify-center gap-2 self-end rounded-2xl border border-[#1a2231]/10 bg-[linear-gradient(135deg,#4d9fe6_0%,#3f87d4_45%,#2a6fb8_100%)] px-6 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_40px_rgba(63,135,212,0.22)] transition hover:brightness-110"
-
-  const sectionBadgeClass = isDarkTheme
-    ? "inline-flex items-center gap-2 rounded-full border border-[#35507f] bg-[rgba(19,35,67,0.82)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#d4e2fb] shadow-[0_10px_24px_rgba(2,8,24,0.24)] backdrop-blur-[12px]"
-    : "inline-flex items-center gap-2 rounded-full border border-[#e2eaf5] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#334155] shadow-[0_10px_24px_rgba(17,24,39,0.06)]"
-
-  const sectionTitleClass = isDarkTheme
-    ? "mt-5 text-3xl font-extrabold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl"
-    : "mt-5 text-3xl font-extrabold tracking-[-0.04em] text-white drop-shadow-[0_6px_22px_rgba(2,8,24,0.72)] sm:text-4xl md:text-5xl"
-
-  const sectionTitleAccentClass = isDarkTheme
-    ? "block bg-[linear-gradient(135deg,#78b7ff_0%,#bba7ff_48%,#ffd1b8_100%)] bg-clip-text text-transparent"
-    : "block bg-[linear-gradient(135deg,#ffffff_0%,#dceaff_42%,#86b9ff_100%)] bg-clip-text text-transparent drop-shadow-[0_6px_22px_rgba(2,8,24,0.62)]"
-
-  const sectionDescriptionClass = isDarkTheme
-    ? "mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#d2e0f8] sm:text-base"
-    : "mx-auto mt-4 max-w-[760px] text-sm leading-7 text-[#475569] sm:text-base"
-
-  const mobileSearchSegmentClass = isDarkTheme
-    ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:backdrop-blur-none xl:after:block after:hidden"
-    : "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
-
-  const activeMobileSearchSegmentClass = isDarkTheme
-    ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
-    : "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
-
-  const idleMobileSearchSegmentClass = isDarkTheme
-    ? "z-10 hover:bg-[linear-gradient(180deg,rgba(24,48,92,0.82)_0%,rgba(11,28,62,0.62)_100%)]"
-    : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]"
-
-  const multiFlightLabelClass = isDarkTheme
+  const multiFlightLabelClass = isHeroSearchDark
     ? "mb-1.5 text-[12px] font-semibold text-[#d4e2fb]"
-    : "mb-1.5 text-[12px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)]"
+    : "mb-1 text-[11px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)] sm:mb-1.5 sm:text-[12px]"
 
-  const multiDateSegmentClass = isDarkTheme
-    ? "luxury-search-segment pointer-events-auto relative flex min-h-[58px] flex-col justify-center overflow-visible rounded-[20px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] xl:min-h-[62px]"
-    : "luxury-search-segment pointer-events-auto relative flex min-h-[58px] flex-col justify-center overflow-visible rounded-[20px] border border-[#e3eaf3] bg-white px-4 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] xl:min-h-[62px]"
+  const multiDateSegmentClass = isHeroSearchDark
+    ? "luxury-search-segment pointer-events-auto relative flex min-h-[52px] flex-col justify-center overflow-visible rounded-[16px] border border-[#5d7fba]/60 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] px-3.5 py-2 shadow-[0_14px_30px_rgba(2,8,24,0.44)] backdrop-blur-[18px] xl:min-h-[54px]"
+    : "luxury-search-segment pointer-events-auto relative flex min-h-[44px] flex-col justify-center overflow-visible rounded-[12px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] sm:min-h-[52px] sm:rounded-[16px] sm:px-3.5 sm:py-2 xl:min-h-[54px]"
 
-  const activeMultiDateSegmentClass = isDarkTheme
-    ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
+  const activeMultiDateSegmentClass = isHeroSearchDark
+    ? "z-40 bg-[linear-gradient(180deg,rgba(12,26,58,0.98)_0%,rgba(7,16,40,0.96)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.54)]"
     : "z-40 shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
 
   return (
@@ -835,29 +794,36 @@ export default function Home() {
         heroBackgroundImage={heroBackgroundImage}
         heroMobileBackgroundImage={heroMobileBackgroundImage}
       >
-            <div className="flex min-h-[560px] w-full items-start justify-center pt-28 sm:min-h-[680px] sm:items-start sm:pt-32 lg:min-h-[760px] lg:pt-36">
+            <div className="flex min-h-[640px] w-full items-start justify-center pt-24 sm:min-h-[720px] sm:items-start sm:pt-36 lg:min-h-[820px] lg:pt-40 xl:pt-44">
             <motion.div
               initial={{ opacity: 0, y: 38 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.62, delay: 0.36, ease: "easeOut" }}
-              className="relative w-full max-w-[1360px]"
+              className="relative flex w-full max-w-[1380px] flex-col items-start"
             >
+              <h1 className="max-w-[360px] text-left text-[clamp(20px,5.5vw,26px)] font-extrabold leading-[1.08] text-white [font-family:Arial,Helvetica,sans-serif] drop-shadow-[0_12px_36px_rgba(0,0,0,0.58)] sm:max-w-[1120px] sm:whitespace-nowrap sm:text-[clamp(22px,2.4vw,38px)]">
+                {heroCopy.titleStart}{" "}
+                <span className="block bg-[linear-gradient(90deg,#137dff_0%,#19b7ff_100%)] bg-clip-text text-transparent sm:inline">
+                  {heroCopy.titleAccent}
+                </span>
+              </h1>
+              <p className="mt-2 max-w-[430px] text-[14px] font-semibold leading-6 text-white/78 sm:mt-3 sm:max-w-[520px] sm:text-[17px]">
+                {heroSubtitle}
+              </p>
               <TripModeTabs
-                tripModes={heroCopy.tripModes}
                 tripMode={tripMode}
                 searchUiCopy={searchUiCopy}
                 setTripMode={setTripMode}
-                className="mx-auto max-w-[460px] lg:absolute lg:left-1/2 lg:top-24 lg:mt-0 lg:-translate-x-1/2"
               />
-              <BookingGlassBar className="relative z-20 mt-6 rounded-[22px] p-2 pt-2 sm:rounded-[26px] sm:p-2.5 lg:mt-28 lg:rounded-[28px] lg:p-3">
+              <BookingGlassBar className="relative z-20 mt-3 w-full overflow-visible rounded-[16px] p-0 sm:mt-4 sm:rounded-[20px] lg:mt-5">
               {tripMode === "multi" ? (
-                <div className="space-y-2.5">
+                <div className="space-y-1.5 sm:space-y-2.5">
                   {multiTrips.map((trip, index) => (
                     <div key={`trip-${index}`}>
                       <div className={multiFlightLabelClass}>
                         {heroCopy.flightLabel} {index + 1}
                       </div>
-                      <div className="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                      <div className="grid gap-1.5 sm:gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                         <HomeAutocompleteField
                           label={heroCopy.fromTitle}
                           value={trip.from}
@@ -875,7 +841,7 @@ export default function Home() {
                           onDismiss={() => setActiveAirportField(null)}
                           useInlinePanel
                           active={activeAirportField === `multi-${index}-from`}
-                          isDark={isDarkTheme}
+                          isDark={isHeroSearchDark}
                         />
                         <HomeAutocompleteField
                           label={heroCopy.toTitle}
@@ -894,7 +860,7 @@ export default function Home() {
                           onDismiss={() => setActiveAirportField(null)}
                           useInlinePanel
                           active={activeAirportField === `multi-${index}-to`}
-                          isDark={isDarkTheme}
+                          isDark={isHeroSearchDark}
                         />
                         <div
                           ref={(el) => { multiDateAnchorRefs.current[index] = el }}
@@ -927,6 +893,7 @@ export default function Home() {
                               from={resolveLocationCode(trip.from, locationOptions)}
                               to={resolveLocationCode(trip.to, locationOptions)}
                               pax={pax}
+                              classCode={travelClass}
                               value={trip.date}
                               onChange={(nextDate) => {
                                 setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, date: nextDate } : item))
@@ -955,9 +922,18 @@ export default function Home() {
                         setOpenMultiDateIndex(null)
                       }}
                       label={heroCopy.guestCabin}
-                      valueLabel={heroCopy.guestValue}
+                      valueLabel={
+                        language === "ru"
+                          ? `${pax} пассажир, ${searchUiCopy.classNames[travelClass]}`
+                          : language === "en"
+                            ? `${pax} passenger, ${searchUiCopy.classNames[travelClass]}`
+                            : `${pax} yo'lovchi, ${searchUiCopy.classNames[travelClass]}`
+                      }
+                      cabinLabel={searchUiCopy.classNames[travelClass]}
+                      travelClass={travelClass}
+                      onTravelClassChange={setTravelClass}
                       icon={<UsersRound size={16} />}
-                      isDark={isDarkTheme}
+                      isDark={isHeroSearchDark}
                     />
                     <div className="flex items-center gap-4">
                       <button
@@ -987,13 +963,13 @@ export default function Home() {
               ) : (
                 <div
                   className={[
-                    `luxury-search-grid relative grid items-stretch gap-3 overflow-visible rounded-[20px] bg-transparent sm:rounded-[22px] xl:gap-0 ${isDarkTheme ? "xl:bg-[rgba(8,20,44,0.38)]" : "xl:bg-white"}`,
+                    `luxury-search-grid home-search-surface relative grid items-stretch gap-2 overflow-visible rounded-[18px] bg-[#EBEBEB] sm:rounded-[20px] xl:gap-0`,
                     tripMode === "round"
-                      ? "xl:grid-cols-[2.15fr_0.8fr_0.82fr_0.82fr_210px]"
-                      : "xl:grid-cols-[2.15fr_0.82fr_0.82fr_210px]",
+                      ? "xl:grid-cols-[2.25fr_0.95fr_0.95fr_0.92fr_140px]"
+                      : "xl:grid-cols-[2.45fr_1fr_0.95fr_140px]",
                   ].join(" ")}
                 >
-                  <div className="relative grid items-stretch gap-3 xl:grid-cols-2 xl:gap-0">
+                    <div className="relative grid items-stretch gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -1003,9 +979,9 @@ export default function Home() {
                         setTo(nextTo)
                         setActiveAirportField(null)
                       }}
-                      className="luxury-search-icon absolute left-1/2 top-1/2 z-10 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_10px_24px_rgba(37,99,235,0.10)] transition-all duration-200 hover:scale-[1.04] hover:brightness-110 xl:flex"
+                    className="absolute left-1/2 top-1/2 z-10 hidden h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#dedede] text-[#6d6a66] transition-all duration-200 hover:bg-[#d6d6d6] hover:shadow-[0_10px_22px_rgba(15,23,42,0.12)] active:scale-95 xl:flex"
                     >
-                      <ArrowRightLeft size={18} />
+                      <ArrowRightLeft size={16} />
                     </button>
                     <HomeAutocompleteField
                       label={searchUiCopy.from}
@@ -1013,7 +989,7 @@ export default function Home() {
                       placeholder={heroCopy.originPlaceholder}
                       options={locationOptions}
                       onChange={setFrom}
-                      icon={<PlaneTakeoff size={20} className="text-[#18a0ea]" />}
+                      icon={<PlaneTakeoff size={16} className="text-[#5f6368]" />}
                       onActivate={() => {
                         setCalendarOpen(false)
                         setOpenMultiDateIndex(null)
@@ -1022,7 +998,7 @@ export default function Home() {
                       onDismiss={() => setActiveAirportField(null)}
                       useInlinePanel
                       active={activeAirportField === "from"}
-                      isDark={isDarkTheme}
+                      isDark={isHeroSearchDark}
                       compact
                     />
                     <HomeAutocompleteField
@@ -1031,7 +1007,7 @@ export default function Home() {
                       placeholder={heroCopy.destinationPlaceholder}
                       options={locationOptions}
                       onChange={setTo}
-                      icon={<PlaneLanding size={20} className="text-[#18a0ea]" />}
+                      icon={<PlaneLanding size={16} className="text-[#5f6368]" />}
                       onActivate={() => {
                         setCalendarOpen(false)
                         setOpenMultiDateIndex(null)
@@ -1040,7 +1016,7 @@ export default function Home() {
                       onDismiss={() => setActiveAirportField(null)}
                       useInlinePanel
                       active={activeAirportField === "to"}
-                      isDark={isDarkTheme}
+                      isDark={isHeroSearchDark}
                       compact
                     />
                   </div>
@@ -1058,8 +1034,11 @@ export default function Home() {
                     }}
                     label={searchUiCopy.passengers}
                     valueLabel={language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`}
-                    icon={<UsersRound size={20} className="text-[#18a0ea]" />}
-                    isDark={isDarkTheme}
+                    cabinLabel={searchUiCopy.classNames[travelClass]}
+                    travelClass={travelClass}
+                    onTravelClassChange={setTravelClass}
+                    icon={<UsersRound size={16} className="text-[#111111]" />}
+                    isDark={isHeroSearchDark}
                     compact
                   />
                   <div
@@ -1073,24 +1052,20 @@ export default function Home() {
                       setActiveAirportField(null)
                       setOpenMultiDateIndex(null)
                       setCalendarOpen((prev) => !prev)
-                    }} className="flex w-full items-center justify-between gap-3">
+                    }} className="flex w-full items-center justify-start gap-4 xl:h-full">
+                      <CalendarDays size={17} className="shrink-0 text-[#5f6368]" />
                       <div className="min-w-0 text-left">
-                        <div className="luxury-search-label text-[10px] font-semibold uppercase">
-                          {searchUiCopy.depart}
-                        </div>
-                        <span className={`luxury-search-value mt-1 block truncate text-[14px] font-semibold sm:text-[15px] ${date ? "" : "luxury-search-placeholder"}`}>
-                          {date ? formatDisplayDate(date) : heroCopy.addDates}
+                        <span className={`block truncate text-[14px] font-normal leading-none text-[#111111] ${date ? "" : "text-[#8a8a8a]"}`}>
+                          {date ? formatDisplayDate(date) : searchUiCopy.depart}
                         </span>
                       </div>
-                      <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
-                        <CalendarDays size={15} />
-                      </span>
                     </button>
                     {calendarOpen ? (
                       <FareCalendarPicker
                         from={resolveLocationCode(from, locationOptions)}
                         to={resolveLocationCode(to, locationOptions)}
                         pax={pax}
+                        classCode={travelClass}
                         value={date}
                         onChange={(nextDate) => {
                           setDate(nextDate)
@@ -1117,25 +1092,21 @@ export default function Home() {
                           setCalendarOpen(false)
                           setOpenMultiDateIndex(-2)
                         }}
-                        className="flex w-full items-center justify-between gap-3"
+                          className="flex w-full items-center justify-start gap-4 xl:h-full"
                       >
+                        <span className="text-[15px] leading-none text-[#6d6d6d]">→</span>
                         <div className="min-w-0 text-left">
-                          <div className="luxury-search-label text-[10px] font-semibold uppercase">
-                            {searchUiCopy.return}
-                          </div>
-                          <span className={`luxury-search-value mt-1 block truncate text-[14px] font-semibold sm:text-[15px] ${returnDate ? "" : "luxury-search-placeholder"}`}>
-                            {returnDate ? formatDisplayDate(returnDate) : heroCopy.addDates}
+                          <span className={`block truncate text-[14px] font-normal leading-none text-[#111111] ${returnDate ? "" : "text-[#8a8a8a]"}`}>
+                            {returnDate ? formatDisplayDate(returnDate) : searchUiCopy.return}
                           </span>
                         </div>
-                        <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
-                          <CalendarDays size={15} />
-                        </span>
                       </button>
                       {openMultiDateIndex === -2 ? (
                         <FareCalendarPicker
                           from={resolveLocationCode(to, locationOptions)}
                           to={resolveLocationCode(from, locationOptions)}
                           pax={pax}
+                          classCode={travelClass}
                           value={returnDate}
                           onChange={(nextDate) => {
                             setReturnDate(nextDate)
@@ -1153,7 +1124,7 @@ export default function Home() {
                       setActiveAirportField(null)
                       onSearch()
                     }}
-                    className="luxury-search-cta inline-flex min-h-[54px] items-center justify-center gap-2 rounded-[16px] px-5 text-[14px] font-bold tracking-[0.02em] text-white transition-all duration-300 sm:min-h-[60px] sm:px-6 sm:text-[15px] xl:min-h-full xl:rounded-none xl:rounded-r-[20px]"
+                    className="luxury-search-cta inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[14px] px-4 text-[14px] font-semibold text-white transition-all duration-300 sm:min-h-[48px] xl:m-1.5 xl:min-h-[44px] xl:rounded-[14px]"
                     whileHover={{ y: -2, scale: 1.01 }}
                     whileTap={{ scale: 0.985 }}
                   >
@@ -1163,166 +1134,23 @@ export default function Home() {
               )}
 
               </BookingGlassBar>
+              <div className="mt-8 grid w-full max-w-[1320px] grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {heroBenefits.map((item) => (
+                  <div key={item.title} className="flex items-center gap-4 text-white/80">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/12 bg-white/8 text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] backdrop-blur-md">
+                      {item.icon}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[14px] font-semibold text-white">{item.title}</span>
+                      <span className="mt-1 block text-[13px] text-white/62">{item.text}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
             </motion.div>
             </div>
       </HeroSection>
 
-      <section className={faqSectionClass}>
-        <div className={faqGlowClass} />
-        <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
-          <div className="text-center">
-            <div className={sectionBadgeClass}>
-              <CircleHelp size={14} />
-              {copy.faqBadge}
-            </div>
-            <h2 className={sectionTitleClass}>
-              {copy.faqTitleA}
-              <span className={sectionTitleAccentClass}>
-                {copy.faqTitleB}
-              </span>
-            </h2>
-            <p className={sectionDescriptionClass.replace("max-w-[760px]", "max-w-[720px]")}>
-              {copy.faqDesc}
-            </p>
-          </div>
-
-          <div className={faqPanelClass}>
-            <div className="grid gap-4 md:grid-cols-[1fr_170px]">
-              <label className="block">
-                <div className={`mb-2 text-sm font-semibold ${isDarkTheme ? "text-[#d4e2fb]" : "text-[#334155]"}`}>
-                  {copy.ask}
-                </div>
-                <div className={faqInputWrapClass}>
-                  <CircleHelp size={18} className={isDarkTheme ? "text-[#9fc7ff]" : "text-[#8da0ba]"} />
-                  <input
-                    value={faqQuestion}
-                    onChange={(e) => setFaqQuestion(e.target.value)}
-                    className={faqInputClass}
-                    placeholder={copy.askPlaceholder}
-                  />
-                </div>
-              </label>
-
-              <button
-                type="button"
-                className={faqSendButtonClass}
-              >
-                <Send size={16} />
-                {copy.send}
-              </button>
-            </div>
-
-            <div className="mt-8 space-y-3">
-              {copy.faqItems.map((item, index) => {
-                const isOpen = faqOpen === index
-
-                return (
-                  <div
-                    key={item.question}
-                    className={faqItemClass}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setFaqOpen(isOpen ? -1 : index)}
-                      className={`flex w-full items-center gap-3 px-4 py-4 text-left transition sm:px-5 ${isDarkTheme ? "hover:bg-white/8" : "hover:bg-[#f8fbff]"}`}
-                    >
-                      <span className={faqIconClass}>
-                        <CircleHelp size={16} />
-                      </span>
-                      <span className={faqQuestionTextClass}>
-                        {item.question}
-                      </span>
-                      <ChevronDown
-                        size={18}
-                        className={`shrink-0 text-[#4790d8] transition ${isOpen ? "rotate-180" : ""}`}
-                      />
-                    </button>
-
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        height: isOpen ? "auto" : 0,
-                        opacity: isOpen ? 1 : 0,
-                      }}
-                      transition={{ duration: 0.24, ease: "easeOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className={faqAnswerClass}>
-                        {item.answer}
-                      </div>
-                    </motion.div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className={helpSectionClass}>
-        <div className="relative mx-auto max-w-[1440px] 2xl:max-w-[1600px]">
-          <div className="text-center">
-            <div className={sectionBadgeClass}>
-              <CreditCard size={14} />
-              {copy.helpBadge}
-            </div>
-            <h2 className={sectionTitleClass}>
-              {copy.helpTitleA}
-              <span className={sectionTitleAccentClass}>
-                {copy.helpTitleB}
-              </span>
-            </h2>
-            <p className={sectionDescriptionClass}>
-              {copy.helpDesc}
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            <HelpCard
-              icon={<CreditCard size={34} />}
-              accent="blue"
-              title={copy.helpCards[0].title}
-              text={copy.helpCards[0].text}
-              isDark={isDarkTheme}
-            >
-              <div className="mt-4 flex flex-wrap gap-2">
-                {["Click", "Visa", "Mastercard", "Humo"].map((item) => (
-                  <span
-                    key={item}
-                    className={isDarkTheme ? "rounded-full border border-[#5d7fba]/42 bg-[rgba(13,30,62,0.56)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#cfe0fb] shadow-[0_10px_24px_rgba(2,8,24,0.2)]" : "rounded-full border border-[#d7e3f5] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#45628f] shadow-[0_8px_18px_rgba(17,24,39,0.04)]"}
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </HelpCard>
-
-            <HelpCard
-              icon={<Ticket size={34} />}
-              accent="gold"
-              title={copy.helpCards[1].title}
-              text={copy.helpCards[1].text}
-              isDark={isDarkTheme}
-            >
-              <p className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-[#cfe0fb]" : "text-[#475569]"}`}>
-                {copy.helpCards[1].extra}
-              </p>
-            </HelpCard>
-
-            <HelpCard
-              icon={<RefreshCcw size={34} />}
-              accent="rose"
-              title={copy.helpCards[2].title}
-              text={copy.helpCards[2].text}
-              isDark={isDarkTheme}
-            >
-              <p className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-[#cfe0fb]" : "text-[#475569]"}`}>
-                {copy.helpCards[2].extra}
-              </p>
-            </HelpCard>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }
@@ -1450,7 +1278,7 @@ function HomeAutocompleteField({
 
   const optionButtonClass = (activeOption: boolean) =>
     [
-      "flex w-full items-center justify-between px-4 py-3 text-left transition",
+      "premium-lift flex w-full items-center justify-between px-4 py-3 text-left",
       isDark
         ? activeOption
           ? "bg-[rgba(42,82,150,0.36)]"
@@ -1550,7 +1378,7 @@ function HomeAutocompleteField({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { pickOption(option); onDismiss?.() }}
-                  className={`flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left transition ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#f8fbff]"}`}
+                  className={`premium-lift flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#f8fbff]"}`}
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <span className="luxury-search-icon h-9 w-9 shrink-0 rounded-[12px]">
@@ -1582,11 +1410,11 @@ function HomeAutocompleteField({
         className={[
           compact
             ? isDark
-              ? "luxury-search-segment luxury-search-divider relative flex min-h-[58px] items-center gap-3 rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[64px] sm:px-5 xl:min-h-[66px] xl:border-0 xl:bg-transparent xl:shadow-none xl:backdrop-blur-none xl:after:block after:hidden"
-              : "luxury-search-segment luxury-search-divider relative flex min-h-[58px] items-center gap-3 rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[66px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
+              ? "luxury-search-segment relative flex min-h-[64px] items-center gap-4 rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-r xl:border-white/18 xl:bg-transparent xl:px-7 xl:shadow-none xl:backdrop-blur-none"
+              : "luxury-search-segment relative flex min-h-[44px] items-center gap-3 rounded-[10px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[52px] sm:rounded-[12px] sm:px-3.5 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-r xl:border-[#cfcfcf] xl:bg-transparent xl:px-6 xl:shadow-none"
             : isDark
-              ? "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px]"
-              : "relative flex min-h-[58px] items-center gap-3 rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]",
+              ? "relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-3 py-2 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[58px] sm:rounded-2xl sm:px-4 sm:py-2.5"
+              : "relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#e3eaf3] bg-white px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:min-h-[58px] sm:rounded-2xl sm:px-4 sm:py-2.5",
           compact
             ? active ? isDark ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)] xl:bg-transparent xl:shadow-none" : "" : ""
             : active
@@ -1597,17 +1425,20 @@ function HomeAutocompleteField({
         ].join(" ")}
         data-active={compact ? (active ? "true" : "false") : undefined}
       >
-        <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
-          {icon ?? <Search size={18} />}
+        <span className={["grid h-6 w-6 shrink-0 place-items-center xl:h-7 xl:w-7", isDark ? "text-white/72" : "text-[#5f6368]"].join(" ")}>
+          {icon ?? <Search size={16} />}
         </span>
         <div className="flex min-w-0 flex-1 flex-col">
-          {compact ? (
-            <div className="luxury-search-label mb-1 text-[10px] font-semibold uppercase">
+          {!compact ? (
+            <div className={["mb-1 text-[9px] font-bold uppercase tracking-[0.16em] sm:mb-1.5 sm:text-[10px]", isDark ? "text-white/78" : "luxury-search-label"].join(" ")}>
               {label}
             </div>
           ) : null}
           <input
-            className="luxury-search-input w-full bg-transparent text-[14px] font-medium outline-none sm:text-[15px]"
+            className={isDark
+              ? "w-full min-w-[96px] bg-transparent text-[16px] font-medium leading-none text-white outline-none placeholder:text-white/58 sm:text-[17px] xl:min-w-[132px] xl:text-[17px]"
+              : "w-full min-w-[96px] bg-transparent text-[13px] font-normal leading-none text-[#111111] outline-none placeholder:text-[#8a8a8a] sm:text-[16px] xl:min-w-[132px] xl:text-[16px]"
+            }
             placeholder={placeholder}
             value={value}
             onFocus={() => {
@@ -1688,6 +1519,9 @@ function PassengerField({
   onActivate,
   label,
   valueLabel,
+  cabinLabel,
+  travelClass,
+  onTravelClassChange,
   icon,
   isDark,
   compact = false,
@@ -1697,6 +1531,9 @@ function PassengerField({
   onActivate?: () => void
   label?: string
   valueLabel?: string
+  cabinLabel?: string
+  travelClass?: TravelClassCode
+  onTravelClassChange?: (value: TravelClassCode) => void
   icon?: ReactNode
   isDark: boolean
   compact?: boolean
@@ -1717,6 +1554,7 @@ function PassengerField({
       done: "Tayyor",
       close: "Yo'lovchi oynasini yopish",
       cabin: "Ekonom",
+      cabinTitle: "Xizmat klassi",
       adults: "Kattalar",
       adultsHint: "12 yoshdan katta",
       children: "Bolalar",
@@ -1733,6 +1571,7 @@ function PassengerField({
       done: "Готово",
       close: "Закрыть окно пассажиров",
       cabin: "Эконом",
+      cabinTitle: "Класс обслуживания",
       adults: "Взрослые",
       adultsHint: "старше 12 лет",
       children: "Дети",
@@ -1749,6 +1588,7 @@ function PassengerField({
       done: "Done",
       close: "Close passenger panel",
       cabin: "Economy",
+      cabinTitle: "Cabin class",
       adults: "Adults",
       adultsHint: "12 years and older",
       children: "Children",
@@ -1858,67 +1698,58 @@ function PassengerField({
     },
   ]
   const passengerSummary = valueLabel ?? `${pax} ${safeCopy.people}`
+  const selectedTravelClass = travelClass ?? "Y"
+  const serviceClasses: Array<{ code: TravelClassCode; label: string }> = [
+    { code: "Y", label: safeCopy.cabin },
+    { code: "B", label: language === "uz" ? "Biznes" : language === "ru" ? "Бизнес" : "Business" },
+    { code: "F", label: language === "uz" ? "Birinchi" : language === "ru" ? "Первый" : "First" },
+  ]
 
   const fieldShellClass = [
     compact
       ? isDark
-        ? "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:backdrop-blur-none xl:after:block after:hidden"
-        : "luxury-search-segment luxury-search-divider pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-[18px] border border-[#e3edf7] bg-[#fbfdff] px-4 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[64px] sm:px-5 xl:min-h-[60px] xl:border-0 xl:bg-transparent xl:shadow-none xl:after:block after:hidden"
+        ? "luxury-search-segment pointer-events-auto relative flex min-h-[64px] items-center overflow-visible rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-l xl:border-white/18 xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
+        : "luxury-search-segment pointer-events-auto relative flex min-h-[44px] items-center overflow-visible rounded-[10px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[52px] sm:rounded-[12px] sm:px-3.5 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none"
       : isDark
         ? "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px]"
         : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5",
     open
       ? isDark
         ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
-        : "z-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.8)_0%,rgba(247,250,255,0.66)_100%)] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+        : "z-40 bg-[#EBEBEB] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
       : isDark
         ? "z-10 hover:bg-[linear-gradient(180deg,rgba(24,48,92,0.82)_0%,rgba(11,28,62,0.62)_100%)]"
-        : "z-10 hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.62)_0%,rgba(247,250,255,0.48)_100%)]",
+        : "z-10 hover:bg-[#e4e4e4]",
   ].join(" ")
 
-  const dropdownPanelClass = isDark
-    ? "fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.96)_0%,rgba(9,24,54,0.94)_100%)] p-4 shadow-[0_28px_80px_rgba(2,8,24,0.48)] backdrop-blur-[22px] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[360px] xl:rounded-[22px]"
-    : "fixed inset-x-3 bottom-3 z-[130] rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.96)_100%)] p-4 shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[360px] xl:rounded-[22px] xl:bg-white"
+  const dropdownPanelClass =
+    "fixed inset-x-3 bottom-2 z-[130] rounded-[18px] border border-[#d6d6d6] bg-[#EBEBEB] p-4 shadow-[0_18px_44px_rgba(15,23,42,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+14px)] xl:bottom-auto xl:z-[140] xl:w-[560px] xl:rounded-[22px] xl:border-0 xl:bg-white xl:p-5"
 
   const dropdownHandleClass = isDark
-    ? "mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#5d7fba]/45 xl:hidden"
-    : "mx-auto mb-3 h-1.5 w-14 rounded-full bg-[#d8e1ee] xl:hidden"
+    ? "mx-auto mb-3 h-1 w-10 rounded-full bg-[#5d7fba]/45 xl:hidden"
+    : "mx-auto mb-3 h-1 w-10 rounded-full bg-[#c8cdd6] xl:hidden"
 
-  const dropdownTitleClass = isDark
-    ? "text-sm font-semibold text-white"
-    : "text-sm font-semibold text-[#0f172a]"
+  const dropdownTitleClass = "text-[16px] font-semibold text-[#1f1f1f] xl:text-[20px]"
 
-  const passengerRowClass = isDark
-    ? "flex items-center justify-between gap-3 rounded-[18px] border border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
-    : "flex items-center justify-between gap-3 rounded-[18px] border border-[#e7edf6] bg-white/90 px-3 py-3"
+  const passengerRowClass =
+    "flex items-center justify-between gap-3 py-2 xl:py-3"
 
-  const passengerRowTitleClass = isDark
-    ? "text-[15px] font-bold text-white"
-    : "text-[15px] font-bold text-[#0f172a]"
+  const passengerRowTitleClass = "text-[15px] font-normal leading-tight text-[#1f1f1f] xl:text-[20px]"
 
-  const passengerRowHintClass = isDark
-    ? "text-[12px] text-[#b9cceb]"
-    : "text-[12px] text-[#64748b]"
+  const passengerRowHintClass = "text-[12px] leading-tight text-[#686868] xl:text-[16px]"
 
-  const counterBoxClass = isDark
-    ? "flex shrink-0 items-center gap-3 rounded-[14px] border border-[#5d7fba]/38 bg-[rgba(8,22,50,0.52)] px-2.5 py-2"
-    : "flex shrink-0 items-center gap-3 rounded-[14px] border border-[#d7e6f7] bg-[#f8fbff] px-2.5 py-2"
+  const counterBoxClass = "flex shrink-0 items-center gap-4 xl:gap-6"
 
-  const counterButtonClass = isDark
-    ? "grid h-9 w-9 place-items-center rounded-full border-2 border-[#60b7ff] text-xl font-semibold leading-none text-[#8fd0ff] transition hover:bg-[#1d4f8d]/40 disabled:cursor-not-allowed disabled:border-[#4a6799] disabled:text-[#7895bd] disabled:hover:bg-transparent"
-    : "grid h-9 w-9 place-items-center rounded-full border-2 border-[#1697ea] text-xl font-semibold leading-none text-[#1697ea] transition hover:bg-[#eaf6ff] disabled:cursor-not-allowed disabled:border-[#bfd8ea] disabled:text-[#bfd8ea] disabled:hover:bg-transparent"
+  const counterMinusClass =
+    "premium-icon-button grid h-9 w-9 place-items-center rounded-full bg-white text-[#777777] hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:text-[#a9a9a9] xl:h-11 xl:w-11"
+  const counterPlusClass =
+    "premium-icon-button grid h-9 w-9 place-items-center rounded-full bg-[#e8f4ff] text-[#0878ff] hover:bg-[#dcedff] disabled:cursor-not-allowed disabled:text-[#99c8ff] xl:h-11 xl:w-11"
 
-  const counterValueClass = isDark
-    ? "min-w-[18px] text-center text-lg font-bold text-white"
-    : "min-w-[18px] text-center text-lg font-bold text-[#0f172a]"
+  const counterValueClass = "min-w-[18px] text-center text-[18px] font-normal text-[#111111] xl:text-[22px]"
 
-  const morePassengersClass = isDark
-    ? "mt-4 text-sm font-medium text-[#8fd0ff] underline underline-offset-4"
-    : "mt-4 text-sm font-medium text-[#1697ea] underline underline-offset-4"
+  const morePassengersClass = "hidden"
 
-  const doneButtonClass = isDark
-    ? "mt-3 h-11 w-full rounded-[16px] border border-[#5d7fba]/42 bg-[linear-gradient(135deg,#4b79ff_0%,#2f63df_45%,#214fb8_100%)] text-sm font-semibold text-white shadow-[0_16px_34px_rgba(33,79,184,0.32)]"
-    : "mt-3 h-11 w-full rounded-[16px] bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] text-sm font-semibold text-white"
+  const doneButtonClass = "hidden"
 
   return (
     <div
@@ -1933,30 +1764,26 @@ function PassengerField({
         }}
         className="flex w-full items-center justify-between gap-2"
       >
-        <div className="flex items-center gap-3">
-          <span className="luxury-search-icon h-8 w-8 shrink-0 border border-[#d7e6f7] bg-[linear-gradient(180deg,#f7fbff_0%,#eaf4ff_100%)] text-[#2e9df2] shadow-[0_8px_18px_rgba(37,99,235,0.08)]">
-            {icon ?? <UsersRound size={18} />}
+        <div className="flex min-w-0 items-center gap-4">
+          <span className={["grid h-8 w-8 shrink-0 place-items-center", isDark ? "text-white/78" : "text-[#111111]"].join(" ")}>
+            {icon ?? <UsersRound size={16} />}
           </span>
-          <div>
-            {compact ? (
-              <div className="luxury-search-label mb-1 text-[10px] font-semibold uppercase">
+          <div className="flex min-w-0 flex-1 flex-col">
+            {!compact ? (
+              <div className={["mb-1.5 text-[10px] font-bold uppercase tracking-[0.16em]", isDark ? "text-white/78" : "luxury-search-label"].join(" ")}>
                 {label ?? safeCopy.passenger}
               </div>
             ) : null}
-            <div className="luxury-search-value text-[13px] font-semibold sm:text-[14px]">
-              {compact ? `${passengerSummary} - ${safeCopy.cabin}` : passengerSummary}
-            </div>
-            {!compact ? (
-              <div className="luxury-search-subvalue mt-1 text-[11px]">
-                {safeCopy.cabin}
+            <div className="flex min-w-0 items-center gap-4">
+              <div className={["truncate leading-none", isDark ? "text-[16px] font-medium text-white xl:text-[17px]" : "text-[14px] font-normal text-[#111111] xl:text-[15px]"].join(" ")}>
+                {passengerSummary}
               </div>
-            ) : null}
+              <div className={["hidden truncate leading-none xl:block", isDark ? "text-[16px] font-medium text-white/76 xl:text-[17px]" : "text-[14px] font-normal text-[#111111] xl:text-[15px]"].join(" ")}>
+                {cabinLabel ?? safeCopy.cabin}
+              </div>
+            </div>
           </div>
         </div>
-        <ChevronDown
-          size={15}
-          className={`shrink-0 text-white/56 transition ${open ? "rotate-180" : ""}`}
-        />
       </button>
 
       {open ? (
@@ -1969,10 +1796,20 @@ function PassengerField({
           />
           <div className={dropdownPanelClass}>
             <div className={dropdownHandleClass} />
-            <div className={dropdownTitleClass}>
-              {safeCopy.passengersCount}
+            <div className="mb-6 flex items-center justify-between">
+              <div className={dropdownTitleClass}>
+                {safeCopy.passengersCount}
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="premium-icon-button grid h-9 w-9 place-items-center rounded-full text-[#111111] hover:bg-[#f3f3f3]"
+                aria-label={safeCopy.close}
+              >
+                <X size={28} strokeWidth={1.8} />
+              </button>
             </div>
-            <div className="mt-3 space-y-2.5">
+            <div className="space-y-2">
               {passengerRows.map((row) => (
                 <div
                   key={row.key}
@@ -1989,9 +1826,9 @@ function PassengerField({
                       type="button"
                       onClick={row.decrement}
                       disabled={row.disableDecrement}
-                      className={counterButtonClass}
+                      className={counterMinusClass}
                     >
-                      -
+                      <Minus size={22} strokeWidth={1.8} />
                     </button>
                     <div className={counterValueClass}>
                       {row.value}
@@ -2000,12 +1837,32 @@ function PassengerField({
                       type="button"
                       onClick={row.increment}
                       disabled={row.disableIncrement}
-                      className={counterButtonClass}
+                      className={counterPlusClass}
                     >
-                      +
+                      <Plus size={25} strokeWidth={1.8} />
                     </button>
                   </div>
                 </div>
+              ))}
+            </div>
+            <div className="mt-4 text-[15px] font-semibold text-[#1f1f1f] xl:mt-8 xl:text-[20px]">
+              {safeCopy.cabinTitle}
+            </div>
+            <div className="mt-2.5 grid grid-cols-3 gap-2 xl:mt-4 xl:grid-cols-2 xl:gap-3">
+              {serviceClasses.map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  onClick={() => onTravelClassChange?.(item.code)}
+                  className={[
+                    "premium-choice-button h-9.5 rounded-full border text-[13px] font-medium bg-white xl:h-12.5 xl:text-[19px]",
+                    selectedTravelClass === item.code
+                      ? "border-[#0878ff] text-[#0878ff]"
+                      : "border-[#d6d6d6] text-[#1f1f1f] hover:border-[#0878ff] hover:text-[#0878ff]",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </button>
               ))}
             </div>
             <button
@@ -2028,50 +1885,4 @@ function PassengerField({
   )
 }
 
-function HelpCard({
-  icon,
-  title,
-  text,
-  accent,
-  isDark,
-  children,
-}: {
-  icon: ReactNode
-  title: string
-  text: string
-  accent: "blue" | "gold" | "rose"
-  isDark: boolean
-  children?: ReactNode
-}) {
-  const accentStyles = {
-    blue: isDark
-      ? "bg-[linear-gradient(135deg,rgba(66,120,220,0.34)_0%,rgba(28,62,132,0.28)_100%)] border-[#5d7fba]/42 text-[#9fc7ff]"
-      : "bg-[linear-gradient(135deg,#f5f9ff_0%,#e8f1ff_100%)] border-[#dce7fb] text-[#2f5ba8]",
-    gold: isDark
-      ? "bg-[linear-gradient(135deg,rgba(245,192,95,0.2)_0%,rgba(105,74,29,0.16)_100%)] border-[#a98751]/36 text-[#ffd891]"
-      : "bg-[linear-gradient(135deg,#fffaf2_0%,#fff2db_100%)] border-[#f0e0b8] text-[#93631a]",
-    rose: isDark
-      ? "bg-[linear-gradient(135deg,rgba(255,129,170,0.2)_0%,rgba(106,45,75,0.18)_100%)] border-[#a86282]/36 text-[#ffc3d8]"
-      : "bg-[linear-gradient(135deg,#fff7f9_0%,#fff0f3_100%)] border-[#f1d9df] text-[#9b506b]",
-  } as const
-
-  const cardClass = isDark
-    ? "rounded-[30px] border border-[#5d7fba]/42 bg-[linear-gradient(180deg,rgba(18,38,76,0.58)_0%,rgba(9,24,54,0.42)_100%)] p-6 shadow-[0_28px_70px_rgba(2,8,24,0.34)] backdrop-blur-[18px] transition hover:-translate-y-1 hover:shadow-[0_32px_80px_rgba(2,8,24,0.42)]"
-    : "rounded-[30px] border border-[#e8eef8] bg-white p-6 shadow-[0_24px_60px_rgba(17,24,39,0.08)] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(17,24,39,0.12)]"
-
-  return (
-    <div className={cardClass}>
-      <div
-        className={`grid h-24 w-24 place-items-center rounded-full border shadow-[0_14px_30px_rgba(17,24,39,0.06)] ${accentStyles[accent]}`}
-      >
-        {icon}
-      </div>
-      <h3 className={`mt-6 text-2xl font-extrabold leading-tight ${isDark ? "text-white" : "text-[#0f172a]"}`}>
-        {title}
-      </h3>
-      <p className={`mt-3 text-sm leading-7 sm:text-[15px] ${isDark ? "text-[#cfe0fb]" : "text-[#475569]"}`}>{text}</p>
-      {children}
-    </div>
-  )
-}
 
