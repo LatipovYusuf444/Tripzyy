@@ -8,7 +8,7 @@ export default function Layout() {
   const isHome = location.pathname === "/"
 
   return (
-    <div className={`layout-shell flex min-h-screen flex-col ${isHome ? "bg-[#edf2f6]" : "bg-[#EEF1FB] dark:bg-[#07152f]"}`}>
+    <div className={`layout-shell ${isHome ? "home-layout" : "non-home-layout"} flex min-h-screen flex-col ${isHome ? "bg-[#edf2f6]" : "bg-[#EEF1FB] dark:bg-[#07152f]"}`}>
       <header className="fixed left-0 top-0 z-50 w-full">
         <Navbar />
       </header>

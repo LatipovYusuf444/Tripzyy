@@ -61,51 +61,53 @@ select {
 
 .tripzy-logo-crop-mobile {
   position: relative;
-  width: 224px;
-  height: 50px;
+  width: 188px;
+  height: 42px;
 }
 
 .tripzy-logo-image-mobile {
   position: absolute;
   left: 0;
   top: 0;
-  width: 458px;
-  transform: translate(-121px, -123px);
+  width: 385px;
+  transform: translate(-102px, -104px);
 }
 
 .tripzy-logo-crop-home-mobile {
   position: relative;
-  width: 178px;
-  height: 40px;
+  width: 162px;
+  height: 36px;
+  margin-left: 8px;
 }
 
 .tripzy-logo-image-home-mobile {
   position: absolute;
   left: 0;
   top: 0;
-  width: 365px;
-  transform: translate(-96px, -98px);
+  width: 332px;
+  transform: translate(-88px, -89px);
 }
 
 @media (min-width: 640px) {
   .tripzy-logo-crop-mobile {
-    width: 244px;
-    height: 54px;
+    width: 214px;
+    height: 48px;
   }
 
   .tripzy-logo-image-mobile {
-    width: 500px;
-    transform: translate(-132px, -135px);
+    width: 438px;
+    transform: translate(-116px, -118px);
   }
 
   .tripzy-logo-crop-home-mobile {
-    width: 196px;
-    height: 44px;
+    width: 184px;
+    height: 41px;
+    margin-left: 10px;
   }
 
   .tripzy-logo-image-home-mobile {
-    width: 402px;
-    transform: translate(-106px, -108px);
+    width: 378px;
+    transform: translate(-100px, -101px);
   }
 }
 
@@ -118,6 +120,40 @@ select {
   .tripzy-logo-image-mobile {
     width: 344px;
     transform: translate(-91px, -93px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .non-home-layout header nav {
+    border-bottom-color: transparent !important;
+    box-shadow: none !important;
+    min-height: 104px;
+    padding: 22px 20px 16px !important;
+  }
+
+  .non-home-layout header nav > div {
+    align-items: center !important;
+    max-width: 520px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .non-home-layout .layout-main {
+    background: #ebebeb !important;
+    background-image: none !important;
+    padding-top: 104px !important;
+  }
+
+  html[data-theme="dark"] .non-home-layout .layout-main,
+  body[data-theme="dark"] .non-home-layout .layout-main {
+    background: #07152f !important;
+  }
+
+  .non-home-layout .flights-page,
+  .non-home-layout .secondary-page-shell,
+  .non-home-layout .checkout-mobile-light,
+  .non-home-layout .flight-details-light {
+    padding-top: 0 !important;
   }
 }
 
@@ -954,4 +990,866 @@ button:disabled {
   .checkout-mobile-light ::placeholder {
     color: #97a5ba !important;
   }
+}
+
+/* Dark glass system for all non-home pages. Home uses its own hero/search styling. */
+html[data-theme="dark"] .flights-page,
+body[data-theme="dark"] .flights-page,
+html[data-theme="dark"] .secondary-page-shell,
+body[data-theme="dark"] .secondary-page-shell,
+html[data-theme="dark"] .checkout-mobile-light,
+body[data-theme="dark"] .checkout-mobile-light,
+html[data-theme="dark"] .flight-details-light,
+body[data-theme="dark"] .flight-details-light {
+  color-scheme: dark !important;
+  background:
+    radial-gradient(900px 360px at 14% 0%, rgba(64, 120, 226, 0.24), transparent 62%),
+    radial-gradient(760px 320px at 86% 4%, rgba(42, 88, 186, 0.20), transparent 58%),
+    linear-gradient(180deg, #061026 0%, #0a1833 48%, #071126 100%) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .secondary-page-shell .secondary-page-overlay,
+body[data-theme="dark"] .secondary-page-shell .secondary-page-overlay {
+  display: block !important;
+  background:
+    radial-gradient(920px 360px at 14% 0%, rgba(90, 145, 255, 0.20), transparent 62%),
+    radial-gradient(720px 300px at 86% 6%, rgba(83, 134, 235, 0.14), transparent 58%),
+    radial-gradient(760px 320px at 50% 24%, rgba(31, 72, 150, 0.18), transparent 62%) !important;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-white"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="!bg-white"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EBEBEB]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EEF1FB]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F8F7F4]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F7F9FF]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F3F1ED]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F2F5FD]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#fbfdff]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-white"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="!bg-white"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EBEBEB]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EEF1FB]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F8F7F4]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F7F9FF]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F3F1ED]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F2F5FD]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#fbfdff]"] {
+  background:
+    linear-gradient(180deg, rgba(21, 48, 98, 0.76) 0%, rgba(10, 27, 62, 0.64) 100%),
+    radial-gradient(circle at 15% 0%, rgba(97, 156, 255, 0.18), transparent 54%) !important;
+  border-color: rgba(112, 158, 232, 0.45) !important;
+  box-shadow:
+    0 24px 60px rgba(2, 8, 24, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(18px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(input, textarea, select),
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(input, textarea, select) {
+  background: rgba(9, 24, 55, 0.58) !important;
+  border-color: rgba(112, 158, 232, 0.46) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(input, textarea)::placeholder,
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(input, textarea)::placeholder {
+  color: rgba(204, 221, 255, 0.70) !important;
+  -webkit-text-fill-color: rgba(204, 221, 255, 0.70) !important;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(h1, h2, h3, h4, h5, h6, p, label, span, div, td, th, li, strong, small),
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(h1, h2, h3, h4, h5, h6, p, label, span, div, td, th, li, strong, small),
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="text-[#111"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="text-[#1d"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="text-[#5F"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="text-[#6"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="text-[#7"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="text-[#8"] {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  :is(svg, svg *) {
+  color: currentColor;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="border-[#D9D5CE]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="border-[#E3E8F7]"],
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="border-[#dde5f0]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="border-[#D9D5CE]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="border-[#E3E8F7]"],
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  [class*="border-[#dde5f0]"] {
+  border-color: rgba(112, 158, 232, 0.46) !important;
+}
+
+html[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]):not([class*="text-white"]),
+body[data-theme="dark"] :is(.flights-page, .secondary-page-shell, .checkout-mobile-light, .flight-details-light)
+  button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]):not([class*="text-white"]) {
+  background:
+    linear-gradient(180deg, rgba(23, 50, 98, 0.72) 0%, rgba(12, 29, 64, 0.58) 100%) !important;
+  border-color: rgba(120, 166, 240, 0.46) !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Flights dark mode refinement: deep navy glass, no heavy shadows, no light-mode washout. */
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] {
+  background:
+    radial-gradient(860px 360px at 15% -8%, rgba(42, 96, 190, 0.24), transparent 62%),
+    radial-gradient(720px 320px at 88% 2%, rgba(16, 132, 255, 0.12), transparent 60%),
+    linear-gradient(180deg, #050d20 0%, #071735 42%, #041124 100%) !important;
+  color: #f7fbff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-white"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="!bg-white"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EBEBEB]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EEF1FB]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F8F7F4]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F3F1ED]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F7F9FF]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F2F5FD]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-white"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="!bg-white"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EBEBEB]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#EEF1FB]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F8F7F4]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F3F1ED]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F7F9FF]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(section, article, aside, header, footer, div, form)[class*="bg-[#F2F5FD]"] {
+  background:
+    linear-gradient(180deg, rgba(13, 35, 76, 0.88) 0%, rgba(7, 23, 55, 0.80) 100%),
+    radial-gradient(circle at 16% 0%, rgba(80, 142, 255, 0.14), transparent 52%) !important;
+  border-color: rgba(93, 148, 235, 0.42) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="shadow-"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="shadow-"] {
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(h1, h2, h3, h4, h5, h6, p, label, span, div, td, th, li, strong, small),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"]
+  :is(h1, h2, h3, h4, h5, h6, p, label, span, div, td, th, li, strong, small),
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#111"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#1d"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#5F"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#6"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#7"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#8"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#111"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#1d"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#5F"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#6"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#7"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#8"] {
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#4b"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#596"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#777"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#4b"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#596"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#777"] {
+  color: rgba(213, 228, 255, 0.78) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#174A8B]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#315d8f]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#174A8B]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="text-[#315d8f]"] {
+  color: #8ec5ff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] :is(input, textarea, select),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] :is(input, textarea, select) {
+  background: rgba(4, 16, 40, 0.66) !important;
+  border-color: rgba(96, 151, 240, 0.42) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]):not([class*="text-white"]),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]):not([class*="text-white"]) {
+  background: rgba(8, 25, 58, 0.70) !important;
+  border-color: rgba(96, 151, 240, 0.46) !important;
+  color: #f8fbff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="bg-[#174A8B]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="bg-[#174A8B]"] {
+  background: linear-gradient(180deg, #1b5aa2 0%, #124681 100%) !important;
+  border-color: rgba(136, 184, 255, 0.52) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label input,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label input,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] input[class*="bg-transparent"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] input[class*="bg-transparent"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] input:-webkit-autofill,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] input:-webkit-autofill {
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 999999s ease-in-out 0s !important;
+  box-shadow: 0 0 0 1000px rgba(4, 16, 40, 0) inset !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label {
+  background:
+    linear-gradient(180deg, rgba(17, 43, 88, 0.76) 0%, rgba(8, 25, 58, 0.70) 100%) !important;
+  border-color: rgba(105, 159, 244, 0.50) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label div,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label div,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label span,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label span {
+  background-color: transparent !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#EEEAE4]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#EEEAE4]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="!bg-[#EBEBEB]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="!bg-[#EBEBEB]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#E7F2FF]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#E7F2FF]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#DDEEFF]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#DDEEFF]"] {
+  background: rgba(17, 55, 110, 0.82) !important;
+  border-color: rgba(120, 178, 255, 0.48) !important;
+  color: #eaf4ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#C9C4BD]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#dfe5ee]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#C9C4BD]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="bg-[#dfe5ee]"] {
+  background: rgba(103, 157, 235, 0.38) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="divide-[#E6E2DC]"] > :not([hidden]) ~ :not([hidden]),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="divide-[#E6E2DC]"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(103, 157, 235, 0.30) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="border-[#E6E2DC]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="border-[#ECE8E1]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="border-[#D9D5CE]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="border-[#E6E2DC]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="border-[#ECE8E1]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] [class*="border-[#D9D5CE]"] {
+  border-color: rgba(103, 157, 235, 0.36) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="!bg-white"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="bg-white"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="!bg-white"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="bg-white"] {
+  background: rgba(10, 31, 70, 0.84) !important;
+  border-color: rgba(105, 159, 244, 0.48) !important;
+  color: #eef7ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[disabled],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[disabled] {
+  background: rgba(15, 40, 82, 0.68) !important;
+  border-color: rgba(105, 159, 244, 0.30) !important;
+  color: rgba(222, 237, 255, 0.72) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="bg-[#DDEEFF]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="bg-[#DDEEFF]"] {
+  background: linear-gradient(180deg, #25a8ff 0%, #0874d9 100%) !important;
+  border: 1px solid rgba(191, 226, 255, 0.58) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"]:not([class*="bg-[#174A8B]"]):not([class*="bg-[#DDEEFF]"]),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"]:not([class*="bg-[#174A8B]"]):not([class*="bg-[#DDEEFF]"]) {
+  background: rgba(7, 28, 68, 0.78) !important;
+  border-color: rgba(120, 178, 255, 0.46) !important;
+  color: #f4f9ff !important;
+  -webkit-text-fill-color: #f4f9ff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"] *,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"] * {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"][class*="text-white"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"][class*="text-white"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"][class*="bg-[#174A8B]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"][class*="bg-[#174A8B]"] {
+  background: linear-gradient(180deg, #1f6fc1 0%, #15518f 100%) !important;
+  border-color: rgba(166, 207, 255, 0.54) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"]:disabled,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"]:disabled,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-full"]:disabled,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-full"]:disabled {
+  background: rgba(12, 35, 76, 0.72) !important;
+  border-color: rgba(108, 161, 235, 0.34) !important;
+  color: rgba(229, 241, 255, 0.76) !important;
+  -webkit-text-fill-color: rgba(229, 241, 255, 0.76) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-full"]:not([class*="bg-[#174A8B]"]),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-full"]:not([class*="bg-[#174A8B]"]) {
+  background: rgba(8, 29, 68, 0.78) !important;
+  border-color: rgba(115, 173, 250, 0.42) !important;
+  color: #eef7ff !important;
+  -webkit-text-fill-color: #eef7ff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label > div:not([class*="absolute"]):not([class*="grid"]):not([class*="flex"]),
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label > div:not([class*="absolute"]):not([class*="grid"]):not([class*="flex"]) {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label button,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label button {
+  background: transparent !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label input,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label input,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] label button,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] label button {
+  background-image: none !important;
+}
+
+/* Booking/details dark mode: readable itinerary, icons, forms and fare cards. */
+html[data-theme="dark"] .flight-details-light,
+body[data-theme="dark"] .flight-details-light,
+html[data-theme="dark"] .checkout-mobile-light,
+body[data-theme="dark"] .checkout-mobile-light {
+  color-scheme: dark !important;
+  background:
+    radial-gradient(820px 360px at 18% -4%, rgba(38, 100, 205, 0.22), transparent 62%),
+    linear-gradient(180deg, #050d20 0%, #071735 48%, #041124 100%) !important;
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .flight-details-light :is(.bg-white, [class*="bg-white"], [class*="dark:bg-white"], [class*="bg-[#F8F7F4]"], [class*="bg-[#F3F1ED]"], [class*="bg-[#EBEBEB]"]),
+body[data-theme="dark"] .flight-details-light :is(.bg-white, [class*="bg-white"], [class*="dark:bg-white"], [class*="bg-[#F8F7F4]"], [class*="bg-[#F3F1ED]"], [class*="bg-[#EBEBEB]"]),
+html[data-theme="dark"] .checkout-mobile-light :is(.bg-white, [class*="bg-white"], [class*="dark:bg-white"], [class*="bg-[#F8F7F4]"], [class*="bg-[#F3F1ED]"], [class*="bg-[#EBEBEB]"]),
+body[data-theme="dark"] .checkout-mobile-light :is(.bg-white, [class*="bg-white"], [class*="dark:bg-white"], [class*="bg-[#F8F7F4]"], [class*="bg-[#F3F1ED]"], [class*="bg-[#EBEBEB]"]) {
+  background:
+    linear-gradient(180deg, rgba(13, 35, 76, 0.90) 0%, rgba(7, 23, 55, 0.84) 100%),
+    radial-gradient(circle at 12% 0%, rgba(82, 145, 255, 0.13), transparent 55%) !important;
+  border-color: rgba(98, 154, 241, 0.42) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+}
+
+html[data-theme="dark"] .flight-details-light :is(h1, h2, h3, h4, h5, h6, p, label, span, div, li, small, strong),
+body[data-theme="dark"] .flight-details-light :is(h1, h2, h3, h4, h5, h6, p, label, span, div, li, small, strong),
+html[data-theme="dark"] .checkout-mobile-light :is(h1, h2, h3, h4, h5, h6, p, label, span, div, li, small, strong),
+body[data-theme="dark"] .checkout-mobile-light :is(h1, h2, h3, h4, h5, h6, p, label, span, div, li, small, strong),
+html[data-theme="dark"] .flight-details-light [class*="dark:text-[#111A34]"],
+html[data-theme="dark"] .flight-details-light [class*="text-[#111A34]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="dark:text-[#111A34]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="text-[#111A34]"] {
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .flight-details-light [class*="text-[#5F5A54]"],
+html[data-theme="dark"] .flight-details-light [class*="dark:text-[#5F5A54]"],
+html[data-theme="dark"] .flight-details-light [class*="text-[#77716A]"],
+html[data-theme="dark"] .flight-details-light [class*="dark:text-[#77716A]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="text-[#5F5A54]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="dark:text-[#5F5A54]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="text-[#77716A]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="dark:text-[#77716A]"] {
+  color: rgba(213, 228, 255, 0.78) !important;
+}
+
+html[data-theme="dark"] .flight-details-light [class*="text-[#174A8B]"],
+html[data-theme="dark"] .flight-details-light [class*="dark:text-[#174A8B]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="text-[#174A8B]"],
+html[data-theme="dark"] .checkout-mobile-light [class*="dark:text-[#174A8B]"] {
+  color: #8ec5ff !important;
+}
+
+html[data-theme="dark"] .flight-details-light :is(svg, svg *),
+body[data-theme="dark"] .flight-details-light :is(svg, svg *),
+html[data-theme="dark"] .checkout-mobile-light :is(svg, svg *),
+body[data-theme="dark"] .checkout-mobile-light :is(svg, svg *) {
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+html[data-theme="dark"] .flight-details-light :is([class*="border-[#D9D5CE]"], [class*="dark:border-[#D9D5CE]"], [class*="border-[#E6E2DC]"], [class*="border-[#ECE8E1]"]),
+body[data-theme="dark"] .flight-details-light :is([class*="border-[#D9D5CE]"], [class*="dark:border-[#D9D5CE]"], [class*="border-[#E6E2DC]"], [class*="border-[#ECE8E1]"]),
+html[data-theme="dark"] .checkout-mobile-light :is([class*="border-[#D9D5CE]"], [class*="dark:border-[#D9D5CE]"], [class*="border-[#E6E2DC]"], [class*="border-[#ECE8E1]"]),
+body[data-theme="dark"] .checkout-mobile-light :is([class*="border-[#D9D5CE]"], [class*="dark:border-[#D9D5CE]"], [class*="border-[#E6E2DC]"], [class*="border-[#ECE8E1]"]) {
+  border-color: rgba(105, 164, 250, 0.40) !important;
+}
+
+html[data-theme="dark"] .flight-details-light :is(input, textarea, select),
+body[data-theme="dark"] .flight-details-light :is(input, textarea, select),
+html[data-theme="dark"] .checkout-mobile-light :is(input, textarea, select),
+body[data-theme="dark"] .checkout-mobile-light :is(input, textarea, select) {
+  background: rgba(4, 17, 42, 0.70) !important;
+  border-color: rgba(105, 164, 250, 0.46) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flight-details-light :is(input, textarea)::placeholder,
+body[data-theme="dark"] .flight-details-light :is(input, textarea)::placeholder,
+html[data-theme="dark"] .checkout-mobile-light :is(input, textarea)::placeholder,
+body[data-theme="dark"] .checkout-mobile-light :is(input, textarea)::placeholder {
+  color: rgba(211, 226, 255, 0.64) !important;
+  -webkit-text-fill-color: rgba(211, 226, 255, 0.64) !important;
+}
+
+html[data-theme="dark"] .flight-details-light [class*="rounded-full"],
+body[data-theme="dark"] .flight-details-light [class*="rounded-full"],
+html[data-theme="dark"] .checkout-mobile-light [class*="rounded-full"],
+body[data-theme="dark"] .checkout-mobile-light [class*="rounded-full"] {
+  background: rgba(14, 47, 97, 0.78) !important;
+  border-color: rgba(119, 178, 255, 0.44) !important;
+  color: #eef7ff !important;
+}
+
+html[data-theme="dark"] .flight-details-light button,
+body[data-theme="dark"] .flight-details-light button,
+html[data-theme="dark"] .checkout-mobile-light button,
+body[data-theme="dark"] .checkout-mobile-light button {
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flight-details-light button[class*="bg-[#174A8B]"],
+body[data-theme="dark"] .flight-details-light button[class*="bg-[#174A8B]"],
+html[data-theme="dark"] .checkout-mobile-light button[class*="bg-[#174A8B]"],
+body[data-theme="dark"] .checkout-mobile-light button[class*="bg-[#174A8B]"],
+html[data-theme="dark"] .flight-details-light button[class*="bg-[#0A84FF]"],
+body[data-theme="dark"] .flight-details-light button[class*="bg-[#0A84FF]"],
+html[data-theme="dark"] .checkout-mobile-light button[class*="bg-[#0A84FF]"],
+body[data-theme="dark"] .checkout-mobile-light button[class*="bg-[#0A84FF]"] {
+  background: linear-gradient(180deg, #2388f2 0%, #0b67c7 100%) !important;
+  border-color: rgba(178, 218, 255, 0.56) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .flight-details-light button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]),
+body[data-theme="dark"] .flight-details-light button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]),
+html[data-theme="dark"] .checkout-mobile-light button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]),
+body[data-theme="dark"] .checkout-mobile-light button:not([class*="bg-[#174A8B]"]):not([class*="bg-[#0A84FF]"]) {
+  background: rgba(8, 29, 68, 0.76) !important;
+  border-color: rgba(105, 164, 250, 0.42) !important;
+  color: #eef7ff !important;
+}
+
+/* About page dark mode: remove pale sections and keep every block in the dark-blue system. */
+html[data-theme="dark"] .about-page,
+body[data-theme="dark"] .about-page {
+  background:
+    radial-gradient(900px 360px at 16% -4%, rgba(48, 109, 221, 0.22), transparent 62%),
+    radial-gradient(760px 320px at 88% 0%, rgba(12, 127, 255, 0.12), transparent 58%),
+    linear-gradient(180deg, #050d20 0%, #071735 48%, #041124 100%) !important;
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[#EEF1FB]"],
+html[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[#F7F9FF]"],
+html[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[#F2F5FD]"],
+html[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-white"],
+html[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[#EEF1FB]"],
+body[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[#F7F9FF]"],
+body[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[#F2F5FD]"],
+body[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-white"],
+body[data-theme="dark"] .about-page :is(section, div, form)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]) {
+  background:
+    linear-gradient(180deg, rgba(14, 38, 82, 0.88) 0%, rgba(7, 24, 58, 0.80) 100%),
+    radial-gradient(circle at 12% 0%, rgba(82, 145, 255, 0.14), transparent 55%) !important;
+  border-color: rgba(102, 163, 252, 0.42) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+}
+
+html[data-theme="dark"] .about-page .absolute[class*="bg-[linear-gradient"],
+body[data-theme="dark"] .about-page .absolute[class*="bg-[linear-gradient"] {
+  background: transparent !important;
+}
+
+html[data-theme="dark"] .about-page :is(h1, h2, h3, h4, h5, h6, p, span, div, li, label, strong),
+body[data-theme="dark"] .about-page :is(h1, h2, h3, h4, h5, h6, p, span, div, li, label, strong),
+html[data-theme="dark"] .about-page [class*="text-[#111A34]"],
+html[data-theme="dark"] .about-page [class*="text-[#1b1f2a]"],
+body[data-theme="dark"] .about-page [class*="text-[#111A34]"],
+body[data-theme="dark"] .about-page [class*="text-[#1b1f2a]"] {
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .about-page [class*="text-[#4a5361]"],
+html[data-theme="dark"] .about-page [class*="text-[#5b6470]"],
+html[data-theme="dark"] .about-page [class*="text-[#6F7898]"],
+html[data-theme="dark"] .about-page [class*="text-[#6b7280]"],
+html[data-theme="dark"] .about-page [class*="text-[#8ea5cb]"],
+body[data-theme="dark"] .about-page [class*="text-[#4a5361]"],
+body[data-theme="dark"] .about-page [class*="text-[#5b6470]"],
+body[data-theme="dark"] .about-page [class*="text-[#6F7898]"],
+body[data-theme="dark"] .about-page [class*="text-[#6b7280]"],
+body[data-theme="dark"] .about-page [class*="text-[#8ea5cb]"] {
+  color: rgba(213, 228, 255, 0.78) !important;
+}
+
+html[data-theme="dark"] .about-page :is(svg, svg *),
+body[data-theme="dark"] .about-page :is(svg, svg *) {
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+html[data-theme="dark"] .about-page :is([class*="border-[#E3E8F7]"], [class*="border-[#35507f]"], [class*="border-[#dbe5f2]"]),
+body[data-theme="dark"] .about-page :is([class*="border-[#E3E8F7]"], [class*="border-[#35507f]"], [class*="border-[#dbe5f2]"]) {
+  border-color: rgba(102, 163, 252, 0.42) !important;
+}
+
+html[data-theme="dark"] .about-page input,
+body[data-theme="dark"] .about-page input {
+  background: rgba(4, 17, 42, 0.72) !important;
+  border-color: rgba(105, 164, 250, 0.46) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .about-page input::placeholder,
+body[data-theme="dark"] .about-page input::placeholder {
+  color: rgba(211, 226, 255, 0.64) !important;
+  -webkit-text-fill-color: rgba(211, 226, 255, 0.64) !important;
+}
+
+html[data-theme="dark"] .about-page button:not([class*="from-[#7A2E4E]"]):not([class*="from-[#ff6a00]"]):not([class*="bg-[#ff6a00]"]),
+body[data-theme="dark"] .about-page button:not([class*="from-[#7A2E4E]"]):not([class*="from-[#ff6a00]"]):not([class*="bg-[#ff6a00]"]) {
+  background: rgba(9, 31, 73, 0.78) !important;
+  border-color: rgba(102, 163, 252, 0.46) !important;
+  color: #eef7ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .about-page [data-partner-card],
+body[data-theme="dark"] .about-page [data-partner-card] {
+  background: rgba(248, 251, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .about-page [data-partner-card] img,
+body[data-theme="dark"] .about-page [data-partner-card] img {
+  filter: brightness(1.12) contrast(1.05);
+}
+
+/* Services page dark mode: keep the entire page in dark-blue glass, including mobile. */
+html[data-theme="dark"] .services-page,
+body[data-theme="dark"] .services-page {
+  color-scheme: dark !important;
+  background:
+    radial-gradient(880px 360px at 14% -4%, rgba(50, 111, 224, 0.23), transparent 62%),
+    radial-gradient(720px 320px at 88% 0%, rgba(14, 123, 255, 0.12), transparent 58%),
+    linear-gradient(180deg, #050d20 0%, #071735 48%, #041124 100%) !important;
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .services-page .secondary-page-overlay,
+body[data-theme="dark"] .services-page .secondary-page-overlay {
+  display: block !important;
+  background:
+    radial-gradient(900px 360px at 16% 0%, rgba(73, 134, 255, 0.18), transparent 62%),
+    radial-gradient(720px 300px at 86% 4%, rgba(91, 142, 235, 0.12), transparent 58%) !important;
+}
+
+html[data-theme="dark"] .services-page :is(div, section)[class*="bg-[#F7F9FF]"],
+html[data-theme="dark"] .services-page :is(div, section)[class*="bg-[#F2F5FD]"],
+html[data-theme="dark"] .services-page :is(div, section)[class*="bg-[#EEF1FB]"],
+html[data-theme="dark"] .services-page :is(div, section)[class*="bg-white"],
+html[data-theme="dark"] .services-page :is(div, section)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body[data-theme="dark"] .services-page :is(div, section)[class*="bg-[#F7F9FF]"],
+body[data-theme="dark"] .services-page :is(div, section)[class*="bg-[#F2F5FD]"],
+body[data-theme="dark"] .services-page :is(div, section)[class*="bg-[#EEF1FB]"],
+body[data-theme="dark"] .services-page :is(div, section)[class*="bg-white"],
+body[data-theme="dark"] .services-page :is(div, section)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]) {
+  background:
+    linear-gradient(180deg, rgba(14, 38, 82, 0.88) 0%, rgba(7, 24, 58, 0.80) 100%),
+    radial-gradient(circle at 14% 0%, rgba(82, 145, 255, 0.14), transparent 55%) !important;
+  border-color: rgba(102, 163, 252, 0.42) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+}
+
+html[data-theme="dark"] .services-page :is(h1, h2, h3, h4, h5, h6, p, span, div, strong),
+body[data-theme="dark"] .services-page :is(h1, h2, h3, h4, h5, h6, p, span, div, strong),
+html[data-theme="dark"] .services-page [class*="text-[#111A34]"],
+body[data-theme="dark"] .services-page [class*="text-[#111A34]"] {
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .services-page [class*="text-[#6F7898]"],
+html[data-theme="dark"] .services-page [class*="text-[#8A93B2]"],
+html[data-theme="dark"] .services-page [class*="text-[#a9bddb]"],
+body[data-theme="dark"] .services-page [class*="text-[#6F7898]"],
+body[data-theme="dark"] .services-page [class*="text-[#8A93B2]"],
+body[data-theme="dark"] .services-page [class*="text-[#a9bddb]"] {
+  color: rgba(213, 228, 255, 0.78) !important;
+}
+
+html[data-theme="dark"] .services-page :is([class*="border-[#E3E8F7]"], [class*="border-[#35507f]"]),
+body[data-theme="dark"] .services-page :is([class*="border-[#E3E8F7]"], [class*="border-[#35507f]"]) {
+  border-color: rgba(102, 163, 252, 0.42) !important;
+}
+
+html[data-theme="dark"] .services-page :is(svg, svg *),
+body[data-theme="dark"] .services-page :is(svg, svg *) {
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+html[data-theme="dark"] .services-page [class*="text-[#5C7CFA]"],
+body[data-theme="dark"] .services-page [class*="text-[#5C7CFA]"] {
+  color: #8ec5ff !important;
+}
+
+html[data-theme="dark"] .services-page [class*="bg-clip-text"],
+body[data-theme="dark"] .services-page [class*="bg-clip-text"] {
+  color: transparent !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .services-page * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Contact page dark mode: override the old mobile-light rules without touching light mode. */
+html[data-theme="dark"] .contact-page,
+body[data-theme="dark"] .contact-page {
+  color-scheme: dark !important;
+  background:
+    radial-gradient(900px 360px at 14% -4%, rgba(50, 111, 224, 0.22), transparent 62%),
+    radial-gradient(740px 320px at 88% 0%, rgba(14, 123, 255, 0.12), transparent 58%),
+    linear-gradient(180deg, #050d20 0%, #071735 48%, #041124 100%) !important;
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .contact-page .secondary-page-overlay,
+body[data-theme="dark"] .contact-page .secondary-page-overlay {
+  display: block !important;
+  background:
+    radial-gradient(920px 360px at 16% 0%, rgba(73, 134, 255, 0.18), transparent 62%),
+    radial-gradient(720px 300px at 86% 4%, rgba(91, 142, 235, 0.12), transparent 58%) !important;
+}
+
+html[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-white"],
+html[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[#f7fbff]"],
+html[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[#F7F9FF]"],
+html[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[#F2F5FD]"],
+html[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-white"],
+body[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[#f7fbff]"],
+body[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[#F7F9FF]"],
+body[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[#F2F5FD]"],
+body[data-theme="dark"] .contact-page :is(div, section, form, label)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]) {
+  background:
+    linear-gradient(180deg, rgba(14, 38, 82, 0.90) 0%, rgba(7, 24, 58, 0.82) 100%),
+    radial-gradient(circle at 14% 0%, rgba(82, 145, 255, 0.14), transparent 55%) !important;
+  border-color: rgba(102, 163, 252, 0.42) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(18px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(145%) !important;
+}
+
+html[data-theme="dark"] .contact-page :is(h1, h2, h3, h4, h5, h6, p, span, div, label, strong),
+body[data-theme="dark"] .contact-page :is(h1, h2, h3, h4, h5, h6, p, span, div, label, strong),
+html[data-theme="dark"] .contact-page [class*="text-[#1d2430]"],
+html[data-theme="dark"] .contact-page [class*="text-[#111A34]"],
+body[data-theme="dark"] .contact-page [class*="text-[#1d2430]"],
+body[data-theme="dark"] .contact-page [class*="text-[#111A34]"] {
+  color: #f8fbff !important;
+}
+
+html[data-theme="dark"] .contact-page [class*="text-[#627188]"],
+html[data-theme="dark"] .contact-page [class*="text-[#6f7f97]"],
+html[data-theme="dark"] .contact-page [class*="text-[#7f8ca0]"],
+html[data-theme="dark"] .contact-page [class*="text-[#93abd0]"],
+html[data-theme="dark"] .contact-page [class*="text-[#a9bddb]"],
+body[data-theme="dark"] .contact-page [class*="text-[#627188]"],
+body[data-theme="dark"] .contact-page [class*="text-[#6f7f97]"],
+body[data-theme="dark"] .contact-page [class*="text-[#7f8ca0]"],
+body[data-theme="dark"] .contact-page [class*="text-[#93abd0]"],
+body[data-theme="dark"] .contact-page [class*="text-[#a9bddb]"] {
+  color: rgba(213, 228, 255, 0.78) !important;
+}
+
+html[data-theme="dark"] .contact-page :is([class*="border-white"], [class*="border-[#dbe5f0]"], [class*="border-[#dbe3ef]"], [class*="border-[#dce4ef]"], [class*="border-[#d9e3f0]"], [class*="border-[#dce7f3]"], [class*="border-[#35507f]"]),
+body[data-theme="dark"] .contact-page :is([class*="border-white"], [class*="border-[#dbe5f0]"], [class*="border-[#dbe3ef]"], [class*="border-[#dce4ef]"], [class*="border-[#d9e3f0]"], [class*="border-[#dce7f3]"], [class*="border-[#35507f]"]) {
+  border-color: rgba(102, 163, 252, 0.42) !important;
+}
+
+html[data-theme="dark"] .contact-page :is(input, textarea),
+body[data-theme="dark"] .contact-page :is(input, textarea) {
+  background: rgba(4, 17, 42, 0.72) !important;
+  border-color: rgba(105, 164, 250, 0.46) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .contact-page :is(input, textarea)::placeholder,
+body[data-theme="dark"] .contact-page :is(input, textarea)::placeholder {
+  color: rgba(211, 226, 255, 0.64) !important;
+  -webkit-text-fill-color: rgba(211, 226, 255, 0.64) !important;
+}
+
+html[data-theme="dark"] .contact-page :is(svg, svg *),
+body[data-theme="dark"] .contact-page :is(svg, svg *) {
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+html[data-theme="dark"] .contact-page [class*="bg-clip-text"],
+body[data-theme="dark"] .contact-page [class*="bg-clip-text"] {
+  color: transparent !important;
+}
+
+html[data-theme="dark"] .contact-page button:not([type="submit"]),
+body[data-theme="dark"] .contact-page button:not([type="submit"]) {
+  background: rgba(9, 31, 73, 0.78) !important;
+  border-color: rgba(102, 163, 252, 0.46) !important;
+  color: #eef7ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .contact-page button[type="submit"],
+body[data-theme="dark"] .contact-page button[type="submit"] {
+  box-shadow: none !important;
+}
+
+/* Final flights button contrast pass: class and sort pills must never turn white in dark mode. */
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-2xl"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-2xl"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-full"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-full"] {
+  background: rgba(7, 28, 68, 0.86) !important;
+  background-image: none !important;
+  border-color: rgba(118, 178, 255, 0.48) !important;
+  color: #f4f9ff !important;
+  -webkit-text-fill-color: #f4f9ff !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-2xl"][class*="bg-[#174A8B]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-2xl"][class*="bg-[#174A8B]"],
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-full"][class*="bg-[#174A8B]"],
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-full"][class*="bg-[#174A8B]"] {
+  background: linear-gradient(180deg, #1f6fc1 0%, #15518f 100%) !important;
+  border-color: rgba(170, 211, 255, 0.58) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-2xl"]:disabled,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-2xl"]:disabled,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-full"]:disabled,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="h-10"][class*="rounded-full"]:disabled {
+  background: rgba(12, 35, 76, 0.78) !important;
+  border-color: rgba(108, 161, 235, 0.34) !important;
+  color: rgba(232, 243, 255, 0.78) !important;
+  -webkit-text-fill-color: rgba(232, 243, 255, 0.78) !important;
 }

@@ -41,9 +41,14 @@ const secondaryText = "text-[#5F5A54]"
 const mutedText = "text-[#77716A]"
 const accentChip =
   "rounded-full border border-[#D9D5CE] !bg-[#EBEBEB] text-[#174A8B]"
+const darkSortBtn =
+  "border border-[#76B2FF]/50 !bg-[#071C44] bg-none text-[#F4F9FF] shadow-none transition hover:border-[#A7D4FF]/70 hover:!bg-[#0E356F]"
+const darkSortActiveBtn =
+  "border border-[#AAD3FF]/60 !bg-[#1F6FC1] bg-[linear-gradient(180deg,#1F6FC1_0%,#15518F_100%)] text-white shadow-none transition hover:!bg-[#256FC0]"
 const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
+const SEARCH_LOADING_DURATION_MS = 10000
 
 const cityHeroSlides = [
   { image: amsterdamImage, city: "Amsterdam" },
@@ -863,17 +868,30 @@ export default function Flights() {
     }
 
     const queryKey = JSON.stringify(criteria)
-    const cached = flightsCache.get(queryKey)
-    if (cached) {
-      setItems(cached.items)
-      return
+    const requestId = ++requestIdRef.current
+    const loadingStartedAt = Date.now()
+    const finishLoading = async () => {
+      const remaining = SEARCH_LOADING_DURATION_MS - (Date.now() - loadingStartedAt)
+      if (remaining > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, remaining))
+      }
+      if (requestId === requestIdRef.current) {
+        setLoading(false)
+        abortRef.current = null
+      }
     }
 
-    const requestId = ++requestIdRef.current
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
     setLoading(true)
+
+    const cached = flightsCache.get(queryKey)
+    if (cached) {
+      setItems(cached.items)
+      void finishLoading()
+      return
+    }
 
     try {
       const res = await searchAir(
@@ -931,8 +949,7 @@ export default function Flights() {
       if (showAlert) toast.error(msg)
     } finally {
       if (requestId === requestIdRef.current) {
-        setLoading(false)
-        abortRef.current = null
+        await finishLoading()
       }
     }
   }, [copy.backendBusy, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights])
@@ -1144,10 +1161,23 @@ export default function Flights() {
     setPreviewFlight(null)
     localStorage.setItem("tripzyy_flight_pick", JSON.stringify(flight))
     setSelectedFlight(flight)
-    window.setTimeout(() => {
-      checkoutRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 0)
   }
+
+  useEffect(() => {
+    if (!selectedFlight) return
+    const scrollToCheckout = () => {
+      const top = checkoutRef.current
+        ? checkoutRef.current.getBoundingClientRect().top + window.scrollY - 96
+        : 0
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
+    }
+    const frame = window.requestAnimationFrame(scrollToCheckout)
+    const timer = window.setTimeout(scrollToCheckout, 120)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [selectedFlight])
 
   const openPreview = (flight: Flight) => {
     setPreviewFlight(flight)
@@ -1173,6 +1203,8 @@ export default function Flights() {
   }
 
   const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
+  const pillBtn = siteTheme === "dark" ? darkSortBtn : secondaryBtn
+  const activePillBtn = siteTheme === "dark" ? darkSortActiveBtn : luxuryBtn
   return (
     <section
       className="flights-page relative overflow-hidden bg-[#EBEBEB] pt-0 text-[#111A34]"
@@ -1293,8 +1325,8 @@ export default function Flights() {
                       className={[
                         "h-10 rounded-2xl border text-[13px] font-semibold transition",
                         travelClass === item
-                          ? `${luxuryBtn} border-[#1a2231]/10`
-                          : secondaryBtn,
+                          ? `${activePillBtn} border-[#1a2231]/10`
+                          : pillBtn,
                       ].join(" ")}
                     >
                       {copy.classNames[item]}
@@ -1309,14 +1341,14 @@ export default function Flights() {
 
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-50 ${secondaryBtn}`}>
+                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-70 ${pillBtn}`}>
                   {copy.swap}
                 </button>
-                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-50 ${secondaryBtn}`}>
+                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-70 ${pillBtn}`}>
                   {copy.clear}
                 </button>
                 {(["best", "cheap", "fast"] as const).map((item) => (
-                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? luxuryBtn : secondaryBtn].join(" ")}>
+                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? activePillBtn : pillBtn].join(" ")}>
                     {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
                   </button>
                 ))}
@@ -1417,7 +1449,7 @@ export default function Flights() {
           </aside>
 
           <div className="space-y-4">
-            {loading ? <InlineLoading /> : null}
+            {loading ? <SearchLoadingAnimation language={language} /> : null}
             {!loading && filtered.length > 0 ? (
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 text-sm shadow-[0_10px_24px_rgba(30,32,36,0.06)]">
@@ -1919,112 +1951,112 @@ function FlightPreviewModal({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 24, scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className="relative flex max-h-[96svh] w-full max-w-[760px] flex-col overflow-hidden rounded-t-[28px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[88vh] sm:rounded-[28px]"
+          className="relative flex max-h-[92svh] w-full max-w-[760px] flex-col overflow-hidden rounded-t-[22px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[88vh] sm:rounded-[28px]"
         >
-          <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5 sm:px-8 sm:pt-7">
+          <div className="flex items-start justify-between gap-3 px-4 pb-2 pt-4 sm:gap-4 sm:px-8 sm:pb-3 sm:pt-7">
             <div>
-              <div className="text-[22px] font-black leading-7 text-[#111111]">{copy.title}</div>
-              <div className="mt-1 text-[14px] text-[#6D6760]">{copy.subtitle}</div>
+              <div className="text-[20px] font-black leading-6 text-[#111111] sm:text-[22px] sm:leading-7">{copy.title}</div>
+              <div className="mt-1 text-[13px] leading-5 text-[#6D6760] sm:text-[14px]">{copy.subtitle}</div>
             </div>
             <button
               type="button"
               onClick={handleClose}
               disabled={isBuying}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-[#111111] transition hover:bg-[#F0EDE8]"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#111111] transition hover:bg-[#F0EDE8] sm:h-10 sm:w-10"
               aria-label="Close"
             >
-              <X size={22} />
+              <X size={20} className="sm:size-[22px]" />
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 sm:px-8">
-            <div className="mb-5">
-              <div className="text-[26px] font-black leading-8 text-[#111111]">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3 sm:px-8 sm:pb-5">
+            <div className="mb-3 sm:mb-5">
+              <div className="text-[21px] font-black leading-6 text-[#111111] sm:text-[26px] sm:leading-8">
                 {flight.from} → {flight.to}
               </div>
-              <div className="mt-1 text-[16px] text-[#6D6760]">
+              <div className="mt-1 text-[13px] text-[#6D6760] sm:text-[16px]">
                 {fmtDuration(flight.durationMin, language)} {copy.inWay}
               </div>
             </div>
 
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               {segments.map((segment, index) => {
                 const carrier = segment.carrier || segment.operatingCarrier || flight.airline
                 const flightNo = segment.flightNumber || flight.flightNo || ""
                 const duration = Number(segment.duration || 0) || Math.round(flight.durationMin / Math.max(segments.length, 1))
                 return (
                   <div key={segment.id || `${segment.origin}-${segment.destination}-${index}`}>
-                    <div className="mb-3 flex items-center gap-3">
+                    <div className="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
                       {flight.airlineLogo ? (
-                        <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-9 w-9 object-contain" />
+                        <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-8 w-8 object-contain sm:h-9 sm:w-9" />
                       ) : (
-                        <Plane size={26} className="text-[#0A84FF]" />
+                        <Plane size={22} className="text-[#0A84FF] sm:size-[26px]" />
                       )}
                       <div>
-                        <div className="text-[17px] font-bold text-[#111111]">{flight.airlineName || flight.airline}</div>
-                        <div className="text-[14px] text-[#6D6760]">{fmtDuration(duration, language)} {copy.inFlight}</div>
+                        <div className="text-[16px] font-bold text-[#111111] sm:text-[17px]">{flight.airlineName || flight.airline}</div>
+                        <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{fmtDuration(duration, language)} {copy.inFlight}</div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-[22px_minmax(0,1fr)_58px] gap-3">
+                    <div className="grid grid-cols-[18px_minmax(0,1fr)_48px] gap-2 sm:grid-cols-[22px_minmax(0,1fr)_58px] sm:gap-3">
                       <div className="relative flex justify-center">
                         <span className="mt-2 h-2 w-2 rounded-full border border-[#C9C4BD] bg-white" />
                         <span className="absolute bottom-2 top-4 w-px bg-[#D9D5CE]" />
                       </div>
-                      <div className="pb-6">
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-3">
+                      <div className="pb-4 sm:pb-6">
+                        <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-2 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-3">
                           <div>
-                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{toTime(segment.departure)}</div>
-                            <div className="text-[14px] text-[#6D6760]">{toDateOnly(segment.departure)}</div>
+                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{toTime(segment.departure)}</div>
+                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{toDateOnly(segment.departure)}</div>
                           </div>
                           <div>
-                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{segment.origin}</div>
-                            <div className="text-[14px] text-[#6D6760]">{segment.departureTerminal || ""}</div>
+                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.origin}</div>
+                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{segment.departureTerminal || ""}</div>
                           </div>
                         </div>
                       </div>
-                      <div className="pb-6 text-right">
-                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[13px] font-semibold text-[#6D6760]">{segment.origin}</span>
+                      <div className="pb-4 text-right sm:pb-6">
+                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[12px] font-semibold text-[#6D6760] sm:text-[13px]">{segment.origin}</span>
                       </div>
 
                       <div className="relative flex justify-center">
                         <span className="mt-2 h-2 w-2 rounded-full border border-[#C9C4BD] bg-white" />
                       </div>
                       <div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-3">
+                        <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-2 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-3">
                           <div>
-                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{toTime(segment.arrival)}</div>
-                            <div className="text-[14px] text-[#6D6760]">{toDateOnly(segment.arrival)}</div>
+                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{toTime(segment.arrival)}</div>
+                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{toDateOnly(segment.arrival)}</div>
                           </div>
                           <div>
-                            <div className="text-[17px] font-bold leading-5 text-[#111111]">{segment.destination}</div>
-                            <div className="text-[14px] text-[#6D6760]">{segment.arrivalTerminal || ""}</div>
+                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.destination}</div>
+                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{segment.arrivalTerminal || ""}</div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[13px] font-semibold text-[#6D6760]">{segment.destination}</span>
+                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[12px] font-semibold text-[#6D6760] sm:text-[13px]">{segment.destination}</span>
                       </div>
                     </div>
 
-                    <div className="mt-3 space-y-2 text-[15px] text-[#111111]">
+                    <div className="mt-2 space-y-1.5 text-[14px] text-[#111111] sm:mt-3 sm:space-y-2 sm:text-[15px]">
                       <div className="flex items-center gap-2 text-[#6D6760]">
-                        <Ticket size={17} />
+                        <Ticket size={15} className="sm:size-[17px]" />
                         <span>{carrier}{flightNo ? `-${flightNo}` : ""} · {segment.equipment || copy.aircraft}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Luggage size={17} />
+                        <Luggage size={15} className="sm:size-[17px]" />
                         <span>{copy.cabinBaggage}: {segment.carryOn || flight.carryOn || "—"}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Luggage size={17} />
+                        <Luggage size={15} className="sm:size-[17px]" />
                         <span>{copy.baggage}: {segment.baggage || flight.baggage || copy.paidBaggage}</span>
                       </div>
-                      <div className="text-[13px] leading-5 text-[#6D6760]">{copy.baggageNote}</div>
+                      <div className="text-[12px] leading-5 text-[#6D6760] sm:text-[13px]">{copy.baggageNote}</div>
                     </div>
 
                     {index < segments.length - 1 ? (
-                      <div className="mt-5 rounded-[14px] bg-[#F0EDE8] px-5 py-4 text-[16px] font-bold text-[#111111]">
+                      <div className="mt-4 rounded-[12px] bg-[#F0EDE8] px-4 py-3 text-[14px] font-bold text-[#111111] sm:mt-5 sm:rounded-[14px] sm:px-5 sm:py-4 sm:text-[16px]">
                         {copy.transfer} {segment.layover ? fmtDuration(segment.layover, language) : fmtDuration(segments[index + 1]?.layover || 0, language)} {segment.destination}
                       </div>
                     ) : null}
@@ -2034,16 +2066,16 @@ function FlightPreviewModal({
             </div>
           </div>
 
-          <div className="grid gap-3 border-t border-[#E6E2DC] bg-white px-5 py-4 sm:grid-cols-[1fr_1.2fr] sm:px-8">
+          <div className="grid gap-2 border-t border-[#E6E2DC] bg-white px-4 py-3 sm:grid-cols-[1fr_1.2fr] sm:gap-3 sm:px-8 sm:py-4">
             <div>
-              <div className="text-[24px] font-black leading-7 text-[#111111]">{formatCompactPrice(flight.price, flight.currency)}</div>
-              <div className="text-[14px] text-[#111111]">{tripTypeLabel(flight, language)}, {paxLabel(language, pax)}</div>
+              <div className="text-[21px] font-black leading-6 text-[#111111] sm:text-[24px] sm:leading-7">{formatCompactPrice(flight.price, flight.currency)}</div>
+              <div className="text-[13px] text-[#111111] sm:text-[14px]">{tripTypeLabel(flight, language)}, {paxLabel(language, pax)}</div>
             </div>
             <button
               type="button"
               onClick={startBuyCheck}
               disabled={isBuying}
-              className="h-12 rounded-[12px] bg-[#0A84FF] px-6 text-[16px] font-bold text-white transition hover:bg-[#006CD8] disabled:cursor-wait disabled:opacity-80"
+              className="h-11 rounded-[12px] bg-[#0A84FF] px-5 text-[15px] font-bold text-white transition hover:bg-[#006CD8] disabled:cursor-wait disabled:opacity-80 sm:h-12 sm:px-6 sm:text-[16px]"
             >
               {isBuying ? `${copy.checking}...` : copy.buy}
             </button>
@@ -2089,7 +2121,7 @@ function FlightPreviewModal({
   )
 }
 
-function FlightLoadingAnimation() {
+function FlightLoadingAnimation({ compact = false }: { compact?: boolean }) {
   const lottieRef = useRef<LottieRefCurrentProps>(null)
 
   useEffect(() => {
@@ -2101,13 +2133,14 @@ function FlightLoadingAnimation() {
   }, [])
 
   return (
-    <div className="relative mx-auto flex min-h-[340px] w-full flex-1 items-center justify-center overflow-hidden px-4 py-3">
+    <div className={compact ? "relative mx-auto flex h-[286px] w-full items-center justify-center overflow-visible px-2 py-1 sm:h-[320px]" : "relative mx-auto flex h-[310px] w-full flex-1 items-center justify-center overflow-visible px-4 py-2 sm:h-[330px]"}>
       <Lottie
         lottieRef={lottieRef}
         animationData={flightLoadingAnimation}
         loop={false}
         autoplay
-        className="h-full max-h-[390px] min-h-[320px] w-full"
+        className={compact ? "aspect-square h-[280px] max-h-full w-[280px] max-w-full sm:h-[318px] sm:w-[318px]" : "aspect-square h-[300px] max-h-full w-[300px] max-w-full sm:h-[320px] sm:w-[320px]"}
+        rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
         aria-label="Flight availability loading"
       />
     </div>
@@ -2434,31 +2467,44 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
 }
 void FlightRowCard
 
-function InlineLoading() {
-  return (
-    <div className="space-y-4">
-      {[0, 1, 2].map((item) => (
-        <div key={item} className={`rounded-[28px] px-6 py-6 ${unifiedCard}`}>
-          <div className="space-y-4">
-            <SkeletonLine className="h-6 w-[180px]" />
-            <SkeletonLine className="h-12 w-full" />
-            <div className="grid gap-3 xl:grid-cols-4">
-              <SkeletonLine className="h-20 w-full" />
-              <SkeletonLine className="h-20 w-full" />
-              <SkeletonLine className="h-20 w-full" />
-              <SkeletonLine className="h-20 w-full" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
+function SearchLoadingAnimation({ language }: { language: "uz" | "ru" | "en" }) {
+  const copy = {
+    uz: {
+      title: "Qidirilmoqda...",
+      subtitle: "Reyslar va tariflar tekshirilmoqda",
+    },
+    ru: {
+      title: "Поиск...",
+      subtitle: "Проверяем рейсы и тарифы",
+    },
+    en: {
+      title: "Searching...",
+      subtitle: "Checking flights and fares",
+    },
+  }[language]
 
-function SkeletonLine({ className = "" }: { className?: string }) {
   return (
-    <motion.div className={`overflow-hidden rounded-full bg-[#e9eef5] ${className}`} initial={{ opacity: 0.5 }} animate={{ opacity: [0.45, 0.8, 0.45] }} transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}>
-      <motion.div className="h-full w-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.72),transparent)]" animate={{ x: ["-100%", "100%"] }} transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }} />
+    <motion.div
+      className={`overflow-hidden rounded-[28px] px-5 py-6 text-center ${unifiedCard}`}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 12 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="mx-auto max-w-[520px]">
+        <div className="mx-auto mb-3 h-9 w-9 rounded-[10px] bg-[#174A8B]" />
+        <div className="text-[20px] font-black text-[#111111]">{copy.title}</div>
+        <div className="mt-1 text-[14px] text-[#6D6760]">{copy.subtitle}</div>
+        <FlightLoadingAnimation compact />
+        <div className="mx-auto mt-1 h-2 max-w-[320px] overflow-hidden rounded-full bg-[#D9D5CE]">
+          <motion.div
+            className="h-full rounded-full bg-[#0A84FF]"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: SEARCH_LOADING_DURATION_MS / 1000, ease: "linear" }}
+          />
+        </div>
+      </div>
     </motion.div>
   )
 }

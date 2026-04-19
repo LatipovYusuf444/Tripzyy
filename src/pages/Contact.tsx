@@ -166,7 +166,7 @@ export default function Contact() {
   }[language]
 
   return (
-    <section className="contact-light-page secondary-page-shell relative overflow-hidden pt-4">
+    <section className="contact-page contact-light-page secondary-page-shell relative overflow-hidden pt-4">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-6 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">

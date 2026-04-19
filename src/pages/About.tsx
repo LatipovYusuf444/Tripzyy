@@ -294,7 +294,7 @@ export default function About() {
   };
 
   return (
-    <div className="secondary-page-shell relative overflow-hidden bg-[#EEF1FB] text-[#111A34] dark:bg-transparent dark:text-white">
+    <div className="about-page secondary-page-shell relative overflow-hidden bg-[#EEF1FB] text-[#111A34] dark:bg-transparent dark:text-white">
       <section ref={heroRef} className="relative bg-transparent">
         <div className="absolute inset-0 bg-[#EEF1FB] dark:bg-transparent" />
         <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-6 md:px-8 md:pt-8 2xl:max-w-[1680px]">

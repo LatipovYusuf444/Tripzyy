@@ -1,5 +1,5 @@
 ﻿import { AnimatePresence, motion } from "framer-motion"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
@@ -858,6 +858,31 @@ export default function FlightDetailsModal({
   const [optionDetails, setOptionDetails] = useState<{
     segments: FlightSegment[]
   } | null>(null)
+  const bookingTopRef = useRef<HTMLDivElement>(null)
+  const selectTopRef = useRef<HTMLDivElement>(null)
+  const detailsTopRef = useRef<HTMLDivElement>(null)
+  const payTopRef = useRef<HTMLDivElement>(null)
+  const lastPassengerRef = useRef<HTMLDivElement>(null)
+  const shouldScrollToNewPassengerRef = useRef(false)
+
+  const scrollToBookingNode = (node: HTMLElement | null) => {
+    if (!node) return
+    if (!pageMode) {
+      node.scrollIntoView({ behavior: "smooth", block: "start" })
+      return
+    }
+    const top = node.getBoundingClientRect().top + window.scrollY - (pageMode ? 96 : 24)
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
+  }
+
+  const setBookingStep = (next: Step) => {
+    setStep(next)
+    const node =
+      next === "select" ? selectTopRef.current ?? bookingTopRef.current :
+        next === "details" ? detailsTopRef.current :
+          payTopRef.current
+    window.setTimeout(() => scrollToBookingNode(node), 0)
+  }
 
   // modal ochilganda reset
   useEffect(() => {
@@ -904,11 +929,36 @@ export default function FlightDetailsModal({
     return () => clearTimeout(t)
   }, [toastOpen])
 
+  useEffect(() => {
+    if (!open) return
+    const node =
+      step === "select" ? selectTopRef.current ?? bookingTopRef.current :
+        step === "details" ? detailsTopRef.current :
+          payTopRef.current
+    const frame = window.requestAnimationFrame(() => scrollToBookingNode(node))
+    const timer = window.setTimeout(() => scrollToBookingNode(node), 120)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [open, step])
+
   // pax o'zgarsa passengers array moslashadi (kiritilganlar yo'qolmaydi)
   useEffect(() => {
     if (!open) return
     setPassengers((prev) => resizePassengers(prev, pax))
   }, [pax, open])
+
+  useEffect(() => {
+    if (!shouldScrollToNewPassengerRef.current) return
+    shouldScrollToNewPassengerRef.current = false
+    const frame = window.requestAnimationFrame(() => scrollToBookingNode(lastPassengerRef.current))
+    const timer = window.setTimeout(() => scrollToBookingNode(lastPassengerRef.current), 120)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [passengers.length])
 
   useEffect(() => {
     if (!open) return
@@ -1149,6 +1199,7 @@ export default function FlightDetailsModal({
   const passengerCount = Math.max(1, passengers.length)
 
   const addPassenger = () => {
+    shouldScrollToNewPassengerRef.current = true
     setPassengers((prev) => [...prev, makePassengers(1)[0]])
   }
 
@@ -1216,7 +1267,7 @@ export default function FlightDetailsModal({
     })
 
     if (stayOnPage) {
-      setStep("details")
+      setBookingStep("details")
       return
     }
 
@@ -1245,7 +1296,21 @@ export default function FlightDetailsModal({
     return e
   }, [payer, passengers])
 
-  const canSubmit = errors.length === 0 && agreeData
+  const canSubmit = errors.length === 0 && paymentMethod !== "" && agreeData
+
+  const canProceedToPayment = errors.length === 0
+
+  const proceedToPayment = () => {
+    if (!canProceedToPayment) {
+      const head = errors[0] ?? copy.invalidData
+      const more = errors.length > 1 ? ` + ${errors.length - 1}` : ""
+      setToastMsg(`${head}${more}`)
+      setToastOpen(true)
+      scrollToBookingNode(detailsTopRef.current)
+      return
+    }
+    setBookingStep("pay")
+  }
 
   const submit = async () => {
     if (!bookingFlight.id) {
@@ -1299,10 +1364,15 @@ export default function FlightDetailsModal({
         setToastOpen(true)
         return
       }
-      setLastOrderId(res.data.data?.orderID ?? null)
-      setToastMsg(`${copy.bookingSuccess} ${res.data.data?.orderID ?? "—"}`)
+      const orderID = res.data.data?.orderID ?? null
+      setLastOrderId(orderID)
+      setToastMsg(
+        orderID
+          ? `${copy.bookingSuccess} Order ID: ${orderID}. ${language === "ru" ? "Возвращаемся к рейсам..." : language === "en" ? "Returning to flights..." : "Reyslar bo'limiga qaytilmoqda..."}`
+          : copy.bookingSuccess
+      )
       setToastOpen(true)
-      if (res.data.data?.orderID) {
+      if (orderID) {
         const curr = bookingCart.get()
         bookingCart.set({
           ...curr,
@@ -1310,7 +1380,7 @@ export default function FlightDetailsModal({
           route: `${bookingFlight.from} → ${bookingFlight.to}`,
           date,
           pax: passengerCount,
-          lastOrderId: res.data.data.orderID,
+          lastOrderId: orderID,
           amount: total,
           currency: bookingFlight.currency,
           airline: bookingFlight.airline,
@@ -1337,13 +1407,17 @@ export default function FlightDetailsModal({
           history: [
             ...(curr.history ?? []),
             {
-              orderId: res.data.data.orderID,
+              orderId: orderID,
               route: `${bookingFlight.from} → ${bookingFlight.to}`,
               date,
               createdAt: new Date().toISOString(),
             },
           ],
         })
+        window.setTimeout(() => {
+          onClose()
+          navigate("/flights")
+        }, 1600)
       }
     } catch (err: any) {
       const msg = translateBookingError(err?.response?.data?.message || copy.bookingError, language)
@@ -1443,7 +1517,7 @@ export default function FlightDetailsModal({
 
   if (pageMode) {
     return (
-      <div className="flight-details-light relative min-h-screen bg-[#EBEBEB]">
+      <div ref={bookingTopRef} className="flight-details-light relative min-h-screen bg-[#EBEBEB]">
         <div className="bg-white">
             {/* header */}
             <div className="relative border-b border-[#D9D5CE] bg-white p-4 md:p-7 dark:border-[#D9D5CE] dark:bg-white">
@@ -1516,7 +1590,7 @@ export default function FlightDetailsModal({
             {/* body */}
             <div className="px-5 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-5 md:p-7 md:pb-28">
               {step === "select" && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div ref={selectTopRef} className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 space-y-4">
                     <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
                       <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.fareRules}</div>
@@ -1834,7 +1908,7 @@ export default function FlightDetailsModal({
               )}
 
               {step === "details" && (
-                <div className="space-y-4">
+                <div ref={detailsTopRef} className="scroll-mt-28 space-y-4">
                   <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
                     <div className="flex items-center justify-between">
                       <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
@@ -1891,7 +1965,11 @@ export default function FlightDetailsModal({
 
                     <div className="mt-4 space-y-4">
                       {passengers.map((p, idx) => (
-                        <div key={idx} className="rounded-[18px] border border-[#D9D5CE] bg-[#F8F7F4] p-4 dark:border-[#D9D5CE] dark:bg-[#F8F7F4]">
+                        <div
+                          key={idx}
+                          ref={idx === passengers.length - 1 ? lastPassengerRef : null}
+                          className="scroll-mt-28 rounded-[18px] border border-[#D9D5CE] bg-[#F8F7F4] p-4 dark:border-[#D9D5CE] dark:bg-[#F8F7F4]"
+                        >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{copy.passenger} #{idx + 1}</div>
                             <button
@@ -2032,13 +2110,14 @@ export default function FlightDetailsModal({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
-                      onClick={() => setStep("pay")}
+                      onClick={proceedToPayment}
+                      disabled={!canProceedToPayment}
                       className={`h-12 rounded-2xl font-semibold ${brandPrimaryAction}`}
                     >
                       {copy.continue}
                     </button>
                     <button
-                      onClick={() => setStep("select")}
+                      onClick={() => setBookingStep("select")}
                       className={`h-12 rounded-2xl font-semibold ${brandSecondaryAction}`}
                     >
                       {copy.back}
@@ -2048,7 +2127,7 @@ export default function FlightDetailsModal({
               )}
 
               {step === "pay" && (
-                <div className="space-y-4">
+                <div ref={payTopRef} className="scroll-mt-28 space-y-4">
                   <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
                     <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.paymentMethod}</div>
                     <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.chooseMethod}</div>
@@ -2132,7 +2211,7 @@ export default function FlightDetailsModal({
                       {bookLoading ? "..." : copy.checkout}
                     </button>
                     <button
-                      onClick={() => setStep("details")}
+                      onClick={() => setBookingStep("details")}
                       className={`h-12 rounded-2xl font-semibold ${brandSecondaryAction}`}
                     >
                       {copy.back}

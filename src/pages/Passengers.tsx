@@ -1,5 +1,5 @@
 ﻿// src/pages/Passengers.tsx
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { formatMoney } from "@/lib/money"
 import { formatUzPhoneInput } from "@/lib/phone"
@@ -25,6 +25,7 @@ import {
 } from "@/shared/api/order/order.api"
 import { bookAir, getAirPnrDetails } from "@/shared/api/air/air.api"
 import { useI18n } from "@/shared/i18n/i18n"
+import { useNavigate } from "react-router-dom"
 
 type Draft = Omit<Passenger, "id"> & { id?: string }
 
@@ -360,6 +361,7 @@ export default function PassengersPage() {
       success: "Success",
     },
   }[language]
+  const navigate = useNavigate()
   const [cart, setCart] = useState(() => bookingCart.get())
   const [step, setStep] = useState<1 | 2 | 3>(1)
 
@@ -387,6 +389,7 @@ export default function PassengersPage() {
   const [bookLoading, setBookLoading] = useState(false)
   const [lastOrderId, setLastOrderId] = useState<number | null>(null)
   const [bookError, setBookError] = useState<string | null>(null)
+  const [bookSuccess, setBookSuccess] = useState<string | null>(null)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [cancelMsg, setCancelMsg] = useState<string | null>(null)
   const [issueLoading, setIssueLoading] = useState(false)
@@ -428,6 +431,45 @@ export default function PassengersPage() {
       title?: string
     }>
   } | null>(null)
+  const pageTopRef = useRef<HTMLDivElement>(null)
+  const passengerModalRef = useRef<HTMLDivElement>(null)
+
+  const scrollToStepTop = () => {
+    const node = pageTopRef.current
+    if (!node) return
+    const top = node.getBoundingClientRect().top + window.scrollY - 96
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
+  }
+
+  const goToStep = (next: 1 | 2 | 3) => {
+    if (next === 3 && !canContinueStep2) {
+      setBookError(copy.incompleteData)
+      goToStep(2)
+      return
+    }
+    setStep(next)
+    window.setTimeout(scrollToStepTop, 0)
+  }
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(scrollToStepTop)
+    const timer = window.setTimeout(scrollToStepTop, 120)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [step])
+
+  useEffect(() => {
+    if (!open) return
+    const scrollToModal = () => passengerModalRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    const frame = window.requestAnimationFrame(scrollToModal)
+    const timer = window.setTimeout(scrollToModal, 120)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+    }
+  }, [open])
 
   const refresh = () => setCart(bookingCart.get())
 
@@ -486,7 +528,7 @@ export default function PassengersPage() {
   const onClearCart = () => {
     bookingCart.clear()
     refresh()
-    setStep(1)
+    goToStep(1)
   }
 
   const canSave =
@@ -509,6 +551,7 @@ export default function PassengersPage() {
     paymentMethod !== ""
 
   const canCheckout =
+    canContinueStep2 &&
     cart.passengers.length >= Math.max(1, (cart.pax ?? cart.passengers.length) || 1) &&
     agreeData &&
     agreeRules
@@ -542,6 +585,7 @@ export default function PassengersPage() {
     setCancelMsg(null)
     setIssueMsg(null)
     setVoidMsg(null)
+    setBookSuccess(null)
     if (!cart.flightId) {
       setBookError(copy.optionMissing)
       return
@@ -576,24 +620,31 @@ export default function PassengersPage() {
         setBookError(res.data.message || copy.bookingError)
         return
       }
-      setLastOrderId(res.data.data?.orderID ?? null)
-      if (res.data.data?.orderID) {
+      const orderID = res.data.data?.orderID ?? null
+      setLastOrderId(orderID)
+      setBookSuccess(
+        orderID
+          ? `${language === "ru" ? "Заказ создан" : language === "en" ? "Order placed" : "Buyurtma berildi"}: ${orderID}. ${language === "ru" ? "Возвращаемся к рейсам..." : language === "en" ? "Returning to flights..." : "Reyslar bo'limiga qaytilmoqda..."}`
+          : language === "ru" ? "Заказ создан." : language === "en" ? "Order placed." : "Buyurtma berildi."
+      )
+      if (orderID) {
         const curr = bookingCart.get()
         bookingCart.set({
           ...curr,
-          lastOrderId: res.data.data.orderID,
+          lastOrderId: orderID,
           paymentMethod,
           paymentStatus: "pending",
           history: [
             ...(curr.history ?? []),
             {
-              orderId: res.data.data.orderID,
+              orderId: orderID,
               route: curr.route,
               date: curr.date,
               createdAt: new Date().toISOString(),
             },
           ],
         })
+        window.setTimeout(() => navigate("/flights"), 1600)
       }
     } catch (err: any) {
       setBookError(err?.response?.data?.message || copy.bookingError)
@@ -713,6 +764,7 @@ export default function PassengersPage() {
     <section className="checkout-mobile-light secondary-page-shell relative min-h-screen overflow-hidden bg-[#EEF1FB] pt-6 text-[#111A34] dark:bg-[#EEF1FB] dark:text-[#111A34] lg:dark:bg-transparent lg:dark:text-white">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <motion.div
+        ref={pageTopRef}
         variants={container}
         initial="hidden"
         animate="show"
@@ -761,7 +813,7 @@ export default function PassengersPage() {
               icon={ClipboardCheck}
               title={copy.book}
               desc={copy.step1Desc}
-              onClick={() => setStep(1)}
+              onClick={() => goToStep(1)}
             />
             <StepCard
               active={step === 2}
@@ -769,7 +821,7 @@ export default function PassengersPage() {
               icon={CreditCard}
               title={copy.payment}
               desc={copy.step2Desc}
-              onClick={() => setStep(2)}
+              onClick={() => goToStep(2)}
             />
             <StepCard
               active={step === 3}
@@ -777,7 +829,8 @@ export default function PassengersPage() {
               icon={BadgeCheck}
               title={copy.ticketIssue}
               desc={copy.step3Desc}
-              onClick={() => setStep(3)}
+              disabled={!canContinueStep2}
+              onClick={() => goToStep(3)}
             />
           </div>
         </motion.div>
@@ -795,12 +848,15 @@ export default function PassengersPage() {
               <button
                 key={s}
                 type="button"
-                onClick={() => setStep(s as 1 | 2 | 3)}
+                onClick={() => goToStep(s as 1 | 2 | 3)}
+                disabled={s === 3 && !canContinueStep2}
                 className={[
                   "h-8 px-3 rounded-full border text-xs font-semibold transition",
                   step === s
                     ? "bg-[linear-gradient(135deg,#1c2433_0%,#111827_52%,#2a3142_100%)] border-[#1a2231]/10 text-white"
-                    : "bg-white/80 border-[#dbe3ef] text-[#627188] hover:bg-white dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#d7e5ff] dark:hover:bg-[rgba(24,43,80,0.92)]",
+                    : s === 3 && !canContinueStep2
+                      ? "cursor-not-allowed border-[#dbe3ef] bg-white/45 text-[#a6b0bf] opacity-60 dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.42)] dark:text-[#8090aa]"
+                      : "bg-white/80 border-[#dbe3ef] text-[#627188] hover:bg-white dark:border-[#35507f] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#d7e5ff] dark:hover:bg-[rgba(24,43,80,0.92)]",
                 ].join(" ")}
               >
                 {s}-{copy.stage}
@@ -875,7 +931,7 @@ export default function PassengersPage() {
                 <div className="mt-1 text-[#8d6d70] text-xs dark:text-[#d6bfd0]">Pax: {pax}</div>
               </div>
               <button
-                onClick={() => setStep(2)}
+                onClick={() => goToStep(2)}
                 className={`mt-5 h-12 w-full ${primaryButtonClass}`}
               >
                 {copy.continue}
@@ -989,14 +1045,14 @@ export default function PassengersPage() {
                 </div>
               </div>
               <button
-                onClick={() => setStep(3)}
+                onClick={() => goToStep(3)}
                 disabled={!canContinueStep2}
                 className={`mt-5 h-12 w-full ${primaryButtonClass}`}
               >
                 {copy.goStep3}
               </button>
               <button
-                onClick={() => setStep(1)}
+                onClick={() => goToStep(1)}
                 className={`mt-3 h-11 w-full ${secondaryButtonClass}`}
               >
                 {copy.back}
@@ -1120,6 +1176,11 @@ export default function PassengersPage() {
                   Order ID: {lastOrderId}
                 </div>
               ) : null}
+              {bookSuccess ? (
+                <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                  {bookSuccess}
+                </div>
+              ) : null}
 
               {cancelMsg ? (
                 <div className="mt-3 rounded-2xl border border-[#f1d9d9] bg-[#fff7f7] px-4 py-3 text-sm text-[#9e4e5b]">
@@ -1220,7 +1281,7 @@ export default function PassengersPage() {
                     {voidLoading ? "VOID..." : copy.voidPnr}
                   </button>
                   <button
-                    onClick={() => setStep(2)}
+                    onClick={() => goToStep(2)}
                     className={`h-11 w-full ${secondaryButtonClass}`}
                   >
                     {copy.back}
@@ -1298,7 +1359,9 @@ export default function PassengersPage() {
         {open && (
           <div className="fixed inset-0 z-[80] grid items-start overflow-y-auto bg-[rgba(15,23,42,0.45)] p-3 py-5 backdrop-blur-sm sm:p-4 md:place-items-center">
             <div
+              ref={passengerModalRef}
               className="
+                scroll-mt-5
                 w-full max-w-[560px]
                 rounded-[24px]
                 border border-white/80
@@ -1413,6 +1476,7 @@ function StepCard({
   desc,
   active,
   done,
+  disabled,
   onClick,
 }: {
   icon: any
@@ -1420,17 +1484,19 @@ function StepCard({
   desc: string
   active?: boolean
   done?: boolean
+  disabled?: boolean
   onClick?: () => void
 }) {
   return (
     <button
       type="button"
+      disabled={disabled}
       className={`
         w-full text-left
         rounded-2xl border
         ${active ? "border-[#cbd7e8] bg-white dark:border-[#4d6fa8] dark:bg-[linear-gradient(180deg,rgba(35,60,110,0.9)_0%,rgba(26,47,87,0.92)_100%)]" : "border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] dark:border-[#30476f] dark:bg-[linear-gradient(180deg,rgba(19,35,67,0.9)_0%,rgba(16,31,60,0.92)_100%)]"}
         p-4 shadow-[0_18px_40px_rgba(17,24,39,0.07)]
-        ${onClick ? "cursor-pointer hover:bg-white transition" : ""}
+        ${disabled ? "cursor-not-allowed opacity-55" : onClick ? "cursor-pointer hover:bg-white transition" : ""}
       `}
       onClick={onClick}
     >

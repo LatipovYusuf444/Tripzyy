@@ -113,7 +113,7 @@ function HeroSection({
           <img
             src={heroMobileBackgroundImage}
             alt="Tripzy travel background"
-            className="h-full w-full object-cover object-center sm:hidden"
+            className="h-full w-full scale-[1.1] object-cover object-[53%_22%] sm:hidden"
           />
           <img
             src={heroBackgroundImage}
