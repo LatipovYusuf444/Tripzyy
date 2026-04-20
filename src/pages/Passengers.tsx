@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { formatMoney } from "@/lib/money"
 import { formatUzPhoneInput } from "@/lib/phone"
+import { Checkbox } from "@/components/animate-ui/components/radix/checkbox"
 import {
   Pencil,
   Trash2,
@@ -1227,20 +1228,20 @@ export default function PassengersPage() {
               <div className="mt-4 rounded-[24px] border border-[#dde5f0] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4">
                 <div className="text-sm font-semibold text-[#1d2430]">{copy.checkoutTerms}</div>
                 <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-[#627188]">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={agreeData}
-                    onChange={(e) => setAgreeData(e.target.checked)}
-                    className="mt-0.5"
+                    onCheckedChange={(checked) => setAgreeData(checked === true)}
+                    size="sm"
+                    className="mt-0.5 border-[#174A8B]/35 bg-white text-white data-[state=checked]:border-[#174A8B] data-[state=checked]:bg-[#174A8B]"
                   />
                   {copy.confirmData}
                 </label>
                 <label className="mt-2 flex items-start gap-2 text-xs leading-5 text-[#627188]">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={agreeRules}
-                    onChange={(e) => setAgreeRules(e.target.checked)}
-                    className="mt-0.5"
+                    onCheckedChange={(checked) => setAgreeRules(checked === true)}
+                    size="sm"
+                    className="mt-0.5 border-[#174A8B]/35 bg-white text-white data-[state=checked]:border-[#174A8B] data-[state=checked]:bg-[#174A8B]"
                   />
                   {copy.agreeRules}
                 </label>

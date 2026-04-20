@@ -1,10 +1,12 @@
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation, useOutlet } from "react-router-dom"
+import { AnimatePresence, motion } from "motion/react"
 
 import Footer from "../components/site/Footer"
 import Navbar from "../components/site/Navbar"
 
 export default function Layout() {
   const location = useLocation()
+  const outlet = useOutlet()
   const isHome = location.pathname === "/"
 
   return (
@@ -22,7 +24,18 @@ export default function Layout() {
             : "bg-[#EEF1FB] text-[#111A34] dark:bg-[#07152f] dark:text-white",
         ].join(" ")}
       >
-        <Outlet />
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+            className="min-h-full transform-gpu will-change-[opacity,transform,filter]"
+          >
+            {outlet ?? <Outlet />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <footer className="mt-auto">

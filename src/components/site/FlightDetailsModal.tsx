@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
 import { formatUzPhoneInput } from "@/lib/phone"
+import { Checkbox } from "@/components/animate-ui/components/radix/checkbox"
 import { getAccessToken } from "@/shared/auth/token"
 import { useI18n } from "@/shared/i18n/i18n"
 import {
@@ -2241,11 +2242,11 @@ export default function FlightDetailsModal({
                   )}
 
                   <label className="mt-2 flex items-start gap-2 text-xs text-[#5F5A54] dark:text-[#5F5A54]">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={agreeData}
-                      onChange={(e) => setAgreeData(e.target.checked)}
-                      className="mt-0.5"
+                      onCheckedChange={(checked) => setAgreeData(checked === true)}
+                      size="sm"
+                      className="mt-0.5 border-[#174A8B]/35 bg-white text-white data-[state=checked]:border-[#174A8B] data-[state=checked]:bg-[#174A8B]"
                     />
                     {copy.confirmData}
                   </label>

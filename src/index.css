@@ -61,16 +61,17 @@ select {
 
 .tripzy-logo-crop-mobile {
   position: relative;
-  width: 188px;
-  height: 42px;
+  width: 142px;
+  height: 32px;
+  margin-left: 10px;
 }
 
 .tripzy-logo-image-mobile {
   position: absolute;
   left: 0;
   top: 0;
-  width: 385px;
-  transform: translate(-102px, -104px);
+  width: 291px;
+  transform: translate(-77px, -79px);
 }
 
 .tripzy-logo-crop-home-mobile {
@@ -90,13 +91,14 @@ select {
 
 @media (min-width: 640px) {
   .tripzy-logo-crop-mobile {
-    width: 214px;
-    height: 48px;
+    width: 164px;
+    height: 37px;
+    margin-left: 12px;
   }
 
   .tripzy-logo-image-mobile {
-    width: 438px;
-    transform: translate(-116px, -118px);
+    width: 336px;
+    transform: translate(-89px, -91px);
   }
 
   .tripzy-logo-crop-home-mobile {
@@ -115,6 +117,7 @@ select {
   .tripzy-logo-crop-mobile {
     width: 168px;
     height: 38px;
+    margin-left: 0;
   }
 
   .tripzy-logo-image-mobile {
@@ -601,6 +604,13 @@ body[data-theme="dark"] .luxury-search-grid {
 html[data-theme="dark"] .luxury-search-grid.home-search-surface,
 body[data-theme="dark"] .luxury-search-grid.home-search-surface {
   background: #ebebeb;
+}
+
+html[data-theme="dark"] .luxury-search-grid.home-search-surface[data-search-theme="dark"],
+body[data-theme="dark"] .luxury-search-grid.home-search-surface[data-search-theme="dark"] {
+  background:
+    linear-gradient(180deg, rgba(14, 32, 67, 0.96) 0%, rgba(7, 18, 44, 0.94) 100%),
+    radial-gradient(circle at top left, rgba(80, 145, 255, 0.16), rgba(80, 145, 255, 0) 58%);
 }
 
 html[data-theme="dark"] .luxury-search-segment,

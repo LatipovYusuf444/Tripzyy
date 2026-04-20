@@ -15,6 +15,8 @@ import sharmImage from "@/assets/SHaharlar/sharm el sheikh.webp"
 import turkeyImage from "@/assets/SHaharlar/turkey.jpg"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
+import { Checkbox } from "@/components/animate-ui/components/radix/checkbox"
+import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-number"
 import { formatMoney } from "@/lib/money"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
@@ -29,7 +31,7 @@ const softPanel =
 const secondaryBtn =
   "border border-[#D9D5CE] !bg-white bg-none text-[#5F5A54] shadow-none transition hover:border-[#174A8B]/35 hover:!bg-[#F6F6F6] hover:text-[#174A8B]"
 const fieldPanel =
-  "rounded-[16px] border border-[#D9D5CE] !bg-white bg-none px-4 py-3 shadow-none transition hover:border-[#174A8B]/35"
+  "rounded-[13px] border border-[#D9D5CE] !bg-white bg-none px-3 py-2.5 shadow-none transition hover:border-[#174A8B]/35 sm:rounded-[16px] sm:px-4 sm:py-3"
 const dropdownPanel =
   "flights-dropdown-panel absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[320px] overflow-y-auto rounded-[18px] border border-[#D9D5CE] !bg-white bg-none shadow-[0_20px_42px_rgba(30,32,36,0.14)]"
 const unifiedCard =
@@ -59,6 +61,21 @@ const cityHeroSlides = [
   { image: sharmImage, city: "Sharm El Sheikh" },
   { image: turkeyImage, city: "Istanbul" },
 ] as const
+
+const luxurySpring = { type: "spring", stiffness: 260, damping: 28, mass: 0.8 } as const
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0 },
+} as const
+const staggerWrap = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+} as const
+const subtleLift = {
+  y: -4,
+  scale: 1.006,
+  transition: luxurySpring,
+} as const
 
 type TravelClassCode = "Y" | "B" | "F"
 type SearchTrip = { origin: string; destination: string; departure: string }
@@ -1232,91 +1249,114 @@ export default function Flights() {
       className="flights-page relative overflow-hidden bg-[#EBEBEB] pt-0 text-[#111A34]"
       data-flight-theme={siteTheme}
     >
-      <div className="relative mx-auto max-w-[1560px] px-4 py-10 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
-        <div className={`relative z-10 overflow-visible rounded-[28px] border p-4 md:p-5 ${softPanel}`}>
-          <div className="relative overflow-hidden rounded-[24px] bg-white p-5 text-[#111A34] shadow-none md:p-7">
-            <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#77716A]">
+      <div className="relative mx-auto max-w-[1560px] px-2.5 py-5 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={fadeUp}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className={`relative z-10 overflow-visible rounded-[20px] border p-2.5 sm:rounded-[28px] sm:p-4 md:p-5 ${softPanel}`}
+        >
+          <motion.div
+            whileHover={subtleLift}
+            className="relative overflow-hidden rounded-[18px] bg-white p-3 text-[#111A34] shadow-none transition-shadow duration-300 hover:shadow-[0_24px_70px_rgba(30,32,36,0.10)] sm:rounded-[24px] sm:p-5 md:p-7"
+          >
+            <div className="relative grid gap-4 sm:gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+              <motion.div variants={staggerWrap} initial="hidden" animate="show">
+                <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#77716A] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.22em]">
                   <Sparkles size={14} />
                   {copy.routeSelection}
-                </div>
-                <h1 className="mt-6 max-w-[720px] text-[38px] font-black leading-[0.94] tracking-[-0.06em] text-[#111A34] md:text-[60px]">
+                </motion.div>
+                <motion.h1 variants={fadeUp} className="mt-4 max-w-[720px] text-[30px] font-black leading-[0.96] tracking-[-0.04em] text-[#111A34] sm:mt-6 sm:text-[38px] md:text-[60px]">
                   {copy.heroTitleA}
                   <span className="block text-[#174A8B]">
                     {copy.heroTitleB}
                   </span>
                   <span className="block">{copy.heroTitleC}</span>
-                </h1>
-                <p className="mt-5 max-w-[620px] text-[15px] leading-8 text-[#4b5563] md:text-[17px]">
+                </motion.h1>
+                <motion.p variants={fadeUp} className="mt-3 max-w-[620px] text-[13px] leading-6 text-[#4b5563] sm:mt-5 sm:text-[15px] sm:leading-8 md:text-[17px]">
                   {copy.heroDesc}
-                </p>
+                </motion.p>
 
-                <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                  <div className={`rounded-[24px] p-4 backdrop-blur-sm ${unifiedCard}`}>
-                    <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
+                <motion.div variants={staggerWrap} className="mt-4 grid gap-2 sm:mt-8 sm:grid-cols-3 sm:gap-3">
+                  <motion.div variants={fadeUp} whileHover={subtleLift} className={`rounded-[16px] p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(23,74,139,0.10)] sm:rounded-[24px] sm:p-4 ${unifiedCard}`}>
+                    <div className={`flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>
                       <CalendarDays size={14} />
                       {copy.date}
                     </div>
-                    <div className={`mt-3 text-[24px] font-black ${primaryText}`}>{date || copy.unselected}</div>
-                  </div>
-                  <div className={`rounded-[24px] p-4 backdrop-blur-sm ${unifiedCard}`}>
-                    <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
+                    <div className={`mt-2 text-[20px] font-black sm:mt-3 sm:text-[24px] ${primaryText}`}>{date || copy.unselected}</div>
+                  </motion.div>
+                  <motion.div variants={fadeUp} whileHover={subtleLift} className={`rounded-[16px] p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(23,74,139,0.10)] sm:rounded-[24px] sm:p-4 ${unifiedCard}`}>
+                    <div className={`flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>
                       <Users size={14} />
                       {copy.passenger}
                     </div>
-                    <div className={`mt-3 text-[24px] font-black ${primaryText}`}>{`${pax} ${language === "en" ? "pax" : "ta"}`.trim()}</div>
-                  </div>
-                  <div className={`rounded-[24px] p-4 backdrop-blur-sm ${unifiedCard}`}>
-                    <div className={`flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>
+                    <div className={`mt-2 flex items-baseline gap-1.5 text-[20px] font-black sm:mt-3 sm:text-[24px] ${primaryText}`}>
+                      <SlidingNumber number={pax} initiallyStable className="tabular-nums" />
+                      <span>{language === "en" ? "pax" : "ta"}</span>
+                    </div>
+                  </motion.div>
+                  <motion.div variants={fadeUp} whileHover={subtleLift} className={`rounded-[16px] p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(23,74,139,0.10)] sm:rounded-[24px] sm:p-4 ${unifiedCard}`}>
+                    <div className={`flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>
                       <Ticket size={14} />
                       {copy.classLabel}
                     </div>
-                    <div className={`mt-3 text-[24px] font-black ${primaryText}`}>{copy.classNames[travelClass]}</div>
-                  </div>
-                </div>
-              </div>
+                    <div className={`mt-2 text-[20px] font-black sm:mt-3 sm:text-[24px] ${primaryText}`}>{copy.classNames[travelClass]}</div>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
 
-              <div className="relative min-h-[320px] overflow-hidden rounded-[22px] border border-[#D9D5CE] shadow-none">
-                <img
+              <motion.div whileHover={{ y: -5, transition: luxurySpring }} className="group relative min-h-[240px] overflow-hidden rounded-[18px] border border-[#D9D5CE] shadow-none transition-shadow duration-300 hover:shadow-[0_24px_58px_rgba(23,74,139,0.16)] sm:min-h-[320px] sm:rounded-[22px]">
+                <motion.img
                   src={currentCitySlide.image}
                   alt={currentCitySlide.city}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700"
+                  key={currentCitySlide.image}
+                  initial={{ opacity: 0, scale: 1.04 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]"
                 />
-                <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.46)_100%)]" />
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
-                  <div className="rounded-full border border-white/18 bg-[rgba(7,18,35,0.34)] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(2,8,24,0.22)] backdrop-blur-[10px]">
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.46)_100%)] sm:h-28" />
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3 sm:gap-3 sm:p-5">
+                  <div className="rounded-full border border-white/18 bg-[rgba(7,18,35,0.34)] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(2,8,24,0.22)] backdrop-blur-[10px] sm:px-4 sm:py-2 sm:text-sm">
                     {currentCitySlide.city}
                   </div>
-                  <div className="flex items-center gap-2 rounded-full border border-white/14 bg-[rgba(7,18,35,0.28)] px-3 py-2 shadow-[0_10px_24px_rgba(2,8,24,0.18)] backdrop-blur-[10px]">
+                  <div className="flex items-center gap-1.5 rounded-full border border-white/14 bg-[rgba(7,18,35,0.28)] px-2.5 py-1.5 shadow-[0_10px_24px_rgba(2,8,24,0.18)] backdrop-blur-[10px] sm:gap-2 sm:px-3 sm:py-2">
                     {cityHeroSlides.map((slide, index) => (
-                      <button
+                      <motion.button
                         key={`${slide.city}-${index}`}
                         type="button"
                         onClick={() => setActiveCitySlide(index)}
+                        whileHover={{ scale: 1.18 }}
+                        whileTap={{ scale: 0.92 }}
                         className={[
-                          "h-2.5 rounded-full transition-all",
-                          index === activeCitySlide ? "w-8 bg-white" : "w-2.5 bg-white/55 hover:bg-white/80",
+                          "h-2 rounded-full transition-all sm:h-2.5",
+                          index === activeCitySlide ? "w-6 bg-white sm:w-8" : "w-2 bg-white/55 hover:bg-white/80 sm:w-2.5",
                         ].join(" ")}
                         aria-label={slide.city}
                       />
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className={`mt-5 overflow-visible rounded-[24px] p-4 md:p-5 ${unifiedSoftCard}`}>
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_210px_190px_220px]">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.42, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+            className={`mt-3 overflow-visible rounded-[20px] p-2.5 transition-shadow duration-300 hover:shadow-[0_22px_54px_rgba(30,32,36,0.10)] sm:mt-5 sm:rounded-[24px] sm:p-4 md:p-5 ${unifiedSoftCard}`}
+          >
+            <div className="grid gap-2.5 sm:gap-3 xl:grid-cols-[minmax(190px,1fr)_minmax(190px,1fr)_200px_240px_220px] 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_230px_300px_270px]">
               <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
               <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
-              <div ref={calendarAnchorRef} className={`relative flex min-h-[84px] flex-col justify-center rounded-[24px] px-4 py-3 ${unifiedCard}`}>
-                <div className={`mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${mutedText}`}>{copy.date}</div>
+              <motion.div ref={calendarAnchorRef} whileHover={subtleLift} className={`relative flex min-h-[62px] flex-col justify-center rounded-[14px] px-3 py-2.5 transition-shadow duration-300 hover:shadow-[0_16px_38px_rgba(23,74,139,0.10)] sm:min-h-[84px] sm:rounded-[24px] sm:px-4 sm:py-3 ${unifiedCard}`}>
+                <div className={`mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>{copy.date}</div>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
-                  className={`text-left text-[16px] font-semibold ${primaryText}`}
+                  className={`text-left text-[14px] font-semibold sm:text-[16px] ${primaryText}`}
                 >
                   {date || copy.openCalendar}
                 </button>
@@ -1335,49 +1375,51 @@ export default function Flights() {
                     onClose={() => setCalendarOpen(false)}
                   />
                 ) : null}
-              </div>
-              <div className="flex min-h-[84px] flex-col justify-center rounded-[16px] border border-[#D9D5CE] bg-white px-4 py-3 shadow-none">
-                <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">{copy.classLabel}</div>
-                <div className="grid grid-cols-3 gap-2">
+              </motion.div>
+              <motion.div whileHover={subtleLift} className="flex min-h-[62px] flex-col justify-center rounded-[14px] border border-[#D9D5CE] bg-white px-3 py-2.5 shadow-none transition-shadow duration-300 hover:shadow-[0_16px_38px_rgba(23,74,139,0.10)] sm:min-h-[84px] sm:rounded-[16px] sm:px-4 sm:py-3 2xl:px-5">
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280] sm:mb-2 sm:text-[11px] sm:tracking-[0.18em]">{copy.classLabel}</div>
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 2xl:gap-2.5">
                   {(["Y", "B", "F"] as TravelClassCode[]).map((item) => (
-                    <button
+                    <motion.button
                       key={item}
                       type="button"
                       onClick={() => setTravelClass(item)}
+                      whileHover={{ y: -2 }}
+                      whileTap={{ scale: 0.97 }}
                       className={[
-                        "h-10 rounded-2xl border text-[13px] font-semibold transition",
+                        "h-8 whitespace-nowrap rounded-[12px] border px-1.5 text-[12px] font-semibold transition sm:h-10 sm:rounded-2xl sm:px-2 sm:text-[13px] 2xl:h-12 2xl:px-3 2xl:text-[14px]",
                         travelClass === item
                           ? `${activePillBtn} border-[#1a2231]/10`
                           : pillBtn,
                       ].join(" ")}
                     >
                       {copy.classNames[item]}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
-              <button onClick={onSearch} disabled={loading} className={`min-h-[84px] rounded-[24px] px-6 text-sm font-semibold uppercase tracking-[0.18em] transition disabled:opacity-60 ${luxuryBtn}`}>
+              </motion.div>
+              <motion.button whileHover={{ y: -3, scale: 1.01 }} whileTap={{ scale: 0.985 }} onClick={onSearch} disabled={loading} className={`min-h-[46px] rounded-[14px] px-4 text-[13px] font-semibold uppercase tracking-[0.16em] transition disabled:opacity-60 sm:min-h-[84px] sm:rounded-[24px] sm:px-6 sm:text-sm sm:tracking-[0.18em] ${luxuryBtn}`}>
                 {loading ? copy.searching : copy.search}
-              </button>
+              </motion.button>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-              <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={onSwapRoute} disabled={!from && !to} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-70 ${pillBtn}`}>
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2 sm:mt-4 sm:gap-3">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} type="button" onClick={onSwapRoute} disabled={!from && !to} className={`h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-70 sm:h-10 sm:px-4 sm:text-xs sm:tracking-[0.14em] ${pillBtn}`}>
                   {copy.swap}
-                </button>
-                <button type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className={`h-10 rounded-full px-4 text-xs font-semibold uppercase tracking-[0.14em] disabled:cursor-not-allowed disabled:opacity-70 ${pillBtn}`}>
+                </motion.button>
+                <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className={`h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-70 sm:h-10 sm:px-4 sm:text-xs sm:tracking-[0.14em] ${pillBtn}`}>
                   {copy.clear}
-                </button>
+                </motion.button>
                 {(["best", "cheap", "fast"] as const).map((item) => (
-                  <button key={item} onClick={() => setSort(item)} className={["h-10 rounded-full border px-4 text-xs font-semibold uppercase tracking-[0.14em] transition", sort === item ? activePillBtn : pillBtn].join(" ")}>
+                  <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} key={item} onClick={() => setSort(item)} className={["h-8 rounded-full border px-3 text-[11px] font-semibold uppercase tracking-[0.12em] transition sm:h-10 sm:px-4 sm:text-xs sm:tracking-[0.14em]", sort === item ? activePillBtn : pillBtn].join(" ")}>
                     {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {selectedFlight ? (
           <div ref={checkoutRef} className="mt-8 overflow-hidden rounded-[28px] border border-[#D9D5CE] bg-white shadow-[0_18px_52px_rgba(30,32,36,0.08)]">
@@ -1394,7 +1436,13 @@ export default function Flights() {
         ) : null}
 
         <div className="mt-8 grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="rounded-[22px] border border-[#D9D5CE] bg-[#F8F7F4] p-3 shadow-[0_14px_34px_rgba(30,32,36,0.06)]">
+          <motion.aside
+            initial={{ opacity: 0, x: -18 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-[22px] border border-[#D9D5CE] bg-[#F8F7F4] p-3 shadow-[0_14px_34px_rgba(30,32,36,0.06)]"
+          >
             <div className="sticky top-24 space-y-3 text-[13px] text-[#1F2933]">
               <div className="flex items-center gap-2 rounded-[16px] border border-[#D9D5CE] bg-white px-3 py-3 text-[13px] font-bold text-[#111A34]">
                 <Filter size={15} className="text-[#174A8B]" />
@@ -1468,22 +1516,32 @@ export default function Flights() {
                 ))}
               </CityFilterBlock>
             </div>
-          </aside>
+          </motion.aside>
 
-          <div ref={resultsRef} className="space-y-4">
+          <motion.div
+            ref={resultsRef}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.08 }}
+            transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
+            className="space-y-4"
+          >
             {loading ? <SearchLoadingAnimation language={language} /> : null}
             {!loading && filtered.length > 0 ? (
               <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 text-sm shadow-[0_10px_24px_rgba(30,32,36,0.06)]">
-                  <div className="font-semibold text-[#111A34]">{filtered.length} {copy.offers}</div>
+                <motion.div whileHover={{ y: -2 }} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 text-sm shadow-[0_10px_24px_rgba(30,32,36,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(30,32,36,0.10)]">
+                  <div className="flex items-center gap-1.5 font-semibold text-[#111A34]">
+                    <SlidingNumber number={filtered.length} initiallyStable className="tabular-nums" />
+                    <span>{copy.offers}</span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {(["best", "cheap", "fast"] as const).map((item) => (
-                      <button key={item} onClick={() => setSort(item)} className={["h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition", sort === item ? "border-[#0A84FF] bg-[#E7F2FF] text-[#075DB8]" : "border-[#D9D5CE] bg-white text-[#59636E]"].join(" ")}>
+                      <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} key={item} onClick={() => setSort(item)} className={["h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition", sort === item ? "border-[#0A84FF] bg-[#E7F2FF] text-[#075DB8]" : "border-[#D9D5CE] bg-white text-[#59636E]"].join(" ")}>
                         {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
-                </div>
+                </motion.div>
                 {filtered.map((flight, index) => (
                   <CityTravelResultCard
                     key={flight.id}
@@ -1498,7 +1556,7 @@ export default function Flights() {
               </div>
             ) : null}
             {!loading && filtered.length === 0 ? <div className={`rounded-[28px] px-6 py-12 text-center ${unifiedSoftCard} ${secondaryText}`}>{copy.noFlights}</div> : null}
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -1535,10 +1593,13 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
   }
 
   return (
-    <label className={`relative ${fieldPanel}`}>
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#58789c]">{label}</div>
+    <motion.label
+      whileHover={subtleLift}
+      className={`relative focus-within:border-[#174A8B]/45 focus-within:shadow-[0_0_0_4px_rgba(23,74,139,0.08)] ${fieldPanel}`}
+    >
+      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#58789c] sm:text-[11px] sm:tracking-[0.18em]">{label}</div>
       <input
-        className="mt-2 w-full bg-transparent text-[15px] font-semibold text-[#111A34] outline-none placeholder:text-[#90a3ba]"
+        className="mt-1.5 w-full bg-transparent text-[14px] font-semibold text-[#111A34] outline-none placeholder:text-[#90a3ba] sm:mt-2 sm:text-[15px]"
         placeholder={placeholder}
         value={value}
         onFocus={() => setOpen(true)}
@@ -1569,9 +1630,14 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
         }}
       />
       {open && filteredOptions.length > 0 ? (
-        <div className={dropdownPanel}>
+        <motion.div
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          className={dropdownPanel}
+        >
           {filteredOptions.map((option) => (
-            <button
+            <motion.button
               key={option.code}
               type="button"
               onMouseEnter={() => setActiveIndex(filteredOptions.findIndex((item) => item.code === option.code))}
@@ -1584,6 +1650,7 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
                 "flex w-full items-center justify-between border-b border-[#D9D5CE] px-4 py-3 text-left transition last:border-b-0",
                 filteredOptions[activeIndex]?.code === option.code ? "bg-[#F3F1ED]" : "hover:bg-[#F6F6F6]",
               ].join(" ")}
+              whileHover={{ x: 3 }}
             >
               <span>
                 <span className="block text-sm font-semibold text-[#111A34]">{option.name}</span>
@@ -1592,11 +1659,11 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
               <span className="rounded-full border border-[#cfe1f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef5fc_100%)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#466b95]">
                 {selectLabel}
               </span>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       ) : null}
-    </label>
+    </motion.label>
   )
 }
 
@@ -1641,13 +1708,13 @@ void ToggleButton
 
 function CityFilterBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-[#D9D5CE] bg-white p-3 shadow-[0_8px_20px_rgba(30,32,36,0.04)]">
+    <motion.div whileHover={{ y: -3, transition: luxurySpring }} className="rounded-[18px] border border-[#D9D5CE] bg-white p-3 shadow-[0_8px_20px_rgba(30,32,36,0.04)] transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(30,32,36,0.08)]">
       <div className="mb-3 flex items-center justify-between border-b border-[#ECE8E1] pb-2 text-[13px] font-bold text-[#111A34]">
         <span>{title}</span>
         <ChevronDown size={14} className="text-[#174A8B]" />
       </div>
       <div className="space-y-2.5">{children}</div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -1666,38 +1733,59 @@ function MiniCheck({
   side?: string
   icon?: string
 }) {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (disabled) return
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      onChange()
+    }
+  }
+
   return (
-    <button
-      type="button"
-      disabled={disabled}
+    <motion.div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled}
+      aria-pressed={checked}
       onClick={onChange}
+      onKeyDown={handleKeyDown}
+      whileHover={disabled ? undefined : { x: 2 }}
+      whileTap={disabled ? undefined : { scale: 0.98 }}
       className={[
-        "flex w-full items-center justify-between gap-2 rounded-[10px] border px-2.5 py-2 text-left text-[12px] transition disabled:cursor-not-allowed disabled:opacity-45",
+        "flex w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] border px-2.5 py-2 text-left text-[12px] transition",
         checked ? "border-[#0A84FF]/35 bg-[#E7F2FF] text-[#075DB8]" : "border-[#ECE8E1] bg-[#FBFAF8] text-[#26313C] hover:border-[#C9D8E8] hover:bg-white",
+        disabled ? "cursor-not-allowed opacity-45" : "",
       ].join(" ")}
     >
       <span className="flex min-w-0 items-center gap-2">
-        <span
+        <Checkbox
+          checked={checked}
+          disabled={disabled}
+          onClick={(event) => event.stopPropagation()}
+          onCheckedChange={() => onChange()}
+          size="sm"
           className={[
-            "grid h-4 w-4 shrink-0 place-items-center rounded-[3px] border",
-            checked ? "border-[#0A84FF] bg-[#0A84FF]" : "border-[#B7B2AA] bg-white",
+            "border",
+            checked
+              ? "border-[#0A84FF] bg-[#0A84FF] text-white"
+              : "border-[#B7B2AA] bg-white text-[#0A84FF]",
           ].join(" ")}
-        >
-          {checked ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
-        </span>
+        />
         {icon ? <img src={icon} alt="" className="h-4 w-4 shrink-0 object-contain" /> : null}
         <span className="truncate">{label}</span>
       </span>
       {side ? <span className={["shrink-0 text-[11px]", checked ? "text-[#075DB8]" : "text-[#59636E]"].join(" ")}>{side}</span> : null}
-    </button>
+    </motion.div>
   )
 }
 
 function MiniToggle({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onChange}
+      whileHover={{ x: 2 }}
+      whileTap={{ scale: 0.98 }}
       className={[
         "flex w-full items-center justify-between gap-2 rounded-[10px] border px-2.5 py-2 text-left text-[12px] transition",
         checked ? "border-[#0A84FF]/35 bg-[#E7F2FF] text-[#075DB8]" : "border-[#ECE8E1] bg-[#FBFAF8] text-[#26313C] hover:border-[#C9D8E8] hover:bg-white",
@@ -1707,7 +1795,7 @@ function MiniToggle({ checked, onChange, label }: { checked: boolean; onChange: 
       <span className={["relative h-5 w-9 rounded-full transition", checked ? "bg-[#0A84FF]" : "bg-[#D1CDC6]"].join(" ")}>
         <span className={["absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition", checked ? "left-[18px]" : "left-0.5"].join(" ")} />
       </span>
-    </button>
+    </motion.button>
   )
 }
 
@@ -1746,9 +1834,13 @@ function CityTravelResultCard({
   const isDirect = (flight.stopsCount ?? 0) === 0
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.035, 0.28), ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -4, transition: luxurySpring }}
       className={[
-        "grid gap-3 rounded-[18px] border bg-white px-4 py-3 shadow-[0_10px_24px_rgba(30,32,36,0.06)] transition hover:shadow-[0_16px_34px_rgba(30,32,36,0.10)] lg:grid-cols-[minmax(0,1fr)_150px]",
+        "grid gap-3 rounded-[18px] border bg-white px-4 py-3 shadow-[0_10px_24px_rgba(30,32,36,0.06)] transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(30,32,36,0.12)] lg:grid-cols-[minmax(0,1fr)_150px]",
         selected ? "border-[#35B871]" : "border-transparent",
       ].join(" ")}
     >
@@ -1808,15 +1900,17 @@ function CityTravelResultCard({
           <div className="mt-1 text-[11px] leading-4 text-[#59636E]">{tripTypeLabel(flight, language)}</div>
           <div className="text-[11px] leading-4 text-[#59636E]">{paxLabel(language, pax)}</div>
         </div>
-        <button
+        <motion.button
           type="button"
           onClick={() => onPick(flight)}
+          whileHover={{ y: -2, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className="h-10 min-w-[116px] rounded-[9px] bg-[#DDEEFF] px-5 text-[13px] font-semibold text-[#006CD8] transition hover:bg-[#CFE7FF]"
         >
           {copy.select}
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -2218,7 +2312,11 @@ function AirlineGroupCard({
               {group.airline} ({group.airlineCode})
             </span>
             <span className={`block text-sm ${secondaryText}`}>
-              {group.items.length} {copy.offers} {copy.fromPriceLabel} {formatMoney(group.minPrice, group.items[0]?.currency)}
+              <span className="inline-flex items-center gap-1">
+                <SlidingNumber number={group.items.length} initiallyStable className="tabular-nums" />
+                <span>{copy.offers}</span>
+              </span>{" "}
+              {copy.fromPriceLabel} {formatMoney(group.minPrice, group.items[0]?.currency)}
             </span>
           </span>
         </span>
@@ -2334,7 +2432,13 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
   const isDirect = (flight.stopsCount ?? 0) === 0
 
   return (
-    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, delay: index * 0.04 }} className={`group overflow-hidden rounded-[34px] p-5 transition hover:-translate-y-0.5 ${unifiedCard}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, delay: Math.min(index * 0.04, 0.32), ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -5, scale: 1.002, transition: luxurySpring }}
+      className={`group overflow-hidden rounded-[34px] p-5 transition-shadow duration-300 hover:shadow-[0_24px_58px_rgba(30,32,36,0.12)] ${unifiedCard}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {badge ? (
@@ -2351,9 +2455,9 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
             {flight.seatsAvailable ? <span className="rounded-full bg-[#fff0f3] px-2.5 py-1 text-[#d94b64]">{copy.moreSeats} {flight.seatsAvailable} {copy.seats}</span> : null}
           </div>
         </div>
-        <button type="button" onClick={() => onPick(flight)} className={`shrink-0 rounded-2xl px-4 py-2 text-sm font-semibold ${secondaryBtn}`}>
+        <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} type="button" onClick={() => onPick(flight)} className={`shrink-0 rounded-2xl px-4 py-2 text-sm font-semibold ${secondaryBtn}`}>
           {copy.view}
-        </button>
+        </motion.button>
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
@@ -2417,7 +2521,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
           <div className="mt-3 space-y-3">
             {segments.map((segment, segmentIndex) => (
               <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`}>
-                <div className={`grid gap-3 rounded-[20px] p-4 md:grid-cols-[220px_minmax(0,1fr)_200px] ${unifiedCard}`}>
+                <motion.div whileHover={{ y: -2 }} className={`grid gap-3 rounded-[20px] p-4 transition-shadow duration-300 hover:shadow-[0_14px_30px_rgba(30,32,36,0.08)] md:grid-cols-[220px_minmax(0,1fr)_200px] ${unifiedCard}`}>
                   <div>
                     <div className={`text-sm font-black ${primaryText}`}>
                       {(segment.carrier || segment.operatingCarrier || flight.airline) + (segment.flightNumber ? `-${segment.flightNumber}` : "")}
@@ -2466,7 +2570,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
                       {segment.carryOn || copy.noCarry}
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {segmentIndex < segments.length - 1 ? (
                   <div className={`px-2 py-2 text-center text-xs font-semibold uppercase tracking-[0.14em] ${mutedText}`}>
@@ -2490,9 +2594,9 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
             </span>
           ) : null}
         </div>
-        <button type="button" className={`h-12 rounded-2xl px-6 font-semibold transition ${luxuryBtn}`} onClick={() => onPick(flight)}>
+        <motion.button whileHover={{ y: -3, scale: 1.01 }} whileTap={{ scale: 0.985 }} type="button" className={`h-12 rounded-2xl px-6 font-semibold transition ${luxuryBtn}`} onClick={() => onPick(flight)}>
           {copy.select}
-        </button>
+        </motion.button>
       </div>
     </motion.div>
   )

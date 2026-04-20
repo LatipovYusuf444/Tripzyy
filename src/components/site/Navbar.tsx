@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { ThemeTogglerButton } from "@/components/animate-ui/components/buttons/theme-toggler"
 import logoImage from "@/assets/images/logo.png"
 import {
   clearAccessToken,
@@ -23,7 +24,6 @@ import {
 import { bookingCart } from "@/shared/store/bookingCart"
 import {
   getStoredTheme,
-  setTheme as setSiteTheme,
   type SiteTheme,
 } from "@/shared/theme/theme"
 import { useI18n } from "@/shared/i18n/i18n"
@@ -210,11 +210,6 @@ const userMemberLabel =
       : language === "ru"
         ? "Участник Tripzy"
         : "Tripzy member"
-
-  const onToggleTheme = () => {
-    const nextTheme: SiteTheme = theme === "dark" ? "light" : "dark"
-    setTheme(setSiteTheme(nextTheme))
-  }
 
   const copy = {
     uz: {
@@ -423,15 +418,23 @@ const userMemberLabel =
                 </AnimatePresence>
               </div>
 
-              <button
+              <ThemeTogglerButton
                 type="button"
                 aria-label={copy.switchTheme}
-                onClick={onToggleTheme}
+                theme={theme}
+                onThemeChange={setTheme}
+                direction="ltr"
+                unstyled
                 className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? `${compactControlGlassClass} ${compactControlHoverClass}` : homeGlassBtnClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
-              >
-                {theme === "dark" ? <SunMedium size={isCompactNavbar ? 12 : 14} /> : <MoonStar size={isCompactNavbar ? 12 : 14} />}
-                {theme === "dark" ? copy.themeLight : copy.themeDark}
-              </button>
+                renderIcon={(currentTheme) =>
+                  currentTheme === "dark" ? (
+                    <SunMedium size={isCompactNavbar ? 12 : 14} />
+                  ) : (
+                    <MoonStar size={isCompactNavbar ? 12 : 14} />
+                  )
+                }
+                label={theme === "dark" ? copy.themeLight : copy.themeDark}
+              />
 
               {!authed ? (
                   <Button
@@ -567,21 +570,29 @@ const userMemberLabel =
                       ))}
                     </div>
 
-                    <button
+                    <ThemeTogglerButton
                       type="button"
-                      onClick={onToggleTheme}
+                      aria-label={copy.switchTheme}
+                      theme={theme}
+                      onThemeChange={setTheme}
+                      direction="ltr"
+                      unstyled
                       className="flex items-center justify-between rounded-[16px] border border-[#e7edf6] bg-white px-3 py-2.5 text-[13px] font-semibold text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)] dark:text-white"
-                    >
-                      <span className="inline-flex items-center gap-2.5">
-                        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
-                          {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
-                        </span>
-                        <span>{theme === "dark" ? copy.lightMode : copy.darkMode}</span>
-                      </span>
-                      <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[10px] font-semibold text-[#244268] dark:bg-[#193a70] dark:text-[#dbeafe]">
-                        {theme === "dark" ? "ON" : "OFF"}
-                      </span>
-                    </button>
+                      renderIcon={() => null}
+                      label={
+                        <>
+                          <span className="inline-flex items-center gap-2.5">
+                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
+                              {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
+                            </span>
+                            <span>{theme === "dark" ? copy.lightMode : copy.darkMode}</span>
+                          </span>
+                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[10px] font-semibold text-[#244268] dark:bg-[#193a70] dark:text-[#dbeafe]">
+                            {theme === "dark" ? "ON" : "OFF"}
+                          </span>
+                        </>
+                      }
+                    />
 
                     {mobileLinks.map((link) => (
                       <NavLink

@@ -25,6 +25,7 @@ import heroBackgroundImage from "@/assets/images/cheerful-woman-looking-out-wind
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
+import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 type LocationOption = { code: string; name: string; searchText: string }
 type TripMode = "round" | "oneway" | "multi"
@@ -205,6 +206,7 @@ export default function Home() {
   const [travelClass, setTravelClass] = useState<TravelClassCode>("Y")
   const [passengerTouched, setPassengerTouched] = useState(false)
   const [activeAirportField, setActiveAirportField] = useState<string | null>(null)
+  const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [multiTrips, setMultiTrips] = useState<MultiTrip[]>([
     { from: "", to: "", date: "" },
     { from: "", to: "", date: "" },
@@ -419,6 +421,19 @@ export default function Home() {
       setAirportLabels({ ...DEFAULT_AIRPORT_DIRECTORY, ...parsed })
     } catch {
       setAirportLabels(DEFAULT_AIRPORT_DIRECTORY)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncTheme = () => setSiteTheme(getStoredTheme())
+
+    syncTheme()
+    window.addEventListener("storage", syncTheme)
+    window.addEventListener("tripzy-theme-change", syncTheme as EventListener)
+
+    return () => {
+      window.removeEventListener("storage", syncTheme)
+      window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
     }
   }, [])
 
@@ -690,7 +705,7 @@ export default function Home() {
     ru: "Начните путешествие с выгодными ценами и надежным сервисом",
     en: "Start your journey with great fares and reliable service",
   }[language]
-  const isHeroSearchDark = false
+  const isHeroSearchDark = siteTheme === "dark"
 
   const onSearch = () => {
     if (tripMode === "multi") {
@@ -971,8 +986,12 @@ export default function Home() {
                 </div>
               ) : (
                 <div
+                  data-search-theme={isHeroSearchDark ? "dark" : "light"}
                   className={[
-                    `luxury-search-grid home-search-surface relative grid items-stretch gap-2 overflow-visible rounded-[18px] bg-[#EBEBEB] sm:rounded-[20px] xl:gap-0`,
+                    "luxury-search-grid home-search-surface relative grid items-stretch gap-2 overflow-visible rounded-[18px] transition-colors duration-300 sm:rounded-[20px] xl:gap-0",
+                    isHeroSearchDark
+                      ? "border border-[#2c4b78]/70 bg-[linear-gradient(180deg,rgba(14,32,67,0.96)_0%,rgba(7,18,44,0.94)_100%)] shadow-[0_22px_58px_rgba(2,8,24,0.34)] backdrop-blur-xl"
+                      : "bg-[#EBEBEB]",
                     tripMode === "round"
                       ? "xl:grid-cols-[2.25fr_0.95fr_0.95fr_0.92fr_140px]"
                       : "xl:grid-cols-[2.45fr_1fr_0.95fr_140px]",
@@ -988,7 +1007,12 @@ export default function Home() {
                         setTo(nextTo)
                         setActiveAirportField(null)
                       }}
-                    className="absolute left-1/2 top-1/2 z-10 hidden h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#dedede] text-[#6d6a66] transition-all duration-200 hover:bg-[#d6d6d6] hover:shadow-[0_10px_22px_rgba(15,23,42,0.12)] active:scale-95 xl:flex"
+                    className={[
+                      "absolute left-1/2 top-1/2 z-10 hidden h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-200 active:scale-95 xl:flex",
+                      isHeroSearchDark
+                        ? "bg-[#132f58] text-[#d8ebff] hover:bg-[#18416f] hover:shadow-[0_10px_22px_rgba(2,8,24,0.28)]"
+                        : "bg-[#dedede] text-[#6d6a66] hover:bg-[#d6d6d6] hover:shadow-[0_10px_22px_rgba(15,23,42,0.12)]",
+                    ].join(" ")}
                     >
                       <ArrowRightLeft size={16} />
                     </button>
@@ -998,7 +1022,7 @@ export default function Home() {
                       placeholder={heroCopy.originPlaceholder}
                       options={locationOptions}
                       onChange={setFrom}
-                      icon={<PlaneTakeoff size={16} className="text-[#5f6368]" />}
+                      icon={<PlaneTakeoff size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"} />}
                       onActivate={() => {
                         setCalendarOpen(false)
                         setOpenMultiDateIndex(null)
@@ -1016,7 +1040,7 @@ export default function Home() {
                       placeholder={heroCopy.destinationPlaceholder}
                       options={locationOptions}
                       onChange={setTo}
-                      icon={<PlaneLanding size={16} className="text-[#5f6368]" />}
+                      icon={<PlaneLanding size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"} />}
                       onActivate={() => {
                         setCalendarOpen(false)
                         setOpenMultiDateIndex(null)
@@ -1046,7 +1070,7 @@ export default function Home() {
                     cabinLabel={searchUiCopy.classNames[travelClass]}
                     travelClass={travelClass}
                     onTravelClassChange={setTravelClass}
-                    icon={<UsersRound size={16} className="text-[#111111]" />}
+                    icon={<UsersRound size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#111111]"} />}
                     isDark={isHeroSearchDark}
                     compact
                   />
@@ -1062,9 +1086,14 @@ export default function Home() {
                       setOpenMultiDateIndex(null)
                       setCalendarOpen((prev) => !prev)
                     }} className="flex w-full items-center justify-start gap-4 xl:h-full">
-                      <CalendarDays size={17} className="shrink-0 text-[#5f6368]" />
+                      <CalendarDays size={17} className={["shrink-0", isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"].join(" ")} />
                       <div className="min-w-0 text-left">
-                        <span className={`block truncate text-[14px] font-normal leading-none text-[#111111] ${date ? "" : "text-[#8a8a8a]"}`}>
+                        <span className={[
+                          "block truncate text-[14px] font-normal leading-none",
+                          isHeroSearchDark
+                            ? date ? "text-white" : "text-white/58"
+                            : date ? "text-[#111111]" : "text-[#8a8a8a]",
+                        ].join(" ")}>
                           {date ? formatDisplayDate(date) : searchUiCopy.depart}
                         </span>
                       </div>
@@ -1103,9 +1132,14 @@ export default function Home() {
                         }}
                           className="flex w-full items-center justify-start gap-4 xl:h-full"
                       >
-                        <span className="text-[15px] leading-none text-[#6d6d6d]">→</span>
+                        <span className={["text-[15px] leading-none", isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#6d6d6d]"].join(" ")}>→</span>
                         <div className="min-w-0 text-left">
-                          <span className={`block truncate text-[14px] font-normal leading-none text-[#111111] ${returnDate ? "" : "text-[#8a8a8a]"}`}>
+                          <span className={[
+                            "block truncate text-[14px] font-normal leading-none",
+                            isHeroSearchDark
+                              ? returnDate ? "text-white" : "text-white/58"
+                              : returnDate ? "text-[#111111]" : "text-[#8a8a8a]",
+                          ].join(" ")}>
                             {returnDate ? formatDisplayDate(returnDate) : searchUiCopy.return}
                           </span>
                         </div>
@@ -1293,8 +1327,8 @@ function HomeAutocompleteField({
           ? "bg-[rgba(42,82,150,0.36)]"
           : "hover:bg-[rgba(42,82,150,0.28)]"
         : activeOption
-          ? "bg-[#f8fbff]"
-          : "hover:bg-[#f8fbff]",
+          ? "bg-[#EBEBEB]"
+          : "hover:bg-[#EBEBEB]",
     ].join(" ")
 
   const optionTitleClass = isDark
@@ -1323,7 +1357,7 @@ function HomeAutocompleteField({
 
   const inlinePanelCloseClass = isDark
     ? "grid h-8 w-8 place-items-center rounded-full border border-[#5d7fba]/42 text-[#cfe0fb] transition hover:bg-[rgba(42,82,150,0.28)] hover:text-white"
-    : "grid h-8 w-8 place-items-center rounded-full border border-[#dbe3ef] text-[#64748b] transition hover:bg-[#f8fbff] hover:text-[#0f172a]"
+    : "grid h-8 w-8 place-items-center rounded-full border border-[#d6d6d6] text-[#64748b] transition hover:bg-[#EBEBEB] hover:text-[#0f172a]"
 
   const optionList = filteredOptions.length ? (
     filteredOptions.map((option, index) => (
@@ -1387,7 +1421,7 @@ function HomeAutocompleteField({
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { pickOption(option); onDismiss?.() }}
-                  className={`premium-lift flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#f8fbff]"}`}
+                  className={`premium-lift flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#EBEBEB]"}`}
                 >
                   <span className="flex min-w-0 items-center gap-3">
                     <span className="luxury-search-icon h-9 w-9 shrink-0 rounded-[12px]">
@@ -1398,7 +1432,7 @@ function HomeAutocompleteField({
                       <span className={`block text-[11px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{option.code}</span>
                     </span>
                   </span>
-                  <span className={`shrink-0 rounded-[999px] border px-2.5 py-1 text-[11px] font-semibold ${isDark ? "border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] text-[#cfe0fb]" : "border-[#dbe3ef] bg-white/70 text-[#475569]"}`}>
+                  <span className={`shrink-0 rounded-[999px] border px-2.5 py-1 text-[11px] font-semibold ${isDark ? "border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] text-[#cfe0fb]" : "border-[#d6d6d6] bg-[#EBEBEB] text-[#475569]"}`}>
                     {option.code}
                   </span>
                 </button>
@@ -1500,9 +1534,9 @@ function HomeAutocompleteField({
               onClick={() => setOpen(false)}
               className="fixed inset-0 z-[129] bg-[rgba(15,23,42,0.16)] backdrop-blur-[2px] xl:hidden"
             />
-            <div className={`fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] ${isDark ? "border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.96)_0%,rgba(9,24,54,0.94)_100%)] shadow-[0_28px_80px_rgba(2,8,24,0.48)] backdrop-blur-[22px]" : "border-[#dbe3ef] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(246,249,255,0.96)_100%)] xl:bg-white"}`}>
+            <div className={`fixed inset-x-3 bottom-3 z-[130] max-h-[62svh] overflow-hidden rounded-[24px] border shadow-[0_24px_60px_rgba(17,24,39,0.16)] xl:absolute xl:left-0 xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:max-h-[320px] xl:rounded-[22px] ${isDark ? "border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.96)_0%,rgba(9,24,54,0.94)_100%)] shadow-[0_28px_80px_rgba(2,8,24,0.48)] backdrop-blur-[22px]" : "border-[#d6d6d6] bg-[#EBEBEB] xl:bg-[#EBEBEB]"}`}>
               <div className={`mx-auto mt-2 h-1.5 w-14 rounded-full xl:hidden ${isDark ? "bg-[#5d7fba]/45" : "bg-[#d8e1ee]"}`} />
-              <div className={`border-b px-4 py-3 xl:hidden ${isDark ? "border-[#5d7fba]/34" : "border-[#eef3f8]"}`}>
+              <div className={`border-b px-4 py-3 xl:hidden ${isDark ? "border-[#5d7fba]/34" : "border-[#d6d6d6]"}`}>
                 <div className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDark ? "text-[#b9cceb]" : "text-[#7a879c]"}`}>
                   {label}
                 </div>
@@ -1732,29 +1766,29 @@ function PassengerField({
   ].join(" ")
 
   const dropdownPanelClass =
-    "fixed inset-x-3 bottom-2 z-[130] rounded-[18px] border border-[#d6d6d6] bg-[#EBEBEB] p-4 shadow-[0_18px_44px_rgba(15,23,42,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+14px)] xl:bottom-auto xl:z-[140] xl:w-[560px] xl:rounded-[22px] xl:border-0 xl:bg-white xl:p-5"
+    "fixed inset-x-4 bottom-4 z-[130] rounded-[18px] border border-[#d6d6d6] bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[440px] xl:rounded-[18px] xl:border-0 xl:p-4"
 
   const dropdownHandleClass = isDark
     ? "mx-auto mb-3 h-1 w-10 rounded-full bg-[#5d7fba]/45 xl:hidden"
     : "mx-auto mb-3 h-1 w-10 rounded-full bg-[#c8cdd6] xl:hidden"
 
-  const dropdownTitleClass = "text-[16px] font-semibold text-[#1f1f1f] xl:text-[20px]"
+  const dropdownTitleClass = "text-[16px] font-semibold text-[#1f1f1f] xl:text-[18px]"
 
   const passengerRowClass =
-    "flex items-center justify-between gap-3 py-2 xl:py-3"
+    "flex items-center justify-between gap-3 py-2 xl:py-2"
 
-  const passengerRowTitleClass = "text-[15px] font-normal leading-tight text-[#1f1f1f] xl:text-[20px]"
+  const passengerRowTitleClass = "text-[15px] font-normal leading-tight text-[#1f1f1f] xl:text-[17px]"
 
-  const passengerRowHintClass = "text-[12px] leading-tight text-[#686868] xl:text-[16px]"
+  const passengerRowHintClass = "text-[12px] leading-tight text-[#686868] xl:text-[13px]"
 
-  const counterBoxClass = "flex shrink-0 items-center gap-4 xl:gap-6"
+  const counterBoxClass = "flex shrink-0 items-center gap-3 xl:gap-4"
 
   const counterMinusClass =
-    "premium-icon-button grid h-9 w-9 place-items-center rounded-full bg-white text-[#777777] hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:text-[#a9a9a9] xl:h-11 xl:w-11"
+    "premium-icon-button grid h-8 w-8 place-items-center rounded-full bg-white text-[#777777] hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:text-[#a9a9a9] xl:h-9 xl:w-9"
   const counterPlusClass =
-    "premium-icon-button grid h-9 w-9 place-items-center rounded-full bg-[#e8f4ff] text-[#0878ff] hover:bg-[#dcedff] disabled:cursor-not-allowed disabled:text-[#99c8ff] xl:h-11 xl:w-11"
+    "premium-icon-button grid h-8 w-8 place-items-center rounded-full bg-[#e8f4ff] text-[#0878ff] hover:bg-[#dcedff] disabled:cursor-not-allowed disabled:text-[#99c8ff] xl:h-9 xl:w-9"
 
-  const counterValueClass = "min-w-[18px] text-center text-[18px] font-normal text-[#111111] xl:text-[22px]"
+  const counterValueClass = "min-w-[18px] text-center text-[17px] font-normal text-[#111111] xl:text-[18px]"
 
   const morePassengersClass = "hidden"
 
@@ -1805,17 +1839,17 @@ function PassengerField({
           />
           <div className={dropdownPanelClass}>
             <div className={dropdownHandleClass} />
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <div className={dropdownTitleClass}>
                 {safeCopy.passengersCount}
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="premium-icon-button grid h-9 w-9 place-items-center rounded-full text-[#111111] hover:bg-[#f3f3f3]"
+                className="premium-icon-button grid h-8 w-8 place-items-center rounded-full text-[#111111] hover:bg-[#f3f3f3]"
                 aria-label={safeCopy.close}
               >
-                <X size={28} strokeWidth={1.8} />
+                <X size={22} strokeWidth={1.8} />
               </button>
             </div>
             <div className="space-y-2">
@@ -1837,7 +1871,7 @@ function PassengerField({
                       disabled={row.disableDecrement}
                       className={counterMinusClass}
                     >
-                      <Minus size={22} strokeWidth={1.8} />
+                      <Minus size={18} strokeWidth={1.8} />
                     </button>
                     <div className={counterValueClass}>
                       {row.value}
@@ -1848,23 +1882,23 @@ function PassengerField({
                       disabled={row.disableIncrement}
                       className={counterPlusClass}
                     >
-                      <Plus size={25} strokeWidth={1.8} />
+                      <Plus size={20} strokeWidth={1.8} />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 text-[15px] font-semibold text-[#1f1f1f] xl:mt-8 xl:text-[20px]">
+            <div className="mt-4 text-[15px] font-semibold text-[#1f1f1f] xl:mt-5 xl:text-[17px]">
               {safeCopy.cabinTitle}
             </div>
-            <div className="mt-2.5 grid grid-cols-3 gap-2 xl:mt-4 xl:grid-cols-2 xl:gap-3">
+            <div className="mt-2.5 grid grid-cols-3 gap-2 xl:mt-3">
               {serviceClasses.map((item) => (
                 <button
                   key={item.code}
                   type="button"
                   onClick={() => onTravelClassChange?.(item.code)}
                   className={[
-                    "premium-choice-button h-9.5 rounded-full border text-[13px] font-medium bg-white xl:h-12.5 xl:text-[19px]",
+                    "premium-choice-button h-9 rounded-full border bg-white px-2 text-[13px] font-medium xl:h-10 xl:text-[15px]",
                     selectedTravelClass === item.code
                       ? "border-[#0878ff] text-[#0878ff]"
                       : "border-[#d6d6d6] text-[#1f1f1f] hover:border-[#0878ff] hover:text-[#0878ff]",

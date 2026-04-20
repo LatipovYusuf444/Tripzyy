@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { formatUzPhoneInput } from "@/lib/phone";
+import { Checkbox } from "@/components/animate-ui/components/radix/checkbox";
 import { useI18n } from "@/shared/i18n/i18n";
 
 const statMeta = [
@@ -458,7 +459,10 @@ export default function About() {
                   <LuxuryInput placeholder={copy.phone} phoneWord={copy.phone} />
                   <LuxuryInput placeholder={copy.route} phoneWord={copy.phone} />
                   <label className="flex items-center gap-2 text-xs text-[#6b7280]">
-                    <input type="checkbox" className="accent-[#ff6a00]" />
+                    <Checkbox
+                      size="sm"
+                      className="border-[#ff6a00]/45 bg-white text-[#ff6a00] data-[state=checked]:border-[#ff6a00] data-[state=checked]:bg-[#ff6a00] data-[state=checked]:text-white"
+                    />
                     {copy.agree}
                   </label>
                   <motion.button whileTap={{ scale: 0.99 }} className="h-11 w-full rounded-xl bg-gradient-to-r from-[#ff6a00] to-[#ff8c3a] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(255,106,0,0.16)] transition">
