@@ -874,8 +874,8 @@ export default function PassengersPage() {
               </div>
 
               <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InfoCard label={copy.route} value={cart.route ?? "TAS → DXB"} />
-                <InfoCard label={copy.date} value={cart.date ?? "2026-03-17"} />
+                <InfoCard label={copy.route} value={cart.route ?? "—"} />
+                <InfoCard label={copy.date} value={cart.date ?? "—"} />
                 <InfoCard label={copy.cabin} value={cart.cabin ?? "—"} />
                 <InfoCard
                   label={copy.baggage}

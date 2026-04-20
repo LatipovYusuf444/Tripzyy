@@ -777,8 +777,8 @@ export default function Home() {
     : "z-10 hover:bg-[#e4e4e4]"
 
   const multiFlightLabelClass = isHeroSearchDark
-    ? "mb-1.5 text-[12px] font-semibold text-[#d4e2fb]"
-    : "mb-1 text-[11px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)] sm:mb-1.5 sm:text-[12px]"
+    ? "mb-1.5 px-1 text-[12px] font-semibold text-[#d4e2fb]"
+    : "mb-1 px-1 text-[11px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)] sm:mb-1.5 sm:text-[12px]"
 
   const multiDateSegmentClass = isHeroSearchDark
     ? "luxury-search-segment pointer-events-auto relative flex min-h-[52px] flex-col justify-center overflow-visible rounded-[16px] border border-[#5d7fba]/60 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] px-3.5 py-2 shadow-[0_14px_30px_rgba(2,8,24,0.44)] backdrop-blur-[18px] xl:min-h-[54px]"
@@ -815,15 +815,24 @@ export default function Home() {
                 searchUiCopy={searchUiCopy}
                 setTripMode={setTripMode}
               />
-              <BookingGlassBar className="relative z-20 mt-3 w-full overflow-visible rounded-[16px] p-0 sm:mt-4 sm:rounded-[20px] lg:mt-5">
+              <BookingGlassBar
+                className={[
+                  "relative z-20 mt-3 w-full overflow-visible rounded-[16px] sm:mt-4 sm:rounded-[20px] lg:mt-5",
+                  tripMode === "multi"
+                    ? isHeroSearchDark
+                      ? "border border-white/12 bg-[rgba(7,13,28,0.62)] p-4 shadow-[0_18px_44px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-5 xl:p-6"
+                      : "border border-[#d6d6d6] bg-white/95 p-4 shadow-[0_18px_44px_rgba(15,23,42,0.10)] backdrop-blur-xl sm:p-5 xl:p-6"
+                    : "p-0",
+                ].join(" ")}
+              >
               {tripMode === "multi" ? (
-                <div className="space-y-1.5 sm:space-y-2.5">
+                <div className="space-y-3 sm:space-y-4">
                   {multiTrips.map((trip, index) => (
                     <div key={`trip-${index}`}>
                       <div className={multiFlightLabelClass}>
                         {heroCopy.flightLabel} {index + 1}
                       </div>
-                      <div className="grid gap-1.5 sm:gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                         <HomeAutocompleteField
                           label={heroCopy.fromTitle}
                           value={trip.from}
@@ -908,7 +917,7 @@ export default function Home() {
                     </div>
                   ))}
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-3">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
                     <PassengerField
                       pax={pax}
                       onChange={(value) => {

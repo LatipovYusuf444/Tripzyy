@@ -346,6 +346,7 @@ export default function Flights() {
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null)
   const [previewFlight, setPreviewFlight] = useState<Flight | null>(null)
   const checkoutRef = useRef<HTMLDivElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const syncTheme = () => setSiteTheme(getStoredTheme())
@@ -666,7 +667,7 @@ export default function Flights() {
           },
         ])
       )
-      const mapped: Flight[] = options.map((opt) => {
+      const mapped: Flight[] = options.flatMap((opt) => {
         const optionTrips = opt.trips ?? []
         const trip = optionTrips[0]
         const lastTrip = optionTrips[optionTrips.length - 1] ?? trip
@@ -727,6 +728,10 @@ export default function Flights() {
           Number(opt.passengerInfos?.reduce((sum: number, item: any) => sum + Number(item?.total || 0), 0) || 0)
         const primarySegment = segments[0]
         const lastSegment = segments[segments.length - 1]
+        const departureSource = trip?.departure || primarySegment?.departure
+        const arrivalSource = lastTrip?.arrival || lastSegment?.arrival
+        const origin = trip?.origin || primarySegment?.origin
+        const destination = lastTrip?.destination || lastSegment?.destination
         const flightNo = segments.length
           ? segments
               .map((segment: any) =>
@@ -736,17 +741,21 @@ export default function Flights() {
               .join(" · ")
           : "—"
 
-        return {
+        if (!opt.id || !optionTrips.length || !segments.length || !origin || !destination || !departureSource || !arrivalSource || price <= 0) {
+          return []
+        }
+
+        return [{
           id: opt.id,
-          from: trip?.origin || criteria.from,
-          to: lastTrip?.destination || criteria.to,
+          from: origin,
+          to: destination,
           airline: carrierCode || "—",
           airlineName: carrierMeta?.name || opt.carrier || seg?.carrier || "—",
           airlineLogo: carrierMeta?.logo,
-          departDate: toDateOnly(trip?.departure || primarySegment?.departure),
-          depart: toTime(trip?.departure || primarySegment?.departure),
-          arriveDate: toDateOnly(lastTrip?.arrival || lastSegment?.arrival),
-          arrive: toTime(lastTrip?.arrival || lastSegment?.arrival),
+          departDate: toDateOnly(departureSource),
+          depart: toTime(departureSource),
+          arriveDate: toDateOnly(arrivalSource),
+          arrive: toTime(arrivalSource),
           durationMin: computedDuration,
           price,
           currency: opt.currency || data?.currency,
@@ -767,7 +776,7 @@ export default function Flights() {
           ),
           seatsAvailable: Math.min(...segments.map((segment: any) => Number(segment.seatsAvailable || 99))),
           segments,
-        }
+        }]
       })
 
       return { mapped, labels: mapLocationLabels(data) }
@@ -954,6 +963,18 @@ export default function Flights() {
     }
   }, [copy.backendBusy, copy.dateFormat, copy.fillSearch, copy.loginFirst, copy.searchError, copy.timeout, mapResponseToFlights])
 
+  const scrollToResultsOnMobile = useCallback(() => {
+    if (typeof window === "undefined") return
+    if (!window.matchMedia("(max-width: 767px)").matches) return
+
+    window.setTimeout(() => {
+      const target = resultsRef.current
+      if (!target) return
+      const top = target.getBoundingClientRect().top + window.scrollY - 92
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
+    }, 120)
+  }, [])
+
   const onSearch = () => {
     const criteria = {
       from: resolvedFrom,
@@ -979,6 +1000,7 @@ export default function Flights() {
       }).toString()}`,
       { replace: true }
     )
+    scrollToResultsOnMobile()
     void runSearch(criteria, true)
   }
 
@@ -1448,7 +1470,7 @@ export default function Flights() {
             </div>
           </aside>
 
-          <div className="space-y-4">
+          <div ref={resultsRef} className="space-y-4">
             {loading ? <SearchLoadingAnimation language={language} /> : null}
             {!loading && filtered.length > 0 ? (
               <div className="space-y-3">
@@ -1889,6 +1911,7 @@ function FlightPreviewModal({
   }[language]
   const [isBuying, setIsBuying] = useState(false)
   const buyTimerRef = useRef<number | null>(null)
+  const buyCompletedRef = useRef(false)
 
   const segments =
     flight?.segments && flight.segments.length
@@ -1918,15 +1941,23 @@ function FlightPreviewModal({
     }
   }, [])
 
+  const completeBuyCheck = useCallback(() => {
+    if (!flight || buyCompletedRef.current) return
+    buyCompletedRef.current = true
+    if (buyTimerRef.current) {
+      window.clearTimeout(buyTimerRef.current)
+      buyTimerRef.current = null
+    }
+    onBuy(flight)
+  }, [flight, onBuy])
+
   if (!flight) return null
 
   const startBuyCheck = () => {
     if (isBuying) return
+    buyCompletedRef.current = false
     setIsBuying(true)
-    buyTimerRef.current = window.setTimeout(() => {
-      buyTimerRef.current = null
-      onBuy(flight)
-    }, 10000)
+    buyTimerRef.current = window.setTimeout(completeBuyCheck, 10500)
   }
 
   const handleClose = () => {
@@ -1951,112 +1982,112 @@ function FlightPreviewModal({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 24, scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className="relative flex max-h-[92svh] w-full max-w-[760px] flex-col overflow-hidden rounded-t-[22px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[88vh] sm:rounded-[28px]"
+          className="relative flex max-h-[82svh] w-[calc(100%-20px)] max-w-[760px] flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[88vh] sm:w-full sm:rounded-[28px]"
         >
-          <div className="flex items-start justify-between gap-3 px-4 pb-2 pt-4 sm:gap-4 sm:px-8 sm:pb-3 sm:pt-7">
+          <div className="flex items-start justify-between gap-3 px-3.5 pb-1.5 pt-3 sm:gap-4 sm:px-8 sm:pb-3 sm:pt-7">
             <div>
-              <div className="text-[20px] font-black leading-6 text-[#111111] sm:text-[22px] sm:leading-7">{copy.title}</div>
-              <div className="mt-1 text-[13px] leading-5 text-[#6D6760] sm:text-[14px]">{copy.subtitle}</div>
+              <div className="text-[18px] font-black leading-5 text-[#111111] sm:text-[22px] sm:leading-7">{copy.title}</div>
+              <div className="mt-0.5 text-[12px] leading-4 text-[#6D6760] sm:mt-1 sm:text-[14px] sm:leading-5">{copy.subtitle}</div>
             </div>
             <button
               type="button"
               onClick={handleClose}
               disabled={isBuying}
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#111111] transition hover:bg-[#F0EDE8] sm:h-10 sm:w-10"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[#111111] transition hover:bg-[#F0EDE8] sm:h-10 sm:w-10"
               aria-label="Close"
             >
-              <X size={20} className="sm:size-[22px]" />
+              <X size={18} className="sm:size-[22px]" />
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3 sm:px-8 sm:pb-5">
-            <div className="mb-3 sm:mb-5">
-              <div className="text-[21px] font-black leading-6 text-[#111111] sm:text-[26px] sm:leading-8">
+          <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pb-2 sm:px-8 sm:pb-5">
+            <div className="mb-2 sm:mb-5">
+              <div className="text-[19px] font-black leading-5 text-[#111111] sm:text-[26px] sm:leading-8">
                 {flight.from} → {flight.to}
               </div>
-              <div className="mt-1 text-[13px] text-[#6D6760] sm:text-[16px]">
+              <div className="mt-0.5 text-[12px] text-[#6D6760] sm:mt-1 sm:text-[16px]">
                 {fmtDuration(flight.durationMin, language)} {copy.inWay}
               </div>
             </div>
 
-            <div className="space-y-4 sm:space-y-5">
+            <div className="space-y-3 sm:space-y-5">
               {segments.map((segment, index) => {
                 const carrier = segment.carrier || segment.operatingCarrier || flight.airline
                 const flightNo = segment.flightNumber || flight.flightNo || ""
                 const duration = Number(segment.duration || 0) || Math.round(flight.durationMin / Math.max(segments.length, 1))
                 return (
                   <div key={segment.id || `${segment.origin}-${segment.destination}-${index}`}>
-                    <div className="mb-2 flex items-center gap-2 sm:mb-3 sm:gap-3">
+                    <div className="mb-1.5 flex items-center gap-2 sm:mb-3 sm:gap-3">
                       {flight.airlineLogo ? (
-                        <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-8 w-8 object-contain sm:h-9 sm:w-9" />
+                        <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-7 w-7 object-contain sm:h-9 sm:w-9" />
                       ) : (
-                        <Plane size={22} className="text-[#0A84FF] sm:size-[26px]" />
+                        <Plane size={20} className="text-[#0A84FF] sm:size-[26px]" />
                       )}
                       <div>
-                        <div className="text-[16px] font-bold text-[#111111] sm:text-[17px]">{flight.airlineName || flight.airline}</div>
-                        <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{fmtDuration(duration, language)} {copy.inFlight}</div>
+                        <div className="text-[15px] font-bold text-[#111111] sm:text-[17px]">{flight.airlineName || flight.airline}</div>
+                        <div className="text-[12px] text-[#6D6760] sm:text-[14px]">{fmtDuration(duration, language)} {copy.inFlight}</div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-[18px_minmax(0,1fr)_48px] gap-2 sm:grid-cols-[22px_minmax(0,1fr)_58px] sm:gap-3">
+                    <div className="grid grid-cols-[16px_minmax(0,1fr)_42px] gap-1.5 sm:grid-cols-[22px_minmax(0,1fr)_58px] sm:gap-3">
                       <div className="relative flex justify-center">
                         <span className="mt-2 h-2 w-2 rounded-full border border-[#C9C4BD] bg-white" />
                         <span className="absolute bottom-2 top-4 w-px bg-[#D9D5CE]" />
                       </div>
-                      <div className="pb-4 sm:pb-6">
-                        <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-2 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-3">
+                      <div className="pb-3 sm:pb-6">
+                        <div className="grid grid-cols-[50px_minmax(0,1fr)] gap-1.5 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-3">
                           <div>
-                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{toTime(segment.departure)}</div>
-                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{toDateOnly(segment.departure)}</div>
+                            <div className="text-[15px] font-bold leading-5 text-[#111111] sm:text-[17px]">{toTime(segment.departure)}</div>
+                            <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[14px]">{toDateOnly(segment.departure)}</div>
                           </div>
                           <div>
-                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.origin}</div>
-                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{segment.departureTerminal || ""}</div>
+                            <div className="text-[15px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.origin}</div>
+                            <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[14px]">{segment.departureTerminal || ""}</div>
                           </div>
                         </div>
                       </div>
-                      <div className="pb-4 text-right sm:pb-6">
-                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[12px] font-semibold text-[#6D6760] sm:text-[13px]">{segment.origin}</span>
+                      <div className="pb-3 text-right sm:pb-6">
+                        <span className="rounded-[7px] bg-[#EEEAE4] px-1.5 py-0.5 text-[11px] font-semibold text-[#6D6760] sm:px-2 sm:py-1 sm:text-[13px]">{segment.origin}</span>
                       </div>
 
                       <div className="relative flex justify-center">
                         <span className="mt-2 h-2 w-2 rounded-full border border-[#C9C4BD] bg-white" />
                       </div>
                       <div>
-                        <div className="grid grid-cols-[58px_minmax(0,1fr)] gap-2 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-3">
+                        <div className="grid grid-cols-[50px_minmax(0,1fr)] gap-1.5 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-3">
                           <div>
-                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{toTime(segment.arrival)}</div>
-                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{toDateOnly(segment.arrival)}</div>
+                            <div className="text-[15px] font-bold leading-5 text-[#111111] sm:text-[17px]">{toTime(segment.arrival)}</div>
+                            <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[14px]">{toDateOnly(segment.arrival)}</div>
                           </div>
                           <div>
-                            <div className="text-[16px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.destination}</div>
-                            <div className="text-[13px] text-[#6D6760] sm:text-[14px]">{segment.arrivalTerminal || ""}</div>
+                            <div className="text-[15px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.destination}</div>
+                            <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[14px]">{segment.arrivalTerminal || ""}</div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="rounded-[7px] bg-[#EEEAE4] px-2 py-1 text-[12px] font-semibold text-[#6D6760] sm:text-[13px]">{segment.destination}</span>
+                        <span className="rounded-[7px] bg-[#EEEAE4] px-1.5 py-0.5 text-[11px] font-semibold text-[#6D6760] sm:px-2 sm:py-1 sm:text-[13px]">{segment.destination}</span>
                       </div>
                     </div>
 
-                    <div className="mt-2 space-y-1.5 text-[14px] text-[#111111] sm:mt-3 sm:space-y-2 sm:text-[15px]">
+                    <div className="mt-1.5 space-y-1 text-[12px] text-[#111111] sm:mt-3 sm:space-y-2 sm:text-[15px]">
                       <div className="flex items-center gap-2 text-[#6D6760]">
-                        <Ticket size={15} className="sm:size-[17px]" />
+                        <Ticket size={13} className="sm:size-[17px]" />
                         <span>{carrier}{flightNo ? `-${flightNo}` : ""} · {segment.equipment || copy.aircraft}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Luggage size={15} className="sm:size-[17px]" />
+                        <Luggage size={13} className="sm:size-[17px]" />
                         <span>{copy.cabinBaggage}: {segment.carryOn || flight.carryOn || "—"}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Luggage size={15} className="sm:size-[17px]" />
+                        <Luggage size={13} className="sm:size-[17px]" />
                         <span>{copy.baggage}: {segment.baggage || flight.baggage || copy.paidBaggage}</span>
                       </div>
-                      <div className="text-[12px] leading-5 text-[#6D6760] sm:text-[13px]">{copy.baggageNote}</div>
+                      <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[13px] sm:leading-5">{copy.baggageNote}</div>
                     </div>
 
                     {index < segments.length - 1 ? (
-                      <div className="mt-4 rounded-[12px] bg-[#F0EDE8] px-4 py-3 text-[14px] font-bold text-[#111111] sm:mt-5 sm:rounded-[14px] sm:px-5 sm:py-4 sm:text-[16px]">
+                      <div className="mt-3 rounded-[10px] bg-[#F0EDE8] px-3 py-2 text-[13px] font-bold text-[#111111] sm:mt-5 sm:rounded-[14px] sm:px-5 sm:py-4 sm:text-[16px]">
                         {copy.transfer} {segment.layover ? fmtDuration(segment.layover, language) : fmtDuration(segments[index + 1]?.layover || 0, language)} {segment.destination}
                       </div>
                     ) : null}
@@ -2066,16 +2097,16 @@ function FlightPreviewModal({
             </div>
           </div>
 
-          <div className="grid gap-2 border-t border-[#E6E2DC] bg-white px-4 py-3 sm:grid-cols-[1fr_1.2fr] sm:gap-3 sm:px-8 sm:py-4">
+          <div className="grid gap-2 border-t border-[#E6E2DC] bg-white px-3.5 py-2.5 sm:grid-cols-[1fr_1.2fr] sm:gap-3 sm:px-8 sm:py-4">
             <div>
-              <div className="text-[21px] font-black leading-6 text-[#111111] sm:text-[24px] sm:leading-7">{formatCompactPrice(flight.price, flight.currency)}</div>
-              <div className="text-[13px] text-[#111111] sm:text-[14px]">{tripTypeLabel(flight, language)}, {paxLabel(language, pax)}</div>
+              <div className="text-[19px] font-black leading-5 text-[#111111] sm:text-[24px] sm:leading-7">{formatCompactPrice(flight.price, flight.currency)}</div>
+              <div className="text-[12px] text-[#111111] sm:text-[14px]">{tripTypeLabel(flight, language)}, {paxLabel(language, pax)}</div>
             </div>
             <button
               type="button"
               onClick={startBuyCheck}
               disabled={isBuying}
-              className="h-11 rounded-[12px] bg-[#0A84FF] px-5 text-[15px] font-bold text-white transition hover:bg-[#006CD8] disabled:cursor-wait disabled:opacity-80 sm:h-12 sm:px-6 sm:text-[16px]"
+              className="h-10 rounded-[12px] bg-[#0A84FF] px-5 text-[14px] font-bold text-white transition hover:bg-[#006CD8] disabled:cursor-wait disabled:opacity-80 sm:h-12 sm:px-6 sm:text-[16px]"
             >
               {isBuying ? `${copy.checking}...` : copy.buy}
             </button>
@@ -2108,6 +2139,7 @@ function FlightPreviewModal({
                         initial={{ width: "0%" }}
                         animate={{ width: "100%" }}
                         transition={{ duration: 10, ease: "linear" }}
+                        onAnimationComplete={completeBuyCheck}
                       />
                     </div>
                   </div>

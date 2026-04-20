@@ -234,6 +234,52 @@ const toDateOnly = (value?: string) => {
   return (trimmed.split(" ")[0] || trimmed.split("T")[0] || "").slice(0, 10)
 }
 
+const toTimeOnly = (value?: string) => {
+  if (!value) return ""
+  const trimmed = value.trim()
+  const timePart = trimmed.includes("T") ? trimmed.split("T")[1] : trimmed.split(" ")[1]
+  return (timePart || trimmed).slice(0, 5)
+}
+
+const parseBackendDateTime = (value?: string) => {
+  if (!value) return null
+  const normalized = value.trim().replace(" ", "T")
+  const parsed = new Date(normalized)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const resolveFlightDurationMinutes = ({
+  trips,
+  segments,
+  fallbackMinutes,
+}: {
+  trips?: any[]
+  segments?: FlightSegment[]
+  fallbackMinutes?: number
+}) => {
+  const safeTrips = trips ?? []
+  const safeSegments = segments ?? []
+  const tripDuration = safeTrips.reduce((sum, trip) => sum + Number(trip?.duration || 0), 0)
+  const segmentDuration = safeSegments.reduce((sum, segment) => {
+    return sum + Number(segment.duration || 0) + Number(segment.layover || 0)
+  }, 0)
+  const firstDeparture = parseBackendDateTime(safeTrips[0]?.departure || safeSegments[0]?.departure)
+  const lastArrival = parseBackendDateTime(
+    safeTrips[safeTrips.length - 1]?.arrival || safeSegments[safeSegments.length - 1]?.arrival
+  )
+  const endpointDuration =
+    firstDeparture && lastArrival
+      ? Math.max(0, Math.round((lastArrival.getTime() - firstDeparture.getTime()) / 60000))
+      : 0
+
+  if (segmentDuration > 0 && endpointDuration > segmentDuration * 2) return segmentDuration
+  if (tripDuration > 0 && endpointDuration > tripDuration * 2) return tripDuration
+  if (endpointDuration > 0 && endpointDuration <= 1440) return endpointDuration
+  if (segmentDuration > 0) return segmentDuration
+  if (tripDuration > 0) return tripDuration
+  return Number(fallbackMinutes || 0)
+}
+
 const cabinToSearchClass = (value?: string): "Y" | "B" | "F" => {
   const text = (value || "").toUpperCase()
   if (text.includes("F") || text.includes("FIRST") || text.includes("BIRINCHI") || text.includes("ПЕРВ")) return "F"
@@ -1076,12 +1122,21 @@ export default function FlightDetailsModal({
 
         const mapped: FareFamilyOption[] = (res.data.data ?? []).map((option: any, index: number) => {
           const trip = option.trips?.[0]
+          const lastTrip = option.trips?.[option.trips.length - 1] ?? trip
           const services = trip?.brandServices ?? []
           const segments = mapSegmentsFromTrips(option.trips)
           const firstSegment = segments[0]
+          const lastSegment = segments[segments.length - 1]
           const brandedBaggage = services
             .filter((service: any) => service?.type === "baggage")
             .map((service: any) => service?.description)
+          const departureValue = trip?.departure || firstSegment?.departure
+          const arrivalValue = lastTrip?.arrival || lastSegment?.arrival
+          const durationMin = resolveFlightDurationMinutes({
+            trips: option.trips,
+            segments,
+            fallbackMinutes: safeFlight.durationMin,
+          })
 
           return {
             id: option.id,
@@ -1112,13 +1167,13 @@ export default function FlightDetailsModal({
             refundable: option.isRefundable,
             changeable: option.isChangeable,
             airline: option.carrier ?? safeFlight.airline,
-            depart: trip?.departure ?? safeFlight.depart,
-            arrive: trip?.arrival ?? safeFlight.arrive,
-            departDate: trip?.departure ?? safeFlight.departDate,
-            arriveDate: trip?.arrival ?? safeFlight.arriveDate,
-            durationMin: trip?.duration ?? safeFlight.durationMin,
-            from: trip?.origin ?? safeFlight.from,
-            to: trip?.destination ?? safeFlight.to,
+            depart: toTimeOnly(departureValue) || safeFlight.depart,
+            arrive: toTimeOnly(arrivalValue) || safeFlight.arrive,
+            departDate: toDateOnly(departureValue) || safeFlight.departDate,
+            arriveDate: toDateOnly(arrivalValue) || safeFlight.arriveDate,
+            durationMin: durationMin || safeFlight.durationMin,
+            from: trip?.origin ?? firstSegment?.origin ?? safeFlight.from,
+            to: lastTrip?.destination ?? lastSegment?.destination ?? safeFlight.to,
             cabin: firstSegment?.serviceClass ?? safeFlight.cabin,
             segments,
             isDefault: option.id === safeFlight.id,
@@ -1154,6 +1209,13 @@ export default function FlightDetailsModal({
 
   const bookingFlight = useMemo<Flight>(() => {
     if (!selectedFare) return safeFlight
+    const fareSegments = selectedFare.segments && selectedFare.segments.length > 0
+      ? selectedFare.segments
+      : safeFlight.segments ?? []
+    const firstSegment = fareSegments[0]
+    const lastSegment = fareSegments[fareSegments.length - 1]
+    const departSource = selectedFare.depart || firstSegment?.departure || safeFlight.depart
+    const arriveSource = selectedFare.arrive || lastSegment?.arrival || safeFlight.arrive
 
     return {
       ...safeFlight,
@@ -1161,10 +1223,10 @@ export default function FlightDetailsModal({
       from: selectedFare.from ?? safeFlight.from,
       to: selectedFare.to ?? safeFlight.to,
       airline: selectedFare.airline ?? safeFlight.airline,
-      departDate: selectedFare.departDate ?? safeFlight.departDate,
-      depart: selectedFare.depart ?? safeFlight.depart,
-      arriveDate: selectedFare.arriveDate ?? safeFlight.arriveDate,
-      arrive: selectedFare.arrive ?? safeFlight.arrive,
+      departDate: toDateOnly(selectedFare.departDate || firstSegment?.departure) || safeFlight.departDate,
+      depart: toTimeOnly(departSource) || safeFlight.depart,
+      arriveDate: toDateOnly(selectedFare.arriveDate || lastSegment?.arrival) || safeFlight.arriveDate,
+      arrive: toTimeOnly(arriveSource) || safeFlight.arrive,
       durationMin: selectedFare.durationMin ?? safeFlight.durationMin,
       price: selectedFare.price || safeFlight.price,
       currency: selectedFare.currency ?? safeFlight.currency,
@@ -1172,16 +1234,13 @@ export default function FlightDetailsModal({
       cabin: selectedFare.cabin ?? safeFlight.cabin,
       refundable: selectedFare.refundable ?? safeFlight.refundable,
       carryOn: selectedFare.carryOn ?? safeFlight.carryOn,
-      segments:
-        selectedFare.segments && selectedFare.segments.length > 0
-          ? selectedFare.segments
-          : safeFlight.segments,
+      segments: fareSegments,
     }
   }, [safeFlight, selectedFare])
 
   const cabin = bookingFlight.cabin ?? "—"
   const refundable = bookingFlight.refundable ?? false
-  const flightNo = safeFlight.flightNo ?? "TZ-102"
+  const flightNo = safeFlight.flightNo ?? "—"
   const itinerarySegments = useMemo(
     () =>
       bookingFlight.segments?.length

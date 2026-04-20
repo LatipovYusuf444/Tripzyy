@@ -1532,6 +1532,143 @@ body[data-theme="dark"] .checkout-mobile-light button:not([class*="bg-[#174A8B]"
   color: #eef7ff !important;
 }
 
+/* About page light mode: keep cards crisp white even if the OS/browser prefers dark. */
+html:not([data-theme="dark"]) .about-page,
+body:not([data-theme="dark"]) .about-page,
+html[data-theme="light"] .about-page,
+body[data-theme="light"] .about-page {
+  color-scheme: light !important;
+  background: #ffffff !important;
+  color: #111a34 !important;
+}
+
+html:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-white"],
+html:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-[#F7F9FF]"],
+html:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-[#F2F5FD]"],
+html:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-[#EEF1FB]"],
+body:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-white"],
+body:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-[#F7F9FF]"],
+body:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-[#F2F5FD]"],
+body:not([data-theme="dark"]) .about-page :is(section, div, form)[class*="bg-[#EEF1FB]"],
+html[data-theme="light"] .about-page :is(section, div, form)[class*="bg-white"],
+html[data-theme="light"] .about-page :is(section, div, form)[class*="bg-[#F7F9FF]"],
+html[data-theme="light"] .about-page :is(section, div, form)[class*="bg-[#F2F5FD]"],
+html[data-theme="light"] .about-page :is(section, div, form)[class*="bg-[#EEF1FB]"],
+body[data-theme="light"] .about-page :is(section, div, form)[class*="bg-white"],
+body[data-theme="light"] .about-page :is(section, div, form)[class*="bg-[#F7F9FF]"],
+body[data-theme="light"] .about-page :is(section, div, form)[class*="bg-[#F2F5FD]"],
+body[data-theme="light"] .about-page :is(section, div, form)[class*="bg-[#EEF1FB]"] {
+  background: #ffffff !important;
+  border-color: #e5ecf6 !important;
+  box-shadow: 0 10px 24px rgba(31, 45, 78, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not([data-theme="dark"]) .about-page :is(input, textarea, select),
+body:not([data-theme="dark"]) .about-page :is(input, textarea, select),
+html[data-theme="light"] .about-page :is(input, textarea, select),
+body[data-theme="light"] .about-page :is(input, textarea, select) {
+  background: #ffffff !important;
+  border-color: #e0e8f3 !important;
+  color: #111a34 !important;
+  -webkit-text-fill-color: #111a34 !important;
+}
+
+html:not([data-theme="dark"]) .about-page [data-partner-card],
+body:not([data-theme="dark"]) .about-page [data-partner-card],
+html[data-theme="light"] .about-page [data-partner-card],
+body[data-theme="light"] .about-page [data-partner-card] {
+  background: #ffffff !important;
+}
+
+html:not([data-theme="dark"]) .about-page .about-stat-card,
+body:not([data-theme="dark"]) .about-page .about-stat-card,
+html[data-theme="light"] .about-page .about-stat-card,
+body[data-theme="light"] .about-page .about-stat-card,
+html:not([data-theme="dark"]) .about-page .about-benefit-card,
+body:not([data-theme="dark"]) .about-page .about-benefit-card,
+html[data-theme="light"] .about-page .about-benefit-card,
+body[data-theme="light"] .about-page .about-benefit-card,
+html:not([data-theme="dark"]) .about-page .about-order-card,
+body:not([data-theme="dark"]) .about-page .about-order-card,
+html[data-theme="light"] .about-page .about-order-card,
+body[data-theme="light"] .about-page .about-order-card {
+  background: #ffffff !important;
+}
+
+html:not([data-theme="dark"]) .about-page :is(h1, h2, h3, h4, h5, h6, strong),
+body:not([data-theme="dark"]) .about-page :is(h1, h2, h3, h4, h5, h6, strong),
+html[data-theme="light"] .about-page :is(h1, h2, h3, h4, h5, h6, strong),
+body[data-theme="light"] .about-page :is(h1, h2, h3, h4, h5, h6, strong),
+html:not([data-theme="dark"]) .about-page [class*="text-[#111A34]"],
+body:not([data-theme="dark"]) .about-page [class*="text-[#111A34]"],
+html[data-theme="light"] .about-page [class*="text-[#111A34]"],
+body[data-theme="light"] .about-page [class*="text-[#111A34]"],
+html:not([data-theme="dark"]) .about-page [class*="text-[#1b1f2a]"],
+body:not([data-theme="dark"]) .about-page [class*="text-[#1b1f2a]"],
+html[data-theme="light"] .about-page [class*="text-[#1b1f2a]"],
+body[data-theme="light"] .about-page [class*="text-[#1b1f2a]"] {
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .about-page :is(p, li, label, span),
+body:not([data-theme="dark"]) .about-page :is(p, li, label, span),
+html[data-theme="light"] .about-page :is(p, li, label, span),
+body[data-theme="light"] .about-page :is(p, li, label, span),
+html:not([data-theme="dark"]) .about-page [class*="text-[#4a5361]"],
+body:not([data-theme="dark"]) .about-page [class*="text-[#4a5361]"],
+html[data-theme="light"] .about-page [class*="text-[#4a5361]"],
+body[data-theme="light"] .about-page [class*="text-[#4a5361]"],
+html:not([data-theme="dark"]) .about-page [class*="text-[#5b6470]"],
+body:not([data-theme="dark"]) .about-page [class*="text-[#5b6470]"],
+html[data-theme="light"] .about-page [class*="text-[#5b6470]"],
+body[data-theme="light"] .about-page [class*="text-[#5b6470]"],
+html:not([data-theme="dark"]) .about-page [class*="text-[#6F7898]"],
+body:not([data-theme="dark"]) .about-page [class*="text-[#6F7898]"],
+html[data-theme="light"] .about-page [class*="text-[#6F7898]"],
+body[data-theme="light"] .about-page [class*="text-[#6F7898]"],
+html:not([data-theme="dark"]) .about-page [class*="text-[#6b7280]"],
+body:not([data-theme="dark"]) .about-page [class*="text-[#6b7280]"],
+html[data-theme="light"] .about-page [class*="text-[#6b7280]"],
+body[data-theme="light"] .about-page [class*="text-[#6b7280]"] {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+html:not([data-theme="dark"]) .about-page .about-stat-card :is(div, span),
+body:not([data-theme="dark"]) .about-page .about-stat-card :is(div, span),
+html[data-theme="light"] .about-page .about-stat-card :is(div, span),
+body[data-theme="light"] .about-page .about-stat-card :is(div, span) {
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .about-page .about-stat-card :is(div[class*="leading"], div[class*="text-xs"]),
+body:not([data-theme="dark"]) .about-page .about-stat-card :is(div[class*="leading"], div[class*="text-xs"]),
+html[data-theme="light"] .about-page .about-stat-card :is(div[class*="leading"], div[class*="text-xs"]),
+body[data-theme="light"] .about-page .about-stat-card :is(div[class*="leading"], div[class*="text-xs"]) {
+  color: #334155 !important;
+  -webkit-text-fill-color: #334155 !important;
+}
+
+html:not([data-theme="dark"]) .about-page button:not([class*="text-white"]),
+body:not([data-theme="dark"]) .about-page button:not([class*="text-white"]),
+html[data-theme="light"] .about-page button:not([class*="text-white"]),
+body[data-theme="light"] .about-page button:not([class*="text-white"]) {
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .about-page [class*="bg-clip-text"],
+body:not([data-theme="dark"]) .about-page [class*="bg-clip-text"],
+html[data-theme="light"] .about-page [class*="bg-clip-text"],
+body[data-theme="light"] .about-page [class*="bg-clip-text"] {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 /* About page dark mode: remove pale sections and keep every block in the dark-blue system. */
 html[data-theme="dark"] .about-page,
 body[data-theme="dark"] .about-page {
@@ -1632,6 +1769,99 @@ body[data-theme="dark"] .about-page [data-partner-card] img {
   filter: brightness(1.12) contrast(1.05);
 }
 
+/* Services page light mode: white cards with readable navy text. */
+html:not([data-theme="dark"]) .services-page,
+body:not([data-theme="dark"]) .services-page,
+html[data-theme="light"] .services-page,
+body[data-theme="light"] .services-page {
+  color-scheme: light !important;
+  background: #ffffff !important;
+  color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .services-page .secondary-page-overlay,
+body:not([data-theme="dark"]) .services-page .secondary-page-overlay,
+html[data-theme="light"] .services-page .secondary-page-overlay,
+body[data-theme="light"] .services-page .secondary-page-overlay {
+  display: none !important;
+  background: transparent !important;
+}
+
+html:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-white"],
+html:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[#F7F9FF]"],
+html:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[#F2F5FD]"],
+html:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[#EEF1FB]"],
+html:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-white"],
+body:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[#F7F9FF]"],
+body:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[#F2F5FD]"],
+body:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[#EEF1FB]"],
+body:not([data-theme="dark"]) .services-page :is(div, section)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+html[data-theme="light"] .services-page :is(div, section)[class*="bg-white"],
+html[data-theme="light"] .services-page :is(div, section)[class*="bg-[#F7F9FF]"],
+html[data-theme="light"] .services-page :is(div, section)[class*="bg-[#F2F5FD]"],
+html[data-theme="light"] .services-page :is(div, section)[class*="bg-[#EEF1FB]"],
+html[data-theme="light"] .services-page :is(div, section)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body[data-theme="light"] .services-page :is(div, section)[class*="bg-white"],
+body[data-theme="light"] .services-page :is(div, section)[class*="bg-[#F7F9FF]"],
+body[data-theme="light"] .services-page :is(div, section)[class*="bg-[#F2F5FD]"],
+body[data-theme="light"] .services-page :is(div, section)[class*="bg-[#EEF1FB]"],
+body[data-theme="light"] .services-page :is(div, section)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]) {
+  background: #ffffff !important;
+  border-color: #e5ecf6 !important;
+  box-shadow: 0 12px 28px rgba(31, 45, 78, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not([data-theme="dark"]) .services-page :is(h1, h2, h3, h4, h5, h6, strong),
+body:not([data-theme="dark"]) .services-page :is(h1, h2, h3, h4, h5, h6, strong),
+html[data-theme="light"] .services-page :is(h1, h2, h3, h4, h5, h6, strong),
+body[data-theme="light"] .services-page :is(h1, h2, h3, h4, h5, h6, strong),
+html:not([data-theme="dark"]) .services-page [class*="text-[#111A34]"],
+body:not([data-theme="dark"]) .services-page [class*="text-[#111A34]"],
+html[data-theme="light"] .services-page [class*="text-[#111A34]"],
+body[data-theme="light"] .services-page [class*="text-[#111A34]"] {
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .services-page :is(p, div),
+body:not([data-theme="dark"]) .services-page :is(p, div),
+html[data-theme="light"] .services-page :is(p, div),
+body[data-theme="light"] .services-page :is(p, div),
+html:not([data-theme="dark"]) .services-page [class*="text-[#6F7898]"],
+body:not([data-theme="dark"]) .services-page [class*="text-[#6F7898]"],
+html[data-theme="light"] .services-page [class*="text-[#6F7898]"],
+body[data-theme="light"] .services-page [class*="text-[#6F7898]"],
+html:not([data-theme="dark"]) .services-page [class*="text-[#8A93B2]"],
+body:not([data-theme="dark"]) .services-page [class*="text-[#8A93B2]"],
+html[data-theme="light"] .services-page [class*="text-[#8A93B2]"],
+body[data-theme="light"] .services-page [class*="text-[#8A93B2]"] {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+html:not([data-theme="dark"]) .services-page .service-card :is(div[class*="font"], div[class*="text-lg"]),
+body:not([data-theme="dark"]) .services-page .service-card :is(div[class*="font"], div[class*="text-lg"]),
+html[data-theme="light"] .services-page .service-card :is(div[class*="font"], div[class*="text-lg"]),
+body[data-theme="light"] .services-page .service-card :is(div[class*="font"], div[class*="text-lg"]),
+html:not([data-theme="dark"]) .services-page .service-stat-card :is(div[class*="font"], div[class*="text-xl"]),
+body:not([data-theme="dark"]) .services-page .service-stat-card :is(div[class*="font"], div[class*="text-xl"]),
+html[data-theme="light"] .services-page .service-stat-card :is(div[class*="font"], div[class*="text-xl"]),
+body[data-theme="light"] .services-page .service-stat-card :is(div[class*="font"], div[class*="text-xl"]) {
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .services-page [class*="bg-clip-text"],
+body:not([data-theme="dark"]) .services-page [class*="bg-clip-text"],
+html[data-theme="light"] .services-page [class*="bg-clip-text"],
+body[data-theme="light"] .services-page [class*="bg-clip-text"] {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 /* Services page dark mode: keep the entire page in dark-blue glass, including mobile. */
 html[data-theme="dark"] .services-page,
 body[data-theme="dark"] .services-page {
@@ -1714,6 +1944,117 @@ body[data-theme="dark"] .services-page [class*="bg-clip-text"] {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Contact page light mode: white cards and readable text. */
+html:not([data-theme="dark"]) .contact-page,
+body:not([data-theme="dark"]) .contact-page,
+html[data-theme="light"] .contact-page,
+body[data-theme="light"] .contact-page {
+  color-scheme: light !important;
+  background: #ffffff !important;
+  color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .contact-page .secondary-page-overlay,
+body:not([data-theme="dark"]) .contact-page .secondary-page-overlay,
+html[data-theme="light"] .contact-page .secondary-page-overlay,
+body[data-theme="light"] .contact-page .secondary-page-overlay {
+  display: none !important;
+  background: transparent !important;
+}
+
+html:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-white"],
+html:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[#f7fbff]"],
+html:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F7F9FF]"],
+html:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F2F5FD]"],
+html:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-white"],
+body:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[#f7fbff]"],
+body:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F7F9FF]"],
+body:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F2F5FD]"],
+body:not([data-theme="dark"]) .contact-page :is(div, section, form, label, textarea)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+html[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-white"],
+html[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[#f7fbff]"],
+html[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F7F9FF]"],
+html[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F2F5FD]"],
+html[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]),
+body[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-white"],
+body[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[#f7fbff]"],
+body[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F7F9FF]"],
+body[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[#F2F5FD]"],
+body[data-theme="light"] .contact-page :is(div, section, form, label, textarea)[class*="bg-[linear-gradient"]:not([class*="bg-clip-text"]) {
+  background: #ffffff !important;
+  border-color: #e4ecf6 !important;
+  box-shadow: 0 12px 28px rgba(31, 45, 78, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html:not([data-theme="dark"]) .contact-page :is(input, textarea),
+body:not([data-theme="dark"]) .contact-page :is(input, textarea),
+html[data-theme="light"] .contact-page :is(input, textarea),
+body[data-theme="light"] .contact-page :is(input, textarea) {
+  background: #ffffff !important;
+  border-color: #dbe5f0 !important;
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .contact-page :is(input, textarea)::placeholder,
+body:not([data-theme="dark"]) .contact-page :is(input, textarea)::placeholder,
+html[data-theme="light"] .contact-page :is(input, textarea)::placeholder,
+body[data-theme="light"] .contact-page :is(input, textarea)::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+
+html:not([data-theme="dark"]) .contact-page :is(h1, h2, h3, h4, h5, h6, strong),
+body:not([data-theme="dark"]) .contact-page :is(h1, h2, h3, h4, h5, h6, strong),
+html[data-theme="light"] .contact-page :is(h1, h2, h3, h4, h5, h6, strong),
+body[data-theme="light"] .contact-page :is(h1, h2, h3, h4, h5, h6, strong),
+html:not([data-theme="dark"]) .contact-page [class*="text-[#1d2430]"],
+html:not([data-theme="dark"]) .contact-page [class*="text-[#111A34]"],
+body:not([data-theme="dark"]) .contact-page [class*="text-[#1d2430]"],
+body:not([data-theme="dark"]) .contact-page [class*="text-[#111A34]"],
+html[data-theme="light"] .contact-page [class*="text-[#1d2430]"],
+html[data-theme="light"] .contact-page [class*="text-[#111A34]"],
+body[data-theme="light"] .contact-page [class*="text-[#1d2430]"],
+body[data-theme="light"] .contact-page [class*="text-[#111A34]"] {
+  color: #071225 !important;
+  -webkit-text-fill-color: #071225 !important;
+}
+
+html:not([data-theme="dark"]) .contact-page :is(p, span, div, label),
+body:not([data-theme="dark"]) .contact-page :is(p, span, div, label),
+html[data-theme="light"] .contact-page :is(p, span, div, label),
+body[data-theme="light"] .contact-page :is(p, span, div, label),
+html:not([data-theme="dark"]) .contact-page [class*="text-[#627188]"],
+html:not([data-theme="dark"]) .contact-page [class*="text-[#6f7f97]"],
+html:not([data-theme="dark"]) .contact-page [class*="text-[#7f8ca0]"],
+html:not([data-theme="dark"]) .contact-page [class*="text-[#93abd0]"],
+body:not([data-theme="dark"]) .contact-page [class*="text-[#627188]"],
+body:not([data-theme="dark"]) .contact-page [class*="text-[#6f7f97]"],
+body:not([data-theme="dark"]) .contact-page [class*="text-[#7f8ca0]"],
+body:not([data-theme="dark"]) .contact-page [class*="text-[#93abd0]"],
+html[data-theme="light"] .contact-page [class*="text-[#627188]"],
+html[data-theme="light"] .contact-page [class*="text-[#6f7f97]"],
+html[data-theme="light"] .contact-page [class*="text-[#7f8ca0]"],
+html[data-theme="light"] .contact-page [class*="text-[#93abd0]"],
+body[data-theme="light"] .contact-page [class*="text-[#627188]"],
+body[data-theme="light"] .contact-page [class*="text-[#6f7f97]"],
+body[data-theme="light"] .contact-page [class*="text-[#7f8ca0]"],
+body[data-theme="light"] .contact-page [class*="text-[#93abd0]"] {
+  color: #475569 !important;
+  -webkit-text-fill-color: #475569 !important;
+}
+
+html:not([data-theme="dark"]) .contact-page [class*="bg-clip-text"],
+body:not([data-theme="dark"]) .contact-page [class*="bg-clip-text"],
+html[data-theme="light"] .contact-page [class*="bg-clip-text"],
+body[data-theme="light"] .contact-page [class*="bg-clip-text"] {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
 }
 
 /* Contact page dark mode: override the old mobile-light rules without touching light mode. */

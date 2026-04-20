@@ -102,13 +102,13 @@ export default function Services() {
   }[language]
 
   return (
-    <section className="services-page secondary-page-shell relative overflow-hidden pt-4">
+    <section className="services-page secondary-page-shell relative overflow-hidden bg-white pt-4 text-[#071225]">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-6 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
-        <div className="rounded-[34px] border border-[#E3E8F7] bg-[linear-gradient(180deg,#F7F9FF_0%,#F2F5FD_100%)] p-5 shadow-[0_28px_80px_rgba(70,90,140,0.10)] md:p-7 dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(11,28,62,0.88)_0%,rgba(7,18,46,0.84)_100%)]">
+        <div className="rounded-[34px] border border-[#E3E8F7] bg-white p-5 shadow-[0_20px_56px_rgba(70,90,140,0.08)] md:p-7 dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(11,28,62,0.88)_0%,rgba(7,18,46,0.84)_100%)]">
           <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-            <div className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-[#F7F9FF] p-6 md:p-8 dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+            <div className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-white p-6 shadow-[0_12px_28px_rgba(70,90,140,0.06)] md:p-8 dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#E3E8F7] bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8A93B2] dark:border-[#35507f]/55 dark:bg-[rgba(22,46,90,0.72)] dark:text-[#a9bddb]">
                 <Sparkles size={14} />
                 {copy.badge}
@@ -135,7 +135,7 @@ export default function Services() {
               {copy.stats.map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-[28px] border border-[#E3E8F7] bg-[#F2F5FD] p-5 shadow-[0_18px_45px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.58)]"
+                  className="service-stat-card rounded-[24px] border border-[#E3E8F7] bg-white p-5 shadow-[0_12px_28px_rgba(70,90,140,0.06)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.58)]"
                 >
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8A93B2] dark:text-[#8ea5cb]">
                     {item.label}
@@ -158,9 +158,9 @@ export default function Services() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.35, delay: index * 0.02 }}
                 whileHover={{ y: -4 }}
-                className="rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] p-5 shadow-[0_20px_50px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.62)]"
+                className="service-card rounded-[24px] border border-[#E3E8F7] bg-white p-5 shadow-[0_12px_30px_rgba(70,90,140,0.06)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.62)]"
               >
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[linear-gradient(135deg,#EEF1FB_0%,#E8ECF8_100%)] text-[#5C7CFA] dark:bg-[linear-gradient(135deg,rgba(22,46,90,0.84)_0%,rgba(14,30,66,0.76)_100%)] dark:text-[#8ec5ff]">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#EEF5FF] text-[#1D5FCC] dark:bg-[linear-gradient(135deg,rgba(22,46,90,0.84)_0%,rgba(14,30,66,0.76)_100%)] dark:text-[#8ec5ff]">
                   <service.icon size={20} />
                 </div>
                 <div className="mt-4 text-lg font-black text-[#111A34] dark:text-white">{service.title}</div>

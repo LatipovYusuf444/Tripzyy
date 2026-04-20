@@ -294,31 +294,31 @@ export default function About() {
   };
 
   return (
-    <div className="about-page secondary-page-shell relative overflow-hidden bg-[#EEF1FB] text-[#111A34] dark:bg-transparent dark:text-white">
+    <div className="about-page secondary-page-shell relative overflow-hidden bg-white text-[#111A34] dark:bg-transparent dark:text-white">
       <section ref={heroRef} className="relative bg-transparent">
-        <div className="absolute inset-0 bg-[#EEF1FB] dark:bg-transparent" />
-        <motion.div className="relative mx-auto max-w-[1500px] px-5 pb-10 pt-6 md:px-8 md:pt-8 2xl:max-w-[1680px]">
-          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2">
+        <div className="absolute inset-0 bg-white dark:bg-transparent" />
+        <motion.div className="relative mx-auto max-w-[1320px] px-5 pb-8 pt-4 md:px-8 md:pt-6 2xl:max-w-[1480px]">
+          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }}>
-              <motion.h1 variants={fadeUp} className="mt-5 text-3xl font-extrabold leading-[1.05] tracking-tight md:text-5xl xl:text-6xl">
+              <motion.h1 variants={fadeUp} className="mt-3 text-3xl font-extrabold leading-[1.06] tracking-tight md:text-4xl xl:text-5xl">
                 {copy.heroTitleStart}{" "}
                 <span className="bg-gradient-to-r from-[#7A2E4E] via-[#A0526B] to-[#ff6a00] bg-clip-text text-transparent">{copy.heroTitleAccent}</span>
               </motion.h1>
-              <motion.p variants={fadeUp} className="mt-4 max-w-[600px] text-base leading-8 text-[#4a5361] dark:text-[#a9bddb] md:text-lg">
+              <motion.p variants={fadeUp} className="mt-3 max-w-[560px] text-sm leading-7 text-[#4a5361] dark:text-[#a9bddb] md:text-base">
                 {copy.heroText}
               </motion.p>
-              <motion.div variants={fadeUp} className="mt-7 flex flex-wrap gap-3">
-                <motion.button whileTap={{ scale: 0.98 }} className="group h-12 rounded-2xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] px-6 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(138,58,90,0.22)] transition">
+              <motion.div variants={fadeUp} className="mt-5 flex flex-wrap gap-3">
+                <motion.button whileTap={{ scale: 0.98 }} className="group h-10 rounded-xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(138,58,90,0.18)] transition">
                   <span className="inline-flex items-center gap-2">
                     {copy.chooseTour}
                     <ArrowRight size={16} className="transition group-hover:translate-x-1" />
                   </span>
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.98 }} className="h-12 rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] px-6 text-sm font-semibold text-[#111A34] shadow-[0_8px_20px_rgba(70,90,140,0.10)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white">
+                <motion.button whileTap={{ scale: 0.98 }} className="h-10 rounded-xl border border-[#E3E8F7] bg-white px-5 text-sm font-semibold text-[#111A34] shadow-[0_8px_18px_rgba(70,90,140,0.08)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white">
                   {copy.details}
                 </motion.button>
               </motion.div>
-              <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-5 text-sm text-[#5b6470] dark:text-[#a9bddb]">
+              <motion.div variants={fadeUp} className="mt-6 flex flex-wrap items-center gap-4 text-sm text-[#5b6470] dark:text-[#a9bddb]">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)]" />
                   {copy.trustedService}
@@ -331,17 +331,17 @@ export default function About() {
             </motion.div>
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} className="grid grid-cols-2 gap-4">
               {heroImages.map((src, i) => (
-                <motion.div key={src} variants={softScale} transition={{ duration: 0.3 }} className={`group relative overflow-hidden rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_14px_34px_rgba(70,90,140,0.10)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.38)] ${i === 1 ? "mt-10" : ""}`}>
-                  <motion.img src={src} alt="Tour" loading="lazy" decoding="async" className="h-[240px] w-full object-cover md:h-[280px]" />
+                <motion.div key={src} variants={softScale} transition={{ duration: 0.3 }} className={`group relative overflow-hidden rounded-[22px] border border-[#E3E8F7] bg-white shadow-[0_12px_28px_rgba(70,90,140,0.09)] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.72)] dark:shadow-[0_20px_56px_rgba(2,8,24,0.34)] ${i === 1 ? "mt-6" : ""}`}>
+                  <motion.img src={src} alt="Tour" loading="lazy" decoding="async" className="h-[190px] w-full object-cover md:h-[230px]" />
                 </motion.div>
               ))}
             </motion.div>
           </div>
         </motion.div>
-        <div className="mt-6" ref={statsRef}>
-          <div className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-[linear-gradient(180deg,#F7F9FF_0%,#F2F5FD_100%)] shadow-[0_18px_50px_rgba(70,90,140,0.10)] dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(14,32,72,0.82)_0%,rgba(7,18,46,0.78)_100%)] dark:shadow-[0_18px_50px_rgba(2,8,24,0.34)]">
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.12)_100%)] dark:bg-transparent" />
-            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="relative mx-auto grid max-w-[1500px] grid-cols-2 gap-6 px-5 py-12 md:grid-cols-3 md:px-8 lg:grid-cols-6 2xl:max-w-[1680px]">
+        <div className="mt-4" ref={statsRef}>
+          <div className="relative overflow-hidden rounded-[26px] border border-[#E3E8F7] bg-white shadow-[0_14px_38px_rgba(70,90,140,0.09)] dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(14,32,72,0.82)_0%,rgba(7,18,46,0.78)_100%)] dark:shadow-[0_16px_42px_rgba(2,8,24,0.30)]">
+            <div className="absolute inset-0 bg-white/70 dark:bg-transparent" />
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="relative mx-auto grid max-w-[1240px] grid-cols-2 gap-3 px-5 py-5 md:grid-cols-3 md:px-7 lg:grid-cols-6 2xl:max-w-[1380px]">
               {stats.map((s) => (
                 <motion.div key={s.title} variants={softScale}>
                   <StatItem data={s} animate={animate} />
@@ -352,16 +352,16 @@ export default function About() {
         </div>
       </section>
 
-      <section className="relative bg-transparent py-16">
-        <div className="mx-auto max-w-[1500px] px-5 md:px-8 2xl:max-w-[1680px]">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
+      <section className="relative bg-transparent py-10">
+        <div className="mx-auto max-w-[1320px] px-5 md:px-8 2xl:max-w-[1480px]">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerWrap} className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2">
             <motion.div variants={fadeUp}>
-              <div className="text-lg font-extrabold tracking-[0.2em] text-[#ff6a00] dark:text-[#ff9b57]">{copy.aboutKicker}</div>
-              <p className="mt-4 text-base leading-8 text-[#4a5361] dark:text-[#a9bddb]">{copy.aboutP1}</p>
-              <p className="mt-4 text-base leading-8 text-[#4a5361] dark:text-[#a9bddb]">{copy.aboutP2}</p>
-              <p className="mt-4 text-base leading-8 text-[#4a5361] dark:text-[#a9bddb]">{copy.aboutP3}</p>
-              <div className="mt-6 font-semibold text-[#1b1f2a] dark:text-white">{copy.serviceIntro}</div>
-              <ul className="mt-4 space-y-3 text-sm text-[#4a5361] dark:text-[#a9bddb]">
+              <div className="text-base font-extrabold tracking-[0.18em] text-[#ff6a00] dark:text-[#ff9b57]">{copy.aboutKicker}</div>
+              <p className="mt-3 text-sm leading-7 text-[#4a5361] dark:text-[#a9bddb]">{copy.aboutP1}</p>
+              <p className="mt-3 text-sm leading-7 text-[#4a5361] dark:text-[#a9bddb]">{copy.aboutP2}</p>
+              <p className="mt-3 text-sm leading-7 text-[#4a5361] dark:text-[#a9bddb]">{copy.aboutP3}</p>
+              <div className="mt-5 font-semibold text-[#1b1f2a] dark:text-white">{copy.serviceIntro}</div>
+              <ul className="mt-3 space-y-2 text-sm text-[#4a5361] dark:text-[#a9bddb]">
                 {copy.serviceList.map((x, i) => (
                   <motion.li key={x} initial={{ opacity: 0, x: -16 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: i * 0.08 }} className="flex items-start gap-3">
                     <span className="mt-1.5 h-2 w-2 rounded-full bg-[#ff6a00] shadow-[0_0_18px_rgba(255,106,0,0.7)]" />
@@ -370,21 +370,21 @@ export default function About() {
                 ))}
               </ul>
             </motion.div>
-            <motion.div variants={softScale} className="group relative overflow-hidden rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] p-4 shadow-[0_18px_44px_rgba(70,90,140,0.10)] dark:border-[#35507f]/60 dark:bg-[rgba(18,38,76,0.72)]">
-              <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80&fm=webp" alt="Travel" className="h-[380px] w-full rounded-2xl object-cover" loading="lazy" decoding="async" />
+            <motion.div variants={softScale} className="group relative overflow-hidden rounded-[24px] border border-[#E3E8F7] bg-white p-3 shadow-[0_14px_36px_rgba(70,90,140,0.09)] dark:border-[#35507f]/60 dark:bg-[rgba(18,38,76,0.72)]">
+              <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80&fm=webp" alt="Travel" className="h-[300px] w-full rounded-2xl object-cover" loading="lazy" decoding="async" />
               <div className="absolute inset-4 rounded-2xl ring-1 ring-white/40" />
             </motion.div>
           </motion.div>
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap} className="mt-12 grid grid-cols-1 gap-7 md:grid-cols-3">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap} className="mt-7 grid grid-cols-1 gap-4 md:grid-cols-3">
             {copy.benefits.map((x) => (
-              <motion.div key={x.title} variants={softScale} className="group relative overflow-hidden rounded-[24px] border border-[#E3E8F7] bg-[#F7F9FF] p-6 shadow-[0_14px_34px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
-                <div className="relative flex items-start gap-5">
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-[#ff6a00]/30 bg-[#ff6a00]/10 text-[#ff6a00] shadow-[0_10px_25px_rgba(255,106,0,0.12)]">
-                    <x.icon size={24} />
+              <motion.div key={x.title} variants={softScale} className="about-benefit-card group relative overflow-hidden rounded-[16px] border border-[#E3E8F7] bg-white p-3.5 shadow-[0_10px_24px_rgba(70,90,140,0.06)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+                <div className="relative flex items-start gap-3.5">
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[#ff6a00]/30 bg-[#ff6a00]/10 text-[#ff6a00] shadow-[0_8px_18px_rgba(255,106,0,0.09)]">
+                    <x.icon size={18} />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold tracking-wide text-[#111A34] dark:text-white">{x.title}</div>
-                    <div className="mt-2 text-sm leading-7 text-[#6F7898] dark:text-[#a9bddb]">{x.desc}</div>
+                    <div className="text-[13px] font-semibold tracking-wide text-[#111A34] dark:text-white">{x.title}</div>
+                    <div className="mt-1 text-[13px] leading-5 text-[#6F7898] dark:text-[#a9bddb]">{x.desc}</div>
                   </div>
                 </div>
               </motion.div>
@@ -392,19 +392,19 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-      <section className="bg-[#EEF1FB] py-16 dark:bg-transparent">
-        <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
+      <section className="bg-white py-10 dark:bg-transparent">
+        <div className="mx-auto max-w-[1320px] px-5 text-center md:px-8 2xl:max-w-[1480px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
               {copy.certificates}
             </motion.div>
-            <motion.h3 variants={fadeUp} className="mt-3 text-3xl font-extrabold text-[#1b1f2a] dark:text-white md:text-4xl">
+            <motion.h3 variants={fadeUp} className="mt-2 text-2xl font-extrabold text-[#1b1f2a] dark:text-white md:text-3xl">
               {copy.ourCertificates}
             </motion.h3>
-            <motion.div variants={fadeUp} className="mx-auto mt-5 h-1 w-16 bg-[#ff6a00]" />
-            <div className="mt-10 grid grid-cols-1 items-center gap-6 sm:grid-cols-2 lg:grid-cols-6">
+            <motion.div variants={fadeUp} className="mx-auto mt-4 h-1 w-14 bg-[#ff6a00]" />
+            <div className="mt-7 grid grid-cols-1 items-center gap-4 sm:grid-cols-2 lg:grid-cols-6">
               {certImages.map((src, i) => (
-                <motion.div key={src} variants={softScale} className="group relative overflow-hidden rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] shadow-[0_12px_28px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+                <motion.div key={src} variants={softScale} className="group relative overflow-hidden rounded-xl border border-[#E3E8F7] bg-white shadow-[0_10px_22px_rgba(70,90,140,0.07)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
                   <img src={src} alt={`${copy.certificateAlt} ${i + 1}`} className="aspect-[4/5] h-full w-full object-cover" loading="lazy" decoding="async" />
                 </motion.div>
               ))}
@@ -413,32 +413,32 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-[#EEF1FB] py-16 dark:bg-transparent">
-        <div className="mx-auto max-w-[1500px] px-5 text-center md:px-8 2xl:max-w-[1680px]">
+      <section className="bg-white py-10 dark:bg-transparent">
+        <div className="mx-auto max-w-[1320px] px-5 text-center md:px-8 2xl:max-w-[1480px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
               {copy.partners}
             </motion.div>
-            <motion.h3 variants={fadeUp} className="mt-3 text-3xl font-extrabold text-[#1b1f2a] dark:text-white md:text-4xl">
+            <motion.h3 variants={fadeUp} className="mt-2 text-2xl font-extrabold text-[#1b1f2a] dark:text-white md:text-3xl">
               {copy.ourPartners}
             </motion.h3>
-            <motion.div variants={fadeUp} className="mx-auto mt-5 h-1 w-16 bg-[#ff6a00]" />
-            <motion.div variants={fadeUp} className="relative mt-10">
-              <button type="button" aria-label={copy.prev} onClick={() => moveCarousel("left")} className="absolute -left-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#E3E8F7] bg-[#F7F9FF] text-[#111A34] shadow-md transition dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] dark:text-white">
+            <motion.div variants={fadeUp} className="mx-auto mt-4 h-1 w-14 bg-[#ff6a00]" />
+            <motion.div variants={fadeUp} className="relative mt-7">
+              <button type="button" aria-label={copy.prev} onClick={() => moveCarousel("left")} className="absolute -left-3 top-1/2 z-10 h-9 w-9 -translate-y-1/2 rounded-full border border-[#E3E8F7] bg-white text-[#111A34] shadow-md transition dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] dark:text-white">
                 ‹
               </button>
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-[#EEF1FB] to-transparent dark:from-[#07152f]" />
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-[#EEF1FB] to-transparent dark:from-[#07152f]" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-20 bg-gradient-to-r from-white to-transparent dark:from-[#07152f]" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[1] w-20 bg-gradient-to-l from-white to-transparent dark:from-[#07152f]" />
               <div ref={carouselRef} className="overflow-hidden">
-                <div className="flex w-max gap-6 pr-6">
+                <div className="flex w-max gap-4 pr-4">
                   {[...partnerLogos, ...partnerLogos].map((p, i) => (
-                    <motion.div key={`${p.name}-${i}`} data-partner-card className="group grid h-24 min-w-[210px] place-items-center rounded-2xl border border-[#E3E8F7] bg-[#F7F9FF] px-5 shadow-[0_12px_28px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
-                      <img src={p.logo} alt={p.name} className="max-h-12 w-auto object-contain" loading="lazy" decoding="async" />
+                    <motion.div key={`${p.name}-${i}`} data-partner-card className="group grid h-20 min-w-[180px] place-items-center rounded-xl border border-[#E3E8F7] bg-white px-4 shadow-[0_10px_22px_rgba(70,90,140,0.07)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+                      <img src={p.logo} alt={p.name} className="max-h-10 w-auto object-contain" loading="lazy" decoding="async" />
                     </motion.div>
                   ))}
                 </div>
               </div>
-              <button type="button" aria-label={copy.next} onClick={() => moveCarousel("right")} className="absolute -right-4 top-1/2 z-10 h-11 w-11 -translate-y-1/2 rounded-full border border-[#E3E8F7] bg-[#F7F9FF] text-[#111A34] shadow-md transition dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] dark:text-white">
+              <button type="button" aria-label={copy.next} onClick={() => moveCarousel("right")} className="absolute -right-3 top-1/2 z-10 h-9 w-9 -translate-y-1/2 rounded-full border border-[#E3E8F7] bg-white text-[#111A34] shadow-md transition dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] dark:text-white">
                 ›
               </button>
             </motion.div>
@@ -446,14 +446,14 @@ export default function About() {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-10">
         <div className="w-full px-5 md:px-8">
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="relative overflow-hidden rounded-[32px] border border-[#E3E8F7] bg-[linear-gradient(180deg,#F7F9FF_0%,#F2F5FD_100%)] shadow-[0_20px_50px_rgba(70,90,140,0.10)] dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(14,32,72,0.88)_0%,rgba(7,18,46,0.84)_100%)]">
-            <div className="relative z-10 grid min-h-[560px] grid-cols-1 gap-10 p-9 md:p-14 lg:grid-cols-2">
-              <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="relative overflow-hidden rounded-[28px] border border-[#E3E8F7] bg-[#F7F9FF] p-7 shadow-[0_16px_36px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] md:p-8">
-                <div className="relative text-center text-lg font-semibold md:text-xl">{copy.contactTitle}</div>
+          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="about-order-card relative overflow-hidden rounded-[24px] border border-[#E3E8F7] bg-white shadow-[0_14px_36px_rgba(70,90,140,0.08)] dark:border-[#35507f]/60 dark:bg-[linear-gradient(180deg,rgba(14,32,72,0.88)_0%,rgba(7,18,46,0.84)_100%)]">
+            <div className="relative z-10 grid min-h-[420px] grid-cols-1 gap-7 p-6 md:p-9 lg:grid-cols-2">
+              <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="relative overflow-hidden rounded-[22px] border border-[#E3E8F7] bg-white p-5 shadow-[0_12px_28px_rgba(70,90,140,0.06)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.72)] md:p-6">
+                <div className="relative text-center text-base font-semibold md:text-lg">{copy.contactTitle}</div>
                 <div className="relative mt-1 text-center text-sm text-[#6b7280]">{copy.contactText}</div>
-                <form className="relative mt-6 space-y-3" onSubmit={(e) => { e.preventDefault(); toast.success(copy.applied); }}>
+                <form className="relative mt-5 space-y-3" onSubmit={(e) => { e.preventDefault(); toast.success(copy.applied); }}>
                   <LuxuryInput placeholder={copy.name} phoneWord={copy.phone} />
                   <LuxuryInput placeholder={copy.phone} phoneWord={copy.phone} />
                   <LuxuryInput placeholder={copy.route} phoneWord={copy.phone} />
@@ -461,20 +461,20 @@ export default function About() {
                     <input type="checkbox" className="accent-[#ff6a00]" />
                     {copy.agree}
                   </label>
-                  <motion.button whileTap={{ scale: 0.99 }} className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#ff6a00] to-[#ff8c3a] text-sm font-semibold text-white shadow-[0_14px_28px_rgba(255,106,0,0.18)] transition">
+                  <motion.button whileTap={{ scale: 0.99 }} className="h-11 w-full rounded-xl bg-gradient-to-r from-[#ff6a00] to-[#ff8c3a] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(255,106,0,0.16)] transition">
                     {copy.send}
                   </motion.button>
                 </form>
               </motion.div>
               <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.1 }} className="flex flex-col justify-center text-[#111A34] dark:text-white">
-                <div className="text-3xl font-extrabold leading-tight md:text-5xl">{copy.orderTitle}</div>
-                <div className="mt-4 max-w-[520px] text-lg leading-8 text-[#6F7898] dark:text-[#a9bddb] md:text-xl">{copy.orderText}</div>
-                <div className="mt-6 max-w-[540px] leading-8 text-[#6F7898] dark:text-[#a9bddb]">{copy.orderSub}</div>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <motion.button whileTap={{ scale: 0.98 }} className="h-12 rounded-2xl bg-[#ff6a00] px-6 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(255,106,0,0.20)]">
+                <div className="text-2xl font-extrabold leading-tight md:text-4xl">{copy.orderTitle}</div>
+                <div className="mt-3 max-w-[500px] text-base leading-7 text-[#6F7898] dark:text-[#a9bddb] md:text-lg">{copy.orderText}</div>
+                <div className="mt-4 max-w-[520px] text-sm leading-7 text-[#6F7898] dark:text-[#a9bddb] md:text-base">{copy.orderSub}</div>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <motion.button whileTap={{ scale: 0.98 }} className="h-11 rounded-xl bg-[#ff6a00] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(255,106,0,0.18)]">
                     {copy.contactUs}
                   </motion.button>
-                  <motion.button whileTap={{ scale: 0.98 }} className="h-12 rounded-2xl border border-[#dbe5f2] bg-[rgba(255,255,255,0.92)] px-6 text-sm font-semibold text-[#1b1f2a] shadow-[0_8px_20px_rgba(17,24,39,0.06)]">
+                  <motion.button whileTap={{ scale: 0.98 }} className="h-11 rounded-xl border border-[#dbe5f2] bg-white px-5 text-sm font-semibold text-[#1b1f2a] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
                     {copy.aboutServices}
                   </motion.button>
                 </div>
@@ -493,7 +493,7 @@ function LuxuryInput({ placeholder, phoneWord }: { placeholder: string; phoneWor
 
   return (
     <motion.input
-      className="h-12 w-full rounded-2xl border border-[#E3E8F7] bg-[#F2F5FD] px-4 text-[#111A34] outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)] dark:border-[#35507f]/55 dark:bg-[rgba(14,28,58,0.72)] dark:text-white dark:placeholder:text-[#8ea5cb]"
+      className="h-11 w-full rounded-xl border border-[#E3E8F7] bg-white px-4 text-sm text-[#111A34] outline-none transition focus:border-[#ff6a00]/40 focus:shadow-[0_0_0_3px_rgba(255,106,0,0.10)] dark:border-[#35507f]/55 dark:bg-[rgba(14,28,58,0.72)] dark:text-white dark:placeholder:text-[#8ea5cb]"
       placeholder={placeholder}
       value={value}
       onChange={(e) => setValue(isPhone ? formatUzPhoneInput(e.target.value) : e.target.value)}
@@ -527,15 +527,15 @@ function StatItem({ data, animate }: { data: { icon: LucideIcon; end: number; su
   const display = useMemo(() => `${val}${data.suffix}`, [val, data.suffix]);
 
   return (
-    <motion.div className="group relative h-full overflow-hidden rounded-[24px] border border-[#E3E8F7] bg-[#F7F9FF] p-5 text-center shadow-[0_12px_28px_rgba(70,90,140,0.08)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#F2F5FD] via-transparent to-transparent dark:from-transparent" />
+    <motion.div className="about-stat-card group relative h-full overflow-hidden rounded-[18px] border border-[#E3E8F7] bg-white p-4 text-center shadow-[0_10px_24px_rgba(70,90,140,0.06)] dark:border-[#35507f]/55 dark:bg-[rgba(18,38,76,0.66)]">
+      <div className="absolute inset-0 bg-white dark:bg-transparent" />
       <div className="relative flex flex-col items-center">
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-[linear-gradient(135deg,#fff3eb_0%,#ffe6d6_100%)] shadow-[0_10px_25px_rgba(255,106,0,0.10)] dark:bg-[linear-gradient(135deg,rgba(42,28,18,0.82)_0%,rgba(60,28,14,0.74)_100%)]">
-          <Icon size={34} className="text-[#8A3A5A] dark:text-[#ffb07a]" />
+        <div className="grid h-12 w-12 place-items-center rounded-xl bg-[linear-gradient(135deg,#fff3eb_0%,#ffe6d6_100%)] shadow-[0_8px_18px_rgba(255,106,0,0.09)] dark:bg-[linear-gradient(135deg,rgba(42,28,18,0.82)_0%,rgba(60,28,14,0.74)_100%)]">
+          <Icon size={26} className="text-[#8A3A5A] dark:text-[#ffb07a]" />
         </div>
-        <div className="mt-4 text-4xl font-extrabold text-[#111A34] dark:text-white">{display}</div>
-        <div className="mt-2 flex min-h-[40px] items-center justify-center text-center text-sm font-semibold tracking-wide text-[#111A34] dark:text-white">{data.title}</div>
-        <div className="mt-4 flex min-h-[72px] items-center justify-center text-center text-sm leading-relaxed text-[#6F7898] dark:text-[#a9bddb] md:text-base">{data.desc}</div>
+        <div className="mt-3 text-3xl font-extrabold text-[#111A34] dark:text-white">{display}</div>
+        <div className="mt-1.5 flex min-h-[34px] items-center justify-center text-center text-xs font-semibold tracking-wide text-[#111A34] dark:text-white">{data.title}</div>
+        <div className="mt-3 flex min-h-[56px] items-center justify-center text-center text-xs leading-relaxed text-[#6F7898] dark:text-[#a9bddb] md:text-sm">{data.desc}</div>
       </div>
     </motion.div>
   );

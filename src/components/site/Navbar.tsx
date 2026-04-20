@@ -496,7 +496,7 @@ const userMemberLabel =
                 variants={backdropVariants}
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 onClick={() => setOpen(false)}
-                className="fixed inset-0 z-[105] backdrop-blur-[3px] dark:bg-[rgba(4,10,28,0.52)] lg:hidden"
+                className="fixed inset-0 z-[105] bg-slate-950/20 backdrop-blur-[3px] dark:bg-[rgba(4,10,28,0.58)] lg:hidden"
               />
               <motion.div
                 initial="closed"
@@ -504,62 +504,62 @@ const userMemberLabel =
                 exit="closed"
                 variants={menuVariants}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className={`fixed inset-x-3 z-[106] overflow-hidden rounded-[24px] border border-[#e5edf7] bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(246,249,255,0.97)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.14)] backdrop-blur-[22px] dark:border-[#405d90]/70 dark:bg-[linear-gradient(180deg,rgba(17,36,72,0.9)_0%,rgba(8,22,50,0.84)_100%)] dark:shadow-[0_28px_80px_rgba(2,8,24,0.48)] lg:hidden ${isCompactNavbar ? "top-[96px] max-h-[calc(100svh-110px)]" : "top-[88px] max-h-[calc(100svh-102px)]"}`}
+                className={`fixed inset-x-[15px] z-[106] mx-auto max-w-[390px] overflow-hidden rounded-[22px] border border-[#dce7f5] bg-white/96 p-2.5 shadow-[0_20px_54px_rgba(17,24,39,0.16)] backdrop-blur-[22px] dark:border-[#41639b]/70 dark:bg-[linear-gradient(180deg,rgba(17,39,78,0.92)_0%,rgba(7,20,48,0.88)_100%)] dark:shadow-[0_24px_64px_rgba(2,8,24,0.52)] lg:hidden ${isCompactNavbar ? "top-[84px] max-h-[calc(100svh-98px)]" : "top-[78px] max-h-[calc(100svh-92px)]"}`}
               >
-                <div className="mb-3 flex items-center justify-between border-b border-[#e6edf6] pb-3 dark:border-[#405d90]/55">
+                <div className="mb-2.5 flex items-center justify-between border-b border-[#e6edf6] pb-2.5 dark:border-[#405d90]/55">
                   <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7d8593] dark:text-[#9fb8e4]">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7d8593] dark:text-[#a7bce2]">
                       {copy.menu}
                     </div>
-                    <div className="mt-1 text-xl font-black tracking-[-0.04em] text-[#161d2a] dark:text-white">
+                    <div className="mt-0.5 text-lg font-black tracking-[-0.035em] text-[#111827] dark:text-white">
                       {copy.navigation}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_10px_24px_rgba(17,24,39,0.08)] hover:bg-[#f8fbff] dark:border-[#5572a8]/70 dark:bg-[rgba(23,45,86,0.74)] dark:text-white dark:shadow-[0_14px_30px_rgba(2,8,24,0.24)]"
+                    className="grid h-9 w-9 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_8px_18px_rgba(17,24,39,0.08)] hover:bg-[#f8fbff] dark:border-[#5572a8]/70 dark:bg-[rgba(23,45,86,0.78)] dark:text-white"
                   >
-                    <X size={18} />
+                    <X size={17} />
                   </button>
                 </div>
 
-                <div className="max-h-[calc(100svh-220px)] overflow-y-auto pr-1">
-                  <div className="flex flex-col gap-2">
+                <div className="max-h-[calc(100svh-190px)] overflow-y-auto pr-1">
+                  <div className="flex flex-col gap-1.5">
                     {authed ? (
                       <button
                         type="button"
                         onClick={goProfile}
-                        className="flex items-center gap-3 rounded-[20px] border border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-3 text-left shadow-[0_10px_24px_rgba(17,24,39,0.05)]"
+                        className="flex items-center gap-2.5 rounded-[17px] border border-[#e7edf6] bg-white p-2.5 text-left shadow-[0_8px_20px_rgba(17,24,39,0.05)] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)]"
                       >
-                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)] text-sm font-bold uppercase tracking-[0.12em] text-white">
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)] text-sm font-bold uppercase tracking-[0.12em] text-white">
                           {userInitials}
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a879c]">
+                          <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#7a879c] dark:text-[#9fb4d9]">
                             {userMemberLabel}
                           </span>
-                          <span className="mt-1 block truncate text-[15px] font-bold text-[#1d2430]">
+                          <span className="mt-0.5 block truncate text-[14px] font-bold text-[#1d2430] dark:text-white">
                             {user?.fullName || copy.profile}
                           </span>
-                          <span className="block truncate text-xs text-[#627188]">
+                          <span className="block truncate text-[11px] text-[#627188] dark:text-[#b6c4da]">
                             {user?.email}
                           </span>
                         </span>
                       </button>
                     ) : null}
 
-                    <div className="flex items-center gap-2 rounded-[18px] border border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-2">
+                    <div className="flex items-center gap-1.5 rounded-[16px] border border-[#e7edf6] bg-white p-1.5 dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)]">
                       {(["uz", "ru", "en"] as const).map((lang) => (
                         <button
                           key={lang}
                           type="button"
                           onClick={() => setLanguage(lang)}
                           className={[
-                            "flex-1 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition",
+                            "flex-1 rounded-full px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
                             language === lang
                               ? "bg-[linear-gradient(135deg,#5d86ff_0%,#3d6fee_100%)] text-white shadow-[0_10px_24px_rgba(61,111,238,0.22)]"
-                              : "text-[#2a3140] hover:bg-[#f3f7fc]",
+                              : "text-[#2a3140] hover:bg-[#f3f7fc] dark:text-[#d7e4ff] dark:hover:bg-white/8",
                           ].join(" ")}
                         >
                           {lang}
@@ -570,15 +570,15 @@ const userMemberLabel =
                     <button
                       type="button"
                       onClick={onToggleTheme}
-                      className="flex items-center justify-between rounded-[18px] border border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] px-4 py-3 text-sm font-semibold text-[#1d2430] transition hover:bg-[#f8fbff]"
+                      className="flex items-center justify-between rounded-[16px] border border-[#e7edf6] bg-white px-3 py-2.5 text-[13px] font-semibold text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)] dark:text-white"
                     >
-                      <span className="inline-flex items-center gap-3">
-                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f]">
-                          {theme === "dark" ? <SunMedium size={16} /> : <MoonStar size={16} />}
+                      <span className="inline-flex items-center gap-2.5">
+                        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
+                          {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
                         </span>
                         <span>{theme === "dark" ? copy.lightMode : copy.darkMode}</span>
                       </span>
-                      <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268]">
+                      <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[10px] font-semibold text-[#244268] dark:bg-[#193a70] dark:text-[#dbeafe]">
                         {theme === "dark" ? "ON" : "OFF"}
                       </span>
                     </button>
@@ -592,18 +592,18 @@ const userMemberLabel =
                           [
                             "flex items-center justify-between rounded-[18px] border px-4 py-3 text-sm font-semibold text-[#1d2430] transition",
                             isActive
-                              ? "border-[#d8e5f8] bg-[linear-gradient(180deg,#f4f8ff_0%,#edf4ff_100%)] shadow-[0_10px_24px_rgba(71,120,197,0.08)]"
-                              : "border-[#e7edf6] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] hover:bg-[#f8fbff]",
+                              ? "border-[#d8e5f8] bg-[#eef5ff] shadow-[0_8px_20px_rgba(71,120,197,0.08)] dark:border-[#5f8dd4] dark:bg-[rgba(26,80,151,0.58)] dark:text-white"
+                              : "border-[#e7edf6] bg-white hover:bg-[#f8fbff] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)] dark:text-[#e8f0ff] dark:hover:bg-[rgba(18,50,103,0.72)]",
                           ].join(" ")
                         }
                       >
                         <span className="inline-flex items-center gap-3">
                           {link.icon ? (
-                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f]">
+                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
                               <link.icon size={16} />
                             </span>
                           ) : (
-                            <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2f6fc] text-[11px] font-bold uppercase tracking-[0.14em] text-[#28466f]">
+                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[10px] font-bold uppercase tracking-[0.14em] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
                               {link.label.slice(0, 2)}
                             </span>
                           )}
@@ -611,7 +611,7 @@ const userMemberLabel =
                         </span>
 
                         {link.to === "/checkout" && paxCount > 0 ? (
-                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[11px] font-semibold text-[#244268]">
+                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[10px] font-semibold text-[#244268] dark:bg-[#193a70] dark:text-[#dbeafe]">
                             {paxCount}
                           </span>
                         ) : null}
@@ -620,7 +620,7 @@ const userMemberLabel =
                   </div>
                 </div>
 
-                <div className="mt-3 border-t border-[#e6edf6] pt-3">
+                <div className="mt-2.5 border-t border-[#e6edf6] pt-2.5 dark:border-[#405d90]/55">
                   {!authed ? (
                     <Button
                       onClick={goAuth}
@@ -629,17 +629,17 @@ const userMemberLabel =
                       {copy.login}
                     </Button>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
                         onClick={goProfile}
-                        className="h-10 rounded-[16px] border border-[#d7e4f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef4fb_100%)] px-4 text-[13px] font-semibold text-[#1d2430] shadow-[0_10px_20px_rgba(49,87,143,0.08)] hover:bg-white"
+                        className="h-10 rounded-[15px] border border-[#d7e4f4] bg-white px-3 text-[13px] font-semibold text-[#1d2430] shadow-[0_8px_18px_rgba(49,87,143,0.08)] hover:bg-[#f8fbff] dark:border-[#4b6da4]/70 dark:bg-[rgba(12,32,69,0.78)] dark:text-white dark:hover:bg-[rgba(20,51,101,0.86)]"
                       >
                         <UserCircle2 className="mr-1.5" size={15} />
                         {copy.profile}
                       </Button>
                       <Button
                         onClick={logout}
-                        className="h-10 rounded-[16px] border border-[#e8d7dd] bg-[linear-gradient(180deg,#fff9fb_0%,#fff1f4_100%)] px-4 text-[13px] font-semibold text-[#a54864] shadow-[0_10px_20px_rgba(165,72,100,0.08)] hover:bg-[#fff5f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]"
+                        className="h-10 rounded-[15px] border border-[#e8d7dd] bg-[#fff5f8] px-3 text-[13px] font-semibold text-[#a54864] shadow-[0_8px_18px_rgba(165,72,100,0.08)] hover:bg-[#fff9fb] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]"
                       >
                         {copy.logout}
                       </Button>
