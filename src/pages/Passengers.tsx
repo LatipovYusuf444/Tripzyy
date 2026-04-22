@@ -401,6 +401,7 @@ export default function PassengersPage() {
   const [orderMsg, setOrderMsg] = useState<string | null>(null)
   const [orderData, setOrderData] = useState<{
     id?: number
+    serviceId?: number
     status?: string
     currency?: string
     price?: number
@@ -654,32 +655,61 @@ export default function PassengersPage() {
     }
   }
 
+  const resolvePrimaryServiceId = async (orderId: number) => {
+    const res = await getOrderById(orderId)
+    if (res.data.status !== "success") {
+      throw new Error(res.data.message || copy.orderNotFound)
+    }
+
+    const item = res.data.data?.[0]
+    const serviceId = item?.services?.[0]?.serviceId
+    if (!serviceId) {
+      throw new Error(copy.orderNotFound)
+    }
+
+    setOrderData({
+      id: item?.id,
+      serviceId,
+      status: item?.status,
+      currency: item?.currency,
+      price: item?.price,
+      client: item?.client,
+      serviceType: item?.services?.[0]?.type,
+      reservationId: item?.services?.[0]?.reservation?.id,
+    })
+
+    return serviceId
+  }
+
   const onCancelService = async () => {
-    if (!lastOrderId) {
+    const orderId = lastOrderId ?? cart.lastOrderId
+    if (!orderId) {
       setCancelMsg(copy.orderMissing)
       return
     }
     setCancelLoading(true)
     setCancelMsg(null)
     try {
-      const res = await cancelOrderService(lastOrderId)
+      const serviceId = await resolvePrimaryServiceId(orderId)
+      const res = await cancelOrderService(serviceId)
       setCancelMsg(res.data.message || copy.cancelDone)
     } catch (err: any) {
-      setCancelMsg(err?.response?.data?.message || copy.cancelError)
+      setCancelMsg(err?.response?.data?.message || err?.message || copy.cancelError)
     } finally {
       setCancelLoading(false)
     }
   }
 
   const onIssueOrder = async () => {
-    if (!lastOrderId) {
+    const orderId = lastOrderId ?? cart.lastOrderId
+    if (!orderId) {
       setIssueMsg(copy.orderMissing)
       return
     }
     setIssueLoading(true)
     setIssueMsg(null)
     try {
-      const res = await issueOrder(lastOrderId)
+      const res = await issueOrder(orderId)
       setIssueMsg(res.data.message || copy.issueDone)
     } catch (err: any) {
       setIssueMsg(err?.response?.data?.message || copy.issueError)
@@ -689,17 +719,19 @@ export default function PassengersPage() {
   }
 
   const onVoidService = async () => {
-    if (!lastOrderId) {
+    const orderId = lastOrderId ?? cart.lastOrderId
+    if (!orderId) {
       setVoidMsg(copy.orderMissing)
       return
     }
     setVoidLoading(true)
     setVoidMsg(null)
     try {
-      const res = await voidOrderService(lastOrderId)
+      const serviceId = await resolvePrimaryServiceId(orderId)
+      const res = await voidOrderService(serviceId)
       setVoidMsg(res.data.message || copy.voidDone)
     } catch (err: any) {
-      setVoidMsg(err?.response?.data?.message || copy.voidError)
+      setVoidMsg(err?.response?.data?.message || err?.message || copy.voidError)
     } finally {
       setVoidLoading(false)
     }
@@ -747,6 +779,7 @@ export default function PassengersPage() {
       const item = res.data.data?.[0]
       setOrderData({
         id: item?.id,
+        serviceId: item?.services?.[0]?.serviceId,
         status: item?.status,
         currency: item?.currency,
         price: item?.price,

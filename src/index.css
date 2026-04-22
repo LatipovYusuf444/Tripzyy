@@ -606,6 +606,24 @@ body[data-theme="dark"] .luxury-search-grid.home-search-surface {
   background: #ebebeb;
 }
 
+@media (max-width: 1279px) {
+  .luxury-search-shell {
+    background: transparent;
+  }
+
+  .luxury-search-grid,
+  .luxury-search-grid.home-search-surface {
+    background: transparent;
+  }
+
+  html[data-theme="dark"] .luxury-search-grid,
+  body[data-theme="dark"] .luxury-search-grid,
+  html[data-theme="dark"] .luxury-search-grid.home-search-surface,
+  body[data-theme="dark"] .luxury-search-grid.home-search-surface {
+    background: transparent;
+  }
+}
+
 html[data-theme="dark"] .luxury-search-grid.home-search-surface[data-search-theme="dark"],
 body[data-theme="dark"] .luxury-search-grid.home-search-surface[data-search-theme="dark"] {
   background:
@@ -1352,6 +1370,47 @@ body[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="b
   border: 1px solid rgba(191, 226, 255, 0.58) !important;
   color: #ffffff !important;
   box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-date,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-passenger,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-class,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-date,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-passenger,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-class {
+  background:
+    linear-gradient(180deg, rgba(14, 34, 72, 0.94) 0%, rgba(8, 22, 50, 0.90) 100%) !important;
+  border-color: rgba(105, 151, 224, 0.48) !important;
+  color: #f5f9ff !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(14px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(140%) !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-date button,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-passenger div,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-class div,
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-passenger svg,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-date button,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-passenger div,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-class div,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-passenger svg {
+  color: #f5f9ff !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-cabin-option,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-cabin-option {
+  background: linear-gradient(180deg, rgba(91, 115, 156, 0.90) 0%, rgba(72, 92, 126, 0.92) 100%) !important;
+  border-color: rgba(147, 180, 233, 0.34) !important;
+  color: #f2f7ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-cabin-option-active,
+body[data-theme="dark"] .flights-page[data-flight-theme="dark"] .flights-search-cabin-option-active {
+  background: linear-gradient(135deg, #1f6fc1 0%, #0a84ff 100%) !important;
+  border-color: rgba(140, 196, 255, 0.70) !important;
+  color: #ffffff !important;
 }
 
 html[data-theme="dark"] .flights-page[data-flight-theme="dark"] button[class*="rounded-2xl"]:not([class*="bg-[#174A8B]"]):not([class*="bg-[#DDEEFF]"]),

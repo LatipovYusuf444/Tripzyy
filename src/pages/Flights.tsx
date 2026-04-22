@@ -1,18 +1,12 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import Lottie, { type LottieRefCurrentProps } from "lottie-react"
-import { ArrowRight, CalendarDays, ChevronDown, Clock3, Filter, Luggage, Plane, PlaneLanding, PlaneTakeoff, Sparkles, Ticket, Users, X } from "lucide-react"
+import { ArrowRight, CalendarDays, ChevronDown, Clock3, Filter, Luggage, Plane, PlaneLanding, PlaneTakeoff, Ticket, Users, X } from "lucide-react"
+import { createPortal } from "react-dom"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
 import flightLoadingAnimation from "@/assets/animations/Animation - 1776516038455.json"
-import amsterdamImage from "@/assets/SHaharlar/amsterdam.webp"
-import dubaiImage from "@/assets/SHaharlar/dubai-marina-cityscape-skyline-skyscrapers-buildings-city-2560x1440-4870.jpg"
-import spainImage from "@/assets/SHaharlar/Espania.webp"
-import germanyImage from "@/assets/SHaharlar/germany.webp"
-import parisImage from "@/assets/SHaharlar/parij.webp"
-import sharmImage from "@/assets/SHaharlar/sharm el sheikh.webp"
-import turkeyImage from "@/assets/SHaharlar/turkey.jpg"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
 import FlightDetailsModal, { type Flight } from "@/components/site/FlightDetailsModal"
 import { Checkbox } from "@/components/animate-ui/components/radix/checkbox"
@@ -31,9 +25,9 @@ const softPanel =
 const secondaryBtn =
   "border border-[#D9D5CE] !bg-white bg-none text-[#5F5A54] shadow-none transition hover:border-[#174A8B]/35 hover:!bg-[#F6F6F6] hover:text-[#174A8B]"
 const fieldPanel =
-  "rounded-[13px] border border-[#D9D5CE] !bg-white bg-none px-3 py-2.5 shadow-none transition hover:border-[#174A8B]/35 sm:rounded-[16px] sm:px-4 sm:py-3"
+  "rounded-[10px] border border-[#D7E5F8] !bg-[#EFF6FF] bg-none px-2.5 py-1.5 shadow-none transition hover:border-[#174A8B]/35 sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2"
 const dropdownPanel =
-  "flights-dropdown-panel absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[320px] overflow-y-auto rounded-[18px] border border-[#D9D5CE] !bg-white bg-none shadow-[0_20px_42px_rgba(30,32,36,0.14)]"
+  "flights-dropdown-panel absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[320px] overflow-y-auto overflow-x-hidden rounded-[18px] border border-[#D9D5CE] !bg-white bg-none shadow-[0_20px_42px_rgba(30,32,36,0.14)] xl:w-[360px] xl:max-w-[min(360px,calc(100vw-32px))]"
 const unifiedCard =
   "border border-[#D9D5CE] !bg-white bg-none shadow-none"
 const unifiedSoftCard =
@@ -43,33 +37,15 @@ const secondaryText = "text-[#5F5A54]"
 const mutedText = "text-[#77716A]"
 const accentChip =
   "rounded-full border border-[#D9D5CE] !bg-[#EBEBEB] text-[#174A8B]"
-const darkSortBtn =
-  "border border-[#76B2FF]/50 !bg-[#071C44] bg-none text-[#F4F9FF] shadow-none transition hover:border-[#A7D4FF]/70 hover:!bg-[#0E356F]"
-const darkSortActiveBtn =
-  "border border-[#AAD3FF]/60 !bg-[#1F6FC1] bg-[linear-gradient(180deg,#1F6FC1_0%,#15518F_100%)] text-white shadow-none transition hover:!bg-[#256FC0]"
 const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
 const SEARCH_LOADING_DURATION_MS = 10000
 
-const cityHeroSlides = [
-  { image: amsterdamImage, city: "Amsterdam" },
-  { image: dubaiImage, city: "Dubai" },
-  { image: spainImage, city: "Barcelona" },
-  { image: germanyImage, city: "Berlin" },
-  { image: parisImage, city: "Paris" },
-  { image: sharmImage, city: "Sharm El Sheikh" },
-  { image: turkeyImage, city: "Istanbul" },
-] as const
-
 const luxurySpring = { type: "spring", stiffness: 260, damping: 28, mass: 0.8 } as const
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   show: { opacity: 1, y: 0 },
-} as const
-const staggerWrap = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
 } as const
 const subtleLift = {
   y: -4,
@@ -211,8 +187,9 @@ const toApiAsset = (path?: string) => {
 }
 
 const formatCompactPrice = (amount: number, currency?: string) => {
-  if ((currency || "").toUpperCase() === "UZS" && amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(2).replace(".", ",")} mln UZS`
+  const safeCurrency = (currency || "").toUpperCase()
+  if (safeCurrency === "UZS") {
+    return `${Math.round(amount).toLocaleString("ru-RU").replace(/\u00A0/g, " ")} UZS`
   }
   return formatMoney(amount, currency)
 }
@@ -306,6 +283,16 @@ const resolveLocationCode = (value: string, options: LocationOption[]) => {
   return upper.length === 3 ? upper : ""
 }
 
+const formatLocationInputValue = (value: string, options: LocationOption[]) => {
+  const raw = value.trim()
+  if (!raw) return ""
+
+  const resolvedCode = resolveLocationCode(raw, options)
+  const option = options.find((item) => item.code === resolvedCode)
+
+  return option ? `${option.code} - ${option.name}` : raw
+}
+
 const normalizeTravelClass = (value?: string): TravelClassCode => {
   const upper = (value || "").toUpperCase()
   if (upper === "B" || upper === "C" || upper === "J") return "B"
@@ -358,7 +345,6 @@ export default function Flights() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const calendarAnchorRef = useRef<HTMLDivElement>(null)
   const [searchTrips, setSearchTrips] = useState<SearchTrip[]>([])
-  const [activeCitySlide, setActiveCitySlide] = useState(0)
   const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null)
   const [previewFlight, setPreviewFlight] = useState<Flight | null>(null)
@@ -827,36 +813,16 @@ export default function Flights() {
       qDate = parsedTrips[0]?.departure ?? qDate
     }
 
-    if (!qFrom || !qTo || !qDate) {
-      try {
-        const stored = localStorage.getItem(LAST_SUCCESSFUL_SEARCH_KEY)
-        if (stored) {
-          const parsed = JSON.parse(stored) as Partial<SearchCriteria>
-          qFrom = parsed.from ?? qFrom
-          qTo = parsed.to ?? qTo
-          qDate = parsed.date ?? qDate
-          qPax = Number(parsed.pax ?? qPax)
-          qClass = normalizeTravelClass((parsed as Partial<SearchCriteria>).travelClass ?? qClass)
-        }
-      } catch {
-        // ignore invalid localStorage
-      }
-    }
-
     const nextPax = !Number.isNaN(qPax) && qPax >= 1 ? qPax : 1
 
     setSearchTrips(parsedTrips)
-    setFrom(qFrom)
-    setTo(qTo)
+    setFrom(formatLocationInputValue(qFrom, locationOptions))
+    setTo(formatLocationInputValue(qTo, locationOptions))
     setDate(qDate)
     setPax(nextPax)
     setTravelClass(qClass)
-    lastAutoQueryRef.current =
-      qFrom && qTo && qDate
-        ? JSON.stringify({ from: qFrom, to: qTo, date: qDate, pax: nextPax, travelClass: qClass, trips: parsedTrips.length ? parsedTrips : undefined })
-        : ""
     hydratedRef.current = true
-  }, [sp])
+  }, [locationOptions, sp])
 
 
   useEffect(() => {
@@ -1114,14 +1080,6 @@ export default function Flights() {
     if (maxTripDuration) setMaxDuration(maxTripDuration)
   }, [maxTripDuration])
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setActiveCitySlide((prev) => (prev + 1) % cityHeroSlides.length)
-    }, 3200)
-
-    return () => window.clearInterval(timer)
-  }, [])
-
   const filtered = useMemo(() => {
     let list = sourceItems.filter((flight) => {
       if (airlineFilter !== "all" && flight.airline !== airlineFilter) return false
@@ -1222,28 +1180,6 @@ export default function Flights() {
     setPreviewFlight(flight)
   }
 
-  const onSwapRoute = () => {
-    setFrom(to)
-    setTo(from)
-  }
-
-  const onClearSearch = () => {
-    setFrom("")
-    setTo("")
-    setDate("")
-    setTravelClass("Y")
-    setItems([])
-    setSelectedFlight(null)
-    setPreviewFlight(null)
-    lastAutoQueryRef.current = ""
-    localStorage.removeItem(LAST_SUCCESSFUL_SEARCH_KEY)
-    localStorage.removeItem(LAST_AIR_RESULT_META_KEY)
-    navigate("/flights", { replace: true })
-  }
-
-  const currentCitySlide = cityHeroSlides[activeCitySlide] ?? cityHeroSlides[0]
-  const pillBtn = siteTheme === "dark" ? darkSortBtn : secondaryBtn
-  const activePillBtn = siteTheme === "dark" ? darkSortActiveBtn : luxuryBtn
   return (
     <section
       className="flights-page relative overflow-hidden bg-[#EBEBEB] pt-0 text-[#111A34]"
@@ -1258,105 +1194,20 @@ export default function Flights() {
           className={`relative z-10 overflow-visible rounded-[20px] border p-2.5 sm:rounded-[28px] sm:p-4 md:p-5 ${softPanel}`}
         >
           <motion.div
-            whileHover={subtleLift}
-            className="relative overflow-hidden rounded-[18px] bg-white p-3 text-[#111A34] shadow-none transition-shadow duration-300 hover:shadow-[0_24px_70px_rgba(30,32,36,0.10)] sm:rounded-[24px] sm:p-5 md:p-7"
-          >
-            <div className="relative grid gap-4 sm:gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-              <motion.div variants={staggerWrap} initial="hidden" animate="show">
-                <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#77716A] sm:px-4 sm:py-2 sm:text-[11px] sm:tracking-[0.22em]">
-                  <Sparkles size={14} />
-                  {copy.routeSelection}
-                </motion.div>
-                <motion.h1 variants={fadeUp} className="mt-4 max-w-[720px] text-[30px] font-black leading-[0.96] tracking-[-0.04em] text-[#111A34] sm:mt-6 sm:text-[38px] md:text-[60px]">
-                  {copy.heroTitleA}
-                  <span className="block text-[#174A8B]">
-                    {copy.heroTitleB}
-                  </span>
-                  <span className="block">{copy.heroTitleC}</span>
-                </motion.h1>
-                <motion.p variants={fadeUp} className="mt-3 max-w-[620px] text-[13px] leading-6 text-[#4b5563] sm:mt-5 sm:text-[15px] sm:leading-8 md:text-[17px]">
-                  {copy.heroDesc}
-                </motion.p>
-
-                <motion.div variants={staggerWrap} className="mt-4 grid gap-2 sm:mt-8 sm:grid-cols-3 sm:gap-3">
-                  <motion.div variants={fadeUp} whileHover={subtleLift} className={`rounded-[16px] p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(23,74,139,0.10)] sm:rounded-[24px] sm:p-4 ${unifiedCard}`}>
-                    <div className={`flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>
-                      <CalendarDays size={14} />
-                      {copy.date}
-                    </div>
-                    <div className={`mt-2 text-[20px] font-black sm:mt-3 sm:text-[24px] ${primaryText}`}>{date || copy.unselected}</div>
-                  </motion.div>
-                  <motion.div variants={fadeUp} whileHover={subtleLift} className={`rounded-[16px] p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(23,74,139,0.10)] sm:rounded-[24px] sm:p-4 ${unifiedCard}`}>
-                    <div className={`flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>
-                      <Users size={14} />
-                      {copy.passenger}
-                    </div>
-                    <div className={`mt-2 flex items-baseline gap-1.5 text-[20px] font-black sm:mt-3 sm:text-[24px] ${primaryText}`}>
-                      <SlidingNumber number={pax} initiallyStable className="tabular-nums" />
-                      <span>{language === "en" ? "pax" : "ta"}</span>
-                    </div>
-                  </motion.div>
-                  <motion.div variants={fadeUp} whileHover={subtleLift} className={`rounded-[16px] p-3 backdrop-blur-sm transition-shadow duration-300 hover:shadow-[0_18px_42px_rgba(23,74,139,0.10)] sm:rounded-[24px] sm:p-4 ${unifiedCard}`}>
-                    <div className={`flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>
-                      <Ticket size={14} />
-                      {copy.classLabel}
-                    </div>
-                    <div className={`mt-2 text-[20px] font-black sm:mt-3 sm:text-[24px] ${primaryText}`}>{copy.classNames[travelClass]}</div>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
-
-              <motion.div whileHover={{ y: -5, transition: luxurySpring }} className="group relative min-h-[240px] overflow-hidden rounded-[18px] border border-[#D9D5CE] shadow-none transition-shadow duration-300 hover:shadow-[0_24px_58px_rgba(23,74,139,0.16)] sm:min-h-[320px] sm:rounded-[22px]">
-                <motion.img
-                  src={currentCitySlide.image}
-                  alt={currentCitySlide.city}
-                  key={currentCitySlide.image}
-                  initial={{ opacity: 0, scale: 1.04 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.035]"
-                />
-                <div className="absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(15,23,42,0)_0%,rgba(15,23,42,0.46)_100%)] sm:h-28" />
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3 sm:gap-3 sm:p-5">
-                  <div className="rounded-full border border-white/18 bg-[rgba(7,18,35,0.34)] px-3 py-1.5 text-xs font-semibold text-white shadow-[0_10px_24px_rgba(2,8,24,0.22)] backdrop-blur-[10px] sm:px-4 sm:py-2 sm:text-sm">
-                    {currentCitySlide.city}
-                  </div>
-                  <div className="flex items-center gap-1.5 rounded-full border border-white/14 bg-[rgba(7,18,35,0.28)] px-2.5 py-1.5 shadow-[0_10px_24px_rgba(2,8,24,0.18)] backdrop-blur-[10px] sm:gap-2 sm:px-3 sm:py-2">
-                    {cityHeroSlides.map((slide, index) => (
-                      <motion.button
-                        key={`${slide.city}-${index}`}
-                        type="button"
-                        onClick={() => setActiveCitySlide(index)}
-                        whileHover={{ scale: 1.18 }}
-                        whileTap={{ scale: 0.92 }}
-                        className={[
-                          "h-2 rounded-full transition-all sm:h-2.5",
-                          index === activeCitySlide ? "w-6 bg-white sm:w-8" : "w-2 bg-white/55 hover:bg-white/80 sm:w-2.5",
-                        ].join(" ")}
-                        aria-label={slide.city}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.42, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className={`mt-3 overflow-visible rounded-[20px] p-2.5 transition-shadow duration-300 hover:shadow-[0_22px_54px_rgba(30,32,36,0.10)] sm:mt-5 sm:rounded-[24px] sm:p-4 md:p-5 ${unifiedSoftCard}`}
+            className={`overflow-visible rounded-[20px] p-2.5 transition-shadow duration-300 hover:shadow-[0_22px_54px_rgba(30,32,36,0.10)] sm:rounded-[24px] sm:p-4 md:p-5 ${unifiedSoftCard}`}
           >
-            <div className="grid gap-2.5 sm:gap-3 xl:grid-cols-[minmax(190px,1fr)_minmax(190px,1fr)_200px_240px_220px] 2xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_230px_300px_270px]">
-              <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} />
-              <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} />
-              <motion.div ref={calendarAnchorRef} whileHover={subtleLift} className={`relative flex min-h-[62px] flex-col justify-center rounded-[14px] px-3 py-2.5 transition-shadow duration-300 hover:shadow-[0_16px_38px_rgba(23,74,139,0.10)] sm:min-h-[84px] sm:rounded-[24px] sm:px-4 sm:py-3 ${unifiedCard}`}>
-                <div className={`mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px] sm:tracking-[0.18em] ${mutedText}`}>{copy.date}</div>
+            <div className="grid gap-2 sm:gap-2.5 xl:grid-cols-[1.35fr_1.35fr_0.75fr_0.75fr_1.1fr_0.85fr]">
+              <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} tone="blue" />
+              <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} tone="green" />
+              <motion.div ref={calendarAnchorRef} whileHover={subtleLift} className="flights-search-date relative flex min-h-[48px] flex-col justify-center rounded-[10px] border border-[#E1D8FA] bg-[#F6F0FF] px-2.5 py-1.5 shadow-none transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(115,76,190,0.10)] sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2">
+                <div className={`mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] sm:text-[10px] sm:tracking-[0.16em] ${mutedText}`}>{copy.date}</div>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
-                  className={`text-left text-[14px] font-semibold sm:text-[16px] ${primaryText}`}
+                  className={`text-left text-[13px] font-semibold sm:text-[14px] ${primaryText}`}
                 >
                   {date || copy.openCalendar}
                 </button>
@@ -1376,9 +1227,22 @@ export default function Flights() {
                   />
                 ) : null}
               </motion.div>
-              <motion.div whileHover={subtleLift} className="flex min-h-[62px] flex-col justify-center rounded-[14px] border border-[#D9D5CE] bg-white px-3 py-2.5 shadow-none transition-shadow duration-300 hover:shadow-[0_16px_38px_rgba(23,74,139,0.10)] sm:min-h-[84px] sm:rounded-[16px] sm:px-4 sm:py-3 2xl:px-5">
-                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280] sm:mb-2 sm:text-[11px] sm:tracking-[0.18em]">{copy.classLabel}</div>
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 2xl:gap-2.5">
+              <motion.div
+                whileHover={subtleLift}
+                aria-label={paxLabel(language, pax)}
+                className="flights-search-passenger flex min-h-[48px] flex-col justify-center rounded-[10px] border border-[#F0E1CE] bg-[#FFF7ED] px-2.5 py-1.5 shadow-none transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(190,118,41,0.10)] sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2"
+              >
+                <div className={`mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] sm:text-[10px] sm:tracking-[0.16em] ${mutedText}`}>
+                  {copy.passenger}
+                </div>
+                <div className={`flex items-center gap-1.5 text-[13px] font-semibold sm:text-[14px] ${primaryText}`}>
+                  <Users size={14} className="text-[#174A8B]" />
+                  <span>{paxLabel(language, pax)}</span>
+                </div>
+              </motion.div>
+              <motion.div whileHover={subtleLift} className="flights-search-class flex min-h-[48px] flex-col justify-center rounded-[10px] border border-[#D7E5F8] bg-[#F0F8FF] px-2.5 py-1.5 shadow-none transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(23,74,139,0.10)] sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2">
+                <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#6b7280] sm:text-[10px] sm:tracking-[0.16em]">{copy.classLabel}</div>
+                <div className="grid grid-cols-3 gap-1.5">
                   {(["Y", "B", "F"] as TravelClassCode[]).map((item) => (
                     <motion.button
                       key={item}
@@ -1387,10 +1251,10 @@ export default function Flights() {
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.97 }}
                       className={[
-                        "h-8 whitespace-nowrap rounded-[12px] border px-1.5 text-[12px] font-semibold transition sm:h-10 sm:rounded-2xl sm:px-2 sm:text-[13px] 2xl:h-12 2xl:px-3 2xl:text-[14px]",
+                        "flights-search-cabin-option h-7 whitespace-nowrap rounded-[9px] border px-1.5 text-[11px] font-semibold shadow-[0_8px_18px_rgba(23,74,139,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(23,74,139,0.16)] sm:h-8 sm:rounded-[10px] sm:px-2 sm:text-[12px]",
                         travelClass === item
-                          ? `${activePillBtn} border-[#1a2231]/10`
-                          : pillBtn,
+                          ? "flights-search-cabin-option-active border-[#174A8B] bg-[linear-gradient(135deg,#174A8B_0%,#0A84FF_100%)] text-white shadow-[0_14px_28px_rgba(23,74,139,0.24)] hover:shadow-[0_18px_34px_rgba(23,74,139,0.30)]"
+                          : "border-[#D9D5CE] bg-[linear-gradient(180deg,#FFFFFF_0%,#F3F7FC_100%)] text-[#5F5A54] hover:border-[#174A8B]/45 hover:bg-[linear-gradient(180deg,#F7FBFF_0%,#EAF4FF_100%)] hover:text-[#174A8B]",
                       ].join(" ")}
                     >
                       {copy.classNames[item]}
@@ -1398,26 +1262,11 @@ export default function Flights() {
                   ))}
                 </div>
               </motion.div>
-              <motion.button whileHover={{ y: -3, scale: 1.01 }} whileTap={{ scale: 0.985 }} onClick={onSearch} disabled={loading} className={`min-h-[46px] rounded-[14px] px-4 text-[13px] font-semibold uppercase tracking-[0.16em] transition disabled:opacity-60 sm:min-h-[84px] sm:rounded-[24px] sm:px-6 sm:text-sm sm:tracking-[0.18em] ${luxuryBtn}`}>
+              <motion.button whileHover={{ y: -3, scale: 1.01 }} whileTap={{ scale: 0.985 }} onClick={onSearch} disabled={loading} className={`min-h-[44px] rounded-[10px] px-4 text-[12px] font-semibold uppercase tracking-[0.14em] transition disabled:opacity-60 sm:min-h-[54px] sm:rounded-[14px] sm:px-5 sm:text-[13px] sm:tracking-[0.15em] ${luxuryBtn}`}>
                 {loading ? copy.searching : copy.search}
               </motion.button>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center justify-end gap-2 sm:mt-4 sm:gap-3">
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} type="button" onClick={onSwapRoute} disabled={!from && !to} className={`h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-70 sm:h-10 sm:px-4 sm:text-xs sm:tracking-[0.14em] ${pillBtn}`}>
-                  {copy.swap}
-                </motion.button>
-                <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} type="button" onClick={onClearSearch} disabled={!from && !to && !date && items.length === 0} className={`h-8 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-70 sm:h-10 sm:px-4 sm:text-xs sm:tracking-[0.14em] ${pillBtn}`}>
-                  {copy.clear}
-                </motion.button>
-                {(["best", "cheap", "fast"] as const).map((item) => (
-                  <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} key={item} onClick={() => setSort(item)} className={["h-8 rounded-full border px-3 text-[11px] font-semibold uppercase tracking-[0.12em] transition sm:h-10 sm:px-4 sm:text-xs sm:tracking-[0.14em]", sort === item ? activePillBtn : pillBtn].join(" ")}>
-                    {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
           </motion.div>
         </motion.div>
 
@@ -1551,6 +1400,7 @@ export default function Flights() {
                     onPick={openPreview}
                     copy={copy}
                     language={language}
+                    airportLabels={airportLabels}
                   />
                 ))}
               </div>
@@ -1564,6 +1414,7 @@ export default function Flights() {
         flight={previewFlight}
         language={language}
         pax={pax}
+        airportLabels={airportLabels}
         onClose={() => setPreviewFlight(null)}
         onBuy={(flight) => onPick(flight)}
       />
@@ -1572,7 +1423,23 @@ export default function Flights() {
   )
 }
 
-function AutocompleteField({ label, value, placeholder, options, onChange, selectLabel }: { label: string; value: string; placeholder: string; options: LocationOption[]; onChange: (value: string) => void; selectLabel: string }) {
+function AutocompleteField({
+  label,
+  value,
+  placeholder,
+  options,
+  onChange,
+  selectLabel,
+  tone = "blue",
+}: {
+  label: string
+  value: string
+  placeholder: string
+  options: LocationOption[]
+  onChange: (value: string) => void
+  selectLabel: string
+  tone?: "blue" | "green"
+}) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -1591,19 +1458,28 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
     setOpen(false)
     setActiveIndex(0)
   }
+  const toneClass =
+    tone === "green"
+      ? "border-[#D8EEE6] !bg-[#F0FCF7] hover:shadow-[0_12px_28px_rgba(34,148,98,0.10)]"
+      : "border-[#D7E5F8] !bg-[#EFF6FF] hover:shadow-[0_12px_28px_rgba(23,74,139,0.10)]"
 
   return (
     <motion.label
       whileHover={subtleLift}
-      className={`relative focus-within:border-[#174A8B]/45 focus-within:shadow-[0_0_0_4px_rgba(23,74,139,0.08)] ${fieldPanel}`}
+      className={`relative focus-within:border-[#174A8B]/45 focus-within:shadow-[0_0_0_4px_rgba(23,74,139,0.08)] ${fieldPanel} ${toneClass}`}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#58789c] sm:text-[11px] sm:tracking-[0.18em]">{label}</div>
+      <div className="text-[8.5px] font-semibold uppercase tracking-[0.13em] text-[#58789c] sm:text-[9px] sm:tracking-[0.15em]">{label}</div>
       <input
-        className="mt-1.5 w-full bg-transparent text-[14px] font-semibold text-[#111A34] outline-none placeholder:text-[#90a3ba] sm:mt-2 sm:text-[15px]"
+        className="mt-1 w-full bg-transparent text-[13px] font-semibold text-[#111A34] outline-none placeholder:text-[#90a3ba] sm:text-[14px]"
         placeholder={placeholder}
         value={value}
         onFocus={() => setOpen(true)}
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onBlur={() =>
+          window.setTimeout(() => {
+            setOpen(false)
+            onChange(formatLocationInputValue(value, options))
+          }, 120)
+        }
         onKeyDown={(e) => {
           if (!filteredOptions.length) return
           if (e.key === "ArrowDown") {
@@ -1647,16 +1523,16 @@ function AutocompleteField({ label, value, placeholder, options, onChange, selec
               }}
               onClick={() => pickOption(option)}
               className={[
-                "flex w-full items-center justify-between border-b border-[#D9D5CE] px-4 py-3 text-left transition last:border-b-0",
+                "flex w-full min-w-0 items-center justify-between gap-3 border-b border-[#D9D5CE] px-4 py-3 text-left transition last:border-b-0",
                 filteredOptions[activeIndex]?.code === option.code ? "bg-[#F3F1ED]" : "hover:bg-[#F6F6F6]",
               ].join(" ")}
               whileHover={{ x: 3 }}
             >
-              <span>
+              <span className="min-w-0">
                 <span className="block text-sm font-semibold text-[#111A34]">{option.name}</span>
                 <span className="block text-xs uppercase tracking-[0.14em] text-[#6f84a0]">{option.code}</span>
               </span>
-              <span className="rounded-full border border-[#cfe1f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef5fc_100%)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#466b95]">
+              <span className="shrink-0 rounded-full border border-[#cfe1f4] bg-[linear-gradient(180deg,#ffffff_0%,#eef5fc_100%)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#466b95]">
                 {selectLabel}
               </span>
             </motion.button>
@@ -1806,6 +1682,7 @@ function CityTravelResultCard({
   onPick,
   copy,
   language,
+  airportLabels,
 }: {
   flight: Flight
   index: number
@@ -1813,10 +1690,11 @@ function CityTravelResultCard({
   onPick: (flight: Flight) => void
   copy: FlightsCopy
   language: "uz" | "ru" | "en"
+  airportLabels: Record<string, string>
 }) {
   const segments =
     flight.segments && flight.segments.length
-      ? flight.segments.slice(0, Math.min(2, flight.segments.length))
+      ? flight.segments
       : [
           {
             id: flight.id,
@@ -1832,6 +1710,7 @@ function CityTravelResultCard({
         ]
   const selected = index === 0
   const isDirect = (flight.stopsCount ?? 0) === 0
+  const routeSummary = buildSegmentRouteSummary(flight, airportLabels, language)
 
   return (
     <motion.div
@@ -1878,6 +1757,9 @@ function CityTravelResultCard({
                   <span className="rounded-[5px] bg-[#EEEAE4] px-2 py-0.5 text-[10px] font-semibold text-[#59636E]">{segment.destination}</span>
                 </div>
                 <div className="mt-1 text-center text-[11px] font-semibold text-[#26313C]">{fmtDuration(segDuration, language)}</div>
+                <div className="mt-0.5 text-center text-[10px] leading-4 text-[#59636E]">
+                  {formatSegmentRouteLabel(segment.origin, segment.destination, airportLabels)}
+                </div>
                 <div className={["mt-0.5 text-center text-[10px]", isDirect ? "text-[#078A50]" : "text-[#59636E]"].join(" ")}>
                   {segStops === 0 ? copy.direct : `${segStops} ${copy.transfers}`}
                 </div>
@@ -1892,11 +1774,21 @@ function CityTravelResultCard({
             </div>
           )
         })}
+        <div className="py-2 text-[11px] leading-5 text-[#59636E]">
+          <div>
+            <span className="font-semibold text-[#26313C]">{routeSummary.routeLabel}: </span>
+            {routeSummary.route}
+          </div>
+          <div className={routeSummary.transfers.length ? "text-[#A33B22]" : "text-[#078A50]"}>
+            <span className="font-semibold">{routeSummary.transferLabel}: </span>
+            {routeSummary.transfers.length ? routeSummary.transfers.join(" · ") : routeSummary.directLabel}
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center justify-between gap-3 border-t border-[#E6E2DC] pt-3 lg:flex-col lg:items-end lg:justify-center lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
         <div className="text-left lg:text-right">
-          <div className="text-[20px] font-black leading-6 text-[#111A34]">{formatCompactPrice(flight.price, flight.currency)}</div>
+          <div className="whitespace-nowrap text-[13px] font-black leading-5 text-[#111A34] sm:text-[14px]">{formatCompactPrice(flight.price, flight.currency)}</div>
           <div className="mt-1 text-[11px] leading-4 text-[#59636E]">{tripTypeLabel(flight, language)}</div>
           <div className="text-[11px] leading-4 text-[#59636E]">{paxLabel(language, pax)}</div>
         </div>
@@ -1916,6 +1808,79 @@ function CityTravelResultCard({
 
 const paxLabel = (language: "uz" | "ru" | "en", pax: number) =>
   language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`
+
+const formatAirportPoint = (code?: string, airportLabels?: Record<string, string>) => {
+  const safeCode = (code || "").trim().toUpperCase()
+  if (!safeCode) return "—"
+
+  const label = airportLabels?.[safeCode]?.trim()
+  if (!label || label.toUpperCase() === safeCode) return safeCode
+
+  return `${label} (${safeCode})`
+}
+
+const formatAirportNameOnly = (code?: string, airportLabels?: Record<string, string>) => {
+  const safeCode = (code || "").trim().toUpperCase()
+  if (!safeCode) return ""
+
+  const label = airportLabels?.[safeCode]?.trim()
+  return label && label.toUpperCase() !== safeCode ? label : ""
+}
+
+const formatSegmentRouteLabel = (
+  origin?: string,
+  destination?: string,
+  airportLabels?: Record<string, string>
+) => `${formatAirportPoint(origin, airportLabels)} → ${formatAirportPoint(destination, airportLabels)}`
+
+const routeSummaryCopy = (language: "uz" | "ru" | "en") => {
+  if (language === "ru") {
+    return {
+      routeLabel: "Маршрут",
+      transferLabel: "Пересадка",
+      directLabel: "Без пересадки",
+    }
+  }
+  if (language === "en") {
+    return {
+      routeLabel: "Route",
+      transferLabel: "Transfer",
+      directLabel: "Direct flight",
+    }
+  }
+  return {
+    routeLabel: "Yo'nalish",
+    transferLabel: "Peresadka",
+    directLabel: "To'g'ridan-to'g'ri reys",
+  }
+}
+
+const buildSegmentRouteSummary = (
+  flight: Flight,
+  airportLabels: Record<string, string>,
+  language: "uz" | "ru" | "en"
+) => {
+  const segments = flight.segments?.length
+    ? flight.segments
+    : [{ origin: flight.from, destination: flight.to }]
+  const points = segments.reduce<string[]>((acc, segment) => {
+    const origin = (segment.origin || "").trim().toUpperCase()
+    const destination = (segment.destination || "").trim().toUpperCase()
+
+    if (origin && acc[acc.length - 1] !== origin) acc.push(origin)
+    if (destination && acc[acc.length - 1] !== destination) acc.push(destination)
+
+    return acc
+  }, [])
+  const transfers = points.slice(1, -1).map((point) => formatAirportPoint(point, airportLabels))
+  const copy = routeSummaryCopy(language)
+
+  return {
+    ...copy,
+    route: points.map((point) => formatAirportPoint(point, airportLabels)).join(" → ") || "—",
+    transfers,
+  }
+}
 
 const isRoundTripFlight = (flight: Flight) => {
   const segments = flight.segments ?? []
@@ -1947,12 +1912,14 @@ function FlightPreviewModal({
   flight,
   language,
   pax,
+  airportLabels,
   onClose,
   onBuy,
 }: {
   flight: Flight | null
   language: "uz" | "ru" | "en"
   pax: number
+  airportLabels: Record<string, string>
   onClose: () => void
   onBuy: (flight: Flight) => void
 }) {
@@ -2045,7 +2012,7 @@ function FlightPreviewModal({
     onBuy(flight)
   }, [flight, onBuy])
 
-  if (!flight) return null
+  if (!flight || typeof document === "undefined") return null
 
   const startBuyCheck = () => {
     if (isBuying) return
@@ -2063,22 +2030,22 @@ function FlightPreviewModal({
     onClose()
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-5"
+        className="fixed inset-0 z-[80] flex items-start justify-center bg-black/45 px-3 pb-3 pt-[14vh] sm:px-5 sm:pb-5 sm:pt-[12vh]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 34, scale: 0.98 }}
+          initial={{ opacity: 0, y: -12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 24, scale: 0.98 }}
+          exit={{ opacity: 0, y: -10, scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className="relative flex max-h-[82svh] w-[calc(100%-20px)] max-w-[760px] flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[88vh] sm:w-full sm:rounded-[28px]"
+          className="relative flex max-h-[74svh] w-full max-w-[680px] flex-col overflow-hidden rounded-[18px] bg-white shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:max-h-[76vh] sm:rounded-[24px]"
         >
-          <div className="flex items-start justify-between gap-3 px-3.5 pb-1.5 pt-3 sm:gap-4 sm:px-8 sm:pb-3 sm:pt-7">
+          <div className="flex items-start justify-between gap-3 px-3.5 pb-1.5 pt-3 sm:gap-4 sm:px-7 sm:pb-2 sm:pt-6">
             <div>
               <div className="text-[18px] font-black leading-5 text-[#111111] sm:text-[22px] sm:leading-7">{copy.title}</div>
               <div className="mt-0.5 text-[12px] leading-4 text-[#6D6760] sm:mt-1 sm:text-[14px] sm:leading-5">{copy.subtitle}</div>
@@ -2094,10 +2061,13 @@ function FlightPreviewModal({
             </button>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pb-2 sm:px-8 sm:pb-5">
+          <div className="min-h-0 flex-1 overflow-y-auto px-3.5 pb-2 sm:px-7 sm:pb-4">
             <div className="mb-2 sm:mb-5">
               <div className="text-[19px] font-black leading-5 text-[#111111] sm:text-[26px] sm:leading-8">
                 {flight.from} → {flight.to}
+              </div>
+              <div className="mt-1 text-[11px] leading-4 text-[#6D6760] sm:text-[13px] sm:leading-5">
+                {formatSegmentRouteLabel(flight.from, flight.to, airportLabels)}
               </div>
               <div className="mt-0.5 text-[12px] text-[#6D6760] sm:mt-1 sm:text-[16px]">
                 {fmtDuration(flight.durationMin, language)} {copy.inWay}
@@ -2109,6 +2079,8 @@ function FlightPreviewModal({
                 const carrier = segment.carrier || segment.operatingCarrier || flight.airline
                 const flightNo = segment.flightNumber || flight.flightNo || ""
                 const duration = Number(segment.duration || 0) || Math.round(flight.durationMin / Math.max(segments.length, 1))
+                const originName = formatAirportNameOnly(segment.origin, airportLabels)
+                const destinationName = formatAirportNameOnly(segment.destination, airportLabels)
                 return (
                   <div key={segment.id || `${segment.origin}-${segment.destination}-${index}`}>
                     <div className="mb-1.5 flex items-center gap-2 sm:mb-3 sm:gap-3">
@@ -2136,7 +2108,8 @@ function FlightPreviewModal({
                           </div>
                           <div>
                             <div className="text-[15px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.origin}</div>
-                            <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[14px]">{segment.departureTerminal || ""}</div>
+                            {originName ? <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[13px]">{originName}</div> : null}
+                            {segment.departureTerminal ? <div className="text-[10px] leading-4 text-[#8A837C] sm:text-[12px]">{segment.departureTerminal}</div> : null}
                           </div>
                         </div>
                       </div>
@@ -2155,7 +2128,8 @@ function FlightPreviewModal({
                           </div>
                           <div>
                             <div className="text-[15px] font-bold leading-5 text-[#111111] sm:text-[17px]">{segment.destination}</div>
-                            <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[14px]">{segment.arrivalTerminal || ""}</div>
+                            {destinationName ? <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[13px]">{destinationName}</div> : null}
+                            {segment.arrivalTerminal ? <div className="text-[10px] leading-4 text-[#8A837C] sm:text-[12px]">{segment.arrivalTerminal}</div> : null}
                           </div>
                         </div>
                       </div>
@@ -2243,7 +2217,8 @@ function FlightPreviewModal({
           </AnimatePresence>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 
@@ -2608,27 +2583,39 @@ function SearchLoadingAnimation({ language }: { language: "uz" | "ru" | "en" }) 
     uz: {
       title: "Qidirilmoqda...",
       subtitle: "Reyslar va tariflar tekshirilmoqda",
+      badge: "Jonli qidiruv",
     },
     ru: {
       title: "Поиск...",
       subtitle: "Проверяем рейсы и тарифы",
+      badge: "Онлайн поиск",
     },
     en: {
       title: "Searching...",
       subtitle: "Checking flights and fares",
+      badge: "Live search",
     },
   }[language]
 
   return (
     <motion.div
-      className={`overflow-hidden rounded-[28px] px-5 py-6 text-center ${unifiedCard}`}
+      className={`relative overflow-hidden rounded-[28px] px-5 py-6 text-center ${unifiedCard}`}
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 12 }}
       transition={{ duration: 0.2 }}
     >
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-48px] top-[-56px] h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(10,132,255,0.14)_0%,rgba(10,132,255,0)_72%)]" />
+        <div className="absolute bottom-[-72px] right-[-24px] h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(23,74,139,0.10)_0%,rgba(23,74,139,0)_72%)]" />
+      </div>
       <div className="mx-auto max-w-[520px]">
-        <div className="mx-auto mb-3 h-9 w-9 rounded-[10px] bg-[#174A8B]" />
+        <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-[#cfe0f5] bg-[linear-gradient(180deg,#ffffff_0%,#f3f8ff_100%)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.08)]">
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-[linear-gradient(135deg,#174A8B_0%,#0A84FF_100%)] text-white shadow-[0_8px_18px_rgba(23,74,139,0.18)]">
+            <Plane size={14} />
+          </span>
+          <span>{copy.badge}</span>
+        </div>
         <div className="text-[20px] font-black text-[#111111]">{copy.title}</div>
         <div className="mt-1 text-[14px] text-[#6D6760]">{copy.subtitle}</div>
         <FlightLoadingAnimation compact />

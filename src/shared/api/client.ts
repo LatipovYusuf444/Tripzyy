@@ -7,7 +7,7 @@ const formatApiKey = (value: string) =>
   value.trim().toLowerCase().startsWith("bearer ") ? value.trim() : `Bearer ${value.trim()}`
 
 const client = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 15000,
   headers: {
     Accept: "application/json",

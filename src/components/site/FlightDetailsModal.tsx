@@ -1,5 +1,5 @@
 ﻿import { AnimatePresence, motion } from "framer-motion"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
@@ -23,6 +23,8 @@ import {
 } from "@/shared/api/order/order.api"
 import {
   X,
+  ArrowLeft,
+  ChevronDown,
   PlaneTakeoff,
   PlaneLanding,
   Clock,
@@ -31,14 +33,68 @@ import {
   Users,
   Mail,
   Phone,
-  Plus,
-  Trash2,
+  MousePointerClick,
+  WalletCards,
+  CircleDollarSign,
+  HandCoins,
+  CreditCard,
 } from "lucide-react"
 
 const brandPrimaryAction =
   "border border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_30px_rgba(23,74,139,0.22)] transition hover:bg-[#123F78] hover:shadow-[0_18px_40px_rgba(23,74,139,0.28)] disabled:cursor-not-allowed disabled:opacity-50"
 const brandSecondaryAction =
   "border border-[#C8D3E0] bg-[#EBEBEB] text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.08)] transition hover:bg-[#E1E7EF] disabled:cursor-not-allowed disabled:opacity-45"
+
+function AccordionSection({
+  title,
+  subtitle,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string
+  subtitle?: ReactNode
+  open: boolean
+  onToggle: () => void
+  children: ReactNode
+}) {
+  return (
+    <div className="overflow-hidden rounded-[16px] border border-[#D9D5CE] bg-white shadow-none dark:border-[#D9D5CE] dark:bg-white">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition hover:bg-[#F3F1ED] sm:px-4"
+      >
+        <span className="min-w-0">
+          <span className="block text-[13px] font-semibold text-[#111A34] dark:text-[#111A34]">{title}</span>
+          {subtitle ? <span className="mt-0.5 block text-[11px] leading-4 text-[#77716A] dark:text-[#77716A]">{subtitle}</span> : null}
+        </span>
+        <motion.span
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#D9D5CE] bg-[#F3F1ED] text-[#174A8B]"
+        >
+          <ChevronDown size={15} />
+        </motion.span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open ? (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-[#EEEAE4] px-3.5 pb-3 pt-2.5 sm:px-4">{children}</div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 export type FlightSegment = {
   id: string
@@ -449,8 +505,15 @@ function translateServiceText(text: string, language: "uz" | "ru" | "en") {
 
 function translateFareName(name: string, language: "uz" | "ru" | "en"): string {
   const upper = (name || "").trim().toUpperCase()
+  const compact = upper.replace(/[^A-Z0-9]/g, "")
   const map: Record<string, { uz: string; ru: string; en: string }> = {
+    ECLASSIC:   { uz: "Klassik",        ru: "Классик",      en: "Classic" },
+    ECONVENIEN: { uz: "Qulay",          ru: "Удобный",      en: "Convenient" },
+    ECONVENIENT:{ uz: "Qulay",          ru: "Удобный",      en: "Convenient" },
+    ECOMFORT:   { uz: "Komfort",        ru: "Комфорт",      en: "Comfort" },
     CLASSIC:    { uz: "Klassik",        ru: "Классик",      en: "Classic" },
+    CONVENIEN:  { uz: "Qulay",          ru: "Удобный",      en: "Convenient" },
+    CONVENIENT: { uz: "Qulay",          ru: "Удобный",      en: "Convenient" },
     FLEX:       { uz: "Moslashuvchan",  ru: "Флекс",        en: "Flex" },
     ECONOMY:    { uz: "Ekonom",         ru: "Эконом",       en: "Economy" },
     ECO:        { uz: "Ekonom",         ru: "Эконом",       en: "Economy" },
@@ -470,12 +533,53 @@ function translateFareName(name: string, language: "uz" | "ru" | "en"): string {
     OPTIMAL:    { uz: "Optimal",        ru: "Оптимальный",  en: "Optimal" },
   }
   for (const [key, val] of Object.entries(map)) {
-    if (upper === key || upper.startsWith(key + " ") || upper.endsWith(" " + key)) {
+    if (
+      upper === key ||
+      compact === key ||
+      upper.startsWith(key + " ") ||
+      upper.endsWith(" " + key) ||
+      compact === `E${key}`
+    ) {
       return val[language]
     }
   }
   if (language === "en") return name
   return name
+}
+
+function paymentMethodTone(id: string, active: boolean) {
+  const tones: Record<string, { active: string; idle: string }> = {
+    click: {
+      active: "border-[#0077FF] !bg-[linear-gradient(135deg,#0077FF_0%,#00B2FF_100%)] text-white shadow-[0_14px_28px_rgba(0,119,255,0.24)]",
+      idle: "border-[#68B6FF] !bg-[linear-gradient(135deg,#BFE0FF_0%,#D8EEFF_48%,#8FC8FF_100%)] text-[#004EA8] shadow-[0_8px_18px_rgba(0,119,255,0.10)] hover:border-[#168DFF] hover:shadow-[0_12px_24px_rgba(0,119,255,0.18)]",
+    },
+    payme: {
+      active: "border-[#00AEEF] !bg-[linear-gradient(135deg,#00AEEF_0%,#18D4FF_100%)] text-white shadow-[0_14px_28px_rgba(0,174,239,0.24)]",
+      idle: "border-[#54D5FF] !bg-[linear-gradient(135deg,#B6F0FF_0%,#D8FAFF_48%,#84E5FF_100%)] text-[#006D9C] shadow-[0_8px_18px_rgba(0,174,239,0.10)] hover:border-[#00BEEE] hover:shadow-[0_12px_24px_rgba(0,174,239,0.18)]",
+    },
+    uzum: {
+      active: "border-[#6D28D9] !bg-[linear-gradient(135deg,#6D28D9_0%,#A855F7_100%)] text-white shadow-[0_14px_28px_rgba(109,40,217,0.24)]",
+      idle: "border-[#B878FF] !bg-[linear-gradient(135deg,#DCC2FF_0%,#EEE0FF_48%,#C79BFF_100%)] text-[#5B21B6] shadow-[0_8px_18px_rgba(109,40,217,0.10)] hover:border-[#9654F4] hover:shadow-[0_12px_24px_rgba(109,40,217,0.18)]",
+    },
+    paynet: {
+      active: "border-[#F97316] !bg-[linear-gradient(135deg,#F97316_0%,#FDBA2D_100%)] text-white shadow-[0_14px_28px_rgba(249,115,22,0.24)]",
+      idle: "border-[#FDBA74] !bg-[linear-gradient(135deg,#FFD7A8_0%,#FFE9C9_48%,#FFC47A_100%)] text-[#9A3412] shadow-[0_8px_18px_rgba(249,115,22,0.10)] hover:border-[#F59E0B] hover:shadow-[0_12px_24px_rgba(249,115,22,0.18)]",
+    },
+    visa: {
+      active: "border-[#1A1F71] !bg-[linear-gradient(135deg,#1A1F71_0%,#2563EB_52%,#EB001B_100%)] text-white shadow-[0_14px_28px_rgba(37,99,235,0.22)]",
+      idle: "border-[#8BA4FF] !bg-[linear-gradient(135deg,#C8D5FF_0%,#E1E8FF_42%,#FFC4CC_100%)] text-[#11185E] shadow-[0_8px_18px_rgba(26,31,113,0.10)] hover:border-[#5578FF] hover:shadow-[0_12px_24px_rgba(26,31,113,0.18)]",
+    },
+  }
+  const tone = tones[id] ?? tones.click
+  return active ? tone.active : tone.idle
+}
+
+function paymentMethodIcon(id: string) {
+  if (id === "click") return MousePointerClick
+  if (id === "payme") return WalletCards
+  if (id === "uzum") return CircleDollarSign
+  if (id === "paynet") return HandCoins
+  return CreditCard
 }
 
 function mapSegmentsFromTrips(trips: any[] | undefined): FlightSegment[] {
@@ -881,6 +985,7 @@ export default function FlightDetailsModal({
   const [orderLoading, setOrderLoading] = useState(false)
   const [orderData, setOrderData] = useState<{
     id?: number
+    serviceId?: number
     status?: string
     currency?: string
     price?: number
@@ -905,12 +1010,14 @@ export default function FlightDetailsModal({
   const [optionDetails, setOptionDetails] = useState<{
     segments: FlightSegment[]
   } | null>(null)
+  const [openInfoSections, setOpenInfoSections] = useState({
+    fareRules: false,
+    flightDetails: false,
+  })
   const bookingTopRef = useRef<HTMLDivElement>(null)
   const selectTopRef = useRef<HTMLDivElement>(null)
   const detailsTopRef = useRef<HTMLDivElement>(null)
   const payTopRef = useRef<HTMLDivElement>(null)
-  const lastPassengerRef = useRef<HTMLDivElement>(null)
-  const shouldScrollToNewPassengerRef = useRef(false)
 
   const scrollToBookingNode = (node: HTMLElement | null) => {
     if (!node) return
@@ -920,6 +1027,13 @@ export default function FlightDetailsModal({
     }
     const top = node.getBoundingClientRect().top + window.scrollY - (pageMode ? 96 : 24)
     window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
+  }
+
+  const toggleInfoSection = (section: "fareRules" | "flightDetails") => {
+    setOpenInfoSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }))
   }
 
   const setBookingStep = (next: Step) => {
@@ -995,17 +1109,6 @@ export default function FlightDetailsModal({
     if (!open) return
     setPassengers((prev) => resizePassengers(prev, pax))
   }, [pax, open])
-
-  useEffect(() => {
-    if (!shouldScrollToNewPassengerRef.current) return
-    shouldScrollToNewPassengerRef.current = false
-    const frame = window.requestAnimationFrame(() => scrollToBookingNode(lastPassengerRef.current))
-    const timer = window.setTimeout(() => scrollToBookingNode(lastPassengerRef.current), 120)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(timer)
-    }
-  }, [passengers.length])
 
   useEffect(() => {
     if (!open) return
@@ -1258,15 +1361,6 @@ export default function FlightDetailsModal({
   )
   const passengerCount = Math.max(1, passengers.length)
 
-  const addPassenger = () => {
-    shouldScrollToNewPassengerRef.current = true
-    setPassengers((prev) => [...prev, makePassengers(1)[0]])
-  }
-
-  const removePassenger = (index: number) => {
-    setPassengers((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== index)))
-  }
-
   const getFreshBookableOptionId = async () => {
     const departure =
       toDateOnly(date) ||
@@ -1357,20 +1451,6 @@ export default function FlightDetailsModal({
   }, [payer, passengers])
 
   const canSubmit = errors.length === 0 && paymentMethod !== "" && agreeData
-
-  const canProceedToPayment = errors.length === 0
-
-  const proceedToPayment = () => {
-    if (!canProceedToPayment) {
-      const head = errors[0] ?? copy.invalidData
-      const more = errors.length > 1 ? ` + ${errors.length - 1}` : ""
-      setToastMsg(`${head}${more}`)
-      setToastOpen(true)
-      scrollToBookingNode(detailsTopRef.current)
-      return
-    }
-    setBookingStep("pay")
-  }
 
   const submit = async () => {
     if (!bookingFlight.id) {
@@ -1495,6 +1575,44 @@ export default function FlightDetailsModal({
 
   const activeOrderId = lastOrderId
 
+  const goBackFromCurrentStep = () => {
+    if (step === "pay") {
+      setBookingStep("details")
+      return
+    }
+    if (step === "details") {
+      setBookingStep("select")
+      return
+    }
+    onClose()
+  }
+
+  const resolvePrimaryServiceId = async (orderId: number) => {
+    const res = await getOrderById(orderId)
+    if (res.data.status !== "success") {
+      throw new Error(res.data.message || copy.orderNotFound)
+    }
+
+    const item = res.data.data?.[0]
+    const serviceId = item?.services?.[0]?.serviceId
+    if (!serviceId) {
+      throw new Error(copy.orderNotFound)
+    }
+
+    setOrderData({
+      id: item?.id,
+      serviceId,
+      status: item?.status,
+      currency: item?.currency,
+      price: item?.price,
+      client: item?.client,
+      serviceType: item?.services?.[0]?.type,
+      reservationId: item?.services?.[0]?.reservation?.id,
+    })
+
+    return serviceId
+  }
+
   const runOrderAction = async (
     action: "issue" | "cancel" | "void",
     setLoading: (value: boolean) => void
@@ -1507,12 +1625,17 @@ export default function FlightDetailsModal({
 
     setLoading(true)
     try {
+      const actionId =
+        action === "issue"
+          ? activeOrderId
+          : await resolvePrimaryServiceId(activeOrderId)
+
       const res =
         action === "issue"
-          ? await issueOrder(activeOrderId)
+          ? await issueOrder(actionId)
           : action === "cancel"
-            ? await cancelOrderService(activeOrderId)
-            : await voidOrderService(activeOrderId)
+            ? await cancelOrderService(actionId)
+            : await voidOrderService(actionId)
 
       const fallback =
         action === "issue"
@@ -1529,7 +1652,7 @@ export default function FlightDetailsModal({
           : action === "cancel"
             ? copy.cancelError
             : copy.voidError
-      setToastMsg(err?.response?.data?.message || fallback)
+      setToastMsg(err?.response?.data?.message || err?.message || fallback)
       setToastOpen(true)
     } finally {
       setLoading(false)
@@ -1555,6 +1678,7 @@ export default function FlightDetailsModal({
       const item = res.data.data?.[0]
       setOrderData({
         id: item?.id,
+        serviceId: item?.services?.[0]?.serviceId,
         status: item?.status,
         currency: item?.currency,
         price: item?.price,
@@ -1580,7 +1704,7 @@ export default function FlightDetailsModal({
       <div ref={bookingTopRef} className="flight-details-light relative min-h-screen bg-[#EBEBEB]">
         <div className="bg-white">
             {/* header */}
-            <div className="relative border-b border-[#D9D5CE] bg-white p-4 md:p-7 dark:border-[#D9D5CE] dark:bg-white">
+            <div className="relative border-b border-[#D9D5CE] bg-white p-3.5 md:p-5 dark:border-[#D9D5CE] dark:bg-white">
               <button
                 onClick={onClose}
                 className="
@@ -1595,15 +1719,24 @@ export default function FlightDetailsModal({
                 <X size={18} />
               </button>
 
+              <button
+                type="button"
+                onClick={goBackFromCurrentStep}
+                className="mb-4 inline-flex h-9 items-center gap-2 rounded-full border border-[#D9D5CE] bg-white px-3 text-xs font-semibold text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.08)] transition hover:-translate-y-0.5 hover:border-[#174A8B]/35 hover:bg-[#F3F1ED] dark:border-[#D9D5CE] dark:bg-white dark:text-[#174A8B] dark:hover:bg-[#F3F1ED]"
+              >
+                <ArrowLeft size={15} />
+                {copy.back}
+              </button>
+
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pr-14 md:pr-16">
                 <div>
-                  <div className="text-[#5F5A54] text-sm dark:text-[#5F5A54]">
+                  <div className="text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                     {bookingFlight.airline} · {flightNo}
                   </div>
-                  <div className="mt-1 text-2xl md:text-3xl font-extrabold text-[#111A34] dark:text-[#111A34]">
+                  <div className="mt-1 text-xl md:text-2xl font-extrabold text-[#111A34] dark:text-[#111A34]">
                     {bookingFlight.from} → {bookingFlight.to}
                   </div>
-                  <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
+                  <div className="mt-1.5 text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                     {copy.headerDate}: <span className="text-[#111A34] dark:text-[#111A34]">{date || "—"}</span> · {copy.headerPax}:{" "}
                     <span className="text-[#111A34] dark:text-[#111A34]">{passengerCount}</span>
                   </div>
@@ -1611,17 +1744,17 @@ export default function FlightDetailsModal({
 
                 <div className="text-left md:text-right w-full md:w-auto">
                   <div className="text-[#77716A] text-xs dark:text-[#77716A]">{copy.finalPrice}</div>
-                  <div className="text-3xl font-extrabold text-[#111A34] dark:text-[#111A34]">
+                  <div className="text-2xl font-extrabold text-[#111A34] dark:text-[#111A34]">
                     {formatMoney(total, bookingFlight.currency)}
                   </div>
                   <div className="text-[#77716A] text-xs dark:text-[#77716A]">{copy.taxesIncluded}</div>
                 </div>
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px]">
                 <span
                   className={[
-                    "px-3 py-1 rounded-full border",
+                    "px-2.5 py-0.5 rounded-full border",
                     "border-[#174A8B] bg-[#174A8B] text-white dark:border-[#174A8B] dark:bg-[#174A8B] dark:text-white",
                   ].join(" ")}
                 >
@@ -1630,7 +1763,7 @@ export default function FlightDetailsModal({
                 <span className="text-[#77716A] dark:text-[#77716A]">→</span>
                 <span
                   className={[
-                    "px-3 py-1 rounded-full border",
+                    "px-2.5 py-0.5 rounded-full border",
                     "border-[#D9D5CE] bg-[#F3F1ED] text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]",
                   ].join(" ")}
                 >
@@ -1639,7 +1772,7 @@ export default function FlightDetailsModal({
               </div>
 
               {step === "select" && (
-                <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2.5">
                   <Pill icon={PlaneTakeoff} label={copy.depart} value={bookingFlight.depart} />
                   <Pill icon={PlaneLanding} label={copy.arrive} value={bookingFlight.arrive} />
                   <Pill icon={Clock} label={copy.duration} value={fmtDuration(bookingFlight.durationMin, language)} />
@@ -1648,20 +1781,25 @@ export default function FlightDetailsModal({
             </div>
 
             {/* body */}
-            <div className="px-5 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-5 md:p-7 md:pb-28">
+            <div className="px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 md:p-5 md:pb-24">
               {step === "select" && (
-                <div ref={selectTopRef} className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
-                      <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.fareRules}</div>
+                <div ref={selectTopRef} className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  <div className="lg:col-span-2 space-y-3">
+                    <div className="rounded-[20px] border border-[#D9D5CE] bg-white p-4 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                      <AccordionSection
+                        title={copy.fareRules}
+                        subtitle={copy.fareTerms}
+                        open={openInfoSections.fareRules}
+                        onToggle={() => toggleInfoSection("fareRules")}
+                      >
 
-                      <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                        <span className="rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-1 text-[#174A8B] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#174A8B]">
+                      <div className="mt-2.5 flex flex-wrap gap-1.5 text-xs">
+                        <span className="rounded-full border border-[#D9D5CE] bg-[#F3F1ED] px-2.5 py-0.5 text-[#174A8B] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#174A8B]">
                           {cabin}
                         </span>
 
                         <span
-                          className={`rounded-full border px-3 py-1 text-sm ${
+                          className={`rounded-full border px-2.5 py-0.5 text-xs ${
                             refundable
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                               : "border-[#D9D5CE] bg-white text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]"
@@ -1670,29 +1808,25 @@ export default function FlightDetailsModal({
                           {refundable ? copy.refundable : copy.nonRefundable}
                         </span>
 
-                        <span className="rounded-full border border-[#D9D5CE] bg-white px-3 py-1 text-[#5F5A54] inline-flex items-center gap-2 dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]">
-                          <Luggage size={14} />
+                        <span className="rounded-full border border-[#D9D5CE] bg-white px-2.5 py-0.5 text-[#5F5A54] inline-flex items-center gap-1.5 dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]">
+                          <Luggage size={12} />
                           {bookingFlight.baggage ?? "—"}
                         </span>
 
-                        <span className="rounded-full border border-[#D9D5CE] bg-white px-3 py-1 text-[#5F5A54] inline-flex items-center gap-2 dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]">
-                          <Luggage size={14} />
+                        <span className="rounded-full border border-[#D9D5CE] bg-white px-2.5 py-0.5 text-[#5F5A54] inline-flex items-center gap-1.5 dark:border-[#D9D5CE] dark:bg-white dark:text-[#5F5A54]">
+                          <Luggage size={12} />
                           {copy.carryOn}: {bookingFlight.carryOn ?? "—"}
                         </span>
                       </div>
 
-                      <div className="mt-4 text-[#5F5A54] text-sm leading-relaxed dark:text-[#5F5A54]">
-                        {copy.fareTerms}
-                      </div>
-
-                      <div className="mt-4 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
+                      <div className="mt-3 text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                         {fareLoading && copy.faresLoading}
                         {!fareLoading && fareError && `${copy.fares}: ${fareError}`}
                         {!fareLoading && !fareError && fareFamiliesData.length === 0 && fareData?.families?.length ? (
                           <div className="mt-2 space-y-2">
                             {fareData.families.map((f) => (
                               <div key={f.id} className="rounded-[16px] border border-[#D9D5CE] bg-white p-3 dark:border-[#D9D5CE] dark:bg-white">
-                                <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{f.name}</div>
+                                <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{translateFareName(f.name, language)}</div>
                                 <div className="mt-1 text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                                   {copy.baggage}: {f.baggageInfos?.join(", ") || "—"}
                                 </div>
@@ -1713,10 +1847,24 @@ export default function FlightDetailsModal({
                           </div>
                         ) : null}
                       </div>
+                      </AccordionSection>
 
-                      <div className="mt-4">
-                        <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">{copy.flightDetails}</div>
-                        <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
+                      <div className="mt-3">
+                        <AccordionSection
+                        title={copy.flightDetails}
+                          subtitle={
+                            optionDetailsLoading
+                              ? copy.flightDetailsLoading
+                              : optionDetailsError
+                                ? optionDetailsError
+                                : itinerarySegments.length
+                                  ? `${itinerarySegments.length} ${copy.segment}`
+                                  : undefined
+                          }
+                          open={openInfoSections.flightDetails}
+                          onToggle={() => toggleInfoSection("flightDetails")}
+                        >
+                        <div className="mt-2 text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                           {optionDetailsLoading && copy.flightDetailsLoading}
                           {!optionDetailsLoading &&
                             optionDetailsError &&
@@ -1781,11 +1929,12 @@ export default function FlightDetailsModal({
                             ))}
                           </div>
                         ) : null}
+                        </AccordionSection>
                       </div>
 
-                      <div className="mt-4">
-                        <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">{copy.farePackages}</div>
-                        <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">
+                      <div className="mt-3">
+                        <div className="text-[#111A34] text-[13px] font-semibold dark:text-[#111A34]">{copy.farePackages}</div>
+                        <div className="mt-1.5 text-[#5F5A54] text-xs dark:text-[#5F5A54]">
                           {fareFamiliesLoading && copy.farePackagesLoading}
                           {!fareFamiliesLoading &&
                             fareFamiliesError &&
@@ -1797,26 +1946,41 @@ export default function FlightDetailsModal({
                         </div>
 
                         {!fareFamiliesLoading && !fareFamiliesError && fareFamiliesData.length > 0 && (
-                          <div className="mt-4 space-y-4">
+                          <div className="mt-3 space-y-3">
                             {/* ── Fare cards row ── */}
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                               {fareFamiliesData.map((f, idx) => {
                                 const active = selectedFareId === f.id
                                 const isBest = idx === 1
+                                const fareTone =
+                                  idx === 0
+                                    ? {
+                                        active: "border-[#174A8B] !bg-[linear-gradient(135deg,#174A8B_0%,#2767D8_56%,#7A3FF2_100%)] text-white shadow-[0_16px_30px_rgba(23,74,139,0.26)]",
+                                        idle: "border-[#B9D4FF] !bg-[linear-gradient(135deg,#EAF4FF_0%,#F5F9FF_48%,#DCEBFF_100%)] text-[#111A34] hover:border-[#78AFFF] hover:shadow-[0_14px_28px_rgba(37,99,235,0.13)]",
+                                      }
+                                    : idx === 1
+                                      ? {
+                                          active: "border-[#174A8B] !bg-[linear-gradient(135deg,#174A8B_0%,#2767D8_56%,#7A3FF2_100%)] text-white shadow-[0_16px_30px_rgba(23,74,139,0.26)]",
+                                          idle: "border-[#D5C6FF] !bg-[linear-gradient(135deg,#F4F0FF_0%,#FFFFFF_48%,#E9E0FF_100%)] text-[#111A34] hover:border-[#A78BFA] hover:shadow-[0_14px_28px_rgba(124,58,237,0.12)]",
+                                        }
+                                      : {
+                                          active: "border-[#174A8B] !bg-[linear-gradient(135deg,#174A8B_0%,#2767D8_56%,#7A3FF2_100%)] text-white shadow-[0_16px_30px_rgba(23,74,139,0.26)]",
+                                          idle: "border-[#B9E9D2] !bg-[linear-gradient(135deg,#E7FFF2_0%,#F7FFFB_48%,#D8F7E7_100%)] text-[#111A34] hover:border-[#62C996] hover:shadow-[0_14px_28px_rgba(22,163,74,0.12)]",
+                                        }
                                 return (
                                   <button
                                     key={f.id}
                                     type="button"
                                     onClick={() => setSelectedFareId(f.id)}
                                     className={[
-                                      "relative rounded-[18px] border p-4 text-left transition",
-                                      active
-                                        ? "border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_28px_rgba(23,74,139,0.24)]"
-                                        : "border-[#D9D5CE] bg-white text-[#174A8B] hover:border-[#174A8B]/45 hover:bg-[#F3F1ED] hover:shadow-none dark:border-[#D9D5CE] dark:bg-white dark:text-[#174A8B]",
+                                      "group relative overflow-hidden rounded-[14px] border p-3 text-left transition-all duration-300 hover:-translate-y-0.5",
+                                      active ? fareTone.active : fareTone.idle,
+                                      "dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:text-[#174A8B] dark:hover:bg-[#F3F1ED] dark:hover:shadow-none",
                                     ].join(" ")}
                                   >
+                                    <span className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-white/45 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-60 dark:hidden" />
                                     {isBest && (
-                                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#174A8B] px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(23,74,139,0.30)]">
+                                      <span className="absolute left-1/2 top-1 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#174A8B] px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(23,74,139,0.30)]">
                                         Eng zo'r
                                       </span>
                                     )}
@@ -1828,14 +1992,14 @@ export default function FlightDetailsModal({
                                         {active && <span className="block h-full w-full scale-50 rounded-full bg-[#1c2433]" />}
                                       </span>
                                       <div className="min-w-0 flex-1">
-                                        <div className={`text-[15px] font-bold ${active ? "text-white" : "text-[#111A34] dark:text-[#111A34]"}`}>
-                                          {f.name}
+                                        <div className={`text-[13px] font-bold ${active ? "text-white" : "text-[#111A34] dark:text-[#111A34]"}`}>
+                                          {translateFareName(f.name, language)}
                                         </div>
-                                        <div className={`mt-1 text-[18px] font-black leading-tight ${active ? "text-white" : "text-[#111A34] dark:text-[#111A34]"}`}>
+                                        <div className={`mt-1 text-[16px] font-black leading-tight ${active ? "text-white" : "text-[#111A34] dark:text-[#111A34]"}`}>
                                           {formatMoney(f.price, f.currency ?? bookingFlight.currency)}
                                         </div>
                                         {f.seatsAvailable != null && (
-                                          <div className={`mt-1.5 text-[11px] font-medium ${active ? "text-white/70" : "text-[#77716A] dark:text-[#77716A]"}`}>
+                                          <div className={`mt-1 text-[10px] font-medium ${active ? "text-white/80" : "text-[#516072] dark:text-[#77716A]"}`}>
                                             {f.seatsAvailable} {copy.seatsLeft}
                                           </div>
                                         )}
@@ -1848,11 +2012,11 @@ export default function FlightDetailsModal({
 
                             {/* ── Selected fare rules: 3-column ── */}
                             {selectedFare && (
-                              <div className="rounded-[16px] border border-[#D9D5CE] bg-white p-4 dark:border-[#D9D5CE] dark:bg-white">
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                              <div className="rounded-[14px] border border-[#D9D5CE] bg-white p-3 dark:border-[#D9D5CE] dark:bg-white">
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                   {/* Included */}
                                   <div>
-                                    <div className="mb-2.5 text-[13px] font-bold text-[#111A34] dark:text-[#111A34]">
+                                    <div className="mb-2 text-[12px] font-bold text-[#111A34] dark:text-[#111A34]">
                                       {copy.fareIncluded}
                                     </div>
                                     <div className="space-y-2">
@@ -1860,8 +2024,8 @@ export default function FlightDetailsModal({
                                         ? selectedFare.includedServices
                                         : [selectedFare.carryOn, selectedFare.baggage].filter(Boolean) as string[]
                                       ).map((item) => (
-                                        <div key={`inc-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
-                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
+                                        <div key={`inc-${item}`} className="flex items-start gap-1.5 text-[11px] text-[#374151] dark:text-[#374151]">
+                                          <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                           </span>
                                           <span>{item}</span>
@@ -1872,20 +2036,20 @@ export default function FlightDetailsModal({
 
                                   {/* Chargeable / Allowed */}
                                   <div>
-                                    <div className="mb-2.5 text-[13px] font-bold text-[#111A34] dark:text-[#111A34]">
+                                    <div className="mb-2 text-[12px] font-bold text-[#111A34] dark:text-[#111A34]">
                                       {copy.fareChargeable}
                                     </div>
                                     <div className="space-y-2">
                                       {selectedFare.chargeableServices.length === 0 ? (
-                                        <div className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
-                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
+                                        <div className="flex items-start gap-1.5 text-[11px] text-[#374151] dark:text-[#374151]">
+                                          <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                           </span>
                                           <span>—</span>
                                         </div>
                                       ) : selectedFare.chargeableServices.map((item) => (
-                                        <div key={`chg-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
-                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
+                                        <div key={`chg-${item}`} className="flex items-start gap-1.5 text-[11px] text-[#374151] dark:text-[#374151]">
+                                          <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#22c55e] text-white">
                                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                           </span>
                                           <span>{item}</span>
@@ -1896,15 +2060,15 @@ export default function FlightDetailsModal({
 
                                   {/* Unavailable */}
                                   <div>
-                                    <div className="mb-2.5 text-[13px] font-bold text-[#111A34] dark:text-[#111A34]">
+                                    <div className="mb-2 text-[12px] font-bold text-[#111A34] dark:text-[#111A34]">
                                       {copy.fareUnavailable}
                                     </div>
                                     <div className="space-y-2">
                                       {selectedFare.unavailableServices.length === 0 ? (
-                                        <div className="text-[12px] text-[#9aacbf] dark:text-[#6a8ab0]">—</div>
+                                        <div className="text-[11px] text-[#9aacbf] dark:text-[#6a8ab0]">—</div>
                                       ) : selectedFare.unavailableServices.map((item) => (
-                                        <div key={`na-${item}`} className="flex items-start gap-2 text-[12px] text-[#374151] dark:text-[#374151]">
-                                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#ef4444] text-white">
+                                        <div key={`na-${item}`} className="flex items-start gap-1.5 text-[11px] text-[#374151] dark:text-[#374151]">
+                                          <span className="mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#ef4444] text-white">
                                             <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M2 2l4 4M6 2L2 6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/></svg>
                                           </span>
                                           <span>{item}</span>
@@ -1915,13 +2079,13 @@ export default function FlightDetailsModal({
                                 </div>
 
                                 {/* Total footer */}
-                                <div className="mt-4 flex items-center justify-between border-t border-[#D9D5CE] pt-3 dark:border-[#D9D5CE]">
-                                  <div className="text-[12px] text-[#77716A] dark:text-[#77716A]">
-                                    {copy.selectedFare}: <span className="font-semibold text-[#111A34] dark:text-[#111A34]">{selectedFare.name}</span>
+                                <div className="mt-3 flex items-center justify-between border-t border-[#D9D5CE] pt-2.5 dark:border-[#D9D5CE]">
+                                  <div className="text-[11px] text-[#77716A] dark:text-[#77716A]">
+                                    {copy.selectedFare}: <span className="font-semibold text-[#111A34] dark:text-[#111A34]">{translateFareName(selectedFare.name, language)}</span>
                                   </div>
                                   <div className="text-right">
-                                    <div className="text-[11px] text-[#77716A] dark:text-[#77716A]">{copy.total}</div>
-                                    <div className="text-[16px] font-black text-[#111A34] dark:text-[#111A34]">
+                                    <div className="text-[10px] text-[#77716A] dark:text-[#77716A]">{copy.total}</div>
+                                    <div className="text-[14px] font-black text-[#111A34] dark:text-[#111A34]">
                                       {formatMoney(total, bookingFlight.currency)}
                                     </div>
                                   </div>
@@ -1937,14 +2101,14 @@ export default function FlightDetailsModal({
                   </div>
 
                   <div className="space-y-4">
-                    <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
-                      <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.continue}</div>
-                      <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.enterPassengerInfo}</div>
+                    <div className="rounded-[20px] border border-[#D9D5CE] bg-white p-4 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                      <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">{copy.continue}</div>
+                      <div className="mt-1.5 text-[#5F5A54] text-xs leading-5 dark:text-[#5F5A54]">{copy.enterPassengerInfo}</div>
 
                       {selectedFare && (
-                        <div className="mt-4 rounded-[16px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-3 text-sm text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
+                        <div className="mt-3 rounded-[14px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2.5 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                           <div className="font-semibold text-[#111A34] dark:text-[#111A34]">
-                            {copy.selectedFare}: {selectedFare.name}
+                            {copy.selectedFare}: {translateFareName(selectedFare.name, language)}
                           </div>
                           <div className="mt-1 text-xs text-[#77716A] dark:text-[#77716A]">
                             {formatMoney(total, bookingFlight.currency)}
@@ -1954,12 +2118,12 @@ export default function FlightDetailsModal({
 
                       <button
                         onClick={proceedToFormalization}
-                        className={`mt-5 h-12 w-full rounded-2xl font-semibold ${brandPrimaryAction}`}
+                        className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold ${brandPrimaryAction}`}
                       >
                         {copy.select}
                       </button>
 
-                      <div className="mt-3 rounded-[16px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-3 text-sm text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
+                      <div className="mt-2.5 rounded-[14px] border border-[#D9D5CE] bg-[#F3F1ED] px-3 py-2.5 text-xs text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]">
                         {passengerCount} {copy.formOpensFor}
                       </div>
                     </div>
@@ -1969,7 +2133,7 @@ export default function FlightDetailsModal({
 
               {step === "details" && (
                 <div ref={detailsTopRef} className="scroll-mt-28 space-y-4">
-                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                  <div className="rounded-[22px] border border-[#CFE0F7] bg-[linear-gradient(135deg,#F4F9FF_0%,#FFFFFF_45%,#F7F4FF_100%)] p-5 shadow-[0_14px_32px_rgba(23,74,139,0.06)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
                     <div className="flex items-center justify-between">
                       <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
                         <User size={18} />
@@ -2004,45 +2168,22 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                  <div className="rounded-[28px] border border-white/80 bg-[linear-gradient(112deg,#DCEBFF_0%,#E6E0FF_38%,#F4E3FA_72%,#FFE3EF_100%)] p-6 shadow-[0_24px_54px_rgba(23,74,139,0.13)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
                         <Users size={18} />
                         {copy.passengersDetails}
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-xs text-[#77716A] dark:text-[#77716A]">{copy.total}: {passengerCount}</div>
-                        <button
-                          type="button"
-                          onClick={addPassenger}
-                          className={`inline-flex h-10 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold ${brandPrimaryAction}`}
-                        >
-                          <Plus size={16} />
-                          {copy.addPassenger}
-                        </button>
-                      </div>
+                      <div className="text-xs text-[#77716A] dark:text-[#77716A]">{copy.total}: {passengerCount}</div>
                     </div>
 
                     <div className="mt-4 space-y-4">
                       {passengers.map((p, idx) => (
                         <div
                           key={idx}
-                          ref={idx === passengers.length - 1 ? lastPassengerRef : null}
                           className="scroll-mt-28 rounded-[18px] border border-[#D9D5CE] bg-[#F8F7F4] p-4 dark:border-[#D9D5CE] dark:bg-[#F8F7F4]"
                         >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{copy.passenger} #{idx + 1}</div>
-                            <button
-                              type="button"
-                              onClick={() => removePassenger(idx)}
-                              disabled={passengers.length <= 1}
-                              className={`inline-flex h-9 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold ${brandSecondaryAction}`}
-                              title={copy.removePassenger}
-                            >
-                              <Trash2 size={14} />
-                              {copy.removePassenger}
-                            </button>
-                          </div>
+                          <div className="text-[#111A34] font-semibold text-sm dark:text-[#111A34]">{copy.passenger} #{idx + 1}</div>
 
                           <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                             <Input
@@ -2168,13 +2309,81 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.paymentMethod}</div>
+                    <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.chooseMethod}</div>
+                    <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+                      {[
+                        { id: "click", label: "Click" },
+                        { id: "payme", label: "Payme" },
+                        { id: "uzum", label: "Uzum" },
+                        { id: "paynet", label: "Paynet" },
+                        { id: "visa", label: "Visa / Master" },
+                      ].map((m) => {
+                        const Icon = paymentMethodIcon(m.id)
+                        return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setPaymentMethod(m.id as any)}
+                          className={[
+                            "flex h-14 items-center justify-center gap-3 rounded-[18px] border text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5",
+                            paymentMethodTone(m.id, paymentMethod === m.id),
+                            "dark:border-[#D9D5CE] dark:bg-[#EBEBEB] dark:bg-none dark:text-[#174A8B] dark:hover:bg-[#F3F1ED] dark:hover:shadow-none",
+                          ].join(" ")}
+                        >
+                          <Icon size={21} strokeWidth={2.1} />
+                          {m.label}
+                        </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.finishOrder}</div>
+                    <div className="mt-3 grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+                      <PriceRow label={copy.route} value={`${bookingFlight.from} → ${bookingFlight.to}`} />
+                      <PriceRow label={copy.headerDate} value={date || "—"} />
+                      <PriceRow label={copy.passengerCount} value={String(passengerCount)} />
+                      <PriceRow label={copy.totalPrice} value={formatMoney(total, bookingFlight.currency)} />
+                    </div>
+                    <div className="mt-3 text-xs text-[#77716A] dark:text-[#77716A]">
+                      {copy.selectedPayment}:{" "}
+                      <span className="font-semibold text-[#111A34] dark:text-[#111A34]">
+                        {paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
+                      </span>
+                    </div>
+                  </div>
+
+                  <label className="mt-2 flex items-start gap-2 text-xs text-[#5F5A54] dark:text-[#5F5A54]">
+                    <Checkbox
+                      checked={agreeData}
+                      onCheckedChange={(checked) => setAgreeData(checked === true)}
+                      size="sm"
+                      className="mt-0.5 border-[#174A8B]/35 bg-white text-white data-[state=checked]:border-[#174A8B] data-[state=checked]:bg-[#174A8B]"
+                    />
+                    {copy.confirmData}
+                  </label>
+                  {!agreeData && (
+                    <div className="text-xs text-[#77716A] dark:text-[#77716A]">
+                      {copy.markConfirmation}
+                    </div>
+                  )}
+
+                  {lastOrderId && (
+                    <div className="text-xs text-emerald-700 dark:text-[#a7f0ce]">
+                      Order ID: {lastOrderId}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <button
-                      onClick={proceedToPayment}
-                      disabled={!canProceedToPayment}
+                      onClick={submit}
+                      disabled={!canSubmit || bookLoading}
                       className={`h-12 rounded-2xl font-semibold ${brandPrimaryAction}`}
                     >
-                      {copy.continue}
+                      {bookLoading ? "..." : copy.checkout}
                     </button>
                     <button
                       onClick={() => setBookingStep("select")}
@@ -2183,12 +2392,63 @@ export default function FlightDetailsModal({
                       {copy.back}
                     </button>
                   </div>
+
+                  {activeOrderId && (
+                    <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white">
+                      <div className="text-[#111A34] font-semibold dark:text-[#111A34]">Order ID: {activeOrderId}</div>
+                      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          onClick={() => runOrderAction("issue", setIssueLoading)}
+                          disabled={issueLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandPrimaryAction}`}
+                        >
+                          {issueLoading ? "Issue..." : copy.issuePnr}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={checkOrderStatus}
+                          disabled={orderLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandSecondaryAction}`}
+                        >
+                          {orderLoading ? "..." : copy.getOrderById}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runOrderAction("cancel", setCancelLoading)}
+                          disabled={cancelLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandSecondaryAction}`}
+                        >
+                          {cancelLoading ? "Cancel..." : copy.cancelPnr}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runOrderAction("void", setVoidLoading)}
+                          disabled={voidLoading}
+                          className={`h-11 rounded-2xl font-semibold ${brandSecondaryAction}`}
+                        >
+                          {voidLoading ? "VOID..." : copy.voidPnr}
+                        </button>
+                      </div>
+
+                      {orderData && (
+                        <div className="mt-4 grid grid-cols-1 gap-2 rounded-2xl border border-[#D9D5CE] bg-[#F3F1ED] p-4 text-xs text-[#5F5A54] sm:grid-cols-2">
+                          <div>ID: {orderData.id ?? "—"}</div>
+                          <div>{copy.status}: {orderData.status ?? "—"}</div>
+                          <div>{copy.totalPrice}: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
+                          <div>{copy.client}: {orderData.client ?? "—"}</div>
+                          <div>{copy.service}: {orderData.serviceType ?? "—"}</div>
+                          <div>{copy.reservation}: {orderData.reservationId ?? "—"}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {step === "pay" && (
                 <div ref={payTopRef} className="scroll-mt-28 space-y-4">
-                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                  <div className="rounded-[28px] border border-white/80 bg-[linear-gradient(112deg,#DCEBFF_0%,#E6E0FF_38%,#F4E3FA_72%,#FFE3EF_100%)] p-6 shadow-[0_24px_54px_rgba(23,74,139,0.13)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
                     <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.paymentMethod}</div>
                     <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.chooseMethod}</div>
                     <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -2198,21 +2458,24 @@ export default function FlightDetailsModal({
                         { id: "uzum", label: "Uzum" },
                         { id: "paynet", label: "Paynet" },
                         { id: "visa", label: "Visa / Master" },
-                      ].map((m) => (
+                      ].map((m) => {
+                        const Icon = paymentMethodIcon(m.id)
+                        return (
                         <button
                           key={m.id}
                           type="button"
                           onClick={() => setPaymentMethod(m.id as any)}
                           className={[
-                            "h-11 rounded-2xl border text-sm font-semibold transition",
-                            paymentMethod === m.id
-                              ? "border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_28px_rgba(23,74,139,0.22)]"
-                              : "border-[#D9D5CE] bg-[#EBEBEB] text-[#174A8B] hover:bg-[#F3F1ED] dark:border-[#D9D5CE] dark:bg-[#EBEBEB] dark:text-[#174A8B] dark:hover:bg-[#F3F1ED]",
+                            "flex h-14 items-center justify-center gap-3 rounded-[18px] border text-[15px] font-bold transition-all duration-300 hover:-translate-y-0.5",
+                            paymentMethodTone(m.id, paymentMethod === m.id),
+                            "dark:border-[#D9D5CE] dark:bg-[#EBEBEB] dark:bg-none dark:text-[#174A8B] dark:hover:bg-[#F3F1ED] dark:hover:shadow-none",
                           ].join(" ")}
                         >
+                          <Icon size={21} strokeWidth={2.1} />
                           {m.label}
                         </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -2230,16 +2493,7 @@ export default function FlightDetailsModal({
                         {paymentMethod ? paymentMethod.toUpperCase() : copy.unselected}
                       </span>
                     </div>
-                    <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-[#6d5a2f] dark:bg-[rgba(82,63,23,0.45)] dark:text-[#ffe39c]">
-                      {copy.paymentApiNotice}
-                    </div>
                   </div>
-
-                  {errors.length > 0 && (
-                    <div className="rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-red-100 text-sm">
-                      {errors[0]}
-                    </div>
-                  )}
 
                   <label className="mt-2 flex items-start gap-2 text-xs text-[#5F5A54] dark:text-[#5F5A54]">
                     <Checkbox
@@ -2403,18 +2657,51 @@ export default function FlightDetailsModal({
 }
 
 function Pill({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  const normalizedLabel = label.toLowerCase()
+  const tone = normalizedLabel.includes("qo") || normalizedLabel.includes("arrival") || normalizedLabel.includes("прил")
+    ? "landing"
+    : normalizedLabel.includes("dav") || normalizedLabel.includes("duration") || normalizedLabel.includes("длит")
+      ? "duration"
+      : "takeoff"
+  const toneClasses = {
+    takeoff: {
+      card: "border-[#9FC7FF] !bg-[linear-gradient(135deg,#DBECFF_0%,#EEF6FF_48%,#CFE4FF_100%)] hover:border-[#5B9BFF] hover:shadow-[0_18px_38px_rgba(37,99,235,0.18)]",
+      iconWrap: "!bg-[linear-gradient(135deg,#BBD9FF_0%,#F2F8FF_100%)] text-[#1554C8]",
+      glow: "bg-[#3B82F6]",
+    },
+    landing: {
+      card: "border-[#F4C98D] !bg-[linear-gradient(135deg,#FFE8C7_0%,#FFF5E8_48%,#FFDDB3_100%)] hover:border-[#F0A645] hover:shadow-[0_18px_38px_rgba(234,88,12,0.17)]",
+      iconWrap: "!bg-[linear-gradient(135deg,#FFD39C_0%,#FFF4E6_100%)] text-[#D94F08]",
+      glow: "bg-[#F97316]",
+    },
+    duration: {
+      card: "border-[#93DDB6] !bg-[linear-gradient(135deg,#D8F7E7_0%,#ECFFF5_48%,#C8F0DD_100%)] hover:border-[#49B97F] hover:shadow-[0_18px_38px_rgba(22,163,74,0.17)]",
+      iconWrap: "!bg-[linear-gradient(135deg,#BDF0D4_0%,#F1FFF7_100%)] text-[#0F8F3E]",
+      glow: "bg-[#22C55E]",
+    },
+  }[tone]
+
   return (
-    <div className="rounded-[16px] border border-[#D9D5CE] bg-white p-4 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+    <motion.div
+      whileHover={{ y: -3, scale: 1.006 }}
+      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      className={[
+        "group relative overflow-hidden rounded-[16px] border p-4 shadow-none transition-all duration-300",
+        toneClasses.card,
+        "dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none",
+      ].join(" ")}
+    >
+      <div className={`pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-20 ${toneClasses.glow}`} />
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#F3F1ED] dark:bg-[#F3F1ED]">
-          <Icon className="text-[#174A8B] dark:text-[#174A8B]" size={18} />
+        <div className={`grid h-10 w-10 place-items-center rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.78),0_8px_18px_rgba(31,41,55,0.07)] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105 dark:bg-[#F3F1ED] dark:text-[#174A8B] ${toneClasses.iconWrap}`}>
+          <Icon size={18} />
         </div>
         <div>
-          <div className="text-xs text-[#77716A] dark:text-[#77716A]">{label}</div>
-          <div className="font-semibold text-[#111A34] dark:text-[#111A34]">{value}</div>
+          <div className="text-xs font-medium text-[#516072] dark:text-[#77716A]">{label}</div>
+          <div className="font-bold text-[#111A34] dark:text-[#111A34]">{value}</div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 

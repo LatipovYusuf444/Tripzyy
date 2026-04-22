@@ -1,26 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { Link, NavLink, useLocation } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
 import {
   ChevronDown,
-  LogOut,
   Menu,
   MoonStar,
   SunMedium,
-  UserCircle2,
   X,
   type LucideIcon,
 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { ThemeTogglerButton } from "@/components/animate-ui/components/buttons/theme-toggler"
 import logoImage from "@/assets/images/logo.png"
-import {
-  clearAccessToken,
-  getAccessToken,
-  getAuthUser,
-  type StoredAuthUser,
-} from "@/shared/auth/token"
 import { bookingCart } from "@/shared/store/bookingCart"
 import {
   getStoredTheme,
@@ -38,11 +29,6 @@ const menuVariants = {
   open: { opacity: 1, y: 0, scale: 1 },
 }
 
-const actionBtnClass =
-  "h-10 rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.1em] transition hover:brightness-110 " +
-  "border-[rgba(122,164,255,0.32)] bg-[linear-gradient(180deg,rgba(14,29,67,0.9)_0%,rgba(11,24,58,0.82)_100%)] text-white shadow-[0_18px_34px_rgba(5,12,30,0.34)] backdrop-blur-[18px]"
-
-
 const compactNavbarLightClass =
   "border-b border-[#e6eef8] bg-white shadow-[0_8px_28px_rgba(17,24,39,0.07)]"
 
@@ -54,21 +40,6 @@ const compactControlLightClass =
 
 const compactControlDarkClass =
   "border border-[#4a6799]/80 bg-[linear-gradient(180deg,rgba(12,26,58,0.96)_0%,rgba(7,16,40,0.92)_100%)] text-white shadow-[0_14px_30px_rgba(2,8,24,0.42)] backdrop-blur-[18px]"
-
-const compactActionLightClass =
-  "h-9 rounded-full border border-[#dde8f5] !bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_4px_12px_rgba(0,40,120,0.08)] transition hover:!bg-white"
-
-const compactActionDarkClass =
-  "h-9 rounded-full border border-[#5a78b1]/80 !bg-[linear-gradient(180deg,rgba(14,30,66,0.98)_0%,rgba(8,18,44,0.96)_100%)] px-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-white shadow-[0_16px_34px_rgba(2,8,24,0.46)] transition hover:brightness-110"
-
-const homeActionBtnBaseClass =
-  "h-10 rounded-full border px-5 text-[10px] font-semibold uppercase tracking-[0.1em] transition"
-
-const homeActionBtnLightClass =
-  `${homeActionBtnBaseClass} border-[#d8e3f0] !bg-[#ffffff] text-white shadow-[0_8px_22px_rgba(49,87,143,0.12)] hover:!bg-[#ffffff]`
-
-const homeActionBtnDarkClass =
-  `${homeActionBtnBaseClass} border-[#5d7fba]/65 bg-[linear-gradient(180deg,rgba(10,22,52,0.97)_0%,rgba(6,13,34,0.94)_100%)] text-white shadow-[0_18px_42px_rgba(2,8,24,0.52)] backdrop-blur-[14px] hover:brightness-110`
 
 const homeGlassBtnLightClass =
   "border border-[#d8e3f0] !bg-[#ffffff] text-[#0f172a] shadow-[0_8px_22px_rgba(49,87,143,0.12)] transition hover:!bg-[#ffffff]"
@@ -83,7 +54,6 @@ type NavLinkItem = {
 }
 
 export default function Navbar() {
-  const navigate = useNavigate()
   const location = useLocation()
   const isHome = location.pathname === "/"
   const isCompactNavbar = !isHome
@@ -92,29 +62,10 @@ export default function Navbar() {
 
   const [open, setOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
-  const [token, setToken] = useState<string | null>(() => getAccessToken())
-  const [user, setUser] = useState<StoredAuthUser | null>(() => getAuthUser())
   const [theme, setTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [paxCount, setPaxCount] = useState<number>(
     () => bookingCart.get().passengers.length
   )
-
-  const authed = useMemo(() => !!token, [token])
-
-  useEffect(() => {
-    const syncAuthState = () => {
-      setToken(getAccessToken())
-      setUser(getAuthUser())
-    }
-
-    window.addEventListener("storage", syncAuthState)
-    window.addEventListener("tripzy-auth", syncAuthState as EventListener)
-
-    return () => {
-      window.removeEventListener("storage", syncAuthState)
-      window.removeEventListener("tripzy-auth", syncAuthState as EventListener)
-    }
-  }, [])
 
   useEffect(() => {
     const read = () => setPaxCount(bookingCart.get().passengers.length)
@@ -173,43 +124,9 @@ export default function Navbar() {
     }
   }, [])
 
-  const goAuth = () => {
-    setOpen(false)
-    navigate("/login")
-  }
 
-  const goProfile = () => {
-    setOpen(false)
-    navigate("/profile")
-  }
 
-  const logout = () => {
-    clearAccessToken()
-    setToken(null)
-    setUser(null)
-    setOpen(false)
-    window.dispatchEvent(new Event("tripzy-auth"))
-    navigate("/login")
-  }
 
-  const userInitials = useMemo(() => {
-    if (!user?.fullName) return "TZ"
-
-    return user.fullName
-      .split(" ")
-      .map((part) => part.trim()[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase()
-  }, [user])
-
-const userMemberLabel =
-    language === "uz"
-      ? "Tripzy a'zosi"
-      : language === "ru"
-        ? "Участник Tripzy"
-        : "Tripzy member"
 
   const copy = {
     uz: {
@@ -224,9 +141,6 @@ const userMemberLabel =
       home: "Bosh sahifa",
       themeDark: "Tungi",
       themeLight: "Yorug'",
-      login: "Kirish",
-      profile: "Profil",
-      logout: "Chiqish",
       menu: "Menyu",
       navigation: "Navigatsiya",
       darkMode: "Tungi rejim",
@@ -270,9 +184,6 @@ const userMemberLabel =
       home: "Tripzy home",
       themeDark: "Dark",
       themeLight: "Light",
-      login: "Login",
-      profile: "Profile",
-      logout: "Logout",
       menu: "Menu",
       navigation: "Navigation",
       darkMode: "Dark mode",
@@ -290,8 +201,6 @@ const userMemberLabel =
   )
   const homeGlassBtnClass =
     theme === "dark" ? homeGlassBtnDarkClass : homeGlassBtnLightClass
-  const homeActionBtnClass =
-    theme === "dark" ? homeActionBtnDarkClass : homeActionBtnLightClass
   const homeLanguageShellClass =
     theme === "dark"
       ? "border border-[#5d7fba]/65 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] p-0.5 shadow-[0_18px_42px_rgba(2,8,24,0.48)] backdrop-blur-[14px]"
@@ -300,8 +209,6 @@ const userMemberLabel =
     theme === "dark" ? compactNavbarDarkClass : compactNavbarLightClass
   const compactControlGlassClass =
     theme === "dark" ? compactControlDarkClass : compactControlLightClass
-  const compactActionBtnClass =
-    theme === "dark" ? compactActionDarkClass : compactActionLightClass
   const compactLanguageShellClass =
     theme === "dark"
       ? "border border-[#4a6799]/80 bg-[rgba(8,18,44,0.96)] p-0.5 shadow-[0_14px_30px_rgba(2,8,24,0.44)] backdrop-blur-[14px]"
@@ -436,31 +343,6 @@ const userMemberLabel =
                 label={theme === "dark" ? copy.themeLight : copy.themeDark}
               />
 
-              {!authed ? (
-                  <Button
-                    onClick={goAuth}
-                    className={isCompactNavbar ? compactActionBtnClass : isHome ? homeActionBtnClass : `${actionBtnClass} px-5`}
-                  >
-                  {copy.login}
-                </Button>
-              ) : (
-                <div className="flex items-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={goProfile}
-                    className={`grid shrink-0 place-items-center rounded-full font-bold uppercase tracking-[0.12em] transition hover:opacity-80 ${isCompactNavbar ? compactControlGlassClass : homeGlassBtnClass} ${isCompactNavbar ? "h-9 w-9 text-[10px]" : "h-10 w-10 text-[11px]"}`}
-                  >
-                    {userInitials}
-                  </button>
-                  <Button
-                    onClick={logout}
-                    className={isCompactNavbar ? compactActionBtnClass : isHome ? homeActionBtnClass : actionBtnClass}
-                  >
-                    <LogOut className="mr-1.5" size={14} />
-                    {copy.logout}
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -529,29 +411,6 @@ const userMemberLabel =
 
                 <div className="max-h-[calc(100svh-190px)] overflow-y-auto pr-1">
                   <div className="flex flex-col gap-1.5">
-                    {authed ? (
-                      <button
-                        type="button"
-                        onClick={goProfile}
-                        className="flex items-center gap-2.5 rounded-[17px] border border-[#e7edf6] bg-white p-2.5 text-left shadow-[0_8px_20px_rgba(17,24,39,0.05)] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)]"
-                      >
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#4b79ff_0%,#1a3e93_100%)] text-sm font-bold uppercase tracking-[0.12em] text-white">
-                          {userInitials}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#7a879c] dark:text-[#9fb4d9]">
-                            {userMemberLabel}
-                          </span>
-                          <span className="mt-0.5 block truncate text-[14px] font-bold text-[#1d2430] dark:text-white">
-                            {user?.fullName || copy.profile}
-                          </span>
-                          <span className="block truncate text-[11px] text-[#627188] dark:text-[#b6c4da]">
-                            {user?.email}
-                          </span>
-                        </span>
-                      </button>
-                    ) : null}
-
                     <div className="flex items-center gap-1.5 rounded-[16px] border border-[#e7edf6] bg-white p-1.5 dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)]">
                       {(["uz", "ru", "en"] as const).map((lang) => (
                         <button
@@ -631,32 +490,6 @@ const userMemberLabel =
                   </div>
                 </div>
 
-                <div className="mt-2.5 border-t border-[#e6edf6] pt-2.5 dark:border-[#405d90]/55">
-                  {!authed ? (
-                    <Button
-                      onClick={goAuth}
-                      className="h-10 w-full rounded-[16px] border border-[#cfe0f5] bg-[linear-gradient(135deg,#5d86ff_0%,#3d6fee_100%)] px-4 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(61,111,238,0.20)] hover:brightness-110"
-                    >
-                      {copy.login}
-                    </Button>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        onClick={goProfile}
-                        className="h-10 rounded-[15px] border border-[#d7e4f4] bg-white px-3 text-[13px] font-semibold text-[#1d2430] shadow-[0_8px_18px_rgba(49,87,143,0.08)] hover:bg-[#f8fbff] dark:border-[#4b6da4]/70 dark:bg-[rgba(12,32,69,0.78)] dark:text-white dark:hover:bg-[rgba(20,51,101,0.86)]"
-                      >
-                        <UserCircle2 className="mr-1.5" size={15} />
-                        {copy.profile}
-                      </Button>
-                      <Button
-                        onClick={logout}
-                        className="h-10 rounded-[15px] border border-[#e8d7dd] bg-[#fff5f8] px-3 text-[13px] font-semibold text-[#a54864] shadow-[0_8px_18px_rgba(165,72,100,0.08)] hover:bg-[#fff9fb] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]"
-                      >
-                        {copy.logout}
-                      </Button>
-                    </div>
-                  )}
-                </div>
               </motion.div>
             </>
           )}

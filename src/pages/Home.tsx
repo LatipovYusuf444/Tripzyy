@@ -781,15 +781,15 @@ export default function Home() {
 
   const mobileSearchSegmentClass = isHeroSearchDark
     ? "luxury-search-segment pointer-events-auto relative flex min-h-[64px] items-center overflow-visible rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-l xl:border-white/18 xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
-    : "luxury-search-segment pointer-events-auto relative flex min-h-[44px] items-center overflow-visible rounded-[10px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[52px] sm:rounded-[12px] sm:px-3.5 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none"
+    : "luxury-search-segment pointer-events-auto relative flex min-h-[46px] items-center overflow-visible rounded-[14px] border border-[#d9dde3] bg-white px-3.5 shadow-none backdrop-blur-none sm:min-h-[52px] sm:rounded-[16px] sm:px-4 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none xl:backdrop-blur-none"
 
   const activeMobileSearchSegmentClass = isHeroSearchDark
     ? "z-40 bg-white/[0.07] shadow-[0_18px_42px_rgba(2,8,24,0.36)]"
-    : "z-40 bg-[#EBEBEB] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+    : "z-40 bg-white shadow-[0_14px_32px_rgba(92,134,211,0.16)]"
 
   const idleMobileSearchSegmentClass = isHeroSearchDark
     ? "z-10 hover:bg-white/[0.06]"
-    : "z-10 hover:bg-[#e4e4e4]"
+    : "z-10 hover:bg-white"
 
   const multiFlightLabelClass = isHeroSearchDark
     ? "mb-1.5 px-1 text-[12px] font-semibold text-[#d4e2fb]"
@@ -797,7 +797,7 @@ export default function Home() {
 
   const multiDateSegmentClass = isHeroSearchDark
     ? "luxury-search-segment pointer-events-auto relative flex min-h-[52px] flex-col justify-center overflow-visible rounded-[16px] border border-[#5d7fba]/60 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] px-3.5 py-2 shadow-[0_14px_30px_rgba(2,8,24,0.44)] backdrop-blur-[18px] xl:min-h-[54px]"
-    : "luxury-search-segment pointer-events-auto relative flex min-h-[44px] flex-col justify-center overflow-visible rounded-[12px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] sm:min-h-[52px] sm:rounded-[16px] sm:px-3.5 sm:py-2 xl:min-h-[54px]"
+    : "luxury-search-segment pointer-events-auto relative flex min-h-[46px] flex-col justify-center overflow-visible rounded-[14px] border border-[#d9dde3] bg-white px-3.5 py-2 shadow-none backdrop-blur-none sm:min-h-[52px] sm:rounded-[16px] sm:px-4 xl:min-h-[54px]"
 
   const activeMultiDateSegmentClass = isHeroSearchDark
     ? "z-40 bg-[linear-gradient(180deg,rgba(12,26,58,0.98)_0%,rgba(7,16,40,0.96)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.54)]"
@@ -988,16 +988,16 @@ export default function Home() {
                 <div
                   data-search-theme={isHeroSearchDark ? "dark" : "light"}
                   className={[
-                    "luxury-search-grid home-search-surface relative grid items-stretch gap-2 overflow-visible rounded-[18px] transition-colors duration-300 sm:rounded-[20px] xl:gap-0",
+                    "luxury-search-grid home-search-surface relative grid items-stretch gap-3 overflow-visible rounded-[18px] bg-transparent transition-colors duration-300 sm:gap-3 sm:rounded-[20px] xl:gap-0",
                     isHeroSearchDark
                       ? "border border-[#2c4b78]/70 bg-[linear-gradient(180deg,rgba(14,32,67,0.96)_0%,rgba(7,18,44,0.94)_100%)] shadow-[0_22px_58px_rgba(2,8,24,0.34)] backdrop-blur-xl"
-                      : "bg-[#EBEBEB]",
+                      : "xl:bg-[#EBEBEB]",
                     tripMode === "round"
                       ? "xl:grid-cols-[2.25fr_0.95fr_0.95fr_0.92fr_140px]"
                       : "xl:grid-cols-[2.45fr_1fr_0.95fr_140px]",
                   ].join(" ")}
                 >
-                    <div className="relative grid items-stretch gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-0">
+                    <div className="relative grid items-stretch gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -1453,8 +1453,8 @@ function HomeAutocompleteField({
         className={[
           compact
             ? isDark
-              ? "luxury-search-segment relative flex min-h-[64px] items-center gap-4 rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-r xl:border-white/18 xl:bg-transparent xl:px-7 xl:shadow-none xl:backdrop-blur-none"
-              : "luxury-search-segment relative flex min-h-[44px] items-center gap-3 rounded-[10px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[52px] sm:rounded-[12px] sm:px-3.5 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-r xl:border-[#cfcfcf] xl:bg-transparent xl:px-6 xl:shadow-none"
+            ? "luxury-search-segment relative flex min-h-[64px] items-center gap-4 rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-r xl:border-white/18 xl:bg-transparent xl:px-7 xl:shadow-none xl:backdrop-blur-none"
+              : "luxury-search-segment relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#d9dde3] bg-white px-3.5 shadow-none backdrop-blur-none sm:min-h-[52px] sm:rounded-[16px] sm:px-4 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-r xl:border-[#cfcfcf] xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
             : isDark
               ? "relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-3 py-2 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[58px] sm:rounded-2xl sm:px-4 sm:py-2.5"
               : "relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#e3eaf3] bg-white px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] sm:min-h-[58px] sm:rounded-2xl sm:px-4 sm:py-2.5",
@@ -1752,17 +1752,17 @@ function PassengerField({
     compact
       ? isDark
         ? "luxury-search-segment pointer-events-auto relative flex min-h-[64px] items-center overflow-visible rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-l xl:border-white/18 xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
-        : "luxury-search-segment pointer-events-auto relative flex min-h-[44px] items-center overflow-visible rounded-[10px] border border-[#d6d6d6] bg-[#EBEBEB] px-3 shadow-[0_8px_18px_rgba(17,24,39,0.035)] sm:min-h-[52px] sm:rounded-[12px] sm:px-3.5 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none"
+        : "luxury-search-segment pointer-events-auto relative flex min-h-[46px] items-center overflow-visible rounded-[14px] border border-[#d9dde3] bg-white px-3.5 shadow-none backdrop-blur-none sm:min-h-[52px] sm:rounded-[16px] sm:px-4 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none xl:backdrop-blur-none"
       : isDark
         ? "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px]"
-        : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#e3eaf3] bg-white px-4 py-2.5",
+        : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#d9dde3] bg-white px-4 py-2.5 shadow-none backdrop-blur-none",
     open
       ? isDark
         ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
-        : "z-40 bg-[#EBEBEB] shadow-[0_10px_28px_rgba(92,134,211,0.12)]"
+        : "z-40 bg-white shadow-[0_14px_32px_rgba(92,134,211,0.16)]"
       : isDark
         ? "z-10 hover:bg-[linear-gradient(180deg,rgba(24,48,92,0.82)_0%,rgba(11,28,62,0.62)_100%)]"
-        : "z-10 hover:bg-[#e4e4e4]",
+        : "z-10 hover:bg-white",
   ].join(" ")
 
   const dropdownPanelClass =
