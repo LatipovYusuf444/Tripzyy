@@ -562,8 +562,8 @@ function paymentMethodTone(id: string, active: boolean) {
       idle: "border-[#B878FF] !bg-[linear-gradient(135deg,#DCC2FF_0%,#EEE0FF_48%,#C79BFF_100%)] text-[#5B21B6] shadow-[0_8px_18px_rgba(109,40,217,0.10)] hover:border-[#9654F4] hover:shadow-[0_12px_24px_rgba(109,40,217,0.18)]",
     },
     paynet: {
-      active: "border-[#F97316] !bg-[linear-gradient(135deg,#F97316_0%,#FDBA2D_100%)] text-white shadow-[0_14px_28px_rgba(249,115,22,0.24)]",
-      idle: "border-[#FDBA74] !bg-[linear-gradient(135deg,#FFD7A8_0%,#FFE9C9_48%,#FFC47A_100%)] text-[#9A3412] shadow-[0_8px_18px_rgba(249,115,22,0.10)] hover:border-[#F59E0B] hover:shadow-[0_12px_24px_rgba(249,115,22,0.18)]",
+      active: "border-[#15A34A] !bg-[linear-gradient(135deg,#0A8F3C_0%,#22C55E_56%,#A3E635_100%)] text-white shadow-[0_14px_28px_rgba(21,163,74,0.24)]",
+      idle: "border-[#7DDC93] !bg-[linear-gradient(135deg,#CFF7D8_0%,#E9FBEF_48%,#9BE8A9_100%)] text-[#086B31] shadow-[0_8px_18px_rgba(21,163,74,0.10)] hover:border-[#22C55E] hover:shadow-[0_12px_24px_rgba(21,163,74,0.18)]",
     },
     visa: {
       active: "border-[#1A1F71] !bg-[linear-gradient(135deg,#1A1F71_0%,#2563EB_52%,#EB001B_100%)] text-white shadow-[0_14px_28px_rgba(37,99,235,0.22)]",

@@ -55,6 +55,18 @@ const secondaryButtonClass =
 const dangerButtonClass =
   `${btnBase} border-[#f0d8d9] bg-[linear-gradient(135deg,#fff7f7_0%,#fff0f1_100%)] text-[#9e4e5b] shadow-[0_12px_28px_rgba(158,78,91,0.10)] hover:bg-[#fff6f7] dark:border-[#5d4264] dark:bg-[linear-gradient(180deg,rgba(75,33,56,0.66)_0%,rgba(53,22,42,0.74)_100%)] dark:text-[#ffd5e0]`
 
+const paymentButtonClass = (id: string, active: boolean) => {
+  if (id === "paynet") {
+    return active
+      ? "border-[#15A34A] bg-[linear-gradient(135deg,#0A8F3C_0%,#22C55E_56%,#A3E635_100%)] text-white shadow-[0_14px_28px_rgba(21,163,74,0.24)]"
+      : "border-[#7DDC93] bg-[linear-gradient(135deg,#CFF7D8_0%,#E9FBEF_48%,#9BE8A9_100%)] text-[#086B31] shadow-[0_8px_18px_rgba(21,163,74,0.10)] hover:border-[#22C55E] hover:shadow-[0_12px_24px_rgba(21,163,74,0.18)] dark:border-[#2F9A55] dark:bg-[linear-gradient(135deg,rgba(13,89,43,0.92)_0%,rgba(22,121,57,0.86)_100%)] dark:text-[#DDFBE5]"
+  }
+
+  return active
+    ? `border-[#1a2231]/10 ${primaryBtn}`
+    : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]"
+}
+
 export default function PassengersPage() {
   const { language } = useI18n()
   const copy = {
@@ -1059,9 +1071,7 @@ export default function PassengersPage() {
                       }}
                       className={[
                         `h-11 ${btnBase}`,
-                        paymentMethod === m.id
-                          ? `border-[#1a2231]/10 ${primaryBtn}`
-                          : "border-[#dbe3ef] bg-white text-[#627188] hover:bg-[#f8fbff] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb] dark:hover:bg-[rgba(24,43,80,0.92)]",
+                        paymentButtonClass(m.id, paymentMethod === m.id),
                       ].join(" ")}
                     >
                       {m.label}

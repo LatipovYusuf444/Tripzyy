@@ -24,4 +24,3 @@ export function formatMoney(amount: number, currency?: string) {
     maximumFractionDigits: 0,
   }).format(value)
 }
-

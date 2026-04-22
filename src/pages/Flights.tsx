@@ -1786,18 +1786,18 @@ function CityTravelResultCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-[#E6E2DC] pt-3 lg:flex-col lg:items-end lg:justify-center lg:border-l lg:border-t-0 lg:pl-3 lg:pt-0">
+      <div className="flex items-center justify-between gap-3 rounded-[16px] border border-[#5f72c7]/35 bg-[linear-gradient(135deg,#021373_0%,#020F59_48%,#8491D9_100%)] p-3 shadow-[0_16px_34px_rgba(2,19,115,0.18)] lg:flex-col lg:items-end lg:justify-center lg:p-4">
         <div className="text-left lg:text-right">
-          <div className="whitespace-nowrap text-[13px] font-black leading-5 text-[#111A34] sm:text-[14px]">{formatCompactPrice(flight.price, flight.currency)}</div>
-          <div className="mt-1 text-[11px] leading-4 text-[#59636E]">{tripTypeLabel(flight, language)}</div>
-          <div className="text-[11px] leading-4 text-[#59636E]">{paxLabel(language, pax)}</div>
+          <div className="whitespace-nowrap text-[13px] font-black leading-5 text-white sm:text-[14px]">{formatCompactPrice(flight.price, flight.currency)}</div>
+          <div className="mt-1 text-[11px] leading-4 text-white/80">{tripTypeLabel(flight, language)}</div>
+          <div className="text-[11px] leading-4 text-white/80">{paxLabel(language, pax)}</div>
         </div>
         <motion.button
           type="button"
           onClick={() => onPick(flight)}
           whileHover={{ y: -2, scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="h-10 min-w-[116px] rounded-[9px] bg-[#DDEEFF] px-5 text-[13px] font-semibold text-[#006CD8] transition hover:bg-[#CFE7FF]"
+          className="h-10 min-w-[116px] rounded-[9px] bg-white/95 px-5 text-[13px] font-semibold text-[#021373] shadow-[0_10px_22px_rgba(1,6,38,0.18)] transition hover:bg-white"
         >
           {copy.select}
         </motion.button>
@@ -2145,13 +2145,8 @@ function FlightPreviewModal({
                       </div>
                       <div className="flex items-center gap-2">
                         <Luggage size={13} className="sm:size-[17px]" />
-                        <span>{copy.cabinBaggage}: {segment.carryOn || flight.carryOn || "—"}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Luggage size={13} className="sm:size-[17px]" />
                         <span>{copy.baggage}: {segment.baggage || flight.baggage || copy.paidBaggage}</span>
                       </div>
-                      <div className="text-[11px] leading-4 text-[#6D6760] sm:text-[13px] sm:leading-5">{copy.baggageNote}</div>
                     </div>
 
                     {index < segments.length - 1 ? (
@@ -2183,7 +2178,7 @@ function FlightPreviewModal({
           <AnimatePresence>
             {isBuying ? (
               <motion.div
-                className="absolute inset-0 z-20 grid place-items-center bg-black/45 p-5"
+                className="absolute inset-0 z-20 grid place-items-center bg-black/45 p-5 lg:p-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -2192,15 +2187,15 @@ function FlightPreviewModal({
                   initial={{ opacity: 0, y: 18, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 16, scale: 0.98 }}
-                  className="flex min-h-[520px] w-full max-w-[650px] flex-col overflow-hidden rounded-[28px] bg-[#F8F7F4] text-center shadow-[0_28px_80px_rgba(0,0,0,0.28)] sm:min-h-[607px]"
+                  className="flex h-full max-h-[520px] w-full max-w-[650px] flex-col overflow-hidden rounded-[28px] bg-[#F8F7F4] text-center shadow-[0_28px_80px_rgba(0,0,0,0.28)] sm:max-h-[540px] lg:h-auto lg:max-h-[500px] lg:max-w-[560px]"
                 >
-                  <div className="px-6 pt-8">
-                    <div className="mx-auto mb-4 h-10 w-10 rounded-[10px] bg-[#174A8B]" />
-                    <div className="text-[22px] font-black text-[#111111]">{copy.checking}</div>
-                    <div className="mt-2 text-[14px] text-[#6D6760]">{copy.checkingSub}</div>
+                  <div className="px-6 pt-8 lg:pt-6">
+                    <div className="mx-auto mb-4 h-10 w-10 rounded-[10px] bg-[#174A8B] lg:mb-3 lg:h-9 lg:w-9" />
+                    <div className="text-[22px] font-black text-[#111111] lg:text-[20px]">{copy.checking}</div>
+                    <div className="mt-2 text-[14px] text-[#6D6760] lg:text-[13px]">{copy.checkingSub}</div>
                   </div>
                   <FlightLoadingAnimation />
-                  <div className="mt-auto px-6 pb-7">
+                  <div className="mt-auto px-6 pb-7 lg:pb-6">
                     <div className="mx-auto h-2 max-w-[320px] overflow-hidden rounded-full bg-[#D9D5CE]">
                       <motion.div
                         className="h-full rounded-full bg-[#0A84FF]"
@@ -2234,13 +2229,13 @@ function FlightLoadingAnimation({ compact = false }: { compact?: boolean }) {
   }, [])
 
   return (
-    <div className={compact ? "relative mx-auto flex h-[286px] w-full items-center justify-center overflow-visible px-2 py-1 sm:h-[320px]" : "relative mx-auto flex h-[310px] w-full flex-1 items-center justify-center overflow-visible px-4 py-2 sm:h-[330px]"}>
+    <div className={compact ? "relative mx-auto flex h-[286px] w-full items-center justify-center overflow-visible px-2 py-1 sm:h-[320px]" : "relative mx-auto flex h-[310px] w-full flex-1 items-center justify-center overflow-visible px-4 py-2 sm:h-[330px] lg:h-[270px] lg:px-3"}>
       <Lottie
         lottieRef={lottieRef}
         animationData={flightLoadingAnimation}
         loop={false}
         autoplay
-        className={compact ? "aspect-square h-[280px] max-h-full w-[280px] max-w-full sm:h-[318px] sm:w-[318px]" : "aspect-square h-[300px] max-h-full w-[300px] max-w-full sm:h-[320px] sm:w-[320px]"}
+        className={compact ? "aspect-square h-[280px] max-h-full w-[280px] max-w-full sm:h-[318px] sm:w-[318px]" : "aspect-square h-[300px] max-h-full w-[300px] max-w-full sm:h-[320px] sm:w-[320px] lg:h-[260px] lg:w-[260px]"}
         rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
         aria-label="Flight availability loading"
       />

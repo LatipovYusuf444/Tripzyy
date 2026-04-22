@@ -44,7 +44,7 @@ const LIVE_DIRECTORY_BOOTSTRAPS = [
   { from: "AUH", to: "TAS" },
 ] as const
 
-const heroBackgroundImage = "/images/cheerful-woman-looking-out-window-airplane.jpg"
+const heroBackgroundImage = "/images/hero-airplane-optimized.jpg"
 const heroMobileBackgroundImage = "/images/mobile-img.webp"
 
 
@@ -151,18 +151,24 @@ function HeroSection({
           <motion.img
             src={heroMobileBackgroundImage}
             alt="Tripzy travel background"
-            className="h-full w-full scale-[1.1] object-cover object-[53%_22%] sm:hidden"
-            initial={{ scale: 1.18, opacity: 0 }}
+            className="h-full w-full scale-[1.1] object-cover object-[53%_22%] will-change-[opacity,transform] sm:hidden"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            initial={{ scale: 1.13, opacity: 0 }}
             animate={{ scale: 1.1, opacity: 1 }}
-            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
           />
           <motion.img
             src={heroBackgroundImage}
             alt="Tripzy travel background"
-            className="hidden h-full w-full object-cover object-[center_44%] sm:block xl:object-center"
-            initial={{ scale: 1.08, opacity: 0 }}
+            className="hidden h-full w-full object-cover object-[center_44%] will-change-[opacity,transform] sm:block xl:object-center"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            initial={{ scale: 1.035, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}
           />
           <motion.div
             className="absolute inset-0 bg-[radial-gradient(circle_at_72%_32%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_24%,rgba(7,18,35,0)_48%)]"
@@ -182,16 +188,8 @@ function HeroSection({
             animate={{ opacity: 1 }}
             transition={{ duration: 1.1, delay: 0.16 }}
           />
-          <motion.div
-            className="absolute left-[6%] top-[18%] h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(20,125,255,0.22)_0%,rgba(20,125,255,0)_70%)] blur-2xl sm:h-40 sm:w-40"
-            animate={{ x: [0, 14, 0], y: [0, -10, 0], opacity: [0.45, 0.7, 0.45] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-[16%] right-[10%] h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_72%)] blur-3xl sm:h-48 sm:w-48"
-            animate={{ x: [0, -18, 0], y: [0, 12, 0], opacity: [0.28, 0.48, 0.28] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <div className="absolute left-[6%] top-[18%] hidden h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(20,125,255,0.18)_0%,rgba(20,125,255,0)_70%)] blur-2xl sm:block" />
+          <div className="absolute bottom-[16%] right-[10%] hidden h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_72%)] blur-3xl sm:block" />
         </div>
         <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-4 sm:px-6 lg:px-8">
           {children}
