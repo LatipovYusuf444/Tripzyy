@@ -21,7 +21,6 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import FareCalendarPicker from "@/components/site/FareCalendarPicker"
-import heroBackgroundImage from "@/assets/images/cheerful-woman-looking-out-window-airplane.jpg"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
 import { useI18n } from "@/shared/i18n/i18n"
@@ -45,6 +44,7 @@ const LIVE_DIRECTORY_BOOTSTRAPS = [
   { from: "AUH", to: "TAS" },
 ] as const
 
+const heroBackgroundImage = "/images/cheerful-woman-looking-out-window-airplane.jpg"
 const heroMobileBackgroundImage = "/images/mobile-img.webp"
 
 
@@ -98,6 +98,43 @@ const formatDisplayDate = (value: string) => {
   })
 }
 
+const heroSequenceVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.18,
+    },
+  },
+} as const
+
+const heroSlideUpVariants = {
+  hidden: { opacity: 0, y: 26 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.62, ease: [0.22, 1, 0.36, 1] },
+  },
+} as const
+
+const heroSlideLeftVariants = {
+  hidden: { opacity: 0, x: -34 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.68, ease: [0.22, 1, 0.36, 1] },
+  },
+} as const
+
+const heroSlideRightVariants = {
+  hidden: { opacity: 0, x: 34 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.68, ease: [0.22, 1, 0.36, 1] },
+  },
+} as const
+
 function HeroSection({
   heroBackgroundImage,
   heroMobileBackgroundImage,
@@ -111,19 +148,50 @@ function HeroSection({
     <section className="relative overflow-visible">
       <div className="relative min-h-[calc(100svh-88px)] overflow-visible pt-20 sm:min-h-[calc(100svh-92px)] sm:pt-24 lg:min-h-[860px]">
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-          <img
+          <motion.img
             src={heroMobileBackgroundImage}
             alt="Tripzy travel background"
             className="h-full w-full scale-[1.1] object-cover object-[53%_22%] sm:hidden"
+            initial={{ scale: 1.18, opacity: 0 }}
+            animate={{ scale: 1.1, opacity: 1 }}
+            transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
           />
-          <img
+          <motion.img
             src={heroBackgroundImage}
             alt="Tripzy travel background"
             className="hidden h-full w-full object-cover object-[center_44%] sm:block xl:object-center"
+            initial={{ scale: 1.08, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_32%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_24%,rgba(7,18,35,0)_48%)]" />
-          <div className="absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,rgba(5,13,26,0.86)_0%,rgba(6,17,31,0.68)_28%,rgba(8,22,42,0.26)_56%,rgba(8,22,42,0)_82%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,31,0.12)_0%,rgba(7,18,35,0.10)_42%,rgba(7,18,35,0.34)_100%)]" />
+          <motion.div
+            className="absolute inset-0 bg-[radial-gradient(circle_at_72%_32%,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0.04)_24%,rgba(7,18,35,0)_48%)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.2, delay: 0.08 }}
+          />
+          <motion.div
+            className="absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,rgba(5,13,26,0.86)_0%,rgba(6,17,31,0.68)_28%,rgba(8,22,42,0.26)_56%,rgba(8,22,42,0)_82%)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.1, delay: 0.12 }}
+          />
+          <motion.div
+            className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,17,31,0.12)_0%,rgba(7,18,35,0.10)_42%,rgba(7,18,35,0.34)_100%)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.1, delay: 0.16 }}
+          />
+          <motion.div
+            className="absolute left-[6%] top-[18%] h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(20,125,255,0.22)_0%,rgba(20,125,255,0)_70%)] blur-2xl sm:h-40 sm:w-40"
+            animate={{ x: [0, 14, 0], y: [0, -10, 0], opacity: [0.45, 0.7, 0.45] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-[16%] right-[10%] h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_72%)] blur-3xl sm:h-48 sm:w-48"
+            animate={{ x: [0, -18, 0], y: [0, 12, 0], opacity: [0.28, 0.48, 0.28] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          />
         </div>
         <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-4 sm:px-6 lg:px-8">
           {children}
@@ -811,25 +879,34 @@ export default function Home() {
       >
             <div className="flex min-h-[640px] w-full items-start justify-center pt-24 sm:min-h-[720px] sm:items-start sm:pt-36 lg:min-h-[820px] lg:pt-40 xl:pt-44">
             <motion.div
-              initial={{ opacity: 0, y: 38 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.62, delay: 0.36, ease: "easeOut" }}
+              initial="hidden"
+              animate="show"
+              variants={heroSequenceVariants}
               className="relative flex w-full max-w-[1380px] flex-col items-start"
             >
-              <h1 className="max-w-[360px] text-left text-[clamp(20px,5.5vw,26px)] font-extrabold leading-[1.08] text-white [font-family:Arial,Helvetica,sans-serif] drop-shadow-[0_12px_36px_rgba(0,0,0,0.58)] sm:max-w-[1120px] sm:whitespace-nowrap sm:text-[clamp(22px,2.4vw,38px)]">
+              <motion.h1
+                variants={heroSlideLeftVariants}
+                className="max-w-[360px] text-left text-[clamp(20px,5.5vw,26px)] font-extrabold leading-[1.08] text-white [font-family:Arial,Helvetica,sans-serif] drop-shadow-[0_12px_36px_rgba(0,0,0,0.58)] sm:max-w-[1120px] sm:whitespace-nowrap sm:text-[clamp(22px,2.4vw,38px)]"
+              >
                 {heroCopy.titleStart}{" "}
                 <span className="block bg-[linear-gradient(90deg,#137dff_0%,#19b7ff_100%)] bg-clip-text text-transparent sm:inline">
                   {heroCopy.titleAccent}
                 </span>
-              </h1>
-              <p className="mt-2 max-w-[430px] text-[14px] font-semibold leading-6 text-white/78 sm:mt-3 sm:max-w-[520px] sm:text-[17px]">
+              </motion.h1>
+              <motion.p
+                variants={heroSlideLeftVariants}
+                className="mt-2 max-w-[430px] text-[14px] font-semibold leading-6 text-white/78 sm:mt-3 sm:max-w-[520px] sm:text-[17px]"
+              >
                 {heroSubtitle}
-              </p>
-              <TripModeTabs
-                tripMode={tripMode}
-                searchUiCopy={searchUiCopy}
-                setTripMode={setTripMode}
-              />
+              </motion.p>
+              <motion.div variants={heroSlideUpVariants} className="w-full">
+                <TripModeTabs
+                  tripMode={tripMode}
+                  searchUiCopy={searchUiCopy}
+                  setTripMode={setTripMode}
+                />
+              </motion.div>
+              <motion.div variants={heroSlideRightVariants} className="w-full">
               <BookingGlassBar
                 className={[
                   "relative z-20 mt-3 w-full overflow-visible rounded-[16px] sm:mt-4 sm:rounded-[20px] lg:mt-5",
@@ -1177,9 +1254,19 @@ export default function Home() {
               )}
 
               </BookingGlassBar>
-              <div className="mt-8 grid w-full max-w-[1320px] grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              </motion.div>
+              <motion.div
+                variants={heroSequenceVariants}
+                className="mt-8 grid w-full max-w-[1320px] grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+              >
                 {heroBenefits.map((item) => (
-                  <div key={item.title} className="flex items-center gap-4 text-white/80">
+                  <motion.div
+                    key={item.title}
+                    variants={heroSlideUpVariants}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    transition={{ duration: 0.26 }}
+                    className="flex items-center gap-4 text-white/80"
+                  >
                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/12 bg-white/8 text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] backdrop-blur-md">
                       {item.icon}
                     </span>
@@ -1187,9 +1274,9 @@ export default function Home() {
                       <span className="block text-[14px] font-semibold text-white">{item.title}</span>
                       <span className="mt-1 block text-[13px] text-white/62">{item.text}</span>
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             </motion.div>
             </div>
       </HeroSection>
