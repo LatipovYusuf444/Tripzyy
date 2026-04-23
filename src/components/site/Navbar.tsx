@@ -30,7 +30,7 @@ const menuVariants = {
 }
 
 const compactNavbarLightClass =
-  "border-b border-[#e6eef8] bg-white shadow-[0_8px_28px_rgba(17,24,39,0.07)]"
+  "border-b border-[#E8E5DE] bg-[#F8F7F4] shadow-[0_8px_24px_rgba(77,70,61,0.06)]"
 
 const compactNavbarDarkClass =
   "border-b border-transparent bg-[linear-gradient(180deg,rgba(8,18,44,0.97)_0%,rgba(5,11,30,0.94)_100%)] shadow-[0_14px_38px_rgba(2,8,24,0.50)] backdrop-blur-[22px]"

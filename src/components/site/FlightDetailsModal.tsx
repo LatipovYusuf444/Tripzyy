@@ -40,8 +40,11 @@ import {
   CreditCard,
 } from "lucide-react"
 
+const brandBlueGradient = "!bg-[linear-gradient(135deg,#021373_0%,#020F59_48%,#8491D9_100%)]"
+const brandBlueSoftGradient = "!bg-[linear-gradient(135deg,#F1F6FF_0%,#FFFFFF_46%,#E7EEFF_100%)]"
+const brandFocus = "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1E7BFF]/25 focus-visible:ring-offset-2"
 const brandPrimaryAction =
-  "border border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_30px_rgba(23,74,139,0.22)] transition hover:bg-[#123F78] hover:shadow-[0_18px_40px_rgba(23,74,139,0.28)] disabled:cursor-not-allowed disabled:opacity-50"
+  `border border-[#5f72c7]/35 ${brandBlueGradient} text-white shadow-[0_14px_30px_rgba(2,19,115,0.22)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(2,19,115,0.28)] disabled:cursor-not-allowed disabled:opacity-50 ${brandFocus}`
 const brandSecondaryAction =
   "border border-[#C8D3E0] bg-[#EBEBEB] text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.08)] transition hover:bg-[#E1E7EF] disabled:cursor-not-allowed disabled:opacity-45"
 
@@ -1575,18 +1578,6 @@ export default function FlightDetailsModal({
 
   const activeOrderId = lastOrderId
 
-  const goBackFromCurrentStep = () => {
-    if (step === "pay") {
-      setBookingStep("details")
-      return
-    }
-    if (step === "details") {
-      setBookingStep("select")
-      return
-    }
-    onClose()
-  }
-
   const resolvePrimaryServiceId = async (orderId: number) => {
     const res = await getOrderById(orderId)
     if (res.data.status !== "success") {
@@ -1701,10 +1692,10 @@ export default function FlightDetailsModal({
 
   if (pageMode) {
     return (
-      <div ref={bookingTopRef} className="flight-details-light relative min-h-screen bg-[#EBEBEB]">
+      <div ref={bookingTopRef} className="flight-details-light relative min-h-screen bg-[#ECEAE5]">
         <div className="bg-white">
             {/* header */}
-            <div className="relative border-b border-[#D9D5CE] bg-white p-3.5 md:p-5 dark:border-[#D9D5CE] dark:bg-white">
+            <div className="relative border-b border-[#D9D5CE] bg-[linear-gradient(135deg,#FFFFFF_0%,#F3F8FF_46%,#F4FFF9_100%)] p-3.5 md:p-5 dark:border-[#D9D5CE] dark:bg-white">
               <button
                 onClick={onClose}
                 className="
@@ -1721,7 +1712,7 @@ export default function FlightDetailsModal({
 
               <button
                 type="button"
-                onClick={goBackFromCurrentStep}
+                onClick={onClose}
                 className="mb-4 inline-flex h-9 items-center gap-2 rounded-full border border-[#D9D5CE] bg-white px-3 text-xs font-semibold text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.08)] transition hover:-translate-y-0.5 hover:border-[#174A8B]/35 hover:bg-[#F3F1ED] dark:border-[#D9D5CE] dark:bg-white dark:text-[#174A8B] dark:hover:bg-[#F3F1ED]"
               >
                 <ArrowLeft size={15} />
@@ -1764,14 +1755,23 @@ export default function FlightDetailsModal({
                 <span
                   className={[
                     "px-2.5 py-0.5 rounded-full border",
-                    "border-[#D9D5CE] bg-[#F3F1ED] text-[#5F5A54] dark:border-[#D9D5CE] dark:bg-[#F3F1ED] dark:text-[#5F5A54]",
+                    "border-[#174A8B] bg-[#174A8B] text-white dark:border-[#174A8B] dark:bg-[#174A8B] dark:text-white",
                   ].join(" ")}
                 >
                   {copy.step2}
                 </span>
+                <span className="text-[#77716A] dark:text-[#77716A]">→</span>
+                <span
+                  className={[
+                    "px-2.5 py-0.5 rounded-full border",
+                    "border-[#174A8B] bg-[#174A8B] text-white dark:border-[#174A8B] dark:bg-[#174A8B] dark:text-white",
+                  ].join(" ")}
+                >
+                  {copy.step3}
+                </span>
               </div>
 
-              {step === "select" && (
+              {(
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-2.5">
                   <Pill icon={PlaneTakeoff} label={copy.depart} value={bookingFlight.depart} />
                   <Pill icon={PlaneLanding} label={copy.arrive} value={bookingFlight.arrive} />
@@ -1782,10 +1782,10 @@ export default function FlightDetailsModal({
 
             {/* body */}
             <div className="px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-4 md:p-5 md:pb-24">
-              {step === "select" && (
+              {(
                 <div ref={selectTopRef} className="scroll-mt-28 grid grid-cols-1 lg:grid-cols-3 gap-3">
                   <div className="lg:col-span-2 space-y-3">
-                    <div className="rounded-[20px] border border-[#D9D5CE] bg-white p-4 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="rounded-[20px] border border-[#CFE0F7] bg-[linear-gradient(135deg,#FFFFFF_0%,#F3F8FF_58%,#EEF7FF_100%)] p-4 shadow-[0_12px_28px_rgba(23,74,139,0.06)] dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
                       <AccordionSection
                         title={copy.fareRules}
                         subtitle={copy.fareTerms}
@@ -1952,21 +1952,10 @@ export default function FlightDetailsModal({
                               {fareFamiliesData.map((f, idx) => {
                                 const active = selectedFareId === f.id
                                 const isBest = idx === 1
-                                const fareTone =
-                                  idx === 0
-                                    ? {
-                                        active: "border-[#174A8B] !bg-[linear-gradient(135deg,#174A8B_0%,#2767D8_56%,#7A3FF2_100%)] text-white shadow-[0_16px_30px_rgba(23,74,139,0.26)]",
-                                        idle: "border-[#B9D4FF] !bg-[linear-gradient(135deg,#EAF4FF_0%,#F5F9FF_48%,#DCEBFF_100%)] text-[#111A34] hover:border-[#78AFFF] hover:shadow-[0_14px_28px_rgba(37,99,235,0.13)]",
-                                      }
-                                    : idx === 1
-                                      ? {
-                                          active: "border-[#174A8B] !bg-[linear-gradient(135deg,#174A8B_0%,#2767D8_56%,#7A3FF2_100%)] text-white shadow-[0_16px_30px_rgba(23,74,139,0.26)]",
-                                          idle: "border-[#D5C6FF] !bg-[linear-gradient(135deg,#F4F0FF_0%,#FFFFFF_48%,#E9E0FF_100%)] text-[#111A34] hover:border-[#A78BFA] hover:shadow-[0_14px_28px_rgba(124,58,237,0.12)]",
-                                        }
-                                      : {
-                                          active: "border-[#174A8B] !bg-[linear-gradient(135deg,#174A8B_0%,#2767D8_56%,#7A3FF2_100%)] text-white shadow-[0_16px_30px_rgba(23,74,139,0.26)]",
-                                          idle: "border-[#B9E9D2] !bg-[linear-gradient(135deg,#E7FFF2_0%,#F7FFFB_48%,#D8F7E7_100%)] text-[#111A34] hover:border-[#62C996] hover:shadow-[0_14px_28px_rgba(22,163,74,0.12)]",
-                                        }
+                                const fareTone = {
+                                  active: `border-[#5f72c7]/35 ${brandBlueGradient} text-white shadow-[0_16px_30px_rgba(2,19,115,0.24)]`,
+                                  idle: `border-[#D7E2F5] ${brandBlueSoftGradient} text-[#111A34] hover:border-[#5f72c7]/45 hover:shadow-[0_14px_28px_rgba(2,19,115,0.12)]`,
+                                }
                                 return (
                                   <button
                                     key={f.id}
@@ -1975,12 +1964,13 @@ export default function FlightDetailsModal({
                                     className={[
                                       "group relative overflow-hidden rounded-[14px] border p-3 text-left transition-all duration-300 hover:-translate-y-0.5",
                                       active ? fareTone.active : fareTone.idle,
+                                      brandFocus,
                                       "dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:text-[#174A8B] dark:hover:bg-[#F3F1ED] dark:hover:shadow-none",
                                     ].join(" ")}
                                   >
                                     <span className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-white/45 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-60 dark:hidden" />
                                     {isBest && (
-                                      <span className="absolute left-1/2 top-1 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#174A8B] px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(23,74,139,0.30)]">
+                                      <span className={`absolute left-1/2 top-1 z-20 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#5f72c7]/35 ${brandBlueGradient} px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(2,19,115,0.30)]`}>
                                         Eng zo'r
                                       </span>
                                     )}
@@ -2101,7 +2091,7 @@ export default function FlightDetailsModal({
                   </div>
 
                   <div className="space-y-4">
-                    <div className="rounded-[20px] border border-[#D9D5CE] bg-white p-4 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="rounded-[20px] border border-[#DDE6C8] bg-[linear-gradient(135deg,#FFFFFF_0%,#F6FFF1_54%,#EEFBE5_100%)] p-4 shadow-[0_12px_28px_rgba(87,131,42,0.06)] dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
                       <div className="text-[#111A34] text-sm font-semibold dark:text-[#111A34]">{copy.continue}</div>
                       <div className="mt-1.5 text-[#5F5A54] text-xs leading-5 dark:text-[#5F5A54]">{copy.enterPassengerInfo}</div>
 
@@ -2131,9 +2121,18 @@ export default function FlightDetailsModal({
                 </div>
               )}
 
-              {step === "details" && (
-                <div ref={detailsTopRef} className="scroll-mt-28 space-y-4">
-                  <div className="rounded-[22px] border border-[#CFE0F7] bg-[linear-gradient(135deg,#F4F9FF_0%,#FFFFFF_45%,#F7F4FF_100%)] p-5 shadow-[0_14px_32px_rgba(23,74,139,0.06)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
+              <div className="my-5 flex items-center gap-3">
+                <div className="h-px flex-1 bg-[linear-gradient(90deg,transparent,#B9D4FF,#B9E9D2)]" />
+                <div className="rounded-full border border-[#CFE0F7] bg-white px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#174A8B] shadow-[0_10px_24px_rgba(23,74,139,0.07)]">
+                  {copy.step2}
+                </div>
+                <div className="h-px flex-1 bg-[linear-gradient(90deg,#B9E9D2,#F4C6D7,transparent)]" />
+              </div>
+
+              {(
+                <div ref={detailsTopRef} className="scroll-mt-28 space-y-5">
+                  <div className="relative overflow-hidden rounded-[22px] border border-[#CFE0F7] bg-[linear-gradient(135deg,#F4F9FF_0%,#FFFFFF_48%,#EEF7FF_100%)] p-5 pl-6 shadow-[0_14px_32px_rgba(23,74,139,0.08)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
+                    <div className="absolute inset-y-0 left-0 w-1.5 bg-[#174A8B]" />
                     <div className="flex items-center justify-between">
                       <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
                         <User size={18} />
@@ -2168,7 +2167,16 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="rounded-[28px] border border-white/80 bg-[linear-gradient(112deg,#DCEBFF_0%,#E6E0FF_38%,#F4E3FA_72%,#FFE3EF_100%)] p-6 shadow-[0_24px_54px_rgba(23,74,139,0.13)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-[linear-gradient(90deg,transparent,#B9E9D2)]" />
+                    <div className="rounded-full border border-[#B9E9D2] bg-[#F0FCF7] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#157347]">
+                      {copy.passengersDetails}
+                    </div>
+                    <div className="h-px flex-1 bg-[linear-gradient(90deg,#B9E9D2,transparent)]" />
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-[28px] border border-[#B9E9D2] bg-[linear-gradient(112deg,#F0FCF7_0%,#FFFFFF_48%,#ECFDF3_100%)] p-6 pl-7 shadow-[0_24px_54px_rgba(22,163,74,0.10)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
+                    <div className="absolute inset-y-0 left-0 w-1.5 bg-[#22A06B]" />
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="text-[#111A34] font-semibold inline-flex items-center gap-2 dark:text-[#111A34]">
                         <Users size={18} />
@@ -2309,7 +2317,16 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-[linear-gradient(90deg,transparent,#D5C6FF)]" />
+                    <div className="rounded-full border border-[#D5C6FF] bg-[#F7F2FF] px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#6D3BC7]">
+                      {copy.step3}
+                    </div>
+                    <div className="h-px flex-1 bg-[linear-gradient(90deg,#D5C6FF,transparent)]" />
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-[22px] border border-[#D5C6FF] bg-[linear-gradient(135deg,#FFFFFF_0%,#F7F2FF_56%,#F0E8FF_100%)] p-5 pl-6 shadow-[0_14px_32px_rgba(109,59,199,0.08)] dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="absolute inset-y-0 left-0 w-1.5 bg-[#7C3AED]" />
                     <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.paymentMethod}</div>
                     <div className="mt-2 text-[#5F5A54] text-sm dark:text-[#5F5A54]">{copy.chooseMethod}</div>
                     <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -2340,7 +2357,8 @@ export default function FlightDetailsModal({
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-[#D9D5CE] bg-white p-5 shadow-none dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                  <div className="relative overflow-hidden rounded-[22px] border border-[#F2C6D3] bg-[linear-gradient(135deg,#FFFFFF_0%,#FFF5F8_52%,#FDF2F8_100%)] p-5 pl-6 shadow-[0_14px_32px_rgba(190,67,102,0.07)] dark:border-[#D9D5CE] dark:bg-white dark:shadow-none">
+                    <div className="absolute inset-y-0 left-0 w-1.5 bg-[#D9467A]" />
                     <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.finishOrder}</div>
                     <div className="mt-3 grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
                       <PriceRow label={copy.route} value={`${bookingFlight.from} → ${bookingFlight.to}`} />
@@ -2433,12 +2451,12 @@ export default function FlightDetailsModal({
 
                       {orderData && (
                         <div className="mt-4 grid grid-cols-1 gap-2 rounded-2xl border border-[#D9D5CE] bg-[#F3F1ED] p-4 text-xs text-[#5F5A54] sm:grid-cols-2">
-                          <div>ID: {orderData.id ?? "—"}</div>
-                          <div>{copy.status}: {orderData.status ?? "—"}</div>
-                          <div>{copy.totalPrice}: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
-                          <div>{copy.client}: {orderData.client ?? "—"}</div>
-                          <div>{copy.service}: {orderData.serviceType ?? "—"}</div>
-                          <div>{copy.reservation}: {orderData.reservationId ?? "—"}</div>
+                          <div>ID: {orderData?.id ?? "—"}</div>
+                          <div>{copy.status}: {orderData?.status ?? "—"}</div>
+                          <div>{copy.totalPrice}: {formatMoney(orderData?.price ?? 0, orderData?.currency)}</div>
+                          <div>{copy.client}: {orderData?.client ?? "—"}</div>
+                          <div>{copy.service}: {orderData?.serviceType ?? "—"}</div>
+                          <div>{copy.reservation}: {orderData?.reservationId ?? "—"}</div>
                         </div>
                       )}
                     </div>
@@ -2446,7 +2464,7 @@ export default function FlightDetailsModal({
                 </div>
               )}
 
-              {step === "pay" && (
+              {false && step === "pay" && (
                 <div ref={payTopRef} className="scroll-mt-28 space-y-4">
                   <div className="rounded-[28px] border border-white/80 bg-[linear-gradient(112deg,#DCEBFF_0%,#E6E0FF_38%,#F4E3FA_72%,#FFE3EF_100%)] p-6 shadow-[0_24px_54px_rgba(23,74,139,0.13)] dark:border-[#D9D5CE] dark:bg-white dark:bg-none dark:shadow-none">
                     <div className="text-[#111A34] font-semibold dark:text-[#111A34]">{copy.paymentMethod}</div>
@@ -2570,16 +2588,16 @@ export default function FlightDetailsModal({
                         </button>
                       </div>
 
-                      {orderData && (
+                      {orderData ? (
                         <div className="mt-4 grid grid-cols-1 gap-2 rounded-2xl border border-[#D9D5CE] bg-[#F3F1ED] p-4 text-xs text-[#5F5A54] sm:grid-cols-2">
-                          <div>ID: {orderData.id ?? "—"}</div>
-                          <div>{copy.status}: {orderData.status ?? "—"}</div>
-                          <div>{copy.totalPrice}: {formatMoney(orderData.price ?? 0, orderData.currency)}</div>
-                          <div>{copy.client}: {orderData.client ?? "—"}</div>
-                          <div>{copy.service}: {orderData.serviceType ?? "—"}</div>
-                          <div>{copy.reservation}: {orderData.reservationId ?? "—"}</div>
+                          <div>ID: {orderData?.id ?? "—"}</div>
+                          <div>{copy.status}: {orderData?.status ?? "—"}</div>
+                          <div>{copy.totalPrice}: {formatMoney(orderData?.price ?? 0, orderData?.currency)}</div>
+                          <div>{copy.client}: {orderData?.client ?? "—"}</div>
+                          <div>{copy.service}: {orderData?.serviceType ?? "—"}</div>
+                          <div>{copy.reservation}: {orderData?.reservationId ?? "—"}</div>
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   )}
                 </div>

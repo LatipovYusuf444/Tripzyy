@@ -807,7 +807,7 @@ export default function PassengersPage() {
     }
   }
   return (
-    <section className="checkout-mobile-light secondary-page-shell relative min-h-screen overflow-hidden bg-[#EEF1FB] pt-6 text-[#111A34] dark:bg-[#EEF1FB] dark:text-[#111A34] lg:dark:bg-transparent lg:dark:text-white">
+    <section className="checkout-mobile-light secondary-page-shell relative min-h-screen overflow-hidden bg-[#ECEAE5] pt-6 text-[#111A34] dark:bg-[#ECEAE5] dark:text-[#111A34] lg:dark:bg-transparent lg:dark:text-white">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
       <motion.div
         ref={pageTopRef}

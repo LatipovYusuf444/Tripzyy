@@ -20,12 +20,8 @@ import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
 const luxuryBtn =
   "border border-[#174A8B] bg-[#174A8B] text-white shadow-[0_14px_28px_rgba(23,74,139,0.22)] transition hover:bg-[#123F78]"
-const softPanel =
-  "border border-[#D9D5CE] !bg-[#EBEBEB] bg-none shadow-[0_18px_52px_rgba(30,32,36,0.08)]"
 const secondaryBtn =
   "border border-[#D9D5CE] !bg-white bg-none text-[#5F5A54] shadow-none transition hover:border-[#174A8B]/35 hover:!bg-[#F6F6F6] hover:text-[#174A8B]"
-const fieldPanel =
-  "rounded-[10px] border border-[#D7E5F8] !bg-[#EFF6FF] bg-none px-2.5 py-1.5 shadow-none transition hover:border-[#174A8B]/35 sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2"
 const dropdownPanel =
   "flights-dropdown-panel absolute left-0 right-0 top-[calc(100%+8px)] z-50 max-h-[320px] overflow-y-auto overflow-x-hidden rounded-[18px] border border-[#D9D5CE] !bg-white bg-none shadow-[0_20px_42px_rgba(30,32,36,0.14)] xl:w-[360px] xl:max-w-[min(360px,calc(100vw-32px))]"
 const unifiedCard =
@@ -37,6 +33,8 @@ const secondaryText = "text-[#5F5A54]"
 const mutedText = "text-[#77716A]"
 const accentChip =
   "rounded-full border border-[#D9D5CE] !bg-[#EBEBEB] text-[#174A8B]"
+const tripzyBlueGradient = "bg-[linear-gradient(135deg,#021373_0%,#020F59_48%,#8491D9_100%)]"
+const tripzyBlueFocus = "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1E7BFF]/25 focus-visible:ring-offset-2"
 const flightsCache = new Map<string, { items: Flight[]; info: string | null }>()
 const LAST_SUCCESSFUL_SEARCH_KEY = "last_successful_air_search_v1"
 const LAST_AIR_RESULT_META_KEY = "last_air_result_meta_v1"
@@ -184,6 +182,11 @@ const toApiAsset = (path?: string) => {
   if (/^https?:\/\//i.test(path)) return path
   const base = (import.meta.env.VITE_API_URL || "https://b2b.skyup.uz/api").replace(/\/api\/?$/i, "")
   return `${base}${path.startsWith("/") ? path : `/${path}`}`
+}
+
+const pickApiAsset = (...values: unknown[]) => {
+  const found = values.find((value) => typeof value === "string" && value.trim().length > 0)
+  return typeof found === "string" ? toApiAsset(found) : undefined
 }
 
 const formatCompactPrice = (amount: number, currency?: string) => {
@@ -666,7 +669,14 @@ export default function Flights() {
           carrier.code?.toUpperCase(),
           {
             name: carrier.name,
-            logo: toApiAsset(carrier.logo),
+            logo: pickApiAsset(
+              carrier.logo,
+              (carrier as any).airlineLogo,
+              (carrier as any).carrierLogo,
+              (carrier as any).image,
+              (carrier as any).icon,
+              (carrier as any).picture
+            ),
           },
         ])
       )
@@ -678,6 +688,22 @@ export default function Flights() {
         const family = opt.packages?.families?.[0]
         const carrierCode = (opt.carrier || seg?.carrier || "").toUpperCase()
         const carrierMeta = carriersMap.get(carrierCode)
+        const airlineLogo = pickApiAsset(
+          carrierMeta?.logo,
+          (opt as any).logo,
+          (opt as any).airlineLogo,
+          (opt as any).carrierLogo,
+          (opt as any).image,
+          (opt as any).icon,
+          (opt as any).picture,
+          seg?.logo,
+          seg?.airlineLogo,
+          seg?.carrierLogo,
+          seg?.operatingCarrierLogo,
+          seg?.image,
+          seg?.icon,
+          seg?.picture
+        )
         const segments = optionTrips.flatMap((currentTrip: any, tripIndex: number) =>
           (currentTrip?.segments ?? []).map((segment: any, index: number) => ({
             id: `${currentTrip?.id || opt.id}-${tripIndex}-${index}`,
@@ -754,7 +780,7 @@ export default function Flights() {
           to: destination,
           airline: carrierCode || "—",
           airlineName: carrierMeta?.name || opt.carrier || seg?.carrier || "—",
-          airlineLogo: carrierMeta?.logo,
+          airlineLogo,
           departDate: toDateOnly(departureSource),
           depart: toTime(departureSource),
           arriveDate: toDateOnly(arrivalSource),
@@ -959,6 +985,8 @@ export default function Flights() {
   }, [])
 
   const onSearch = () => {
+    setSelectedFlight(null)
+    setPreviewFlight(null)
     const criteria = {
       from: resolvedFrom,
       to: resolvedTo,
@@ -1182,7 +1210,7 @@ export default function Flights() {
 
   return (
     <section
-      className="flights-page relative overflow-hidden bg-[#EBEBEB] pt-0 text-[#111A34]"
+      className="flights-page relative overflow-hidden bg-[#ECEAE5] pt-0 text-[#111A34]"
       data-flight-theme={siteTheme}
     >
       <div className="relative mx-auto max-w-[1560px] px-2.5 py-5 sm:px-6 sm:py-12 xl:px-8 2xl:max-w-[1720px]">
@@ -1191,26 +1219,30 @@ export default function Flights() {
           animate="show"
           variants={fadeUp}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className={`relative z-10 overflow-visible rounded-[20px] border p-2.5 sm:rounded-[28px] sm:p-4 md:p-5 ${softPanel}`}
+          className="relative z-10 overflow-visible rounded-[20px] border border-[#E7E2DA] bg-[#F7F6F2] p-3 shadow-[0_18px_46px_rgba(77,70,61,0.08)] sm:rounded-[26px] sm:p-4 md:p-5"
         >
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.42, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className={`overflow-visible rounded-[20px] p-2.5 transition-shadow duration-300 hover:shadow-[0_22px_54px_rgba(30,32,36,0.10)] sm:rounded-[24px] sm:p-4 md:p-5 ${unifiedSoftCard}`}
+            className="overflow-visible rounded-[18px] bg-transparent p-0 transition-shadow duration-300"
           >
-            <div className="grid gap-2 sm:gap-2.5 xl:grid-cols-[1.35fr_1.35fr_0.75fr_0.75fr_1.1fr_0.85fr]">
-              <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} tone="blue" />
-              <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} tone="green" />
-              <motion.div ref={calendarAnchorRef} whileHover={subtleLift} className="flights-search-date relative flex min-h-[48px] flex-col justify-center rounded-[10px] border border-[#E1D8FA] bg-[#F6F0FF] px-2.5 py-1.5 shadow-none transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(115,76,190,0.10)] sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2">
-                <div className={`mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] sm:text-[10px] sm:tracking-[0.16em] ${mutedText}`}>{copy.date}</div>
+            <div className="grid gap-2.5 xl:grid-cols-[1.45fr_1.45fr_0.82fr_0.82fr_1.12fr_0.82fr]">
+              <AutocompleteField label={copy.from} value={from} placeholder={copy.fromPlaceholder} options={locationOptions} onChange={setFrom} selectLabel={copy.selectOption} tone="blue" icon={<PlaneTakeoff size={20} className="shrink-0 text-[#1E7BFF]" />} />
+              <AutocompleteField label={copy.to} value={to} placeholder={copy.toPlaceholder} options={locationOptions} onChange={setTo} selectLabel={copy.selectOption} tone="green" icon={<PlaneLanding size={20} className="shrink-0 text-[#1E7BFF]" />} />
+              <motion.div ref={calendarAnchorRef} whileHover={subtleLift} className="flights-search-date relative flex min-h-[64px] items-center gap-2.5 rounded-[13px] border border-[#EBE7DF] bg-white px-3.5 py-2 shadow-[0_8px_20px_rgba(77,70,61,0.035)] transition-shadow duration-300 hover:shadow-[0_12px_26px_rgba(77,70,61,0.08)]">
+                <CalendarDays size={20} className="shrink-0 text-[#1E7BFF]" />
+                <div className="min-w-0 flex-1">
+                <div className="mb-1 text-[9.5px] font-black uppercase tracking-[0.22em] text-[#8A8177]">{copy.date}</div>
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((prev) => !prev)}
-                  className={`text-left text-[13px] font-semibold sm:text-[14px] ${primaryText}`}
+                  className="flex w-full items-center justify-between gap-2 text-left text-[14px] font-bold text-[#111A34]"
                 >
-                  {date || copy.openCalendar}
+                  <span className="truncate">{date || copy.openCalendar}</span>
+                  <ChevronDown size={16} className="shrink-0 text-[#7B7268]" />
                 </button>
+                </div>
                 {calendarOpen ? (
                   <FareCalendarPicker
                     from={resolvedFrom}
@@ -1230,19 +1262,22 @@ export default function Flights() {
               <motion.div
                 whileHover={subtleLift}
                 aria-label={paxLabel(language, pax)}
-                className="flights-search-passenger flex min-h-[48px] flex-col justify-center rounded-[10px] border border-[#F0E1CE] bg-[#FFF7ED] px-2.5 py-1.5 shadow-none transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(190,118,41,0.10)] sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2"
+                className="flights-search-passenger flex min-h-[64px] items-center gap-2.5 rounded-[13px] border border-[#EBE7DF] bg-white px-3.5 py-2 shadow-[0_8px_20px_rgba(77,70,61,0.035)] transition-shadow duration-300 hover:shadow-[0_12px_26px_rgba(77,70,61,0.08)]"
               >
-                <div className={`mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] sm:text-[10px] sm:tracking-[0.16em] ${mutedText}`}>
-                  {copy.passenger}
-                </div>
-                <div className={`flex items-center gap-1.5 text-[13px] font-semibold sm:text-[14px] ${primaryText}`}>
-                  <Users size={14} className="text-[#174A8B]" />
-                  <span>{paxLabel(language, pax)}</span>
+                <Users size={20} className="shrink-0 text-[#1E7BFF]" />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 text-[9.5px] font-black uppercase tracking-[0.22em] text-[#8A8177]">
+                    {copy.passenger}
+                  </div>
+                  <div className="flex items-center justify-between gap-2 text-[14px] font-bold text-[#111A34]">
+                    <span className="truncate">{paxLabel(language, pax)}</span>
+                    <ChevronDown size={16} className="shrink-0 text-[#7B7268]" />
+                  </div>
                 </div>
               </motion.div>
-              <motion.div whileHover={subtleLift} className="flights-search-class flex min-h-[48px] flex-col justify-center rounded-[10px] border border-[#D7E5F8] bg-[#F0F8FF] px-2.5 py-1.5 shadow-none transition-shadow duration-300 hover:shadow-[0_12px_28px_rgba(23,74,139,0.10)] sm:min-h-[54px] sm:rounded-[14px] sm:px-3 sm:py-2">
-                <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#6b7280] sm:text-[10px] sm:tracking-[0.16em]">{copy.classLabel}</div>
-                <div className="grid grid-cols-3 gap-1.5">
+              <motion.div whileHover={subtleLift} className="flights-search-class flex min-h-[64px] flex-col justify-center rounded-[13px] border border-[#EBE7DF] bg-white px-3.5 py-2 shadow-[0_8px_20px_rgba(77,70,61,0.035)] transition-shadow duration-300 hover:shadow-[0_12px_26px_rgba(77,70,61,0.08)]">
+                <div className="mb-1.5 text-[9.5px] font-black uppercase tracking-[0.22em] text-[#8A8177]">{copy.classLabel}</div>
+                <div className="grid grid-cols-3 gap-2">
                   {(["Y", "B", "F"] as TravelClassCode[]).map((item) => (
                     <motion.button
                       key={item}
@@ -1251,10 +1286,11 @@ export default function Flights() {
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.97 }}
                       className={[
-                        "flights-search-cabin-option h-7 whitespace-nowrap rounded-[9px] border px-1.5 text-[11px] font-semibold shadow-[0_8px_18px_rgba(23,74,139,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(23,74,139,0.16)] sm:h-8 sm:rounded-[10px] sm:px-2 sm:text-[12px]",
+                        "flights-search-cabin-option h-9 whitespace-nowrap rounded-[8px] border px-2 text-[13px] font-semibold transition-all duration-200 hover:-translate-y-0.5",
                         travelClass === item
-                          ? "flights-search-cabin-option-active border-[#174A8B] bg-[linear-gradient(135deg,#174A8B_0%,#0A84FF_100%)] text-white shadow-[0_14px_28px_rgba(23,74,139,0.24)] hover:shadow-[0_18px_34px_rgba(23,74,139,0.30)]"
-                          : "border-[#D9D5CE] bg-[linear-gradient(180deg,#FFFFFF_0%,#F3F7FC_100%)] text-[#5F5A54] hover:border-[#174A8B]/45 hover:bg-[linear-gradient(180deg,#F7FBFF_0%,#EAF4FF_100%)] hover:text-[#174A8B]",
+                          ? `flights-search-cabin-option-active border-[#1A6DEB] ${tripzyBlueGradient} text-white shadow-[0_10px_20px_rgba(23,105,232,0.22)]`
+                          : "border-[#E3DDD4] bg-white text-[#4E5563] hover:border-[#CFC6BB] hover:bg-[#FBFAF8] hover:text-[#174A8B]",
+                        tripzyBlueFocus,
                       ].join(" ")}
                     >
                       {copy.classNames[item]}
@@ -1262,8 +1298,9 @@ export default function Flights() {
                   ))}
                 </div>
               </motion.div>
-              <motion.button whileHover={{ y: -3, scale: 1.01 }} whileTap={{ scale: 0.985 }} onClick={onSearch} disabled={loading} className={`min-h-[44px] rounded-[10px] px-4 text-[12px] font-semibold uppercase tracking-[0.14em] transition disabled:opacity-60 sm:min-h-[54px] sm:rounded-[14px] sm:px-5 sm:text-[13px] sm:tracking-[0.15em] ${luxuryBtn}`}>
-                {loading ? copy.searching : copy.search}
+              <motion.button whileHover={{ y: -3, scale: 1.01 }} whileTap={{ scale: 0.985 }} onClick={onSearch} disabled={loading} className={`flex min-h-[64px] items-center justify-center gap-3 rounded-[13px] border border-[#1769E8] ${tripzyBlueGradient} px-4 text-[14px] font-black uppercase tracking-[0.22em] text-white shadow-[0_14px_28px_rgba(23,105,232,0.24)] transition hover:shadow-[0_18px_34px_rgba(23,105,232,0.34)] disabled:opacity-60 ${tripzyBlueFocus}`}>
+                <span>{loading ? copy.searching : copy.search}</span>
+                <ArrowRight size={18} />
               </motion.button>
             </div>
 
@@ -1284,13 +1321,14 @@ export default function Flights() {
           </div>
         ) : null}
 
+        {!selectedFlight ? (
         <div className="mt-8 grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)]">
           <motion.aside
             initial={{ opacity: 0, x: -18 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.15 }}
             transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-[22px] border border-[#D9D5CE] bg-[#F8F7F4] p-3 shadow-[0_14px_34px_rgba(30,32,36,0.06)]"
+            className="rounded-[22px] border border-[#E7E2DA] bg-[#F7F6F2] p-3 shadow-[0_14px_34px_rgba(77,70,61,0.06)]"
           >
             <div className="sticky top-24 space-y-3 text-[13px] text-[#1F2933]">
               <div className="flex items-center gap-2 rounded-[16px] border border-[#D9D5CE] bg-white px-3 py-3 text-[13px] font-bold text-[#111A34]">
@@ -1378,14 +1416,24 @@ export default function Flights() {
             {loading ? <SearchLoadingAnimation language={language} /> : null}
             {!loading && filtered.length > 0 ? (
               <div className="space-y-3">
-                <motion.div whileHover={{ y: -2 }} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-white px-4 py-3 text-sm shadow-[0_10px_24px_rgba(30,32,36,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(30,32,36,0.10)]">
+                <motion.div whileHover={{ y: -2 }} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[#E7E2DA] bg-[#F7F6F2] px-4 py-3 text-sm shadow-[0_10px_24px_rgba(77,70,61,0.05)] transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(77,70,61,0.09)]">
                   <div className="flex items-center gap-1.5 font-semibold text-[#111A34]">
                     <SlidingNumber number={filtered.length} initiallyStable className="tabular-nums" />
                     <span>{copy.offers}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {(["best", "cheap", "fast"] as const).map((item) => (
-                      <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }} key={item} onClick={() => setSort(item)} className={["h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition", sort === item ? "border-[#0A84FF] bg-[#E7F2FF] text-[#075DB8]" : "border-[#D9D5CE] bg-white text-[#59636E]"].join(" ")}>
+                      <motion.button
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.97 }}
+                        key={item}
+                        onClick={() => setSort(item)}
+                        className={[
+                          "h-8 rounded-[8px] border px-3 text-[12px] font-semibold transition hover:border-[#1A6DEB]/45 hover:bg-[#F4F8FF] hover:text-[#174A8B]",
+                          sort === item ? `border-[#1A6DEB] ${tripzyBlueGradient} text-white shadow-[0_8px_18px_rgba(23,105,232,0.18)]` : "border-[#D9D5CE] bg-white text-[#59636E]",
+                          tripzyBlueFocus,
+                        ].join(" ")}
+                      >
                         {item === "best" ? copy.best : item === "cheap" ? copy.cheap : copy.fast}
                       </motion.button>
                     ))}
@@ -1408,6 +1456,7 @@ export default function Flights() {
             {!loading && filtered.length === 0 ? <div className={`rounded-[28px] px-6 py-12 text-center ${unifiedSoftCard} ${secondaryText}`}>{copy.noFlights}</div> : null}
           </motion.div>
         </div>
+        ) : null}
       </div>
 
       <FlightPreviewModal
@@ -1431,6 +1480,7 @@ function AutocompleteField({
   onChange,
   selectLabel,
   tone = "blue",
+  icon,
 }: {
   label: string
   value: string
@@ -1439,6 +1489,7 @@ function AutocompleteField({
   onChange: (value: string) => void
   selectLabel: string
   tone?: "blue" | "green"
+  icon?: ReactNode
 }) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -1460,51 +1511,57 @@ function AutocompleteField({
   }
   const toneClass =
     tone === "green"
-      ? "border-[#D8EEE6] !bg-[#F0FCF7] hover:shadow-[0_12px_28px_rgba(34,148,98,0.10)]"
-      : "border-[#D7E5F8] !bg-[#EFF6FF] hover:shadow-[0_12px_28px_rgba(23,74,139,0.10)]"
+      ? "hover:shadow-[0_12px_28px_rgba(77,70,61,0.10)]"
+      : "hover:shadow-[0_12px_28px_rgba(77,70,61,0.10)]"
 
   return (
     <motion.label
       whileHover={subtleLift}
-      className={`relative focus-within:border-[#174A8B]/45 focus-within:shadow-[0_0_0_4px_rgba(23,74,139,0.08)] ${fieldPanel} ${toneClass}`}
+      className={`relative flex min-h-[64px] items-center gap-2.5 rounded-[13px] border border-[#EBE7DF] bg-white px-3.5 py-2 shadow-[0_8px_20px_rgba(77,70,61,0.035)] transition focus-within:border-[#CFC6BB] focus-within:shadow-[0_0_0_4px_rgba(141,127,111,0.12)] ${toneClass}`}
     >
-      <div className="text-[8.5px] font-semibold uppercase tracking-[0.13em] text-[#58789c] sm:text-[9px] sm:tracking-[0.15em]">{label}</div>
-      <input
-        className="mt-1 w-full bg-transparent text-[13px] font-semibold text-[#111A34] outline-none placeholder:text-[#90a3ba] sm:text-[14px]"
-        placeholder={placeholder}
-        value={value}
-        onFocus={() => setOpen(true)}
-        onBlur={() =>
-          window.setTimeout(() => {
-            setOpen(false)
-            onChange(formatLocationInputValue(value, options))
-          }, 120)
-        }
-        onKeyDown={(e) => {
-          if (!filteredOptions.length) return
-          if (e.key === "ArrowDown") {
-            e.preventDefault()
-            setOpen(true)
-            setActiveIndex((prev) => (prev + 1) % filteredOptions.length)
-          }
-          if (e.key === "ArrowUp") {
-            e.preventDefault()
-            setOpen(true)
-            setActiveIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length)
-          }
-          if (e.key === "Enter" && open) {
-            e.preventDefault()
-            pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
-          }
-          if (e.key === "Escape") {
-            setOpen(false)
-          }
-        }}
-        onChange={(e) => {
-          onChange(e.target.value)
-          setOpen(true)
-        }}
-      />
+      {icon ?? <Plane size={20} className="shrink-0 text-[#1E7BFF]" />}
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 text-[9.5px] font-black uppercase tracking-[0.22em] text-[#8A8177]">{label}</div>
+        <div className="flex items-center gap-2">
+          <input
+            className="min-w-0 flex-1 bg-transparent text-[14px] font-bold text-[#111A34] outline-none placeholder:text-[#8A94A8]"
+            placeholder={placeholder}
+            value={value}
+            onFocus={() => setOpen(true)}
+            onBlur={() =>
+              window.setTimeout(() => {
+                setOpen(false)
+                onChange(formatLocationInputValue(value, options))
+              }, 120)
+            }
+            onKeyDown={(e) => {
+              if (!filteredOptions.length) return
+              if (e.key === "ArrowDown") {
+                e.preventDefault()
+                setOpen(true)
+                setActiveIndex((prev) => (prev + 1) % filteredOptions.length)
+              }
+              if (e.key === "ArrowUp") {
+                e.preventDefault()
+                setOpen(true)
+                setActiveIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length)
+              }
+              if (e.key === "Enter" && open) {
+                e.preventDefault()
+                pickOption(filteredOptions[activeIndex] ?? filteredOptions[0])
+              }
+              if (e.key === "Escape") {
+                setOpen(false)
+              }
+            }}
+            onChange={(e) => {
+              onChange(e.target.value)
+              setOpen(true)
+            }}
+          />
+          <ChevronDown size={16} className="shrink-0 text-[#7B7268]" />
+        </div>
+      </div>
       {open && filteredOptions.length > 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 8, scale: 0.98 }}
@@ -1675,6 +1732,44 @@ function MiniToggle({ checked, onChange, label }: { checked: boolean; onChange: 
   )
 }
 
+function AirlineLogoMark({
+  src,
+  alt,
+  size = "sm",
+  className = "",
+}: {
+  src?: string
+  alt: string
+  size?: "xs" | "sm" | "md" | "lg"
+  className?: string
+}) {
+  const [failed, setFailed] = useState(false)
+  const sizeClass = {
+    xs: "h-6 w-6 rounded-[9px]",
+    sm: "h-8 w-8 rounded-[11px]",
+    md: "h-10 w-10 rounded-[13px]",
+    lg: "h-12 w-12 rounded-[15px]",
+  }[size]
+  const iconSize = size === "xs" ? 14 : size === "sm" ? 16 : size === "md" ? 18 : 20
+
+  return (
+    <span className={`grid shrink-0 place-items-center border border-[#E3DDD4] bg-white shadow-[0_8px_18px_rgba(77,70,61,0.08)] ${sizeClass} ${className}`}>
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={alt}
+          className="h-[78%] w-[78%] object-contain"
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <Plane size={iconSize} className="text-[#0A84FF]" />
+      )}
+    </span>
+  )
+}
+
 function CityTravelResultCard({
   flight,
   index,
@@ -1729,14 +1824,12 @@ function CityTravelResultCard({
           const arr = toTime(segment.arrival)
           const segDuration = Number(segment.duration || 0) || Math.round(flight.durationMin / Math.max(segments.length, 1))
           const segStops = segmentIndex === 0 ? flight.stopsCount ?? 0 : 0
+          const originName = formatAirportNameOnly(segment.origin, airportLabels)
+          const destinationName = formatAirportNameOnly(segment.destination, airportLabels)
           return (
-            <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`} className="grid gap-2 py-2 first:pt-0 last:pb-0 md:grid-cols-[118px_82px_minmax(0,1fr)_82px] md:items-center">
-              <div className="flex min-w-0 items-center gap-2">
-                {flight.airlineLogo ? (
-                  <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-5 w-5 shrink-0 object-contain" />
-                ) : (
-                  <Plane size={16} className="shrink-0 text-[#0A84FF]" />
-                )}
+              <div key={segment.id || `${segment.origin}-${segment.destination}-${segmentIndex}`} className="grid gap-2 py-2 first:pt-0 last:pb-0 md:grid-cols-[118px_82px_minmax(0,1fr)_82px] md:items-center">
+                <div className="flex min-w-0 items-center gap-2">
+                <AirlineLogoMark src={flight.airlineLogo} alt={flight.airlineName || flight.airline} size="xs" />
                 <div className="min-w-0">
                   <div className="truncate text-[12px] font-semibold text-[#26313C]">{flight.airlineName || flight.airline}</div>
                   <div className="text-[10px] leading-4 text-[#59636E]">{segment.carrier || flight.airline}</div>
@@ -1747,41 +1840,53 @@ function CityTravelResultCard({
               <div>
                 <div className="text-[15px] font-bold leading-5 text-[#111A34]">{dep}</div>
                 <div className="text-[11px] leading-4 text-[#59636E]">{toDateOnly(segment.departure)}</div>
-                <div className="text-[11px] leading-4 text-[#59636E]">{segment.origin}</div>
+                <div className="text-[11px] font-semibold leading-4 text-[#26313C]">{segment.origin}</div>
+                {originName ? <div className="text-[10px] leading-4 text-[#59636E]">{originName}</div> : null}
               </div>
 
               <div className="min-w-0 px-1">
                 <div className="flex items-center gap-2">
-                  <span className="rounded-[5px] bg-[#EEEAE4] px-2 py-0.5 text-[10px] font-semibold text-[#59636E]">{segment.origin}</span>
+                  <span className="inline-flex min-w-[54px] flex-col items-center rounded-[8px] bg-[#EEEAE4] px-2 py-1 text-center">
+                    <span className="text-[10px] font-bold leading-3 text-[#59636E]">{segment.origin}</span>
+                    {originName ? <span className="mt-0.5 max-w-[92px] truncate text-[9px] font-medium leading-3 text-[#7A746D]">{originName}</span> : null}
+                  </span>
                   <span className="h-px min-w-[32px] flex-1 bg-[#C9C4BD]" />
-                  <span className="rounded-[5px] bg-[#EEEAE4] px-2 py-0.5 text-[10px] font-semibold text-[#59636E]">{segment.destination}</span>
+                  <span className="inline-flex min-w-[54px] flex-col items-center rounded-[8px] bg-[#EEEAE4] px-2 py-1 text-center">
+                    <span className="text-[10px] font-bold leading-3 text-[#59636E]">{segment.destination}</span>
+                    {destinationName ? <span className="mt-0.5 max-w-[92px] truncate text-[9px] font-medium leading-3 text-[#7A746D]">{destinationName}</span> : null}
+                  </span>
                 </div>
                 <div className="mt-1 text-center text-[11px] font-semibold text-[#26313C]">{fmtDuration(segDuration, language)}</div>
                 <div className="mt-0.5 text-center text-[10px] leading-4 text-[#59636E]">
                   {formatSegmentRouteLabel(segment.origin, segment.destination, airportLabels)}
                 </div>
-                <div className={["mt-0.5 text-center text-[10px]", isDirect ? "text-[#078A50]" : "text-[#59636E]"].join(" ")}>
+                <div className={["mx-auto mt-1 inline-flex w-full justify-center text-center text-[11px] font-bold", isDirect ? "text-[#078A50]" : "text-[#A33B22]"].join(" ")}>
                   {segStops === 0 ? copy.direct : `${segStops} ${copy.transfers}`}
                 </div>
-                {segment.layover ? <div className="mt-0.5 text-center text-[10px] text-[#A33B22]">{copy.layover}: {fmtDuration(segment.layover, language)}</div> : null}
+                {segment.layover ? (
+                  <div className="mx-auto mt-1 inline-flex rounded-full border border-[#F0C2AE] bg-[#FFF2EA] px-2.5 py-1 text-center text-[11px] font-bold text-[#A33B22]">
+                    {copy.layover}: {fmtDuration(segment.layover, language)}
+                  </div>
+                ) : null}
               </div>
 
               <div className="text-left md:text-right">
                 <div className="text-[15px] font-bold leading-5 text-[#111A34]">{arr}</div>
                 <div className="text-[11px] leading-4 text-[#59636E]">{toDateOnly(segment.arrival)}</div>
-                <div className="text-[11px] leading-4 text-[#59636E]">{segment.destination}</div>
+                <div className="text-[11px] font-semibold leading-4 text-[#26313C]">{segment.destination}</div>
+                {destinationName ? <div className="text-[10px] leading-4 text-[#59636E]">{destinationName}</div> : null}
               </div>
             </div>
           )
         })}
-        <div className="py-2 text-[11px] leading-5 text-[#59636E]">
+        <div className="py-3 text-[12px] leading-5 text-[#59636E]">
           <div>
             <span className="font-semibold text-[#26313C]">{routeSummary.routeLabel}: </span>
             {routeSummary.route}
           </div>
-          <div className={routeSummary.transfers.length ? "text-[#A33B22]" : "text-[#078A50]"}>
-            <span className="font-semibold">{routeSummary.transferLabel}: </span>
-            {routeSummary.transfers.length ? routeSummary.transfers.join(" · ") : routeSummary.directLabel}
+          <div className={["mt-2 inline-flex items-center rounded-full border px-3 py-1.5 text-[13px] font-bold shadow-sm", routeSummary.transfers.length ? "border-[#F0C2AE] bg-[#FFF2EA] text-[#A33B22]" : "border-[#B9E9D2] bg-[#F0FCF7] text-[#078A50]"].join(" ")}>
+            <span>{routeSummary.transferLabel}: </span>
+            <span className="ml-1">{routeSummary.transfers.length ? routeSummary.transfers.join(" · ") : routeSummary.directLabel}</span>
           </div>
         </div>
       </div>
@@ -1797,7 +1902,7 @@ function CityTravelResultCard({
           onClick={() => onPick(flight)}
           whileHover={{ y: -2, scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="h-10 min-w-[116px] rounded-[9px] bg-white/95 px-5 text-[13px] font-semibold text-[#021373] shadow-[0_10px_22px_rgba(1,6,38,0.18)] transition hover:bg-white"
+          className={`h-10 min-w-[116px] rounded-[9px] bg-white/95 px-5 text-[13px] font-semibold text-[#174A8B] shadow-[0_10px_22px_rgba(1,6,38,0.18)] transition hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_14px_26px_rgba(1,6,38,0.24)] ${tripzyBlueFocus}`}
         >
           {copy.select}
         </motion.button>
@@ -2084,11 +2189,7 @@ function FlightPreviewModal({
                 return (
                   <div key={segment.id || `${segment.origin}-${segment.destination}-${index}`}>
                     <div className="mb-1.5 flex items-center gap-2 sm:mb-3 sm:gap-3">
-                      {flight.airlineLogo ? (
-                        <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-7 w-7 object-contain sm:h-9 sm:w-9" />
-                      ) : (
-                        <Plane size={20} className="text-[#0A84FF] sm:size-[26px]" />
-                      )}
+                      <AirlineLogoMark src={flight.airlineLogo} alt={flight.airlineName || flight.airline} size="md" />
                       <div>
                         <div className="text-[15px] font-bold text-[#111111] sm:text-[17px]">{flight.airlineName || flight.airline}</div>
                         <div className="text-[12px] text-[#6D6760] sm:text-[14px]">{fmtDuration(duration, language)} {copy.inFlight}</div>
@@ -2169,7 +2270,7 @@ function FlightPreviewModal({
               type="button"
               onClick={startBuyCheck}
               disabled={isBuying}
-              className="h-10 rounded-[12px] bg-[#0A84FF] px-5 text-[14px] font-bold text-white transition hover:bg-[#006CD8] disabled:cursor-wait disabled:opacity-80 sm:h-12 sm:px-6 sm:text-[16px]"
+              className={`h-10 rounded-[12px] border border-[#5f72c7]/35 ${tripzyBlueGradient} px-5 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(2,19,115,0.20)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(2,19,115,0.26)] disabled:cursor-wait disabled:opacity-80 sm:h-12 sm:px-6 sm:text-[16px] ${tripzyBlueFocus}`}
             >
               {isBuying ? `${copy.checking}...` : copy.buy}
             </button>
@@ -2190,7 +2291,18 @@ function FlightPreviewModal({
                   className="flex h-full max-h-[520px] w-full max-w-[650px] flex-col overflow-hidden rounded-[28px] bg-[#F8F7F4] text-center shadow-[0_28px_80px_rgba(0,0,0,0.28)] sm:max-h-[540px] lg:h-auto lg:max-h-[500px] lg:max-w-[560px]"
                 >
                   <div className="px-6 pt-8 lg:pt-6">
-                    <div className="mx-auto mb-4 h-10 w-10 rounded-[10px] bg-[#174A8B] lg:mb-3 lg:h-9 lg:w-9" />
+                    <div className="mx-auto mb-4 inline-flex h-14 items-center gap-3 rounded-full border border-[#D7E5F8] bg-white px-4 pr-6 shadow-[0_12px_28px_rgba(23,74,139,0.08)] lg:mb-3 lg:h-12 lg:px-3.5 lg:pr-5">
+                      <motion.span
+                        className="grid h-8 w-8 place-items-center rounded-full bg-[linear-gradient(135deg,#174A8B_0%,#0A84FF_100%)] text-white shadow-[0_8px_18px_rgba(23,74,139,0.18)]"
+                        animate={{ y: [0, -3, 0], rotate: [0, 8, 0] }}
+                        transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <Plane size={16} />
+                      </motion.span>
+                      <span className="text-[12px] font-bold uppercase tracking-[0.34em] text-[#174A8B] lg:text-[11px]">
+                        {language === "ru" ? "Онлайн поиск" : language === "en" ? "Live search" : "Jonli qidiruv"}
+                      </span>
+                    </div>
                     <div className="text-[22px] font-black text-[#111111] lg:text-[20px]">{copy.checking}</div>
                     <div className="mt-2 text-[14px] text-[#6D6760] lg:text-[13px]">{copy.checkingSub}</div>
                   </div>
@@ -2270,13 +2382,7 @@ function AirlineGroupCard({
         className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-[#F3F1ED]"
       >
         <span className="flex min-w-0 items-center gap-3">
-          {group.airlineLogo ? (
-            <img src={group.airlineLogo} alt={group.airline} className="h-8 w-8 rounded-full border border-[#D9D5CE] bg-white object-contain p-1" />
-          ) : (
-            <span className={`grid h-8 w-8 place-items-center ${accentChip}`}>
-              <Plane size={16} />
-            </span>
-          )}
+          <AirlineLogoMark src={group.airlineLogo} alt={group.airline} size="sm" />
           <span className="min-w-0">
             <span className={`block truncate text-[17px] font-semibold ${primaryText}`}>
               {group.airline} ({group.airlineCode})
@@ -2432,13 +2538,7 @@ function FlightRowCard({ flight, index, onPick, formatRoute, language, copy }: {
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
         <div className="flex items-center gap-3">
-          {flight.airlineLogo ? (
-            <img src={flight.airlineLogo} alt={flight.airlineName || flight.airline} className="h-11 w-11 rounded-full border border-[#D9D5CE] bg-white object-contain p-1.5" />
-          ) : (
-            <div className={`flex h-11 w-11 items-center justify-center ${accentChip}`}>
-              <Plane size={18} />
-            </div>
-          )}
+          <AirlineLogoMark src={flight.airlineLogo} alt={flight.airlineName || flight.airline} size="lg" />
           <div className="min-w-0">
             <div className={`text-[18px] font-black ${primaryText}`}>{flight.depart}</div>
             <div className={`text-sm ${secondaryText}`}>{flight.from}</div>

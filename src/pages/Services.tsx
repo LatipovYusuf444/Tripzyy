@@ -102,7 +102,7 @@ export default function Services() {
   }[language]
 
   return (
-    <section className="services-page secondary-page-shell relative overflow-hidden bg-white pt-4 text-[#071225]">
+    <section className="services-page secondary-page-shell relative overflow-hidden bg-[#ECEAE5] pt-4 text-[#071225]">
       <div className="secondary-page-overlay pointer-events-none absolute inset-0" />
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-6 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">

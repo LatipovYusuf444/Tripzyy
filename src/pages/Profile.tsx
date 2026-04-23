@@ -152,7 +152,7 @@ export default function Profile() {
   const isDarkTheme = siteTheme === "dark"
   const pageClass = isDarkTheme
     ? "relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(54,103,199,0.22)_0%,rgba(9,24,54,0)_34%),linear-gradient(180deg,#07152f_0%,#0b1e42_46%,#061226_100%)] pt-4 text-white md:pt-6"
-    : "relative min-h-screen overflow-hidden bg-[#EEF1FB] pt-4 text-[#111A34] md:pt-6"
+    : "relative min-h-screen overflow-hidden bg-[#ECEAE5] pt-4 text-[#111A34] md:pt-6"
   const glowClass = isDarkTheme
     ? "pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(92,154,255,0.2)_0%,rgba(92,154,255,0)_30%),radial-gradient(circle_at_84%_12%,rgba(125,167,255,0.12)_0%,rgba(125,167,255,0)_34%)]"
     : "hidden"

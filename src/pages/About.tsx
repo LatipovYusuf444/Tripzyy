@@ -295,9 +295,9 @@ export default function About() {
   };
 
   return (
-    <div className="about-page secondary-page-shell relative overflow-hidden bg-white text-[#111A34] dark:bg-transparent dark:text-white">
+    <div className="about-page secondary-page-shell relative overflow-hidden bg-[#ECEAE5] text-[#111A34] dark:bg-transparent dark:text-white">
       <section ref={heroRef} className="relative bg-transparent">
-        <div className="absolute inset-0 bg-white dark:bg-transparent" />
+        <div className="absolute inset-0 bg-[#ECEAE5] dark:bg-transparent" />
         <motion.div className="relative mx-auto max-w-[1320px] px-5 pb-8 pt-4 md:px-8 md:pt-6 2xl:max-w-[1480px]">
           <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2">
             <motion.div variants={staggerWrap} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }}>
@@ -393,7 +393,7 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-      <section className="bg-white py-10 dark:bg-transparent">
+      <section className="bg-[#ECEAE5] py-10 dark:bg-transparent">
         <div className="mx-auto max-w-[1320px] px-5 text-center md:px-8 2xl:max-w-[1480px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
@@ -414,7 +414,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-white py-10 dark:bg-transparent">
+      <section className="bg-[#ECEAE5] py-10 dark:bg-transparent">
         <div className="mx-auto max-w-[1320px] px-5 text-center md:px-8 2xl:max-w-[1480px]">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={staggerWrap}>
             <motion.div variants={fadeUp} className="text-sm font-semibold tracking-widest text-[#ff6a00] dark:text-[#ff9b57]">
