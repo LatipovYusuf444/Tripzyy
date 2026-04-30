@@ -2,12 +2,9 @@ const ACCESS_TOKEN_KEY = "access_token"
 const ACCESS_TOKEN_EXPIRES_AT_KEY = "access_token_expires_at"
 const AUTH_USER_KEY = "auth_user"
 const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000
-const AUTO_AUTH_TOKEN = "bWMPeJ3t1ymrdhJxaZwBAZoNzbYvQXP7"
-const AUTO_AUTH_USER = {
-  fullName: "Tripzy User",
-  email: "alutupy@gmail.com",
-} as const
-const AUTO_AUTH_EXPIRES_AT = Date.now() + 3650 * 24 * 60 * 60 * 1000
+
+const normalizeToken = (value?: string | null) =>
+  (value || "").trim().replace(/^Bearer\s+/i, "")
 
 export type StoredAuthUser = {
   fullName: string
@@ -42,21 +39,9 @@ export const setAuthUser = (user: StoredAuthUser) => {
   localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
 }
 
-export const ensureDefaultAuthSession = () => {
-  const token = localStorage.getItem(ACCESS_TOKEN_KEY) || sessionStorage.getItem(ACCESS_TOKEN_KEY)
-  if (!token) {
-    setAccessToken(AUTO_AUTH_TOKEN, AUTO_AUTH_EXPIRES_AT)
-  }
-
-  const storedUser = localStorage.getItem(AUTH_USER_KEY)
-  if (!storedUser) {
-    setAuthUser(AUTO_AUTH_USER)
-  }
-}
-
 export const getAuthUser = (): StoredAuthUser | null => {
   const rawValue = localStorage.getItem(AUTH_USER_KEY)
-  if (!rawValue) return AUTO_AUTH_USER
+  if (!rawValue) return null
 
   try {
     const parsedValue = JSON.parse(rawValue) as Partial<StoredAuthUser>
@@ -73,20 +58,25 @@ export const getAuthUser = (): StoredAuthUser | null => {
     localStorage.removeItem(AUTH_USER_KEY)
   }
 
-  return AUTO_AUTH_USER
+  return null
 }
 
 export const getAccessToken = () => {
   const token =
     localStorage.getItem(ACCESS_TOKEN_KEY) ||
-    sessionStorage.getItem(ACCESS_TOKEN_KEY) ||
-    AUTO_AUTH_TOKEN
+    sessionStorage.getItem(ACCESS_TOKEN_KEY)
+  const staticApiKey = normalizeToken(import.meta.env.VITE_API_KEY)
+
+  if (token && staticApiKey && normalizeToken(token) === staticApiKey) {
+    clearAccessToken()
+    return null
+  }
 
   const expiresAt = getStoredExpiry()
   if (expiresAt && Date.now() > expiresAt) {
     clearAccessToken()
-    return AUTO_AUTH_TOKEN
+    return null
   }
 
-  return token
+  return token || null
 }

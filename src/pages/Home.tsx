@@ -194,6 +194,11 @@ function HeroSection({
         <div className="relative z-10 mx-auto flex max-w-[1540px] flex-col items-center px-4 sm:px-6 lg:px-8">
           {children}
         </div>
+        <div>
+          <div className="">
+            <h1>Trpizy</h1>
+          </div>
+        </div>
       </div>
     </section>
   )
@@ -268,6 +273,7 @@ export default function Home() {
   const calendarAnchorRef = useRef<HTMLDivElement>(null)
   const returnDateAnchorRef = useRef<HTMLDivElement>(null)
   const multiDateAnchorRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [isCompactSearchViewport, setIsCompactSearchViewport] = useState(false)
   const [tripMode, setTripMode] = useState<TripMode>("oneway")
   const [travelClass, setTravelClass] = useState<TravelClassCode>("Y")
   const [passengerTouched, setPassengerTouched] = useState(false)
@@ -500,6 +506,19 @@ export default function Home() {
     return () => {
       window.removeEventListener("storage", syncTheme)
       window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsCompactSearchViewport(window.matchMedia("(max-width: 1279px)").matches)
+    }
+
+    syncViewport()
+    window.addEventListener("resize", syncViewport)
+
+    return () => {
+      window.removeEventListener("resize", syncViewport)
     }
   }, [])
 
@@ -875,36 +894,36 @@ export default function Home() {
         heroBackgroundImage={heroBackgroundImage}
         heroMobileBackgroundImage={heroMobileBackgroundImage}
       >
-            <div className="flex min-h-[640px] w-full items-start justify-center pt-24 sm:min-h-[720px] sm:items-start sm:pt-36 lg:min-h-[820px] lg:pt-40 xl:pt-44">
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={heroSequenceVariants}
-              className="relative flex w-full max-w-[1380px] flex-col items-start"
+        <div className="flex min-h-[640px] w-full items-start justify-center pt-24 sm:min-h-[720px] sm:items-start sm:pt-36 lg:min-h-[820px] lg:pt-40 xl:pt-44">
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={heroSequenceVariants}
+            className="relative flex w-full max-w-[1380px] flex-col items-start"
+          >
+            <motion.h1
+              variants={heroSlideLeftVariants}
+              className="max-w-[360px] text-left text-[clamp(20px,5.5vw,26px)] font-extrabold leading-[1.08] text-white [font-family:Arial,Helvetica,sans-serif] drop-shadow-[0_12px_36px_rgba(0,0,0,0.58)] sm:max-w-[1120px] sm:whitespace-nowrap sm:text-[clamp(22px,2.4vw,38px)]"
             >
-              <motion.h1
-                variants={heroSlideLeftVariants}
-                className="max-w-[360px] text-left text-[clamp(20px,5.5vw,26px)] font-extrabold leading-[1.08] text-white [font-family:Arial,Helvetica,sans-serif] drop-shadow-[0_12px_36px_rgba(0,0,0,0.58)] sm:max-w-[1120px] sm:whitespace-nowrap sm:text-[clamp(22px,2.4vw,38px)]"
-              >
-                {heroCopy.titleStart}{" "}
-                <span className="block bg-[linear-gradient(90deg,#137dff_0%,#19b7ff_100%)] bg-clip-text text-transparent sm:inline">
-                  {heroCopy.titleAccent}
-                </span>
-              </motion.h1>
-              <motion.p
-                variants={heroSlideLeftVariants}
-                className="mt-2 max-w-[430px] text-[14px] font-semibold leading-6 text-white/78 sm:mt-3 sm:max-w-[520px] sm:text-[17px]"
-              >
-                {heroSubtitle}
-              </motion.p>
-              <motion.div variants={heroSlideUpVariants} className="w-full">
-                <TripModeTabs
-                  tripMode={tripMode}
-                  searchUiCopy={searchUiCopy}
-                  setTripMode={setTripMode}
-                />
-              </motion.div>
-              <motion.div variants={heroSlideRightVariants} className="w-full">
+              {heroCopy.titleStart}{" "}
+              <span className="block bg-[linear-gradient(90deg,#137dff_0%,#19b7ff_100%)] bg-clip-text text-transparent sm:inline">
+                {heroCopy.titleAccent}
+              </span>
+            </motion.h1>
+            <motion.p
+              variants={heroSlideLeftVariants}
+              className="mt-2 max-w-[430px] text-[14px] font-semibold leading-6 text-white/78 sm:mt-3 sm:max-w-[520px] sm:text-[17px]"
+            >
+              {heroSubtitle}
+            </motion.p>
+            <motion.div variants={heroSlideUpVariants} className="w-full">
+              <TripModeTabs
+                tripMode={tripMode}
+                searchUiCopy={searchUiCopy}
+                setTripMode={setTripMode}
+              />
+            </motion.div>
+            <motion.div variants={heroSlideRightVariants} className="w-full">
               <BookingGlassBar
                 className={[
                   "relative z-20 mt-3 w-full overflow-visible rounded-[16px] sm:mt-4 sm:rounded-[20px] lg:mt-5",
@@ -915,99 +934,220 @@ export default function Home() {
                     : "p-0",
                 ].join(" ")}
               >
-              {tripMode === "multi" ? (
-                <div className="space-y-3 sm:space-y-4">
-                  {multiTrips.map((trip, index) => (
-                    <div key={`trip-${index}`}>
-                      <div className={multiFlightLabelClass}>
-                        {heroCopy.flightLabel} {index + 1}
-                      </div>
-                      <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
-                        <HomeAutocompleteField
-                          label={heroCopy.fromTitle}
-                          value={trip.from}
-                          placeholder={heroCopy.originPlaceholder}
-                          options={locationOptions}
-                          onChange={(value) =>
-                            setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, from: value } : item))
-                          }
-                          icon={<PlaneTakeoff size={18} />}
-                          onActivate={() => {
-                            setCalendarOpen(false)
-                            setOpenMultiDateIndex(null)
-                            setActiveAirportField(`multi-${index}-from`)
-                          }}
-                          onDismiss={() => setActiveAirportField(null)}
-                          useInlinePanel
-                          active={activeAirportField === `multi-${index}-from`}
-                          isDark={isHeroSearchDark}
-                        />
-                        <HomeAutocompleteField
-                          label={heroCopy.toTitle}
-                          value={trip.to}
-                          placeholder={heroCopy.destinationPlaceholder}
-                          options={locationOptions}
-                          onChange={(value) =>
-                            setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, to: value } : item))
-                          }
-                          icon={<PlaneLanding size={18} />}
-                          onActivate={() => {
-                            setCalendarOpen(false)
-                            setOpenMultiDateIndex(null)
-                            setActiveAirportField(`multi-${index}-to`)
-                          }}
-                          onDismiss={() => setActiveAirportField(null)}
-                          useInlinePanel
-                          active={activeAirportField === `multi-${index}-to`}
-                          isDark={isHeroSearchDark}
-                        />
-                        <div
-                          ref={(el) => { multiDateAnchorRefs.current[index] = el }}
-                          className={[
-                            multiDateSegmentClass,
-                            openMultiDateIndex === index ? activeMultiDateSegmentClass : "z-10",
-                          ].join(" ")}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveAirportField(null)
+                {tripMode === "multi" ? (
+                  <div className="space-y-3 sm:space-y-4">
+                    {multiTrips.map((trip, index) => (
+                      <div key={`trip-${index}`}>
+                        <div className={multiFlightLabelClass}>
+                          {heroCopy.flightLabel} {index + 1}
+                        </div>
+                        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                          <HomeAutocompleteField
+                            label={heroCopy.fromTitle}
+                            value={trip.from}
+                            placeholder={heroCopy.originPlaceholder}
+                            options={locationOptions}
+                            onChange={(value) =>
+                              setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, from: value } : item))
+                            }
+                            icon={<PlaneTakeoff size={18} />}
+                            onActivate={() => {
                               setCalendarOpen(false)
-                              setOpenMultiDateIndex((prev) => (prev === index ? null : index))
+                              setOpenMultiDateIndex(null)
+                              setActiveAirportField(`multi-${index}-from`)
                             }}
-                            className="text-left"
+                            onDismiss={() => setActiveAirportField(null)}
+                            useInlinePanel
+                            active={activeAirportField === `multi-${index}-from`}
+                            isDark={isHeroSearchDark}
+                          />
+                          <HomeAutocompleteField
+                            label={heroCopy.toTitle}
+                            value={trip.to}
+                            placeholder={heroCopy.destinationPlaceholder}
+                            options={locationOptions}
+                            onChange={(value) =>
+                              setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, to: value } : item))
+                            }
+                            icon={<PlaneLanding size={18} />}
+                            onActivate={() => {
+                              setCalendarOpen(false)
+                              setOpenMultiDateIndex(null)
+                              setActiveAirportField(`multi-${index}-to`)
+                            }}
+                            onDismiss={() => setActiveAirportField(null)}
+                            useInlinePanel
+                            active={activeAirportField === `multi-${index}-to`}
+                            isDark={isHeroSearchDark}
+                          />
+                          <div
+                            ref={(el) => { multiDateAnchorRefs.current[index] = el }}
+                            className={[
+                              multiDateSegmentClass,
+                              openMultiDateIndex === index ? activeMultiDateSegmentClass : "z-10",
+                            ].join(" ")}
                           >
-                            <div className="luxury-search-label flex items-center gap-2 text-[9px] font-semibold uppercase">
-                              <span className="luxury-search-icon h-7 w-7">
-                                <CalendarDays size={13} />
-                              </span>
-                              <span>{copy.date}</span>
-                            </div>
-                            <div className="luxury-search-value mt-1.5 text-[13px] font-semibold">
-                              {trip.date ? formatDisplayDate(trip.date) : heroCopy.addDates}
-                            </div>
-                          </button>
-                          {openMultiDateIndex === index ? (
-                            <FareCalendarPicker
-                              from={resolveLocationCode(trip.from, locationOptions)}
-                              to={resolveLocationCode(trip.to, locationOptions)}
-                              pax={pax}
-                              classCode={travelClass}
-                              value={trip.date}
-                              onChange={(nextDate) => {
-                                setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, date: nextDate } : item))
-                                setOpenMultiDateIndex(null)
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveAirportField(null)
+                                setCalendarOpen(false)
+                                setOpenMultiDateIndex((prev) => (prev === index ? null : index))
                               }}
-                              onClose={() => setOpenMultiDateIndex(null)}
-                              anchorElement={multiDateAnchorRefs.current[index]}
-                            />
-                          ) : null}
+                              className="text-left"
+                            >
+                              <div className="luxury-search-label flex items-center gap-2 text-[9px] font-semibold uppercase">
+                                <span className="luxury-search-icon h-7 w-7">
+                                  <CalendarDays size={13} />
+                                </span>
+                                <span>{copy.date}</span>
+                              </div>
+                              <div className="luxury-search-value mt-1.5 text-[13px] font-semibold">
+                                {trip.date ? formatDisplayDate(trip.date) : heroCopy.addDates}
+                              </div>
+                            </button>
+                            {openMultiDateIndex === index ? (
+                              <FareCalendarPicker
+                                from={resolveLocationCode(trip.from, locationOptions)}
+                                to={resolveLocationCode(trip.to, locationOptions)}
+                                pax={pax}
+                                classCode={travelClass}
+                                value={trip.date}
+                                onChange={(nextDate) => {
+                                  setMultiTrips((prev) => prev.map((item, itemIndex) => itemIndex === index ? { ...item, date: nextDate } : item))
+                                  setOpenMultiDateIndex(null)
+                                }}
+                                onClose={() => setOpenMultiDateIndex(null)}
+                                anchorElement={multiDateAnchorRefs.current[index]}
+                                forceMobile={isCompactSearchViewport}
+                              />
+                            ) : null}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
+                      <PassengerField
+                        pax={pax}
+                        onChange={(value) => {
+                          setPax(value)
+                          setPassengerTouched(true)
+                          setActiveAirportField(null)
+                        }}
+                        onActivate={() => {
+                          setActiveAirportField(null)
+                          setCalendarOpen(false)
+                          setOpenMultiDateIndex(null)
+                        }}
+                        label={heroCopy.guestCabin}
+                        valueLabel={
+                          language === "ru"
+                            ? `${pax} пассажир, ${searchUiCopy.classNames[travelClass]}`
+                            : language === "en"
+                              ? `${pax} passenger, ${searchUiCopy.classNames[travelClass]}`
+                              : `${pax} yo'lovchi, ${searchUiCopy.classNames[travelClass]}`
+                        }
+                        cabinLabel={searchUiCopy.classNames[travelClass]}
+                        travelClass={travelClass}
+                        onTravelClassChange={setTravelClass}
+                        icon={<UsersRound size={16} />}
+                        isDark={isHeroSearchDark}
+                      />
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMultiTrips((prev) => [...prev, { from: "", to: "", date: "" }])
+                          }
+                          className="border-b border-white/24 pb-0.5 text-[13px] font-medium text-white/80 transition hover:text-white"
+                        >
+                          {heroCopy.addSegment}
+                        </button>
+                        <motion.button
+                          type="button"
+                          onClick={() => {
+                            setActiveAirportField(null)
+                            onSearch()
+                          }}
+                          className="luxury-search-cta inline-flex h-10 items-center justify-center rounded-[14px] px-5 text-[13px] font-bold text-white transition-all duration-300"
+                          whileHover={{ y: -1, scale: 1.01 }}
+                          whileTap={{ scale: 0.985 }}
+                        >
+                          {searchUiCopy.search}
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    data-search-theme={isHeroSearchDark ? "dark" : "light"}
+                    className={[
+                      "luxury-search-grid home-search-surface relative grid items-stretch gap-3 overflow-visible rounded-[18px] bg-transparent transition-colors duration-300 sm:gap-3 sm:rounded-[20px] xl:gap-0",
+                      isHeroSearchDark
+                        ? "border border-[#2c4b78]/70 bg-[linear-gradient(180deg,rgba(14,32,67,0.96)_0%,rgba(7,18,44,0.94)_100%)] shadow-[0_22px_58px_rgba(2,8,24,0.34)] backdrop-blur-xl"
+                        : "xl:bg-[#EBEBEB]",
+                      tripMode === "round"
+                        ? "xl:grid-cols-[2.25fr_0.95fr_0.95fr_0.92fr_140px]"
+                        : "xl:grid-cols-[2.45fr_1fr_0.95fr_140px]",
+                    ].join(" ")}
+                  >
+                    <div className="relative grid items-stretch gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextFrom = to
+                          const nextTo = from
+                          setFrom(nextFrom)
+                          setTo(nextTo)
+                          setActiveAirportField(null)
+                        }}
+                        className={[
+                          "absolute left-1/2 top-1/2 z-10 hidden h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-200 active:scale-95 xl:flex",
+                          isHeroSearchDark
+                            ? "bg-[#132f58] text-[#d8ebff] hover:bg-[#18416f] hover:shadow-[0_10px_22px_rgba(2,8,24,0.28)]"
+                            : "bg-[#dedede] text-[#6d6a66] hover:bg-[#d6d6d6] hover:shadow-[0_10px_22px_rgba(15,23,42,0.12)]",
+                        ].join(" ")}
+                      >
+                        <ArrowRightLeft size={16} />
+                      </button>
+                      <HomeAutocompleteField
+                        label={searchUiCopy.from}
+                        value={from}
+                        placeholder={heroCopy.originPlaceholder}
+                        options={locationOptions}
+                        onChange={setFrom}
+                        icon={<PlaneTakeoff size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"} />}
+                        onActivate={() => {
+                          setCalendarOpen(false)
+                          setOpenMultiDateIndex(null)
+                          setActiveAirportField("from")
+                        }}
+                        onDismiss={() => setActiveAirportField(null)}
+                        useInlinePanel
+                        active={activeAirportField === "from"}
+                        isDark={isHeroSearchDark}
+                        compact
+                      />
+                      <HomeAutocompleteField
+                        label={searchUiCopy.to}
+                        value={to}
+                        placeholder={heroCopy.destinationPlaceholder}
+                        options={locationOptions}
+                        onChange={setTo}
+                        icon={<PlaneLanding size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"} />}
+                        onActivate={() => {
+                          setCalendarOpen(false)
+                          setOpenMultiDateIndex(null)
+                          setActiveAirportField("to")
+                        }}
+                        onDismiss={() => setActiveAirportField(null)}
+                        useInlinePanel
+                        active={activeAirportField === "to"}
+                        isDark={isHeroSearchDark}
+                        compact
+                      />
+                    </div>
                     <PassengerField
                       pax={pax}
                       onChange={(value) => {
@@ -1020,263 +1160,145 @@ export default function Home() {
                         setCalendarOpen(false)
                         setOpenMultiDateIndex(null)
                       }}
-                      label={heroCopy.guestCabin}
-                      valueLabel={
-                        language === "ru"
-                          ? `${pax} пассажир, ${searchUiCopy.classNames[travelClass]}`
-                          : language === "en"
-                            ? `${pax} passenger, ${searchUiCopy.classNames[travelClass]}`
-                            : `${pax} yo'lovchi, ${searchUiCopy.classNames[travelClass]}`
-                      }
+                      label={searchUiCopy.passengers}
+                      valueLabel={language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`}
                       cabinLabel={searchUiCopy.classNames[travelClass]}
                       travelClass={travelClass}
                       onTravelClassChange={setTravelClass}
-                      icon={<UsersRound size={16} />}
-                      isDark={isHeroSearchDark}
-                    />
-                    <div className="flex items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setMultiTrips((prev) => [...prev, { from: "", to: "", date: "" }])
-                        }
-                        className="border-b border-white/24 pb-0.5 text-[13px] font-medium text-white/80 transition hover:text-white"
-                      >
-                        {heroCopy.addSegment}
-                      </button>
-                      <motion.button
-                        type="button"
-                        onClick={() => {
-                          setActiveAirportField(null)
-                          onSearch()
-                        }}
-                        className="luxury-search-cta inline-flex h-10 items-center justify-center rounded-[14px] px-5 text-[13px] font-bold text-white transition-all duration-300"
-                        whileHover={{ y: -1, scale: 1.01 }}
-                        whileTap={{ scale: 0.985 }}
-                      >
-                        {searchUiCopy.search}
-                      </motion.button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  data-search-theme={isHeroSearchDark ? "dark" : "light"}
-                  className={[
-                    "luxury-search-grid home-search-surface relative grid items-stretch gap-3 overflow-visible rounded-[18px] bg-transparent transition-colors duration-300 sm:gap-3 sm:rounded-[20px] xl:gap-0",
-                    isHeroSearchDark
-                      ? "border border-[#2c4b78]/70 bg-[linear-gradient(180deg,rgba(14,32,67,0.96)_0%,rgba(7,18,44,0.94)_100%)] shadow-[0_22px_58px_rgba(2,8,24,0.34)] backdrop-blur-xl"
-                      : "xl:bg-[#EBEBEB]",
-                    tripMode === "round"
-                      ? "xl:grid-cols-[2.25fr_0.95fr_0.95fr_0.92fr_140px]"
-                      : "xl:grid-cols-[2.45fr_1fr_0.95fr_140px]",
-                  ].join(" ")}
-                >
-                    <div className="relative grid items-stretch gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextFrom = to
-                        const nextTo = from
-                        setFrom(nextFrom)
-                        setTo(nextTo)
-                        setActiveAirportField(null)
-                      }}
-                    className={[
-                      "absolute left-1/2 top-1/2 z-10 hidden h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-200 active:scale-95 xl:flex",
-                      isHeroSearchDark
-                        ? "bg-[#132f58] text-[#d8ebff] hover:bg-[#18416f] hover:shadow-[0_10px_22px_rgba(2,8,24,0.28)]"
-                        : "bg-[#dedede] text-[#6d6a66] hover:bg-[#d6d6d6] hover:shadow-[0_10px_22px_rgba(15,23,42,0.12)]",
-                    ].join(" ")}
-                    >
-                      <ArrowRightLeft size={16} />
-                    </button>
-                    <HomeAutocompleteField
-                      label={searchUiCopy.from}
-                      value={from}
-                      placeholder={heroCopy.originPlaceholder}
-                      options={locationOptions}
-                      onChange={setFrom}
-                      icon={<PlaneTakeoff size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"} />}
-                      onActivate={() => {
-                        setCalendarOpen(false)
-                        setOpenMultiDateIndex(null)
-                        setActiveAirportField("from")
-                      }}
-                      onDismiss={() => setActiveAirportField(null)}
-                      useInlinePanel
-                      active={activeAirportField === "from"}
+                      icon={<UsersRound size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#111111]"} />}
                       isDark={isHeroSearchDark}
                       compact
                     />
-                    <HomeAutocompleteField
-                      label={searchUiCopy.to}
-                      value={to}
-                      placeholder={heroCopy.destinationPlaceholder}
-                      options={locationOptions}
-                      onChange={setTo}
-                      icon={<PlaneLanding size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"} />}
-                      onActivate={() => {
-                        setCalendarOpen(false)
-                        setOpenMultiDateIndex(null)
-                        setActiveAirportField("to")
-                      }}
-                      onDismiss={() => setActiveAirportField(null)}
-                      useInlinePanel
-                      active={activeAirportField === "to"}
-                      isDark={isHeroSearchDark}
-                      compact
-                    />
-                  </div>
-                  <PassengerField
-                    pax={pax}
-                    onChange={(value) => {
-                      setPax(value)
-                      setPassengerTouched(true)
-                      setActiveAirportField(null)
-                    }}
-                    onActivate={() => {
-                      setActiveAirportField(null)
-                      setCalendarOpen(false)
-                      setOpenMultiDateIndex(null)
-                    }}
-                    label={searchUiCopy.passengers}
-                    valueLabel={language === "ru" ? `${pax} пассажир` : language === "en" ? `${pax} passenger` : `${pax} yo'lovchi`}
-                    cabinLabel={searchUiCopy.classNames[travelClass]}
-                    travelClass={travelClass}
-                    onTravelClassChange={setTravelClass}
-                    icon={<UsersRound size={16} className={isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#111111]"} />}
-                    isDark={isHeroSearchDark}
-                    compact
-                  />
-                  <div
-                    ref={calendarAnchorRef}
-                    className={[
-                      mobileSearchSegmentClass,
-                      calendarOpen ? activeMobileSearchSegmentClass : idleMobileSearchSegmentClass,
-                    ].join(" ")}
-                  >
-                    <button type="button" onClick={() => {
-                      setActiveAirportField(null)
-                      setOpenMultiDateIndex(null)
-                      setCalendarOpen((prev) => !prev)
-                    }} className="flex w-full items-center justify-start gap-4 xl:h-full">
-                      <CalendarDays size={17} className={["shrink-0", isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"].join(" ")} />
-                      <div className="min-w-0 text-left">
-                        <span className={[
-                          "block truncate text-[14px] font-normal leading-none",
-                          isHeroSearchDark
-                            ? date ? "text-white" : "text-white/58"
-                            : date ? "text-[#111111]" : "text-[#8a8a8a]",
-                        ].join(" ")}>
-                          {date ? formatDisplayDate(date) : searchUiCopy.depart}
-                        </span>
-                      </div>
-                    </button>
-                    {calendarOpen ? (
-                      <FareCalendarPicker
-                        from={resolveLocationCode(from, locationOptions)}
-                        to={resolveLocationCode(to, locationOptions)}
-                        pax={pax}
-                        classCode={travelClass}
-                        value={date}
-                        onChange={(nextDate) => {
-                          setDate(nextDate)
-                          setCalendarOpen(false)
-                        }}
-                        onClose={() => setCalendarOpen(false)}
-                        anchorElement={calendarAnchorRef.current}
-                      />
-                    ) : null}
-                  </div>
-                  {tripMode === "round" ? (
                     <div
-                      ref={returnDateAnchorRef}
+                      ref={calendarAnchorRef}
                       className={[
                         mobileSearchSegmentClass,
-                        openMultiDateIndex === -2 ? activeMobileSearchSegmentClass : idleMobileSearchSegmentClass,
+                        calendarOpen ? activeMobileSearchSegmentClass : idleMobileSearchSegmentClass,
                       ].join(" ")}
                     >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveAirportField(null)
-                          setOpenMultiDateIndex(null)
-                          setCalendarOpen(false)
-                          setOpenMultiDateIndex(-2)
-                        }}
-                          className="flex w-full items-center justify-start gap-4 xl:h-full"
-                      >
-                        <span className={["text-[15px] leading-none", isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#6d6d6d]"].join(" ")}>→</span>
+                      <button type="button" onClick={() => {
+                        setActiveAirportField(null)
+                        setOpenMultiDateIndex(null)
+                        setCalendarOpen((prev) => !prev)
+                      }} className="flex w-full items-center justify-start gap-4 xl:h-full">
+                        <CalendarDays size={17} className={["shrink-0", isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#5f6368]"].join(" ")} />
                         <div className="min-w-0 text-left">
                           <span className={[
                             "block truncate text-[14px] font-normal leading-none",
                             isHeroSearchDark
-                              ? returnDate ? "text-white" : "text-white/58"
-                              : returnDate ? "text-[#111111]" : "text-[#8a8a8a]",
+                              ? date ? "text-white" : "text-white/58"
+                              : date ? "text-[#111111]" : "text-[#8a8a8a]",
                           ].join(" ")}>
-                            {returnDate ? formatDisplayDate(returnDate) : searchUiCopy.return}
+                            {date ? formatDisplayDate(date) : searchUiCopy.depart}
                           </span>
                         </div>
                       </button>
-                      {openMultiDateIndex === -2 ? (
+                      {calendarOpen ? (
                         <FareCalendarPicker
-                          from={resolveLocationCode(to, locationOptions)}
-                          to={resolveLocationCode(from, locationOptions)}
+                          from={resolveLocationCode(from, locationOptions)}
+                          to={resolveLocationCode(to, locationOptions)}
                           pax={pax}
                           classCode={travelClass}
-                          value={returnDate}
+                          value={date}
                           onChange={(nextDate) => {
-                            setReturnDate(nextDate)
-                            setOpenMultiDateIndex(null)
+                            setDate(nextDate)
+                            setCalendarOpen(false)
                           }}
-                          onClose={() => setOpenMultiDateIndex(null)}
-                          anchorElement={returnDateAnchorRef.current}
+                          onClose={() => setCalendarOpen(false)}
+                          anchorElement={calendarAnchorRef.current}
+                          forceMobile={isCompactSearchViewport}
                         />
                       ) : null}
                     </div>
-                  ) : null}
-                  <motion.button
-                    type="button"
-                    onClick={() => {
-                      setActiveAirportField(null)
-                      onSearch()
-                    }}
-                    className="luxury-search-cta inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[14px] px-4 text-[14px] font-semibold text-white transition-all duration-300 sm:min-h-[48px] xl:m-1.5 xl:min-h-[44px] xl:rounded-[14px]"
-                    whileHover={{ y: -2, scale: 1.01 }}
-                    whileTap={{ scale: 0.985 }}
-                  >
-                    {searchUiCopy.search}
-                  </motion.button>
-                </div>
-              )}
+                    {tripMode === "round" ? (
+                      <div
+                        ref={returnDateAnchorRef}
+                        className={[
+                          mobileSearchSegmentClass,
+                          openMultiDateIndex === -2 ? activeMobileSearchSegmentClass : idleMobileSearchSegmentClass,
+                        ].join(" ")}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveAirportField(null)
+                            setOpenMultiDateIndex(null)
+                            setCalendarOpen(false)
+                            setOpenMultiDateIndex(-2)
+                          }}
+                          className="flex w-full items-center justify-start gap-4 xl:h-full"
+                        >
+                          <span className={["text-[15px] leading-none", isHeroSearchDark ? "text-[#cfe5ff]" : "text-[#6d6d6d]"].join(" ")}>→</span>
+                          <div className="min-w-0 text-left">
+                            <span className={[
+                              "block truncate text-[14px] font-normal leading-none",
+                              isHeroSearchDark
+                                ? returnDate ? "text-white" : "text-white/58"
+                                : returnDate ? "text-[#111111]" : "text-[#8a8a8a]",
+                            ].join(" ")}>
+                              {returnDate ? formatDisplayDate(returnDate) : searchUiCopy.return}
+                            </span>
+                          </div>
+                        </button>
+                        {openMultiDateIndex === -2 ? (
+                          <FareCalendarPicker
+                            from={resolveLocationCode(to, locationOptions)}
+                            to={resolveLocationCode(from, locationOptions)}
+                            pax={pax}
+                            classCode={travelClass}
+                            value={returnDate}
+                            onChange={(nextDate) => {
+                              setReturnDate(nextDate)
+                              setOpenMultiDateIndex(null)
+                            }}
+                            onClose={() => setOpenMultiDateIndex(null)}
+                            anchorElement={returnDateAnchorRef.current}
+                            forceMobile={isCompactSearchViewport}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <motion.button
+                      type="button"
+                      onClick={() => {
+                        setActiveAirportField(null)
+                        onSearch()
+                      }}
+                      className="luxury-search-cta inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[14px] px-4 text-[14px] font-semibold text-white transition-all duration-300 sm:min-h-[48px] xl:m-1.5 xl:min-h-[44px] xl:rounded-[14px]"
+                      whileHover={{ y: -2, scale: 1.01 }}
+                      whileTap={{ scale: 0.985 }}
+                    >
+                      {searchUiCopy.search}
+                    </motion.button>
+                  </div>
+                )}
 
               </BookingGlassBar>
-              </motion.div>
-              <motion.div
-                variants={heroSequenceVariants}
-                className="mt-8 grid w-full max-w-[1320px] grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
-              >
-                {heroBenefits.map((item) => (
-                  <motion.div
-                    key={item.title}
-                    variants={heroSlideUpVariants}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    transition={{ duration: 0.26 }}
-                    className="flex items-center gap-4 text-white/80"
-                  >
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/12 bg-white/8 text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] backdrop-blur-md">
-                      {item.icon}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[14px] font-semibold text-white">{item.title}</span>
-                      <span className="mt-1 block text-[13px] text-white/62">{item.text}</span>
-                    </span>
-                  </motion.div>
-                ))}
-              </motion.div>
             </motion.div>
-            </div>
+            <motion.div
+              variants={heroSequenceVariants}
+              className="mt-8 grid w-full max-w-[1320px] grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            >
+              {heroBenefits.map((item) => (
+                <motion.div
+                  key={item.title}
+                  variants={heroSlideUpVariants}
+                  whileHover={{ y: -4, scale: 1.01 }}
+                  transition={{ duration: 0.26 }}
+                  className="flex items-center gap-4 text-white/80"
+                >
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/12 bg-white/8 text-white shadow-[0_12px_26px_rgba(0,0,0,0.18)] backdrop-blur-md">
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[14px] font-semibold text-white">{item.title}</span>
+                    <span className="mt-1 block text-[13px] text-white/62">{item.text}</span>
+                  </span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
       </HeroSection>
 
     </div>
@@ -1475,60 +1497,60 @@ function HomeAutocompleteField({
   const inlinePanel =
     active && useInlinePanel && dropdownPos
       ? createPortal(
+        <div
+          className="overflow-hidden rounded-[20px] luxury-search-floating-panel"
+          style={{
+            position: "fixed",
+            top: dropdownPos.top,
+            left: dropdownPos.left,
+            width: dropdownPos.width,
+            zIndex: 9999,
+          }}
+        >
+          <div className={inlinePanelHeaderClass}>
+            <div className={inlinePanelTitleClass}>{label}</div>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => onDismiss?.()}
+              className={inlinePanelCloseClass}
+            >
+              <X size={14} />
+            </button>
+          </div>
           <div
-            className="overflow-hidden rounded-[20px] luxury-search-floating-panel"
-            style={{
-              position: "fixed",
-              top: dropdownPos.top,
-              left: dropdownPos.left,
-              width: dropdownPos.width,
-              zIndex: 9999,
-            }}
+            className="overscroll-contain overflow-y-auto px-2 py-1"
+            style={{ maxHeight: dropdownPos.maxHeight }}
           >
-            <div className={inlinePanelHeaderClass}>
-              <div className={inlinePanelTitleClass}>{label}</div>
+            {filteredOptions.map((option) => (
               <button
+                key={option.code}
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => onDismiss?.()}
-                className={inlinePanelCloseClass}
+                onClick={() => { pickOption(option); onDismiss?.() }}
+                className={`premium-lift flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#EBEBEB]"}`}
               >
-                <X size={14} />
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="luxury-search-icon h-9 w-9 shrink-0 rounded-[12px]">
+                    <MapPinned size={15} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className={`block truncate text-[13px] font-semibold ${isDark ? "text-white" : "text-[#0f172a]"}`}>{option.name}</span>
+                    <span className={`block text-[11px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{option.code}</span>
+                  </span>
+                </span>
+                <span className={`shrink-0 rounded-[999px] border px-2.5 py-1 text-[11px] font-semibold ${isDark ? "border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] text-[#cfe0fb]" : "border-[#d6d6d6] bg-[#EBEBEB] text-[#475569]"}`}>
+                  {option.code}
+                </span>
               </button>
-            </div>
-            <div
-              className="overscroll-contain overflow-y-auto px-2 py-1"
-              style={{ maxHeight: dropdownPos.maxHeight }}
-            >
-              {filteredOptions.map((option) => (
-                <button
-                  key={option.code}
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { pickOption(option); onDismiss?.() }}
-                  className={`premium-lift flex w-full items-center justify-between gap-3 rounded-[14px] px-3 py-2.5 text-left ${isDark ? "hover:bg-[rgba(42,82,150,0.28)]" : "hover:bg-[#EBEBEB]"}`}
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <span className="luxury-search-icon h-9 w-9 shrink-0 rounded-[12px]">
-                      <MapPinned size={15} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className={`block truncate text-[13px] font-semibold ${isDark ? "text-white" : "text-[#0f172a]"}`}>{option.name}</span>
-                      <span className={`block text-[11px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{option.code}</span>
-                    </span>
-                  </span>
-                  <span className={`shrink-0 rounded-[999px] border px-2.5 py-1 text-[11px] font-semibold ${isDark ? "border-[#5d7fba]/40 bg-[rgba(13,30,62,0.58)] text-[#cfe0fb]" : "border-[#d6d6d6] bg-[#EBEBEB] text-[#475569]"}`}>
-                    {option.code}
-                  </span>
-                </button>
-              ))}
-              {!filteredOptions.length ? (
-                <div className={`py-5 text-center text-[13px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{safeCopy.noResult}</div>
-              ) : null}
-            </div>
-          </div>,
-          document.body
-        )
+            ))}
+            {!filteredOptions.length ? (
+              <div className={`py-5 text-center text-[13px] ${isDark ? "text-[#b9cceb]" : "text-[#64748b]"}`}>{safeCopy.noResult}</div>
+            ) : null}
+          </div>
+        </div>,
+        document.body
+      )
       : null
 
   return (
@@ -1538,7 +1560,7 @@ function HomeAutocompleteField({
         className={[
           compact
             ? isDark
-            ? "luxury-search-segment relative flex min-h-[64px] items-center gap-4 rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-r xl:border-white/18 xl:bg-transparent xl:px-7 xl:shadow-none xl:backdrop-blur-none"
+              ? "luxury-search-segment relative flex min-h-[64px] items-center gap-4 rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-r xl:border-white/18 xl:bg-transparent xl:px-7 xl:shadow-none xl:backdrop-blur-none"
               : "luxury-search-segment relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#d9dde3] bg-white px-3.5 shadow-none backdrop-blur-none sm:min-h-[52px] sm:rounded-[16px] sm:px-4 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-r xl:border-[#cfcfcf] xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
             : isDark
               ? "relative flex min-h-[46px] items-center gap-3 rounded-[14px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-3 py-2 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] sm:min-h-[58px] sm:rounded-2xl sm:px-4 sm:py-2.5"

@@ -5,7 +5,7 @@ import { bookingCart } from "@/shared/store/bookingCart"
 import { formatMoney } from "@/lib/money"
 import { formatUzPhoneInput } from "@/lib/phone"
 import { Checkbox } from "@/components/animate-ui/components/radix/checkbox"
-import { getAccessToken } from "@/shared/auth/token"
+import { ensureAccessToken } from "@/shared/auth/session"
 import { useI18n } from "@/shared/i18n/i18n"
 import {
   bookAir,
@@ -1116,14 +1116,16 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     if (!safeFlight.id) return
-    const token = getAccessToken()
-    if (!token) return
 
     let alive = true
     setFareLoading(true)
     setFareError(null)
 
-    getBrandedFares({ optionID: safeFlight.id })
+    ensureAccessToken()
+      .then((token) => {
+        if (!token) throw new Error(copy.loginFirst)
+        return getBrandedFares({ optionID: safeFlight.id })
+      })
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
@@ -1165,14 +1167,16 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     if (!safeFlight.id) return
-    const token = getAccessToken()
-    if (!token) return
 
     let alive = true
     setOptionDetailsLoading(true)
     setOptionDetailsError(null)
 
-    getAirOptionDetails(safeFlight.id)
+    ensureAccessToken()
+      .then((token) => {
+        if (!token) throw new Error(copy.loginFirst)
+        return getAirOptionDetails(safeFlight.id)
+      })
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
@@ -1209,14 +1213,16 @@ export default function FlightDetailsModal({
   useEffect(() => {
     if (!open) return
     if (!safeFlight.id) return
-    const token = getAccessToken()
-    if (!token) return
 
     let alive = true
     setFareFamiliesLoading(true)
     setFareFamiliesError(null)
 
-    getAirOptionFareFamilies(safeFlight.id)
+    ensureAccessToken()
+      .then((token) => {
+        if (!token) throw new Error(copy.loginFirst)
+        return getAirOptionFareFamilies(safeFlight.id)
+      })
       .then((res) => {
         if (!alive) return
         if (res.data.status !== "success") {
@@ -1472,7 +1478,7 @@ export default function FlightDetailsModal({
     setBookLoading(true)
     setLastOrderId(null)
     try {
-      const token = getAccessToken()
+      const token = await ensureAccessToken()
       if (!token) {
         setToastMsg(copy.loginFirst)
         setToastOpen(true)

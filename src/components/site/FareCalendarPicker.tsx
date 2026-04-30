@@ -1,8 +1,9 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 
 import { searchAir } from "@/shared/api/air/air.api"
+import { ensureAccessToken } from "@/shared/auth/session"
 import { useI18n } from "@/shared/i18n/i18n"
 
 type FareCalendarPickerProps = {
@@ -15,6 +16,7 @@ type FareCalendarPickerProps = {
   onClose: () => void
   anchorElement?: HTMLElement | null
   anchorRect?: { top: number; left: number; width: number; height: number } | null
+  forceMobile?: boolean
 }
 
 type PriceMap = Record<string, number | null>
@@ -66,6 +68,14 @@ const toISODate = (date: Date) => {
   return `${yyyy}-${mm}-${dd}`
 }
 
+const parseISODate = (value: string) => {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return null
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+}
+
+const getMonthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1)
+
 const getMonthDays = (monthDate: Date) => {
   const year = monthDate.getFullYear()
   const month = monthDate.getMonth()
@@ -93,6 +103,24 @@ const compactPrice = (price?: number | null) => {
   return String(price)
 }
 
+const getViewportWidth = () => {
+  if (typeof window === "undefined") return 0
+  return Math.min(
+    window.innerWidth,
+    window.visualViewport?.width ?? window.innerWidth,
+    document.documentElement.clientWidth || window.innerWidth
+  )
+}
+
+const getIsTouchViewport = () => {
+  if (typeof window === "undefined") return false
+  return (
+    window.matchMedia?.("(pointer: coarse)")?.matches ||
+    window.matchMedia?.("(hover: none)")?.matches ||
+    navigator.maxTouchPoints > 0
+  )
+}
+
 export default function FareCalendarPicker({
   from,
   to,
@@ -103,12 +131,17 @@ export default function FareCalendarPicker({
   onClose,
   anchorElement = null,
   anchorRect = null,
+  forceMobile = false,
 }: FareCalendarPickerProps) {
   const { language } = useI18n()
   const copy = calendarLocale[language]
+  const today = useMemo(() => new Date(), [])
+  const todayIso = useMemo(() => toISODate(today), [today])
+  const currentMonthStart = useMemo(() => getMonthStart(today), [today])
   const [startMonth, setStartMonth] = useState(() => {
-    const base = value ? new Date(value) : new Date()
-    return new Date(base.getFullYear(), base.getMonth(), 1)
+    const selectedDate = value ? parseISODate(value) : null
+    const base = selectedDate && selectedDate >= currentMonthStart ? selectedDate : today
+    return getMonthStart(base)
   })
   const [prices, setPrices] = useState<PriceMap>({})
   const [loading, setLoading] = useState(false)
@@ -118,11 +151,15 @@ export default function FareCalendarPicker({
     width: number
     height: number
   } | null>(anchorRect)
+  const [viewportWidth, setViewportWidth] = useState(getViewportWidth)
+  const [isTouchViewport, setIsTouchViewport] = useState(getIsTouchViewport)
+  const isDesktopViewport = !forceMobile && viewportWidth >= 1024 && !isTouchViewport
 
   const visibleMonths = useMemo(
     () => [startMonth, new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)],
     [startMonth]
   )
+  const mobileVisibleMonths = useMemo(() => [startMonth], [startMonth])
 
   const allVisibleDates = useMemo(
     () =>
@@ -145,17 +182,22 @@ export default function FareCalendarPicker({
     let alive = true
     setLoading(true)
 
-    Promise.allSettled(
-      allVisibleDates.map((departure) =>
-        searchAir({
-          adults: Math.max(1, pax),
-          children: 0,
-          infants: 0,
-          class: classCode,
-          trips: [{ origin: from, destination: to, departure }],
-        })
-      )
-    )
+    ensureAccessToken()
+      .then((token) => {
+        if (!token) return []
+
+        return Promise.allSettled(
+          allVisibleDates.map((departure) =>
+            searchAir({
+              adults: Math.max(1, pax),
+              children: 0,
+              infants: 0,
+              class: classCode,
+              trips: [{ origin: from, destination: to, departure }],
+            })
+          )
+        )
+      })
       .then((results) => {
         if (!alive) return
         const next: PriceMap = {}
@@ -192,17 +234,37 @@ export default function FareCalendarPicker({
     if (typeof document === "undefined") return undefined
 
     const originalOverflow = document.body.style.overflow
-    if (window.innerWidth < 1024) {
+    if (!isDesktopViewport) {
       document.body.style.overflow = "hidden"
     }
 
     return () => {
       document.body.style.overflow = originalOverflow
     }
+  }, [isDesktopViewport])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined
+
+    const updateViewportMetrics = () => {
+      setViewportWidth(getViewportWidth())
+      setIsTouchViewport(getIsTouchViewport())
+    }
+
+    updateViewportMetrics()
+    window.addEventListener("resize", updateViewportMetrics)
+    window.visualViewport?.addEventListener("resize", updateViewportMetrics)
+    window.visualViewport?.addEventListener("scroll", updateViewportMetrics)
+
+    return () => {
+      window.removeEventListener("resize", updateViewportMetrics)
+      window.visualViewport?.removeEventListener("resize", updateViewportMetrics)
+      window.visualViewport?.removeEventListener("scroll", updateViewportMetrics)
+    }
   }, [])
 
   useEffect(() => {
-    if (typeof window === "undefined" || window.innerWidth < 1024) {
+    if (typeof window === "undefined" || !isDesktopViewport) {
       setLiveAnchorRect(anchorRect)
       return undefined
     }
@@ -230,7 +292,7 @@ export default function FareCalendarPicker({
       window.removeEventListener("resize", updateAnchorRect)
       window.removeEventListener("scroll", updateAnchorRect, true)
     }
-  }, [anchorElement, anchorRect])
+  }, [anchorElement, anchorRect, isDesktopViewport])
 
   const minVisiblePrice = useMemo(() => {
     const values = Object.values(prices).filter((item): item is number => typeof item === "number")
@@ -238,66 +300,60 @@ export default function FareCalendarPicker({
   }, [prices])
 
   const resolvedAnchorRect = liveAnchorRect ?? anchorRect
+  const canGoToPreviousMonth = startMonth > currentMonthStart
 
   const panelContent = (
-      <div className="pointer-events-auto fixed inset-x-3 bottom-2 z-[120] max-h-[min(440px,calc(100svh-16px))] overflow-hidden rounded-[18px] border border-[#d6d6d6] bg-[#EBEBEB] p-1.5 shadow-[0_22px_56px_rgba(17,24,39,0.18)] lg:inset-x-auto lg:bottom-auto lg:max-h-none lg:rounded-[24px] lg:border-white/85 lg:bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] lg:p-3 lg:backdrop-blur-xl">
-        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#c8cdd6] lg:hidden" />
+      <div className="pointer-events-auto fixed inset-x-3 bottom-2 z-[120] max-h-[min(440px,calc(100svh-16px))] overflow-hidden rounded-[18px] border border-[#d6d6d6] bg-[#EBEBEB] p-1.5 shadow-[0_22px_56px_rgba(17,24,39,0.18)]">
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#c8cdd6]" />
 
-        <div className="flex max-h-[min(400px,calc(100svh-56px))] flex-col overflow-hidden lg:max-h-none">
-          <div className="flex items-center justify-between gap-2 border-b border-[#d0d5de] pb-2 lg:border-[#e7edf5] lg:pb-3">
-            <div className="rounded-[10px] border border-[#d6d6d6] bg-white px-2.5 py-1 text-[11px] font-normal text-[#52627b] lg:rounded-[14px] lg:px-3 lg:py-2 lg:text-[13px]">
-              {from && to ? `${from} → ${to}` : copy.routePlaceholder}
+        <div className="flex max-h-[min(400px,calc(100svh-56px))] flex-col overflow-hidden">
+          <div className="flex items-center justify-between gap-2 border-b border-[#d0d5de] pb-2">
+            <div className="flex min-w-0 items-center gap-2 rounded-[10px] border border-[#d6d6d6] bg-white px-2.5 py-1 text-[11px] font-normal text-[#52627b]">
+              <CalendarDays size={15} className="shrink-0 text-[#1E7BFF]" />
+              <span className="truncate">{from && to ? `${from} → ${to}` : copy.routePlaceholder}</span>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="hidden h-9 rounded-full border border-[#dbe3ef] bg-white px-4 text-[13px] font-normal text-[#627188] transition hover:bg-[#f8fbff] lg:inline-flex lg:items-center"
+              className="hidden h-9 rounded-full border border-[#dbe3ef] bg-white px-4 text-[13px] font-normal text-[#627188] transition hover:bg-[#f8fbff]"
             >
               {copy.close}
             </button>
           </div>
 
           {!from || !to ? (
-            <div className="mt-2.5 rounded-[14px] border border-[#d6d6d6] bg-white px-3 py-5 text-center text-[12px] leading-5 text-[#627188] lg:mt-4 lg:rounded-[20px] lg:px-5 lg:py-8 lg:text-sm">
+            <div className="mt-2.5 rounded-[14px] border border-[#d6d6d6] bg-white px-3 py-5 text-center text-[12px] leading-5 text-[#627188]">
               {copy.routeHint}
             </div>
           ) : (
             <>
-              <div className="mt-2 overflow-y-auto pr-0.5 lg:mt-4 lg:overflow-visible lg:pr-0">
-                <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 lg:gap-3">
-                  {visibleMonths.map((monthDate, monthIndex) => {
+              <div className="mt-2 overflow-y-auto pr-0.5">
+                <div className="grid grid-cols-1 gap-2">
+                  {mobileVisibleMonths.map((monthDate, monthIndex) => {
                     const cells = getMonthDays(monthDate)
 
                     return (
                       <div
                         key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}
-                        className={monthIndex === 1 ? "hidden lg:block" : "block"}
+                        className="block"
                       >
-                        <div className="rounded-[12px] border border-[#d6d6d6] bg-white p-1.5 lg:rounded-[18px] lg:border-[#e4ebf4] lg:p-3 lg:shadow-[0_12px_28px_rgba(17,24,39,0.05)]">
-                          <div className="mb-1 flex items-center justify-between lg:mb-2">
+                        <div className="rounded-[12px] border border-[#d6d6d6] bg-white p-1.5">
+                          <div className="mb-1 flex items-center justify-between">
                             {monthIndex === 0 ? (
                               <button
                                 type="button"
-                                onClick={() =>
+                                onClick={() => {
+                                  if (!canGoToPreviousMonth) return
                                   setStartMonth(
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() - 1, 1)
                                   )
-                                }
-                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8 lg:border-[#e2e9f2] lg:bg-[#f8fbff]"
+                                }}
+                                disabled={!canGoToPreviousMonth}
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
                               >
                                 <ChevronLeft size={12} />
                               </button>
                             ) : (
-                              <div className="h-6 w-6 lg:h-8 lg:w-8" />
-                            )}
-
-                            <div className="text-center">
-                              <div className="text-[11px] font-normal text-[#1295dd] lg:text-[15px]">
-                                {copy.monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
-                              </div>
-                            </div>
-
-                            {monthIndex === 1 ? (
                               <button
                                 type="button"
                                 onClick={() =>
@@ -305,21 +361,41 @@ export default function FareCalendarPicker({
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)
                                   )
                                 }
-                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white lg:h-8 lg:w-8 lg:border-[#e2e9f2] lg:bg-[#f8fbff]"
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white lg:hidden"
+                              >
+                                <ChevronRight size={12} />
+                              </button>
+                            )}
+
+                            <div className="text-center">
+                              <div className="text-[11px] font-normal text-[#1295dd]">
+                                {copy.monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
+                              </div>
+                            </div>
+
+                            {monthIndex === 0 ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setStartMonth(
+                                    new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)
+                                  )
+                                }
+                                className="grid h-6 w-6 place-items-center rounded-full border border-[#d6d6d6] bg-[#EBEBEB] text-[#6f7f97] transition hover:bg-white"
                               >
                                 <ChevronRight size={12} />
                               </button>
                             ) : (
-                              <div className="h-6 w-6 lg:h-8 lg:w-8" />
+                              <div className="h-6 w-6" />
                             )}
                           </div>
 
-                          <div className="grid grid-cols-7 gap-x-0.5 gap-y-0.5 text-center text-[#7b8aa0] lg:gap-x-1 lg:gap-y-1.5">
+                          <div className="grid grid-cols-7 gap-x-0.5 gap-y-0.5 text-center text-[#7b8aa0]">
                             {copy.weekdayLabels.map((label, labelIndex) => (
                               <div
                                 key={label}
                                 className={[
-                                  "py-0.5 text-[8px] font-normal uppercase tracking-[0.02em] lg:py-1 lg:text-[10px]",
+                                  "py-0.5 text-[8px] font-normal uppercase tracking-[0.02em]",
                                   labelIndex >= 5 ? "text-[#95a4bb]" : "text-[#243042]",
                                 ].join(" ")}
                               >
@@ -329,13 +405,13 @@ export default function FareCalendarPicker({
 
                             {cells.map((cell, index) => {
                               if (!cell) {
-                                  return <div key={`empty-${index}`} className="h-[28px] lg:h-[46px]" />
+                                  return <div key={`empty-${index}`} className="h-[28px]" />
                               }
 
                               const iso = toISODate(cell)
                               const price = prices[iso]
                               const isSelected = value === iso
-                              const isToday = iso === toISODate(new Date())
+                              const isToday = iso === todayIso
                               const weekDay = (cell.getDay() + 6) % 7
                               const weekend = weekDay >= 5
 
@@ -345,7 +421,7 @@ export default function FareCalendarPicker({
                                   type="button"
                                   onClick={() => onChange(iso)}
                                   className={[
-                                    "flex h-[28px] w-full min-w-0 flex-col items-center justify-center rounded-[6px] border text-center transition lg:h-[46px] lg:rounded-[8px] lg:px-1",
+                                    "flex h-[28px] w-full min-w-0 flex-col items-center justify-center rounded-[6px] border text-center transition",
                                     isSelected
                                       ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_6px_16px_rgba(34,104,230,0.22)]"
                                       : "border-[#d6d6d6] bg-white text-[#1d2430] hover:border-[#c8d4e8] hover:bg-[#f5f5f5]",
@@ -353,8 +429,8 @@ export default function FareCalendarPicker({
                                 >
                                   <span
                                     className={[
-                                      "text-[10px] font-normal leading-none lg:text-[14px]",
-                                      isToday && !isSelected ? "text-[#1f6fff]" : "",
+                                      "text-[10px] font-normal leading-none",
+                                      isToday && !isSelected ? "rounded-full bg-[#e9f2ff] px-1.5 py-1 text-[#1f6fff]" : "",
                                       !isSelected && weekend ? "text-[#95a4bb]" : "",
                                     ].join(" ")}
                                   >
@@ -362,7 +438,7 @@ export default function FareCalendarPicker({
                                   </span>
                                   <span
                                     className={[
-                                      "hidden lg:block mt-0.5 line-clamp-2 px-0.5 text-[5px] font-normal leading-2 lg:px-1 lg:text-[8px] lg:leading-3",
+                                      "hidden",
                                       isSelected
                                         ? "text-white/95"
                                         : typeof price === "number"
@@ -383,8 +459,8 @@ export default function FareCalendarPicker({
                 </div>
               </div>
 
-              <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#d0d5de] pt-2 lg:mt-4 lg:border-[#e7edf5] lg:pt-3">
-                <div className="text-[10px] leading-4 text-[#627188] lg:text-[13px]">
+              <div className="mt-2 flex items-center justify-between gap-2 border-t border-[#d0d5de] pt-2">
+                <div className="text-[10px] leading-4 text-[#627188]">
                   {loading
                     ? copy.loading
                     : minVisiblePrice
@@ -396,14 +472,14 @@ export default function FareCalendarPicker({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-8 rounded-full border border-[#d6d6d6] bg-white px-3 text-[11px] font-normal text-[#627188] transition hover:bg-[#f5f5f5] lg:hidden"
+                    className="h-8 rounded-full border border-[#d6d6d6] bg-white px-3 text-[11px] font-normal text-[#627188] transition hover:bg-[#f5f5f5]"
                   >
                     {copy.close}
                   </button>
                   <button
                     type="button"
                     onClick={onClose}
-                    className="h-8 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-4 text-[11px] font-normal text-white shadow-[0_8px_20px_rgba(15,154,231,0.24)] transition hover:brightness-105 lg:h-10 lg:px-6 lg:text-[13px]"
+                    className="h-8 rounded-full bg-[linear-gradient(135deg,#12a4ef_0%,#0593dc_100%)] px-4 text-[11px] font-normal text-white shadow-[0_8px_20px_rgba(15,154,231,0.24)] transition hover:brightness-105"
                   >
                     {copy.select}
                   </button>
@@ -416,12 +492,10 @@ export default function FareCalendarPicker({
   )
 
   const isDesktopPortal =
-    typeof window !== "undefined" &&
-    window.innerWidth >= 1024 &&
+    isDesktopViewport &&
     resolvedAnchorRect
 
   if (isDesktopPortal && typeof document !== "undefined") {
-    const viewportWidth = window.innerWidth
     const panelWidth = Math.min(720, viewportWidth - 72)
     const left = Math.min(
       Math.max(24, resolvedAnchorRect.left + resolvedAnchorRect.width / 2 - panelWidth / 2),
@@ -443,8 +517,9 @@ export default function FareCalendarPicker({
         >
           <div className="flex max-h-[min(720px,calc(100vh-72px))] flex-col overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-3">
-              <div className="rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-normal text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
-                {from && to ? `${from} → ${to}` : copy.routePlaceholder}
+              <div className="flex min-w-0 items-center gap-2 rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-normal text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
+                <CalendarDays size={16} className="shrink-0 text-[#1E7BFF]" />
+                <span className="truncate">{from && to ? `${from} → ${to}` : copy.routePlaceholder}</span>
               </div>
               <button
                 type="button"
@@ -471,12 +546,14 @@ export default function FareCalendarPicker({
                             {monthIndex === 0 ? (
                               <button
                                 type="button"
-                                onClick={() =>
+                                onClick={() => {
+                                  if (!canGoToPreviousMonth) return
                                   setStartMonth(
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() - 1, 1)
                                   )
-                                }
-                                className="grid h-8 w-8 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
+                                }}
+                                disabled={!canGoToPreviousMonth}
+                                className="grid h-8 w-8 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
                               >
                                 <ChevronLeft size={16} />
                               </button>
@@ -528,7 +605,7 @@ export default function FareCalendarPicker({
                               const iso = toISODate(cell)
                               const price = prices[iso]
                               const isSelected = value === iso
-                              const isToday = iso === toISODate(new Date())
+                              const isToday = iso === todayIso
                               const weekend = cell.getDay() === 0 || cell.getDay() === 6
 
                               return (
@@ -546,7 +623,7 @@ export default function FareCalendarPicker({
                                   <span
                                     className={[
                                       "text-[13px] font-normal leading-none md:text-[14px]",
-                                      isToday && !isSelected ? "text-[#1f6fff]" : "",
+                                      isToday && !isSelected ? "rounded-full bg-[#e9f2ff] px-1.5 py-1 text-[#1f6fff]" : "",
                                       !isSelected && weekend ? "text-[#95a4bb]" : "",
                                     ].join(" ")}
                                   >

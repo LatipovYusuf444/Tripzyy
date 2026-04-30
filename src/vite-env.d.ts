@@ -1,3 +1,12 @@
 /// <reference types="vite/client" />
-VITE_API_URL = "http://localhost:8000/api"
-VITE_API_URL = "https://api.sizningsayt.uz/api"
+
+interface ImportMetaEnv {
+  readonly VITE_API_URL?: string
+  readonly VITE_API_KEY?: string
+  readonly VITE_AUTH_EMAIL?: string
+  readonly VITE_AUTH_PASSWORD?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

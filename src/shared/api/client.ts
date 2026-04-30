@@ -1,10 +1,7 @@
 import axios from "axios"
 import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
+import { ensureAccessToken } from "@/shared/auth/session"
 import { useAppLoading } from "@/shared/store/appLoading"
-
-const apiKey = import.meta.env.VITE_API_KEY
-const formatApiKey = (value: string) =>
-  value.trim().toLowerCase().startsWith("bearer ") ? value.trim() : `Bearer ${value.trim()}`
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
@@ -15,13 +12,13 @@ const client = axios.create({
   },
 })
 
-client.interceptors.request.use((config) => {
+client.interceptors.request.use(async (config) => {
   useAppLoading.getState().start()
-  const token = getAccessToken()
+  const isLoginRequest = String(config.url || "").includes("/auth/login")
+  const token = isLoginRequest ? getAccessToken() : await ensureAccessToken()
+
   if (token) {
     config.headers["X-API-KEY"] = `Bearer ${token}`
-  } else if (apiKey) {
-    config.headers["X-API-KEY"] = formatApiKey(apiKey)
   }
   return config
 })

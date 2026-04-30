@@ -14,7 +14,7 @@ import { SlidingNumber } from "@/components/animate-ui/primitives/texts/sliding-
 import { formatMoney } from "@/lib/money"
 import { searchAir } from "@/shared/api/air/air.api"
 import { AIRPORT_CACHE_KEY, DEFAULT_AIRPORT_DIRECTORY } from "@/shared/air/airportDirectory"
-import { getAccessToken } from "@/shared/auth/token"
+import { ensureAccessToken } from "@/shared/auth/session"
 import { useI18n } from "@/shared/i18n/i18n"
 import { getStoredTheme, type SiteTheme } from "@/shared/theme/theme"
 
@@ -866,7 +866,7 @@ export default function Flights() {
   }, [])
 
   const runSearch = useCallback(async (criteria: SearchCriteria, showAlert: boolean) => {
-    const token = getAccessToken()
+    const token = await ensureAccessToken()
     const { from, to, date, pax, travelClass, trips } = criteria
     const payloadTrips = trips?.length
       ? trips
