@@ -421,7 +421,7 @@ export default function FareCalendarPicker({
                                   type="button"
                                   onClick={() => onChange(iso)}
                                   className={[
-                                    "flex h-[28px] w-full min-w-0 flex-col items-center justify-center rounded-[6px] border text-center transition",
+                                    "flex min-h-[42px] w-full min-w-0 flex-col items-center justify-center rounded-[6px] border px-0.5 py-1 text-center transition",
                                     isSelected
                                       ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_6px_16px_rgba(34,104,230,0.22)]"
                                       : "border-[#d6d6d6] bg-white text-[#1d2430] hover:border-[#c8d4e8] hover:bg-[#f5f5f5]",
@@ -438,7 +438,7 @@ export default function FareCalendarPicker({
                                   </span>
                                   <span
                                     className={[
-                                      "hidden",
+                                      "mt-0.5 line-clamp-1 max-w-full px-0.5 text-[7px] font-normal leading-3",
                                       isSelected
                                         ? "text-white/95"
                                         : typeof price === "number"
@@ -496,7 +496,7 @@ export default function FareCalendarPicker({
     resolvedAnchorRect
 
   if (isDesktopPortal && typeof document !== "undefined") {
-    const panelWidth = Math.min(720, viewportWidth - 72)
+    const panelWidth = Math.min(620, viewportWidth - 72)
     const left = Math.min(
       Math.max(24, resolvedAnchorRect.left + resolvedAnchorRect.width / 2 - panelWidth / 2),
       viewportWidth - panelWidth - 24
@@ -512,19 +512,19 @@ export default function FareCalendarPicker({
           className="fixed inset-0 z-[159] bg-transparent"
         />
         <div
-          className="pointer-events-auto fixed z-[160] overflow-hidden rounded-[24px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-3 shadow-[0_24px_70px_rgba(17,24,39,0.18)] backdrop-blur-xl"
-          style={{ top, left, width: panelWidth, maxHeight: "min(760px, calc(100vh - 32px))" }}
+          className="pointer-events-auto fixed z-[160] overflow-hidden rounded-[20px] border border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,255,0.98)_100%)] p-2.5 shadow-[0_20px_56px_rgba(17,24,39,0.16)] backdrop-blur-xl"
+          style={{ top, left, width: panelWidth, maxHeight: "min(620px, calc(100vh - 32px))" }}
         >
-          <div className="flex max-h-[min(720px,calc(100vh-72px))] flex-col overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-3">
-              <div className="flex min-w-0 items-center gap-2 rounded-[14px] border border-[#dde6f1] bg-white/90 px-3 py-2 text-[13px] font-normal text-[#52627b] shadow-[0_8px_18px_rgba(17,24,39,0.05)]">
-                <CalendarDays size={16} className="shrink-0 text-[#1E7BFF]" />
+          <div className="flex max-h-[min(590px,calc(100vh-72px))] flex-col overflow-hidden">
+            <div className="flex items-center justify-between gap-3 border-b border-[#e7edf5] pb-2">
+              <div className="flex min-w-0 items-center gap-2 rounded-[12px] border border-[#dde6f1] bg-white/90 px-2.5 py-1.5 text-[12px] font-normal text-[#52627b] shadow-[0_6px_14px_rgba(17,24,39,0.05)]">
+                <CalendarDays size={15} className="shrink-0 text-[#1E7BFF]" />
                 <span className="truncate">{from && to ? `${from} → ${to}` : copy.routePlaceholder}</span>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 items-center rounded-full border border-[#dbe3ef] bg-white px-4 text-[13px] font-normal text-[#627188] transition hover:bg-[#f8fbff]"
+                className="inline-flex h-8 items-center rounded-full border border-[#dbe3ef] bg-white px-3.5 text-[12px] font-normal text-[#627188] transition hover:bg-[#f8fbff]"
               >
                 {copy.close}
               </button>
@@ -534,15 +534,15 @@ export default function FareCalendarPicker({
                 {copy.routeHint}
               </div>
             ) : (
-              <div className="mt-4 overflow-y-auto pr-1">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="mt-2.5 overflow-y-auto pr-1">
+                <div className="grid grid-cols-2 gap-2.5">
                   {visibleMonths.map((monthDate, monthIndex) => {
                     const cells = getMonthDays(monthDate)
 
                     return (
                       <div key={`${monthDate.getFullYear()}-${monthDate.getMonth()}`}>
-                        <div className="rounded-[18px] border border-[#e4ebf4] bg-white/95 p-3 shadow-[0_12px_28px_rgba(17,24,39,0.05)]">
-                          <div className="mb-2 flex items-center justify-between">
+                        <div className="rounded-[15px] border border-[#e4ebf4] bg-white/95 p-2.5 shadow-[0_10px_22px_rgba(17,24,39,0.045)]">
+                          <div className="mb-1.5 flex items-center justify-between">
                             {monthIndex === 0 ? (
                               <button
                                 type="button"
@@ -553,16 +553,16 @@ export default function FareCalendarPicker({
                                   )
                                 }}
                                 disabled={!canGoToPreviousMonth}
-                                className="grid h-8 w-8 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
+                                className="grid h-7 w-7 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
                               >
-                                <ChevronLeft size={16} />
+                                <ChevronLeft size={14} />
                               </button>
                             ) : (
-                              <div className="h-8 w-8" />
+                              <div className="h-7 w-7" />
                             )}
 
                             <div className="text-center">
-                              <div className="text-[13px] font-normal text-[#1295dd] md:text-[15px]">
+                              <div className="text-[13px] font-normal text-[#1295dd]">
                                 {copy.monthNames[monthDate.getMonth()]} {monthDate.getFullYear()}
                               </div>
                             </div>
@@ -575,21 +575,21 @@ export default function FareCalendarPicker({
                                     new Date(startMonth.getFullYear(), startMonth.getMonth() + 1, 1)
                                   )
                                 }
-                                className="grid h-8 w-8 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
+                                className="grid h-7 w-7 place-items-center rounded-full border border-[#e2e9f2] bg-[#f8fbff] text-[#6f7f97] transition hover:bg-white"
                               >
-                                <ChevronRight size={16} />
+                                <ChevronRight size={14} />
                               </button>
                             ) : (
-                              <div className="h-8 w-8" />
+                              <div className="h-7 w-7" />
                             )}
                           </div>
 
-                          <div className="grid grid-cols-7 gap-x-1 gap-y-1.5 text-center text-[#7b8aa0]">
+                          <div className="grid grid-cols-7 gap-x-0.5 gap-y-1 text-center text-[#7b8aa0]">
                             {copy.weekdayLabels.map((label, labelIndex) => (
                               <div
                                 key={label}
                                 className={[
-                                  "py-1 text-[10px] font-normal uppercase tracking-[0.02em]",
+                                  "py-0.5 text-[9px] font-normal uppercase tracking-[0.02em]",
                                   labelIndex >= 5 ? "text-[#95a4bb]" : "text-[#243042]",
                                 ].join(" ")}
                               >
@@ -599,7 +599,7 @@ export default function FareCalendarPicker({
 
                             {cells.map((cell, index) => {
                               if (!cell) {
-                                return <div key={`empty-${index}`} className="h-[42px] md:h-[46px]" />
+                                return <div key={`empty-${index}`} className="h-[38px]" />
                               }
 
                               const iso = toISODate(cell)
@@ -614,7 +614,7 @@ export default function FareCalendarPicker({
                                   type="button"
                                   onClick={() => onChange(iso)}
                                   className={[
-                                    "flex h-[42px] w-full min-w-0 flex-col items-center justify-center rounded-[10px] border px-1 text-center transition md:h-[46px]",
+                                    "flex h-[38px] w-full min-w-0 flex-col items-center justify-center rounded-[8px] border px-0.5 text-center transition",
                                     isSelected
                                       ? "border-[#1f6fff] bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] text-white shadow-[0_14px_34px_rgba(34,104,230,0.22)]"
                                       : "border-[#eef2f7] bg-[linear-gradient(180deg,#fcfdff_0%,#f6f9fd_100%)] text-[#1d2430] hover:border-[#dce6f3] hover:bg-white",
@@ -622,7 +622,7 @@ export default function FareCalendarPicker({
                                 >
                                   <span
                                     className={[
-                                      "text-[13px] font-normal leading-none md:text-[14px]",
+                                      "text-[12px] font-normal leading-none",
                                       isToday && !isSelected ? "rounded-full bg-[#e9f2ff] px-1.5 py-1 text-[#1f6fff]" : "",
                                       !isSelected && weekend ? "text-[#95a4bb]" : "",
                                     ].join(" ")}
@@ -631,7 +631,7 @@ export default function FareCalendarPicker({
                                   </span>
                                   <span
                                     className={[
-                                      "mt-0.5 line-clamp-2 px-1 text-[7px] font-normal leading-3 md:text-[8px]",
+                                      "mt-0.5 line-clamp-1 px-0.5 text-[6.5px] font-normal leading-3",
                                       isSelected ? "text-white/95" : "text-[#7d8ca3]",
                                     ].join(" ")}
                                   >
@@ -649,8 +649,8 @@ export default function FareCalendarPicker({
               </div>
             )}
 
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#e7edf5] pt-3">
-              <div className="text-xs text-[#627188]">
+            <div className="mt-2.5 flex items-center justify-between gap-3 border-t border-[#e7edf5] pt-2.5">
+              <div className="text-[11px] text-[#627188]">
                 {loading
                   ? copy.loading
                   : minVisiblePrice
@@ -660,7 +660,7 @@ export default function FareCalendarPicker({
               <button
                 type="button"
                 onClick={onClose}
-                className="h-10 rounded-full bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] px-4 text-[12px] font-normal uppercase tracking-[0.08em] text-white shadow-[0_12px_24px_rgba(34,104,230,0.22)]"
+                className="h-9 rounded-full bg-[linear-gradient(180deg,#2f7dff_0%,#1e6df0_100%)] px-4 text-[11px] font-normal uppercase tracking-[0.08em] text-white shadow-[0_10px_20px_rgba(34,104,230,0.2)]"
               >
                 {copy.select}
               </button>

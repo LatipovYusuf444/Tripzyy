@@ -1,8 +1,9 @@
 import axios from "axios"
 
-import { getAccessToken, setAccessToken, setAuthUser } from "@/shared/auth/token"
+import { clearAccessToken, setAccessToken, setAuthUser } from "@/shared/auth/token"
 
 let pendingTokenRequest: Promise<string | null> | null = null
+let sessionAccessToken: string | null = null
 
 const buildDisplayName = (email: string) => {
   const base = email.split("@")[0]?.trim() || "Tripzy User"
@@ -16,9 +17,13 @@ const buildDisplayName = (email: string) => {
     : "Tripzy User"
 }
 
-export const ensureAccessToken = async () => {
-  const existingToken = getAccessToken()
-  if (existingToken) return existingToken
+export const ensureAccessToken = async (forceRefresh = false) => {
+  if (!forceRefresh && sessionAccessToken) return sessionAccessToken
+
+  if (forceRefresh) {
+    sessionAccessToken = null
+    clearAccessToken()
+  }
 
   const email = import.meta.env.VITE_AUTH_EMAIL?.trim()
   const password = import.meta.env.VITE_AUTH_PASSWORD?.trim()
@@ -42,6 +47,7 @@ export const ensureAccessToken = async () => {
         const token = res.data?.data?.token
         if (!token) return null
 
+        sessionAccessToken = token
         setAccessToken(token)
         setAuthUser({ fullName: buildDisplayName(email), email })
         window.dispatchEvent(new Event("tripzy-auth"))

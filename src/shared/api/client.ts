@@ -1,5 +1,5 @@
 import axios from "axios"
-import { clearAccessToken, getAccessToken } from "@/shared/auth/token"
+import { clearAccessToken } from "@/shared/auth/token"
 import { ensureAccessToken } from "@/shared/auth/session"
 import { useAppLoading } from "@/shared/store/appLoading"
 
@@ -15,7 +15,7 @@ const client = axios.create({
 client.interceptors.request.use(async (config) => {
   useAppLoading.getState().start()
   const isLoginRequest = String(config.url || "").includes("/auth/login")
-  const token = isLoginRequest ? getAccessToken() : await ensureAccessToken()
+  const token = isLoginRequest ? null : await ensureAccessToken()
 
   if (token) {
     config.headers["X-API-KEY"] = `Bearer ${token}`
@@ -30,6 +30,27 @@ client.interceptors.response.use(
   },
   (error) => {
     useAppLoading.getState().stop()
+    const originalConfig = error?.config
+    if (
+      error?.response?.status === 401 &&
+      originalConfig &&
+      !originalConfig._retry &&
+      !String(originalConfig.url || "").includes("/auth/login")
+    ) {
+      originalConfig._retry = true
+      clearAccessToken()
+      return ensureAccessToken(true).then((token) => {
+        if (!token) {
+          window.dispatchEvent(new Event("tripzy-auth"))
+          return Promise.reject(error)
+        }
+
+        originalConfig.headers = originalConfig.headers ?? {}
+        originalConfig.headers["X-API-KEY"] = `Bearer ${token}`
+        return client(originalConfig)
+      })
+    }
+
     if (error?.response?.status === 401) {
       clearAccessToken()
       window.dispatchEvent(new Event("tripzy-auth"))

@@ -347,12 +347,14 @@ export default function Flights() {
   const [dynamicAirportLabels, setDynamicAirportLabels] = useState<Record<string, string>>(DEFAULT_AIRPORT_DIRECTORY)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const calendarAnchorRef = useRef<HTMLDivElement>(null)
+  const [isCompactSearchViewport, setIsCompactSearchViewport] = useState(false)
   const [searchTrips, setSearchTrips] = useState<SearchTrip[]>([])
   const [siteTheme, setSiteTheme] = useState<SiteTheme>(() => getStoredTheme())
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null)
   const [previewFlight, setPreviewFlight] = useState<Flight | null>(null)
   const checkoutRef = useRef<HTMLDivElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
+  const loadingAnimationRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const syncTheme = () => setSiteTheme(getStoredTheme())
@@ -364,6 +366,19 @@ export default function Flights() {
     return () => {
       window.removeEventListener("storage", syncTheme)
       window.removeEventListener("tripzy-theme-change", syncTheme as EventListener)
+    }
+  }, [])
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsCompactSearchViewport(window.matchMedia("(max-width: 1279px)").matches)
+    }
+
+    syncViewport()
+    window.addEventListener("resize", syncViewport)
+
+    return () => {
+      window.removeEventListener("resize", syncViewport)
     }
   }, [])
 
@@ -974,14 +989,14 @@ export default function Flights() {
 
   const scrollToResultsOnMobile = useCallback(() => {
     if (typeof window === "undefined") return
-    if (!window.matchMedia("(max-width: 767px)").matches) return
+    if (!window.matchMedia("(max-width: 1023px)").matches) return
 
     window.setTimeout(() => {
-      const target = resultsRef.current
+      const target = loadingAnimationRef.current ?? resultsRef.current
       if (!target) return
-      const top = target.getBoundingClientRect().top + window.scrollY - 92
+      const top = target.getBoundingClientRect().top + window.scrollY - 16
       window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
-    }, 120)
+    }, 320)
   }, [])
 
   const onSearch = () => {
@@ -1029,6 +1044,7 @@ export default function Flights() {
     const queryKey = JSON.stringify(criteria)
     if (lastAutoQueryRef.current === queryKey) return
     lastAutoQueryRef.current = queryKey
+    scrollToResultsOnMobile()
     if (searchTrips.length) {
       navigate(
         `/flights?${new URLSearchParams({
@@ -1051,7 +1067,7 @@ export default function Flights() {
       )
     }
     void runSearch(criteria, false)
-  }, [date, from, navigate, pax, resolvedFrom, resolvedTo, runSearch, searchTrips, to, travelClass])
+  }, [date, from, navigate, pax, resolvedFrom, resolvedTo, runSearch, scrollToResultsOnMobile, searchTrips, to, travelClass])
 
   useEffect(() => () => abortRef.current?.abort(), [])
 
@@ -1256,6 +1272,7 @@ export default function Flights() {
                       setCalendarOpen(false)
                     }}
                     onClose={() => setCalendarOpen(false)}
+                    forceMobile={isCompactSearchViewport}
                   />
                 ) : null}
               </motion.div>
@@ -1413,7 +1430,11 @@ export default function Flights() {
             transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-4"
           >
-            {loading ? <SearchLoadingAnimation language={language} /> : null}
+            {loading ? (
+              <div ref={loadingAnimationRef}>
+                <SearchLoadingAnimation language={language} />
+              </div>
+            ) : null}
             {!loading && filtered.length > 0 ? (
               <div className="space-y-3">
                 <motion.div whileHover={{ y: -2 }} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[#E7E2DA] bg-[#F7F6F2] px-4 py-3 text-sm shadow-[0_10px_24px_rgba(77,70,61,0.05)] transition-shadow duration-300 hover:shadow-[0_16px_34px_rgba(77,70,61,0.09)]">
