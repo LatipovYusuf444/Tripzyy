@@ -235,17 +235,17 @@ export default function Navbar() {
           isCompactNavbar
             ? "w-full px-4 py-3 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-3 lg:px-10 lg:py-7 xl:py-8"
             : isHome
-              ? "w-full px-4 pb-4 pt-7 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:pb-4 md:pt-8 lg:py-2.5"
+              ? "w-full px-4 pb-4 pt-7 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:pb-4 md:pt-8 lg:pb-5 lg:pt-6"
               : "w-full px-4 py-4 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-4 lg:py-2.5",
           isHome
-            ? "border-b border-transparent bg-transparent shadow-none"
+            ? "border-b border-white/20 bg-transparent shadow-none"
             : compactNavbarGlassClass,
         ].join(" ")}
       >
         <div className={`mx-auto flex !max-w-[1640px] items-center justify-between gap-4 ${isCompactNavbar ? "lg:gap-8" : "lg:gap-10"}`}>
           <Link
             to="/"
-            className={`hidden shrink-0 items-center justify-center lg:flex ${isCompactNavbar ? "tripzy-logo-crop-mobile overflow-hidden" : ""}`}
+            className={`hidden shrink-0 items-center justify-center lg:flex ${isCompactNavbar ? "tripzy-logo-crop-mobile overflow-hidden" : "tripzy-logo-crop-home-desktop overflow-hidden"}`}
             onClick={() => setOpen(false)}
             aria-label={copy.home}
           >
@@ -255,7 +255,7 @@ export default function Navbar() {
               className={
                 isCompactNavbar
                   ? "tripzy-logo-image-mobile block h-auto max-w-none object-contain"
-                  : "block h-auto object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)] !w-[334px]"
+                  : "tripzy-logo-image-home-desktop block h-auto max-w-none object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)]"
               }
             />
           </Link>

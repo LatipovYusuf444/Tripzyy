@@ -114,6 +114,21 @@ select {
 }
 
 @media (min-width: 1024px) {
+  .tripzy-logo-crop-home-desktop {
+    position: relative;
+    width: 210px;
+    height: 48px;
+    margin-left: 48px;
+  }
+
+  .tripzy-logo-image-home-desktop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 430px;
+    transform: translate(-114px, -115px);
+  }
+
   .tripzy-logo-crop-mobile {
     width: 168px;
     height: 38px;

@@ -1,5 +1,6 @@
 import { motion, type Variants } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   ArrowRight,
@@ -247,6 +248,7 @@ function getCopy(language: "uz" | "ru" | "en") {
 
 export default function About() {
   const { language } = useI18n();
+  const navigate = useNavigate();
   const statsRef = useRef<HTMLDivElement | null>(null);
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const heroRef = useRef<HTMLDivElement | null>(null);
@@ -309,13 +311,18 @@ export default function About() {
                 {copy.heroText}
               </motion.p>
               <motion.div variants={fadeUp} className="mt-5 flex flex-wrap gap-3">
-                <motion.button whileTap={{ scale: 0.98 }} className="group h-10 rounded-xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(138,58,90,0.18)] transition">
-                  <span className="inline-flex items-center gap-2">
+                <motion.button
+                  type="button"
+                  onClick={() => navigate("/flights")}
+                  whileTap={{ scale: 0.98 }}
+                  className="group h-10 rounded-xl bg-gradient-to-r from-[#7A2E4E] via-[#8A3A5A] to-[#A0526B] px-5 text-sm font-semibold !text-white shadow-[0_12px_24px_rgba(138,58,90,0.18)] transition"
+                >
+                  <span className="inline-flex items-center gap-2 !text-white" style={{ color: "#ffffff" }}>
                     {copy.chooseTour}
-                    <ArrowRight size={16} className="transition group-hover:translate-x-1" />
+                    <ArrowRight size={16} className="!text-white transition group-hover:translate-x-1" style={{ color: "#ffffff" }} />
                   </span>
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.98 }} className="h-10 rounded-xl border border-[#E3E8F7] bg-white px-5 text-sm font-semibold text-[#111A34] shadow-[0_8px_18px_rgba(70,90,140,0.08)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white">
+                <motion.button whileTap={{ scale: 0.98 }} className="h-10 rounded-xl border border-[#E3E8F7] bg-[#34476d] px-5 text-sm font-semibold !text-white shadow-[0_8px_18px_rgba(70,90,140,0.08)] transition dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-white">
                   {copy.details}
                 </motion.button>
               </motion.div>

@@ -878,7 +878,7 @@ export default function Home() {
 
   const multiFlightLabelClass = isHeroSearchDark
     ? "mb-1.5 px-1 text-[12px] font-semibold text-[#d4e2fb]"
-    : "mb-1 px-1 text-[11px] font-semibold text-[#0f172a] drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)] sm:mb-1.5 sm:text-[12px]"
+    : "mb-1 px-1 text-[11px] font-semibold text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)] sm:mb-1.5 sm:text-[12px] xl:text-[#0f172a] xl:drop-shadow-[0_2px_10px_rgba(255,255,255,0.35)]"
 
   const multiDateSegmentClass = isHeroSearchDark
     ? "luxury-search-segment pointer-events-auto relative flex min-h-[52px] flex-col justify-center overflow-visible rounded-[16px] border border-[#5d7fba]/60 bg-[linear-gradient(180deg,rgba(10,22,52,0.96)_0%,rgba(6,13,34,0.92)_100%)] px-3.5 py-2 shadow-[0_14px_30px_rgba(2,8,24,0.44)] backdrop-blur-[18px] xl:min-h-[54px]"
@@ -1060,8 +1060,14 @@ export default function Home() {
                           onClick={() =>
                             setMultiTrips((prev) => [...prev, { from: "", to: "", date: "" }])
                           }
-                          className="border-b border-white/24 pb-0.5 text-[13px] font-medium text-white/80 transition hover:text-white"
+                          className={[
+                            "inline-flex h-10 items-center justify-center gap-2 rounded-[14px] border px-4 text-[13px] font-bold transition active:scale-[0.98]",
+                            isHeroSearchDark
+                              ? "border-[#5d7fba]/55 bg-[rgba(14,32,67,0.78)] text-white shadow-[0_12px_28px_rgba(2,8,24,0.28)] hover:bg-[rgba(20,48,94,0.86)]"
+                              : "border-white/30 bg-[linear-gradient(90deg,#001b7a_0%,#05288f_48%,#5f8cff_100%)] text-white shadow-[0_12px_28px_rgba(5,40,143,0.26)] hover:brightness-[1.04]",
+                          ].join(" ")}
                         >
+                          <Plus size={15} strokeWidth={2.4} />
                           {heroCopy.addSegment}
                         </button>
                         <motion.button
@@ -1070,7 +1076,7 @@ export default function Home() {
                             setActiveAirportField(null)
                             onSearch()
                           }}
-                          className="luxury-search-cta inline-flex h-10 items-center justify-center rounded-[14px] px-5 text-[13px] font-bold text-white transition-all duration-300"
+                          className="inline-flex h-10 items-center justify-center rounded-[14px] bg-[linear-gradient(90deg,#001b7a_0%,#05288f_48%,#5f8cff_100%)] px-5 text-[13px] font-bold text-white shadow-[0_12px_28px_rgba(5,40,143,0.26)] transition-all duration-300 hover:brightness-[1.04]"
                           whileHover={{ y: -1, scale: 1.01 }}
                           whileTap={{ scale: 0.985 }}
                         >
@@ -1861,8 +1867,8 @@ function PassengerField({
         ? "luxury-search-segment pointer-events-auto relative flex min-h-[64px] items-center overflow-visible rounded-[18px] border border-white/10 bg-white/[0.03] px-4 shadow-none backdrop-blur-sm sm:min-h-[70px] xl:min-h-[84px] xl:rounded-none xl:border-0 xl:border-l xl:border-white/18 xl:bg-transparent xl:px-6 xl:shadow-none xl:backdrop-blur-none"
         : "luxury-search-segment pointer-events-auto relative flex min-h-[46px] items-center overflow-visible rounded-[14px] border border-[#d9dde3] bg-white px-3.5 shadow-none backdrop-blur-none sm:min-h-[52px] sm:rounded-[16px] sm:px-4 xl:min-h-[56px] xl:rounded-none xl:border-0 xl:border-l xl:border-[#cfcfcf] xl:bg-transparent xl:px-5 xl:shadow-none xl:backdrop-blur-none"
       : isDark
-        ? "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px]"
-        : "pointer-events-auto relative flex min-h-[58px] items-center overflow-visible rounded-2xl border border-[#d9dde3] bg-white px-4 py-2.5 shadow-none backdrop-blur-none",
+        ? "pointer-events-auto relative flex w-full min-h-[64px] items-center overflow-visible rounded-[18px] border border-[#5d7fba]/45 bg-[linear-gradient(180deg,rgba(18,38,76,0.76)_0%,rgba(9,24,54,0.56)_100%)] px-4 py-2.5 shadow-[0_16px_38px_rgba(2,8,24,0.28)] backdrop-blur-[18px] xl:w-auto xl:min-h-[58px]"
+        : "pointer-events-auto relative flex w-full min-h-[64px] items-center overflow-visible rounded-[18px] border border-[#d9dde3] bg-white px-4 py-2.5 shadow-none backdrop-blur-none xl:w-auto xl:min-h-[58px]",
     open
       ? isDark
         ? "z-40 bg-[linear-gradient(180deg,rgba(26,50,94,0.86)_0%,rgba(12,29,64,0.66)_100%)] shadow-[0_18px_42px_rgba(2,8,24,0.34)]"
@@ -1873,29 +1879,29 @@ function PassengerField({
   ].join(" ")
 
   const dropdownPanelClass =
-    "fixed inset-x-4 bottom-4 z-[130] rounded-[18px] border border-[#d6d6d6] bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[440px] xl:rounded-[18px] xl:border-0 xl:p-4"
+    "fixed inset-x-4 bottom-4 z-[130] rounded-[18px] border border-[#d6d6d6] bg-white p-3 shadow-[0_18px_44px_rgba(15,23,42,0.16)] xl:absolute xl:left-auto xl:right-0 xl:top-[calc(100%+10px)] xl:bottom-auto xl:z-[140] xl:w-[440px] xl:rounded-[18px] xl:border-0 xl:p-4"
 
   const dropdownHandleClass = isDark
     ? "mx-auto mb-3 h-1 w-10 rounded-full bg-[#5d7fba]/45 xl:hidden"
     : "mx-auto mb-3 h-1 w-10 rounded-full bg-[#c8cdd6] xl:hidden"
 
-  const dropdownTitleClass = "text-[16px] font-semibold text-[#1f1f1f] xl:text-[18px]"
+  const dropdownTitleClass = "text-[15px] font-semibold text-[#1f1f1f] xl:text-[18px]"
 
   const passengerRowClass =
-    "flex items-center justify-between gap-3 py-2 xl:py-2"
+    "flex items-center justify-between gap-3 py-1.5 xl:py-2"
 
-  const passengerRowTitleClass = "text-[15px] font-normal leading-tight text-[#1f1f1f] xl:text-[17px]"
+  const passengerRowTitleClass = "text-[14px] font-normal leading-tight text-[#1f1f1f] xl:text-[17px]"
 
-  const passengerRowHintClass = "text-[12px] leading-tight text-[#686868] xl:text-[13px]"
+  const passengerRowHintClass = "text-[11px] leading-tight text-[#686868] xl:text-[13px]"
 
   const counterBoxClass = "flex shrink-0 items-center gap-3 xl:gap-4"
 
   const counterMinusClass =
-    "premium-icon-button grid h-8 w-8 place-items-center rounded-full bg-white text-[#777777] hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:text-[#a9a9a9] xl:h-9 xl:w-9"
+    "premium-icon-button grid h-7 w-7 place-items-center rounded-full bg-white text-[#777777] hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:text-[#a9a9a9] xl:h-9 xl:w-9"
   const counterPlusClass =
-    "premium-icon-button grid h-8 w-8 place-items-center rounded-full bg-[#e8f4ff] text-[#0878ff] hover:bg-[#dcedff] disabled:cursor-not-allowed disabled:text-[#99c8ff] xl:h-9 xl:w-9"
+    "premium-icon-button grid h-7 w-7 place-items-center rounded-full bg-[#e8f4ff] text-[#0878ff] hover:bg-[#dcedff] disabled:cursor-not-allowed disabled:text-[#99c8ff] xl:h-9 xl:w-9"
 
-  const counterValueClass = "min-w-[18px] text-center text-[17px] font-normal text-[#111111] xl:text-[18px]"
+  const counterValueClass = "min-w-[18px] text-center text-[15px] font-normal text-[#111111] xl:text-[18px]"
 
   const morePassengersClass = "hidden"
 
@@ -1995,17 +2001,17 @@ function PassengerField({
                 </div>
               ))}
             </div>
-            <div className="mt-4 text-[15px] font-semibold text-[#1f1f1f] xl:mt-5 xl:text-[17px]">
+            <div className="mt-3 text-[14px] font-semibold text-[#1f1f1f] xl:mt-5 xl:text-[17px]">
               {safeCopy.cabinTitle}
             </div>
-            <div className="mt-2.5 grid grid-cols-3 gap-2 xl:mt-3">
+            <div className="mt-2 grid grid-cols-3 gap-2 xl:mt-3">
               {serviceClasses.map((item) => (
                 <button
                   key={item.code}
                   type="button"
                   onClick={() => onTravelClassChange?.(item.code)}
                   className={[
-                    "premium-choice-button h-9 rounded-full border bg-white px-2 text-[13px] font-medium xl:h-10 xl:text-[15px]",
+                    "premium-choice-button h-8 rounded-full border bg-white px-2 text-[12px] font-medium xl:h-10 xl:text-[15px]",
                     selectedTravelClass === item.code
                       ? "border-[#0878ff] text-[#0878ff]"
                       : "border-[#d6d6d6] text-[#1f1f1f] hover:border-[#0878ff] hover:text-[#0878ff]",
