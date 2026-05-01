@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Link, NavLink, useLocation } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
 import {
+  ArrowRight,
   ChevronDown,
   Menu,
   MoonStar,
@@ -389,39 +390,44 @@ export default function Navbar() {
                 exit="closed"
                 variants={menuVariants}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className={`fixed inset-x-[15px] z-[106] mx-auto max-w-[390px] overflow-hidden rounded-[22px] border border-[#dce7f5] bg-white/96 p-2.5 shadow-[0_20px_54px_rgba(17,24,39,0.16)] backdrop-blur-[22px] dark:border-[#41639b]/70 dark:bg-[linear-gradient(180deg,rgba(17,39,78,0.92)_0%,rgba(7,20,48,0.88)_100%)] dark:shadow-[0_24px_64px_rgba(2,8,24,0.52)] lg:hidden ${isCompactNavbar ? "top-[84px] max-h-[calc(100svh-98px)]" : "top-[78px] max-h-[calc(100svh-92px)]"}`}
+                className={`fixed inset-x-[15px] z-[106] mx-auto overflow-hidden shadow-[0_24px_64px_rgba(17,24,39,0.18)] backdrop-blur-[22px] lg:hidden ${theme === "dark" ? "max-w-[390px] rounded-[22px] border border-[#41639b]/70 bg-[linear-gradient(180deg,rgba(17,39,78,0.92)_0%,rgba(7,20,48,0.88)_100%)] p-2.5 shadow-[0_24px_64px_rgba(2,8,24,0.52)]" : "max-w-[370px] rounded-[24px] border border-[#eee9e2] bg-[#fffdfb] p-0 text-[#071427]"} ${isCompactNavbar ? "top-[84px] max-h-[calc(100svh-98px)]" : "top-[78px] max-h-[calc(100svh-92px)]"}`}
               >
-                <div className="mb-2.5 flex items-center justify-between border-b border-[#e6edf6] pb-2.5 dark:border-[#405d90]/55">
+                <div className={theme === "dark" ? "" : "px-5 py-4"}>
+                <div className={`mb-4 flex items-start justify-between ${theme === "dark" ? "border-b border-[#405d90]/55 pb-2.5" : ""}`}>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7d8593] dark:text-[#a7bce2]">
+                    <div className={`text-[9px] font-semibold uppercase tracking-[0.18em] ${theme === "dark" ? "text-[#a7bce2]" : "text-[#b7afa6]"}`}>
                       {copy.menu}
                     </div>
-                    <div className="mt-0.5 text-lg font-black tracking-[-0.035em] text-[#111827] dark:text-white">
+                    <div className={`mt-1.5 text-[19px] font-black leading-none tracking-[-0.025em] ${theme === "dark" ? "text-white" : "text-[#071427]"}`}>
                       {copy.navigation}
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="grid h-9 w-9 place-items-center rounded-full border border-[#d9e3ef] bg-white text-[#1d2430] shadow-[0_8px_18px_rgba(17,24,39,0.08)] hover:bg-[#f8fbff] dark:border-[#5572a8]/70 dark:bg-[rgba(23,45,86,0.78)] dark:text-white"
+                    className={`grid place-items-center rounded-full transition ${theme === "dark" ? "h-9 w-9 border border-[#5572a8]/70 bg-[rgba(23,45,86,0.78)] text-white" : "h-10 w-10 bg-[#f4f1ed] text-[#071427] shadow-[inset_0_0_0_1px_rgba(210,202,193,0.32),0_8px_18px_rgba(32,24,16,0.05)] hover:bg-[#eee9e3]"}`}
                   >
-                    <X size={17} />
+                    <X size={theme === "dark" ? 17 : 20} strokeWidth={2.4} />
                   </button>
                 </div>
 
-                <div className="max-h-[calc(100svh-190px)] overflow-y-auto pr-1">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5 rounded-[16px] border border-[#e7edf6] bg-white p-1.5 dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)]">
+                <div className="max-h-[calc(100svh-160px)] overflow-y-auto">
+                  <div className={`flex flex-col ${theme === "dark" ? "gap-1.5" : "gap-2.5"}`}>
+                    <div className={`flex items-center gap-2 p-1.5 ${theme === "dark" ? "rounded-[16px] border border-[#3d5b8e]/70 bg-[rgba(10,28,62,0.68)]" : "rounded-[16px] border border-[#eee9e2] bg-[#fffdfb] shadow-[0_8px_18px_rgba(32,24,16,0.025)]"}`}>
                       {(["uz", "ru", "en"] as const).map((lang) => (
                         <button
                           key={lang}
                           type="button"
                           onClick={() => setLanguage(lang)}
                           className={[
-                            "flex-1 rounded-full px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] transition",
+                            "flex-1 rounded-full px-3 py-2 text-[11px] font-black uppercase tracking-[0.04em] transition",
                             language === lang
-                              ? "bg-[linear-gradient(135deg,#5d86ff_0%,#3d6fee_100%)] text-white shadow-[0_10px_24px_rgba(61,111,238,0.22)]"
-                              : "text-[#2a3140] hover:bg-[#f3f7fc] dark:text-[#d7e4ff] dark:hover:bg-white/8",
+                              ? theme === "dark"
+                                ? "bg-[linear-gradient(135deg,#5d86ff_0%,#3d6fee_100%)] text-white shadow-[0_10px_24px_rgba(61,111,238,0.22)]"
+                                : "bg-[linear-gradient(90deg,#001b7a_0%,#05288f_48%,#5f8cff_100%)] text-white shadow-[0_10px_22px_rgba(5,40,143,0.24)]"
+                              : theme === "dark"
+                                ? "text-[#d7e4ff] hover:bg-white/8"
+                                : "text-[#101722] hover:bg-[#f4f1ed]",
                           ].join(" ")}
                         >
                           {lang}
@@ -436,17 +442,17 @@ export default function Navbar() {
                       onThemeChange={setTheme}
                       direction="ltr"
                       unstyled
-                      className="flex items-center justify-between rounded-[16px] border border-[#e7edf6] bg-white px-3 py-2.5 text-[13px] font-semibold text-[#1d2430] transition hover:bg-[#f8fbff] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)] dark:text-white"
-                      renderIcon={() => null}
+                      className={`flex items-center justify-between font-bold transition ${theme === "dark" ? "rounded-[16px] border border-[#3d5b8e]/70 bg-[rgba(10,28,62,0.68)] px-3 py-2.5 text-[13px] text-white" : "rounded-[16px] bg-[#f8f5f1] px-5 py-3 text-[13px] text-[#071427] shadow-[0_8px_18px_rgba(32,24,16,0.025)] hover:bg-[#f3eee8]"}`}
+                      renderIcon={() => <span className="hidden" aria-hidden />}
                       label={
                         <>
-                          <span className="inline-flex items-center gap-2.5">
-                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
-                              {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={15} />}
+                            <span className="inline-flex items-center gap-3">
+                            <span className={`grid place-items-center rounded-full ${theme === "dark" ? "h-7 w-7 bg-[#15366d] text-[#bfe0ff]" : "h-7 w-7 bg-transparent text-[#071427]"}`}>
+                              {theme === "dark" ? <SunMedium size={15} /> : <MoonStar size={20} />}
                             </span>
                             <span>{theme === "dark" ? copy.lightMode : copy.darkMode}</span>
                           </span>
-                          <span className="rounded-full bg-[#eef3f9] px-2.5 py-1 text-[10px] font-semibold text-[#244268] dark:bg-[#193a70] dark:text-[#dbeafe]">
+                          <span className={`rounded-full font-black ${theme === "dark" ? "bg-[#193a70] px-2.5 py-1 text-[10px] text-[#dbeafe]" : "bg-[#eeeae5] px-3 py-1.5 text-[11px] text-[#071427]"}`}>
                             {theme === "dark" ? "ON" : "OFF"}
                           </span>
                         </>
@@ -460,20 +466,28 @@ export default function Navbar() {
                         onClick={() => setOpen(false)}
                         className={({ isActive }) =>
                           [
-                            "flex items-center justify-between rounded-[18px] border px-4 py-3 text-sm font-semibold text-[#1d2430] transition",
-                            isActive
-                              ? "border-[#d8e5f8] bg-[#eef5ff] shadow-[0_8px_20px_rgba(71,120,197,0.08)] dark:border-[#5f8dd4] dark:bg-[rgba(26,80,151,0.58)] dark:text-white"
-                              : "border-[#e7edf6] bg-white hover:bg-[#f8fbff] dark:border-[#3d5b8e]/70 dark:bg-[rgba(10,28,62,0.68)] dark:text-[#e8f0ff] dark:hover:bg-[rgba(18,50,103,0.72)]",
+                            "flex items-center justify-between transition",
+                            theme === "dark"
+                              ? [
+                                  "rounded-[18px] border px-4 py-3 text-sm font-semibold",
+                                  isActive
+                                    ? "border-[#5f8dd4] bg-[rgba(26,80,151,0.58)] text-white"
+                                    : "border-[#3d5b8e]/70 bg-[rgba(10,28,62,0.68)] text-[#e8f0ff] hover:bg-[rgba(18,50,103,0.72)]",
+                                ].join(" ")
+                              : [
+                                  "rounded-[16px] border border-[#eee9e2] bg-[#fffdfb] px-5 py-3 text-[13px] font-bold text-[#071427] shadow-[0_8px_18px_rgba(32,24,16,0.025)] hover:bg-[#f8f5f1]",
+                                  isActive ? "border-[#e5ded5] bg-[#fffdfb]" : "",
+                                ].join(" "),
                           ].join(" ")
                         }
                       >
-                        <span className="inline-flex items-center gap-3">
+                        <span className="inline-flex items-center gap-4 px-0.5">
                           {link.icon ? (
-                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
+                            <span className={`grid place-items-center rounded-full ${theme === "dark" ? "h-7 w-7 bg-[#15366d] text-[#bfe0ff]" : "h-8 w-8 bg-[#f3f0eb] text-[#071427]"}`}>
                               <link.icon size={16} />
                             </span>
                           ) : (
-                            <span className="grid h-7 w-7 place-items-center rounded-full bg-[#f2f6fc] text-[10px] font-bold uppercase tracking-[0.14em] text-[#28466f] dark:bg-[#15366d] dark:text-[#bfe0ff]">
+                            <span className={`grid place-items-center rounded-full font-black uppercase ${theme === "dark" ? "h-7 w-7 bg-[#15366d] text-[10px] tracking-[0.14em] text-[#bfe0ff]" : "h-8 w-8 bg-[#f3f0eb] text-[10px] tracking-[0.02em] text-[#071427]"}`}>
                               {link.label.slice(0, 2)}
                             </span>
                           )}
@@ -487,7 +501,17 @@ export default function Navbar() {
                         ) : null}
                       </NavLink>
                     ))}
+
+                    <Link
+                      to="/flights"
+                      onClick={() => setOpen(false)}
+                      className="mt-1.5 inline-flex items-center justify-center gap-4 rounded-[15px] bg-[linear-gradient(90deg,#001b7a_0%,#05288f_48%,#5f8cff_100%)] px-5 py-3 text-[13px] font-black uppercase tracking-[0.16em] text-white shadow-[0_14px_30px_rgba(5,40,143,0.30)] transition hover:brightness-[1.04] active:scale-[0.99]"
+                    >
+                      Qidirish
+                      <ArrowRight size={19} strokeWidth={2.2} />
+                    </Link>
                   </div>
+                </div>
                 </div>
 
               </motion.div>
@@ -532,15 +556,10 @@ function NavItem({
         const darkText = "#ffffff"
         const textColor = isHome || forceDark ? darkText : theme === "dark" ? darkText : lightText
 
-        const accentMap: Record<string, { line: string; glow: string }> = {
-          "/flights": { line: "linear-gradient(90deg,#2f7fe0 0%,#7fb7ff 100%)", glow: "rgba(47,127,224,0.28)" },
-          "/about": { line: "linear-gradient(90deg,#111827 0%,#4b5563 55%,#9ca3af 100%)", glow: "rgba(75,85,99,0.22)" },
-          "/checkout": { line: "linear-gradient(90deg,#0f172a 0%,#2563eb 45%,#60a5fa 100%)", glow: "rgba(37,99,235,0.24)" },
-          "/services": { line: "linear-gradient(90deg,#1d4ed8 0%,#38bdf8 50%,#93c5fd 100%)", glow: "rgba(56,189,248,0.24)" },
-          "/contact": { line: "linear-gradient(90deg,#374151 0%,#111827 55%,#2563eb 100%)", glow: "rgba(55,65,81,0.22)" },
+        const accent = {
+          line: "linear-gradient(90deg,#001b7a 0%,#05288f 48%,#5f8cff 100%)",
+          glow: "rgba(5,40,143,0.30)",
         }
-
-        const accent = accentMap[to] ?? accentMap["/flights"]
 
         return (
           <>
@@ -550,7 +569,7 @@ function NavItem({
               <span
                 aria-hidden
                 className={[
-                  "pointer-events-none absolute left-0 right-0 -bottom-[8px] h-[10px] rounded-full blur-[8px] transition-all duration-700 ease-out",
+                  "pointer-events-none absolute left-0 right-0 -bottom-[8px] h-[10px] origin-left rounded-full blur-[8px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   isActive ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100",
                 ].join(" ")}
                 style={{ background: accent.glow }}
@@ -558,7 +577,7 @@ function NavItem({
               <span
                 aria-hidden
                 className={[
-                  "pointer-events-none absolute left-0 right-0 -bottom-[3px] h-[2.5px] origin-left rounded-full transition-transform duration-700 ease-out",
+                  "pointer-events-none absolute left-0 right-0 -bottom-[3px] h-[2.5px] origin-left rounded-full shadow-[0_8px_18px_rgba(5,40,143,0.30)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
                 ].join(" ")}
                 style={{ background: accent.line }}

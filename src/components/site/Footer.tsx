@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
-import { Facebook, Instagram, Phone, Mail, Apple, PlayCircle } from "lucide-react"
+import { Facebook, Instagram, Phone, Mail } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { useI18n } from "@/shared/i18n/i18n"
@@ -20,12 +20,9 @@ export default function Footer() {
       terms: "Foydalanish shartlari",
       privacy: "Maxfiylik siyosati",
       help: "Yordam",
-      app: "Ilova",
       rights: "Barcha huquqlar himoyalangan",
       developed: "Saytni ishlab chiqqan:",
       social: "Ijtimoiy havola",
-      appStoreTop: "Yuklab oling",
-      playStoreTop: "Ilovani oling",
     },
     ru: {
       subtitle: "Премиальная платформа для бронирования поездок",
@@ -43,8 +40,6 @@ export default function Footer() {
       rights: "Все права защищены",
       developed: "Сайт разработан:",
       social: "Социальная ссылка",
-      appStoreTop: "Скачайте в",
-      playStoreTop: "Доступно в",
     },
     en: {
       subtitle: "Premium trip booking platform",
@@ -58,12 +53,9 @@ export default function Footer() {
       terms: "Terms of use",
       privacy: "Privacy policy",
       help: "Help",
-      app: "App",
       rights: "All rights reserved",
       developed: "Web developed by",
       social: "Social link",
-      appStoreTop: "Available on",
-      playStoreTop: "Get it on",
     },
   }[language]
 
@@ -74,7 +66,7 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 bg-black/45" />
 
       <div className="relative mx-auto max-w-[1680px] px-5 py-12 md:px-8 md:py-14 2xl:max-w-[1820px]">
-        <div className="grid gap-10 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-10 md:grid-cols-3">
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="space-y-5">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -115,20 +107,13 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.15 }} className="lg:col-span-1 md:justify-self-end">
-            <div className="text-sm font-semibold text-white">{copy.app}</div>
-            <div className="mt-4 flex flex-col gap-3">
-              <StoreBtn icon={Apple} top={copy.appStoreTop} title="App Store" href="#" />
-              <StoreBtn icon={PlayCircle} top={copy.playStoreTop} title="Google Play" href="#" />
-            </div>
-          </motion.div>
         </div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.2 }} className="mt-10 border-t border-white/10 pt-6">
           <div className="flex flex-col gap-2 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
             <span>© {new Date().getFullYear()} TRIPZY - {copy.rights}</span>
             <span className="text-white/40">
-              {copy.developed} <span className="text-white/55">SOS Group</span>
+              {copy.developed} <span className="text-white/55">AISA Company</span>
             </span>
           </div>
         </motion.div>
@@ -179,18 +164,5 @@ function FooterLink({ text, href }: { text: string; href: string }) {
         {text}
       </a>
     </li>
-  )
-}
-
-type StoreBtnProps = { icon: LucideIcon; top: string; title: string; href: string }
-function StoreBtn({ icon: Icon, top, title, href }: StoreBtnProps) {
-  return (
-    <a href={href} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white/90 transition hover:bg-white/10">
-      <Icon size={22} />
-      <div>
-        <div className="text-[11px] text-white/50">{top}</div>
-        <div className="text-sm font-semibold">{title}</div>
-      </div>
-    </a>
   )
 }
