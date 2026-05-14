@@ -134,8 +134,7 @@ export default function Navbar() {
       leftLinks: [
         { to: "/flights", label: "Reyslar" },
         { to: "/about", label: "Biz haqimizda" },
-      ] as NavLinkItem[],
-      rightLinks: [
+      ] as NavLinkItem[],      rightLinks: [
         { to: "/services", label: "Xizmatlar" },
         { to: "/contact", label: "Kontakt" },
       ] as NavLinkItem[],
