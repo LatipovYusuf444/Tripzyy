@@ -71,12 +71,15 @@ export default function Footer() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-2xl font-extrabold tracking-[0.25em] text-white">TRIPZY</div>
+                <div className="mt-2 text-[14px] font-bold uppercase tracking-[0.2em] text-white/85 md:text-[15px]">
+                  FLOWERY FLY SERVICE
+                </div>
                 <div className="mt-1 text-xs text-white/55">{copy.subtitle}</div>
               </div>
             </div>
 
             <div className="grid gap-3 text-white/90 sm:grid-cols-2 md:grid-cols-1">
-              <ContactRow icon={Phone} text="+998 99 804-02-96" note="Muhammad Pulatov" />
+              <ContactRow icon={Phone} text="+998 99 804-02-96" note="Rahbar Muhammad Po'latov" />
               <ContactRow icon={Mail} text="info@tripzy.uz" />
             </div>
 

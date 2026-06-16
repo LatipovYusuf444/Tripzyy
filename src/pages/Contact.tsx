@@ -8,7 +8,7 @@ export default function Contact() {
   const copy = {
     uz: {
       cards: [
-        { icon: Phone, title: "Telefon", value: "+998 99 804-02-96", note: "Muhammad Pulatov" },
+        { icon: Phone, title: "Telefon", value: "+998 99 804-02-96", note: "Rahbar Muhammad Po'latov" },
         { icon: Mail, title: "Email", value: "info@tripzy.uz", note: "Tijorat va umumiy savollar uchun" },
         { icon: MapPin, title: "Manzil", value: "Toshkent, O'zbekiston", note: "Uchrashuv oldidan qo'ng'iroq qiling" },
         { icon: Clock, title: "Ish vaqti", value: "09:00 - 18:00", note: "Onlayn yordam davom etadi" },
@@ -52,7 +52,7 @@ export default function Contact() {
     },
     ru: {
       cards: [
-        { icon: Phone, title: "Телефон", value: "+998 99 804-02-96", note: "Muhammad Pulatov" },
+        { icon: Phone, title: "Телефон", value: "+998 99 804-02-96", note: "Rahbar Muhammad Po'latov" },
         { icon: Mail, title: "Email", value: "info@tripzy.uz", note: "Для коммерческих и общих запросов" },
         { icon: MapPin, title: "Адрес", value: "Ташкент, Узбекистан", note: "Позвоните перед визитом" },
         { icon: Clock, title: "Время работы", value: "09:00 - 18:00", note: "Онлайн поддержка продолжается" },
@@ -96,7 +96,7 @@ export default function Contact() {
     },
     en: {
       cards: [
-        { icon: Phone, title: "Phone", value: "+998 99 804-02-96", note: "Muhammad Pulatov" },
+        { icon: Phone, title: "Phone", value: "+998 99 804-02-96", note: "Rahbar Muhammad Po'latov" },
         { icon: Mail, title: "Email", value: "info@tripzy.uz", note: "For commercial and general inquiries" },
         { icon: MapPin, title: "Address", value: "Tashkent, Uzbekistan", note: "Please call before visiting" },
         { icon: Clock, title: "Working hours", value: "09:00 - 18:00", note: "Online assistance continues" },
@@ -146,6 +146,15 @@ export default function Contact() {
 
       <div className="relative mx-auto max-w-[1560px] px-4 py-6 sm:px-6 md:px-8 md:py-12 2xl:max-w-[1720px]">
         <div className="rounded-[34px] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(245,249,255,0.92)_100%)] p-5 shadow-[0_28px_80px_rgba(17,24,39,0.08)] backdrop-blur-xl md:p-7 dark:border-[#2f4a78] dark:bg-[linear-gradient(180deg,rgba(9,21,42,0.92)_0%,rgba(13,27,53,0.9)_100%)] dark:shadow-[0_32px_90px_rgba(2,8,24,0.46)]">
+          <div className="mb-6 flex flex-col gap-2 rounded-[28px] border border-[#dce4ef] bg-[linear-gradient(135deg,#ffffff_0%,#f5f9ff_58%,#eef4ff_100%)] px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] md:px-8 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(14,28,56,0.94)_100%)]">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#7f8ca0] dark:text-[#93abd0]">
+              Firma nomi
+            </div>
+            <div className="text-[28px] font-black uppercase tracking-[0.08em] text-[#071225] md:text-[40px] dark:text-white">
+              FLOWERY FLY SERVICE
+            </div>
+          </div>
+
           <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
             <div className="relative overflow-hidden rounded-[32px] border border-[#dce4ef] bg-[linear-gradient(135deg,#fbfdff_0%,#f4f8ff_36%,#eef3fb_62%,#f8f3f7_100%)] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] md:p-8 dark:border-[#35507f] dark:bg-[linear-gradient(135deg,rgba(18,35,69,0.96)_0%,rgba(16,31,60,0.94)_36%,rgba(20,39,74,0.92)_62%,rgba(28,28,62,0.94)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#d9e3f0] bg-white/85 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#5d6d87] dark:border-[#3d5a8e] dark:bg-[rgba(18,34,64,0.78)] dark:text-[#cfe0fb]">
