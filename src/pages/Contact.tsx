@@ -1,42 +1,17 @@
-import { useMemo, useState } from "react"
 import { motion } from "framer-motion"
-import { Clock, Mail, MapPin, Phone, Send, ShieldCheck, Sparkles } from "lucide-react"
-import { toast } from "sonner"
+import { Clock, Mail, MapPin, Phone, ShieldCheck, Sparkles } from "lucide-react"
 
-import { formatUzPhoneInput } from "@/lib/phone"
 import { useI18n } from "@/shared/i18n/i18n"
-
-const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
-const isPhone = (value: string) => {
-  const digits = value.replace(/\D/g, "")
-  return digits.length === 12 && digits.startsWith("998")
-}
 
 export default function Contact() {
   const { language } = useI18n()
-  const [name, setName] = useState("")
-  const [phone, setPhone] = useState("+998")
-  const [email, setEmail] = useState("")
-  const [message, setMessage] = useState("")
-
-  const validationErrors = useMemo(() => {
-    const errors: string[] = []
-    if (name.trim().length < 2) errors.push("Ism kamida 2 ta harf bo'lishi kerak.")
-    if (!isPhone(phone)) errors.push("Telefon raqam +998 90 123 45 67 formatda bo'lishi kerak.")
-    if (!isEmail(email)) errors.push("Email noto'g'ri kiritilgan.")
-    if (message.trim().length < 1) errors.push("Xabar matnini kiriting.")
-    return errors
-  }, [email, message, name, phone])
-
-  const canSubmit = validationErrors.length === 0
-  const contactBackendConnected = false
   const copy = {
     uz: {
       cards: [
-        { icon: Phone, title: "Telefon", value: "+998 93 505 45 05", note: "Har kuni 09:00 - 23:00" },
+        { icon: Phone, title: "Telefon", value: "+998 99 804-02-96", note: "Muhammad Pulatov" },
         { icon: Mail, title: "Email", value: "info@tripzy.uz", note: "Tijorat va umumiy savollar uchun" },
         { icon: MapPin, title: "Manzil", value: "Toshkent, O'zbekiston", note: "Uchrashuv oldidan qo'ng'iroq qiling" },
-        { icon: Clock, title: "Ish vaqti", value: "09:00 - 23:00", note: "Onlayn yordam davom etadi" },
+        { icon: Clock, title: "Ish vaqti", value: "09:00 - 18:00", note: "Onlayn yordam davom etadi" },
       ],
       badge: "Aloqa markazi",
       titleA: "Aloqa va",
@@ -44,9 +19,9 @@ export default function Contact() {
       titleC: "uchun yozing",
       desc: "Savollar, hamkorlik takliflari va korporativ so'rovlar uchun shu sahifa orqali tez bog'lanishingiz mumkin. Telefon, email va forma bir xil uslubda tartiblandi.",
       chips: [
-        { label: "Telefon", value: "+998 formati", icon: Phone },
+        { label: "Telefon", value: "+998 99 804-02-96", icon: Phone },
         { label: "Javob", value: "Tezkor aloqa", icon: ShieldCheck },
-        { label: "Ish vaqti", value: "09:00 - 23:00", icon: Clock },
+        { label: "Ish vaqti", value: "09:00 - 18:00", icon: Clock },
       ],
       formBadge: "Bizga yozing",
       formTitle: "Forma orqali murojaat",
@@ -77,10 +52,10 @@ export default function Contact() {
     },
     ru: {
       cards: [
-        { icon: Phone, title: "Телефон", value: "+998 93 505 45 05", note: "Ежедневно 09:00 - 23:00" },
+        { icon: Phone, title: "Телефон", value: "+998 99 804-02-96", note: "Muhammad Pulatov" },
         { icon: Mail, title: "Email", value: "info@tripzy.uz", note: "Для коммерческих и общих запросов" },
         { icon: MapPin, title: "Адрес", value: "Ташкент, Узбекистан", note: "Позвоните перед визитом" },
-        { icon: Clock, title: "Время работы", value: "09:00 - 23:00", note: "Онлайн поддержка продолжается" },
+        { icon: Clock, title: "Время работы", value: "09:00 - 18:00", note: "Онлайн поддержка продолжается" },
       ],
       badge: "Contact center",
       titleA: "Напишите для",
@@ -88,9 +63,9 @@ export default function Contact() {
       titleC: "и партнерства",
       desc: "По вопросам, предложениям о сотрудничестве и корпоративным запросам можно быстро связаться через эту страницу.",
       chips: [
-        { label: "Телефон", value: "+998 format", icon: Phone },
+        { label: "Телефон", value: "+998 99 804-02-96", icon: Phone },
         { label: "Ответ", value: "Быстрая связь", icon: ShieldCheck },
-        { label: "Время", value: "09:00 - 23:00", icon: Clock },
+        { label: "Время", value: "09:00 - 18:00", icon: Clock },
       ],
       formBadge: "Напишите нам",
       formTitle: "Обращение через форму",
@@ -121,10 +96,10 @@ export default function Contact() {
     },
     en: {
       cards: [
-        { icon: Phone, title: "Phone", value: "+998 93 505 45 05", note: "Daily 09:00 - 23:00" },
+        { icon: Phone, title: "Phone", value: "+998 99 804-02-96", note: "Muhammad Pulatov" },
         { icon: Mail, title: "Email", value: "info@tripzy.uz", note: "For commercial and general inquiries" },
         { icon: MapPin, title: "Address", value: "Tashkent, Uzbekistan", note: "Please call before visiting" },
-        { icon: Clock, title: "Working hours", value: "09:00 - 23:00", note: "Online assistance continues" },
+        { icon: Clock, title: "Working hours", value: "09:00 - 18:00", note: "Online assistance continues" },
       ],
       badge: "Contact center",
       titleA: "Write for",
@@ -132,9 +107,9 @@ export default function Contact() {
       titleC: "and partnership",
       desc: "For questions, partnership proposals, and corporate requests, you can quickly reach us through this page.",
       chips: [
-        { label: "Phone", value: "+998 format", icon: Phone },
+        { label: "Phone", value: "+998 99 804-02-96", icon: Phone },
         { label: "Response", value: "Fast contact", icon: ShieldCheck },
-        { label: "Hours", value: "09:00 - 23:00", icon: Clock },
+        { label: "Hours", value: "09:00 - 18:00", icon: Clock },
       ],
       formBadge: "Write to us",
       formTitle: "Contact via form",
@@ -224,125 +199,6 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35 }}
-              className="rounded-[30px] border border-[#dbe5f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_20px_50px_rgba(17,24,39,0.06)] md:p-6 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7f8ca0] dark:text-[#93abd0]">
-                    {copy.formBadge}
-                  </div>
-                  <div className="mt-2 text-2xl font-black text-[#1d2430] dark:text-white">{copy.formTitle}</div>
-                </div>
-                <span className="rounded-full border border-[#dce7f3] bg-[#f7fbff] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#5a6f8d] dark:border-[#35507f] dark:bg-[rgba(20,35,66,0.84)] dark:text-[#d4e2fb]">
-                  {copy.responsive}
-                </span>
-              </div>
-
-              <form
-                className="mt-6 grid gap-3 md:grid-cols-2"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  if (!canSubmit) {
-                    toast.error(validationErrors[0] || "Forma maydonlarini to'g'ri to'ldiring.")
-                    return
-                  }
-                  if (!contactBackendConnected) {
-                    toast.info(copy.backendOff)
-                    return
-                  }
-                  toast.success("Forma qabul qilindi.")
-                  setName("")
-                  setPhone("+998")
-                  setEmail("")
-                  setMessage("")
-                }}
-              >
-                <Field
-                  label={copy.name}
-                  placeholder={copy.placeholders.name}
-                  value={name}
-                  onChange={setName}
-                />
-                <Field
-                  label={copy.phone}
-                  placeholder={copy.placeholders.phone}
-                  value={phone}
-                  onChange={(next) => setPhone(formatUzPhoneInput(next))}
-                />
-                <Field
-                  label={copy.email}
-                  placeholder={copy.placeholders.email}
-                  value={email}
-                  onChange={setEmail}
-                />
-                <div className="rounded-[22px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)] dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#93abd0]">
-                    {copy.status}
-                  </div>
-                  <div className="mt-2 text-[15px] font-semibold text-[#1d2430] dark:text-white">
-                    {!contactBackendConnected
-                      ? copy.backendOff
-                      : canSubmit
-                        ? copy.ready
-                        : copy.checking}
-                  </div>
-                  <div className="mt-1 text-xs text-[#7f8ca0] dark:text-[#a9bddb]">
-                    {!contactBackendConnected
-                      ? copy.backendNote
-                      : canSubmit
-                        ? "Forma yuborishga tayyor."
-                        : validationErrors[0]}
-                  </div>
-                </div>
-
-                <label className="block md:col-span-2">
-                  <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97]">
-                    {copy.message}
-                  </div>
-                  <textarea
-                    className="min-h-[150px] w-full rounded-[24px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] p-4 text-[15px] font-medium text-[#1d2430] outline-none placeholder:text-[#93a0b4] shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)] transition focus:border-[#cfd9e8] focus:bg-white dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-white dark:placeholder:text-[#8ea5cb] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:focus:border-[#4d6fa8] dark:focus:bg-[rgba(24,43,80,0.96)]"
-                    placeholder={copy.placeholders.message}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                </label>
-
-                <button
-                  type="submit"
-                  className="inline-flex h-13 items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#ff8a33_0%,#ff7424_100%)] px-7 text-sm font-bold uppercase tracking-[0.12em] text-white shadow-[0_18px_45px_rgba(255,116,36,0.28)] transition hover:brightness-110 md:col-span-2"
-                >
-                  <Send size={16} />
-                  {copy.send}
-                </button>
-              </form>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.35 }}
-              className="rounded-[30px] border border-[#dbe5f0] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-5 shadow-[0_20px_50px_rgba(17,24,39,0.06)] md:p-6 dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(15,29,57,0.96)_0%,rgba(12,23,45,0.9)_100%)] dark:shadow-[0_24px_70px_rgba(2,8,24,0.34)]"
-            >
-              <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7f8ca0] dark:text-[#93abd0]">
-                {copy.more}
-              </div>
-              <div className="mt-2 text-2xl font-black text-[#1d2430] dark:text-white">
-                {copy.moreTitle}
-              </div>
-              <div className="mt-4 space-y-3 text-sm leading-7 text-[#627188] dark:text-[#a9bddb]">
-                {copy.moreTexts.map((text) => (
-                  <p key={text}>{text}</p>
-                ))}
-              </div>
-            </motion.div>
-          </div>
         </div>
       </div>
     </section>
@@ -366,31 +222,5 @@ function HeroChip({
       </div>
       <div className="mt-2 text-[15px] font-bold text-[#1d2430] dark:text-white">{value}</div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  placeholder: string
-}) {
-  return (
-    <label className="block">
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6f7f97] dark:text-[#93abd0]">
-        {label}
-      </div>
-      <input
-        className="h-12 w-full rounded-[18px] border border-[#dbe3ef] bg-[linear-gradient(180deg,#fbfdff_0%,#f5f9ff_100%)] px-4 text-[15px] font-medium text-[#1d2430] outline-none placeholder:text-[#93a0b4] shadow-[inset_0_1px_0_rgba(255,255,255,0.86),0_10px_20px_rgba(17,24,39,0.03)] transition focus:border-[#cfd9e8] focus:bg-white dark:border-[#35507f] dark:bg-[linear-gradient(180deg,rgba(20,35,66,0.84)_0%,rgba(15,29,57,0.96)_100%)] dark:text-white dark:placeholder:text-[#8ea5cb] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] dark:focus:border-[#4d6fa8] dark:focus:bg-[rgba(24,43,80,0.96)]"
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-      />
-    </label>
   )
 }

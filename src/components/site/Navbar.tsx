@@ -57,7 +57,6 @@ type NavLinkItem = {
 export default function Navbar() {
   const location = useLocation()
   const isHome = location.pathname === "/"
-  const isCompactNavbar = !isHome
   const { language, setLanguage } = useI18n()
   const languageMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -67,6 +66,7 @@ export default function Navbar() {
   const [paxCount, setPaxCount] = useState<number>(
     () => bookingCart.get().passengers.length
   )
+  const isCompactNavbar = !isHome
 
   useEffect(() => {
     const read = () => setPaxCount(bookingCart.get().passengers.length)

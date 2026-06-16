@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
-import { Facebook, Instagram, Phone, Mail } from "lucide-react"
+import { Instagram, Mail, Phone, Send } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 import { useI18n } from "@/shared/i18n/i18n"
@@ -10,7 +10,7 @@ export default function Footer() {
   const copy = {
     uz: {
       subtitle: "Premium sayohat bronlash platformasi",
-      workHours: "Ish vaqti: 09:00 - 23:00",
+      workHours: "Ish vaqti: 09:00 - 18:00",
       pages: "Sahifalar",
       about: "Biz haqimizda",
       services: "Xizmatlar",
@@ -26,7 +26,7 @@ export default function Footer() {
     },
     ru: {
       subtitle: "Премиальная платформа для бронирования поездок",
-      workHours: "Время работы: 09:00 - 23:00",
+      workHours: "Время работы: 09:00 - 18:00",
       pages: "Страницы",
       about: "О нас",
       services: "Услуги",
@@ -43,7 +43,7 @@ export default function Footer() {
     },
     en: {
       subtitle: "Premium trip booking platform",
-      workHours: "Working hours: 09:00 - 23:00",
+      workHours: "Working hours: 09:00 - 18:00",
       pages: "Pages",
       about: "About",
       services: "Services",
@@ -65,31 +65,29 @@ export default function Footer() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.08),transparent_45%),radial-gradient(circle_at_85%_25%,rgba(214,180,140,0.15),transparent_50%)]" />
       <div className="pointer-events-none absolute inset-0 bg-black/45" />
 
-      <div className="relative mx-auto max-w-[1680px] px-5 py-12 md:px-8 md:py-14 2xl:max-w-[1820px]">
-        <div className="grid gap-10 md:grid-cols-3">
-          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="space-y-5">
+      <div className="relative mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-14">
+        <div className="grid gap-10 md:grid-cols-3 md:items-start lg:gap-16">
+          <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45 }} className="max-w-md space-y-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-2xl font-extrabold tracking-[0.25em] text-white">TRIPZY</div>
                 <div className="mt-1 text-xs text-white/55">{copy.subtitle}</div>
               </div>
-              <div className="flex gap-2">
-                <SocialBtn icon={Facebook} href="#" label={copy.social} />
-                <SocialBtn icon={Instagram} href="#" label={copy.social} />
-              </div>
             </div>
 
-            <div className="space-y-3 text-white/90">
-              <ContactRow icon={Phone} text="+998 93 505 45 05" />
+            <div className="grid gap-3 text-white/90 sm:grid-cols-2 md:grid-cols-1">
+              <ContactRow icon={Phone} text="+998 99 804-02-96" note="Muhammad Pulatov" />
               <ContactRow icon={Mail} text="info@tripzy.uz" />
             </div>
 
-            <div className="text-xs text-white/55">{copy.workHours}</div>
+            <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/60">
+              {copy.workHours}
+            </div>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.05 }} className="md:justify-self-center">
             <div className="text-sm font-semibold text-white">{copy.pages}</div>
-            <ul className="mt-4 space-y-2 text-white/80">
+            <ul className="mt-4 grid gap-2 text-white/80">
               <FooterNavLink to="/about" text={copy.about} />
               <FooterNavLink to="/services" text={copy.services} />
               <FooterNavLink to="/flights" text={copy.flights} />
@@ -99,12 +97,11 @@ export default function Footer() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: 0.1 }} className="md:justify-self-end">
-            <div className="text-sm font-semibold text-white">{copy.info}</div>
-            <ul className="mt-4 space-y-2 text-white/80">
-              <FooterLink text={copy.terms} href="#" />
-              <FooterLink text={copy.privacy} href="#" />
-              <FooterLink text={copy.help} href="#" />
-            </ul>
+            <div className="text-sm font-semibold text-white">{copy.social}</div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <SocialLink icon={Send} text="Telegram" href="#" />
+              <SocialLink icon={Instagram} text="Instagram" href="#" />
+            </div>
           </motion.div>
 
         </div>
@@ -122,27 +119,21 @@ export default function Footer() {
   )
 }
 
-type SocialBtnProps = { icon: LucideIcon; href?: string; label: string }
-function SocialBtn({ icon: Icon, href = "#", label }: SocialBtnProps) {
+type ContactRowProps = { icon: LucideIcon; text: string; note?: string }
+function ContactRow({ icon: Icon, text, note }: ContactRowProps) {
   return (
-    <a
-      href={href}
-      className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/5 text-white/80 transition hover:bg-white/10 hover:text-white hover:-translate-y-0.5"
-      aria-label={label}
-    >
-      <Icon size={16} />
-    </a>
-  )
-}
-
-type ContactRowProps = { icon: LucideIcon; text: string }
-function ContactRow({ icon: Icon, text }: ContactRowProps) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-white">
+    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10 text-white">
         <Icon size={18} />
       </span>
-      <span>{text}</span>
+      <span className="flex flex-col leading-tight">
+        <span className="text-[15px] font-semibold text-white">{text}</span>
+        {note ? (
+          <span className="mt-1 text-[12px] font-medium tracking-[0.08em] text-white/55">
+            {note}
+          </span>
+        ) : null}
+      </span>
     </div>
   )
 }
@@ -150,19 +141,25 @@ function ContactRow({ icon: Icon, text }: ContactRowProps) {
 function FooterNavLink({ to, text }: { to: string; text: string }) {
   return (
     <li>
-      <Link className="transition hover:text-white" to={to}>
+      <Link className="inline-flex rounded-full px-0 py-1 text-[15px] transition hover:text-white" to={to}>
         {text}
       </Link>
     </li>
   )
 }
 
-function FooterLink({ text, href }: { text: string; href: string }) {
+type SocialLinkProps = { icon: LucideIcon; text: string; href: string }
+function SocialLink({ icon: Icon, text, href }: SocialLinkProps) {
   return (
-    <li>
-      <a className="transition hover:text-white" href={href}>
-        {text}
-      </a>
-    </li>
+    <a
+      href={href}
+      className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white/82 transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
+      aria-label={text}
+    >
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-white">
+        <Icon size={18} />
+      </span>
+      <span>{text}</span>
+    </a>
   )
 }
