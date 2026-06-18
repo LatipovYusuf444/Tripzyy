@@ -70,8 +70,8 @@ select {
   position: absolute;
   left: 0;
   top: 0;
-  width: 291px;
-  transform: translate(-77px, -79px);
+  width: 260px;
+  transform: translate(-56px, -63px);
 }
 
 .tripzy-logo-crop-home-mobile {
@@ -85,8 +85,8 @@ select {
   position: absolute;
   left: 0;
   top: 0;
-  width: 332px;
-  transform: translate(-88px, -89px);
+  width: 297px;
+  transform: translate(-64px, -72px);
 }
 
 @media (min-width: 640px) {
@@ -97,8 +97,8 @@ select {
   }
 
   .tripzy-logo-image-mobile {
-    width: 336px;
-    transform: translate(-89px, -91px);
+    width: 301px;
+    transform: translate(-65px, -73px);
   }
 
   .tripzy-logo-crop-home-mobile {
@@ -108,8 +108,8 @@ select {
   }
 
   .tripzy-logo-image-home-mobile {
-    width: 378px;
-    transform: translate(-100px, -101px);
+    width: 337px;
+    transform: translate(-73px, -82px);
   }
 }
 
@@ -125,8 +125,8 @@ select {
     position: absolute;
     left: 0;
     top: 0;
-    width: 430px;
-    transform: translate(-114px, -115px);
+    width: 385px;
+    transform: translate(-83px, -93px);
   }
 
   .tripzy-logo-crop-mobile {
@@ -136,8 +136,8 @@ select {
   }
 
   .tripzy-logo-image-mobile {
-    width: 344px;
-    transform: translate(-91px, -93px);
+    width: 308px;
+    transform: translate(-67px, -75px);
   }
 }
 

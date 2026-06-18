@@ -12,7 +12,7 @@ import {
 } from "lucide-react"
 
 import { ThemeTogglerButton } from "@/components/animate-ui/components/buttons/theme-toggler"
-import logoImage from "@/assets/images/logo.png"
+import logoImage from "@/assets/images/logo.tour.png"
 import { bookingCart } from "@/shared/store/bookingCart"
 import {
   getStoredTheme,
@@ -31,7 +31,10 @@ const menuVariants = {
 }
 
 const compactNavbarLightClass =
-  "border-b border-[#E8E5DE] bg-[#F8F7F4] shadow-[0_8px_24px_rgba(77,70,61,0.06)]"
+  "border-b border-[#e1e1e1] bg-[#f1f1f1] shadow-[0_8px_24px_rgba(17,24,39,0.05)]"
+
+const homeScrolledNavbarLightClass =
+  "border-b border-[#e3dfd8] bg-[#f2f0ec] shadow-[0_8px_24px_rgba(77,70,61,0.05)]"
 
 const compactNavbarDarkClass =
   "border-b border-transparent bg-[linear-gradient(180deg,rgba(8,18,44,0.97)_0%,rgba(5,11,30,0.94)_100%)] shadow-[0_14px_38px_rgba(2,8,24,0.50)] backdrop-blur-[22px]"
@@ -63,10 +66,13 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [theme, setTheme] = useState<SiteTheme>(() => getStoredTheme())
+  const [hasHomeScrolled, setHasHomeScrolled] = useState(false)
   const [paxCount, setPaxCount] = useState<number>(
     () => bookingCart.get().passengers.length
   )
   const isCompactNavbar = !isHome
+  const isHomeScrolled = isHome && hasHomeScrolled
+  const useCompactNavTone = isCompactNavbar || isHomeScrolled
 
   useEffect(() => {
     const read = () => setPaxCount(bookingCart.get().passengers.length)
@@ -124,6 +130,22 @@ export default function Navbar() {
       )
     }
   }, [])
+
+  useEffect(() => {
+    if (!isHome) {
+      setHasHomeScrolled(false)
+      return
+    }
+
+    const updateHomeScroll = () => setHasHomeScrolled(window.scrollY > 24)
+
+    updateHomeScroll()
+    window.addEventListener("scroll", updateHomeScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", updateHomeScroll)
+    }
+  }, [isHome])
 
 
 
@@ -207,6 +229,8 @@ export default function Navbar() {
       : "border border-[#d8e3f0] !bg-[#ffffff] p-0.5 shadow-[0_8px_22px_rgba(49,87,143,0.12)]"
   const compactNavbarGlassClass =
     theme === "dark" ? compactNavbarDarkClass : compactNavbarLightClass
+  const homeScrolledNavbarClass =
+    theme === "dark" ? compactNavbarDarkClass : homeScrolledNavbarLightClass
   const compactControlGlassClass =
     theme === "dark" ? compactControlDarkClass : compactControlLightClass
   const compactLanguageShellClass =
@@ -237,7 +261,9 @@ export default function Navbar() {
               ? "w-full px-4 pb-4 pt-7 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:pb-4 md:pt-8 lg:pb-5 lg:pt-6"
               : "w-full px-4 py-4 transition-[background-color,border-color,box-shadow] duration-300 md:px-6 md:py-4 lg:py-2.5",
           isHome
-            ? "border-b border-white/20 bg-transparent shadow-none"
+            ? isHomeScrolled
+              ? homeScrolledNavbarClass
+              : "border-b border-white/20 bg-transparent shadow-none"
             : compactNavbarGlassClass,
         ].join(" ")}
       >
@@ -254,7 +280,7 @@ export default function Navbar() {
               className={
                 isCompactNavbar
                   ? "tripzy-logo-image-mobile block h-auto max-w-none object-contain"
-                  : "tripzy-logo-image-home-desktop block h-auto max-w-none object-contain drop-shadow-[0_12px_30px_rgba(3,8,24,0.32)] transition-[filter,transform] duration-300 dark:drop-shadow-[0_14px_30px_rgba(2,8,24,0.40)]"
+                  : "tripzy-logo-image-home-desktop block h-auto max-w-none object-contain transition-[filter,transform] duration-300"
               }
             />
           </Link>
@@ -268,7 +294,7 @@ export default function Navbar() {
                   label={link.label}
                   icon={link.icon}
                   badge={link.to === "/checkout" ? paxCount : 0}
-                  isHome={isHome}
+                  isHome={isHome && !isHomeScrolled}
                   theme={theme}
                   forceDark={false}
                 />
@@ -281,14 +307,14 @@ export default function Navbar() {
                 className="relative"
               >
                 <div
-                  className={`flex items-center gap-1 rounded-full ${isCompactNavbar ? compactLanguageShellClass : homeLanguageShellClass}`}
+                  className={`flex items-center gap-1 rounded-full ${useCompactNavTone ? compactLanguageShellClass : homeLanguageShellClass}`}
                 >
                   <button
                     type="button"
                     onClick={() => setLanguageMenuOpen((value) => !value)}
                     aria-haspopup="menu"
                     aria-expanded={languageMenuOpen}
-                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${isCompactNavbar ? compactControlGlassClass : `${homeGlassBtnClass}`} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
+                    className={`inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-[0.06em] transition-all duration-200 ${useCompactNavTone ? compactControlGlassClass : `${homeGlassBtnClass}`} ${isCompactNavbar ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px]"}`}
                   >
                     <span>{language}</span>
                     <ChevronDown
@@ -305,7 +331,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.98 }}
                       transition={{ duration: 0.16, ease: "easeOut" }}
-                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${isCompactNavbar ? compactDropdownPanelClass : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
+                    className={`absolute left-0 top-[calc(100%+10px)] z-[120] min-w-[132px] overflow-hidden rounded-[20px] p-2 backdrop-blur-[18px] ${useCompactNavTone ? compactDropdownPanelClass : "border border-[#d7e4f4] bg-white/90 shadow-[0_18px_40px_rgba(49,87,143,0.12)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(17,33,66,0.95)_0%,rgba(17,33,66,0.92)_100%)] dark:shadow-[0_22px_50px_rgba(2,8,24,0.32)]"}`}
                     >
                       {otherLanguages.map((lang) => (
                         <button
@@ -315,7 +341,7 @@ export default function Navbar() {
                             setLanguage(lang)
                             setLanguageMenuOpen(false)
                           }}
-                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? compactDropdownItemClass : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
+                          className={`flex w-full items-center rounded-[14px] px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] transition ${useCompactNavTone ? compactDropdownItemClass : "text-[#2a3a58] hover:bg-[#e8f0fc] hover:text-[#0052a5] dark:text-white/82 dark:hover:bg-white/8 dark:hover:text-white"}`}
                         >
                           {lang}
                         </button>
@@ -332,7 +358,7 @@ export default function Navbar() {
                 onThemeChange={setTheme}
                 direction="ltr"
                 unstyled
-                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition ${isCompactNavbar ? `${compactControlGlassClass} ${compactControlHoverClass}` : homeGlassBtnClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
+                className={`inline-flex items-center gap-2 rounded-full font-semibold uppercase tracking-[0.08em] transition ${useCompactNavTone ? `${compactControlGlassClass} ${compactControlHoverClass}` : homeGlassBtnClass} ${isCompactNavbar ? "h-9 px-3 text-[10px]" : "h-11 px-4 text-[11px]"}`}
                 renderIcon={(currentTheme) =>
                   currentTheme === "dark" ? (
                     <SunMedium size={isCompactNavbar ? 12 : 14} />
@@ -363,7 +389,7 @@ export default function Navbar() {
             type="button"
             aria-label={copy.openMenu}
             onClick={() => setOpen((value) => !value)}
-            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${isCompactNavbar ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-[#5d7fba]/50 dark:bg-[linear-gradient(180deg,rgba(20,42,84,0.72)_0%,rgba(9,24,54,0.56)_100%)] dark:text-white dark:shadow-[0_18px_42px_rgba(2,8,24,0.32)]"} ${isCompactNavbar ? "h-11 w-11" : "h-12 w-12"}`}
+            className={`ml-auto inline-flex items-center justify-center rounded-2xl transition lg:hidden ${useCompactNavTone ? compactControlGlassClass : "border border-[#d7e4f4] bg-white/64 text-[#111827] shadow-[0_8px_20px_rgba(49,87,143,0.10)] hover:bg-white/80 dark:border-[#5d7fba]/50 dark:bg-[linear-gradient(180deg,rgba(20,42,84,0.72)_0%,rgba(9,24,54,0.56)_100%)] dark:text-white dark:shadow-[0_18px_42px_rgba(2,8,24,0.32)]"} ${isCompactNavbar ? "h-11 w-11" : "h-12 w-12"}`}
           >
             {open ? <X size={isCompactNavbar ? 22 : 22} /> : <Menu size={isCompactNavbar ? 22 : 22} />}
           </button>
